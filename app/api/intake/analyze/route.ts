@@ -15,6 +15,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Conditions and medications must be arrays" }, { status: 400 })
     }
 
+    console.log("[v0] Starting intake analysis with provider:", aiClient.getProviderName())
+    console.log("[v0] Analysis data:", { conditions: conditions.length, medications: medications.length })
+
     // Analyze contraindications using AI client
     const result = await aiClient.analyzeIntake({
       conditions,
@@ -22,9 +25,12 @@ export async function POST(request: NextRequest) {
       notes,
     })
 
+    console.log("[v0] Analysis completed successfully:", result.result)
+
     return NextResponse.json(result)
   } catch (error) {
     console.error("Intake analysis error:", error)
+    console.error("[v0] Full error details:", error)
     return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 500 })
   }
 }

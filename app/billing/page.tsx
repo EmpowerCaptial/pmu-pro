@@ -1,8 +1,44 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Home } from "lucide-react"
 import Link from "next/link"
 
 export default function BillingPage() {
+  const handleBasicCheckout = async () => {
+    try {
+      const response = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "price_basic_monthly", // Replace with actual Stripe price ID
+          plan: "basic",
+        }),
+      })
+      const { url } = await response.json()
+      if (url) window.location.href = url
+    } catch (error) {
+      console.error("Checkout error:", error)
+    }
+  }
+
+  const handlePremiumCheckout = async () => {
+    try {
+      const response = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "price_premium_monthly", // Replace with actual Stripe price ID
+          plan: "premium",
+        }),
+      })
+      const { url } = await response.json()
+      if (url) window.location.href = url
+    } catch (error) {
+      console.error("Checkout error:", error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -83,7 +119,10 @@ export default function BillingPage() {
               </li>
             </ul>
 
-            <button className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+            <button
+              onClick={handleBasicCheckout}
+              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+            >
               Get Started
             </button>
           </div>
@@ -129,7 +168,10 @@ export default function BillingPage() {
               </li>
             </ul>
 
-            <button className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+            <button
+              onClick={handlePremiumCheckout}
+              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+            >
               Upgrade to Premium
             </button>
           </div>

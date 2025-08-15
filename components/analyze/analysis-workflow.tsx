@@ -4,9 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Stepper } from "@/components/ui/stepper"
 import { BiometricConsent } from "@/components/analyze/biometric-consent"
-import { EnhancedPhotoCapture } from "@/components/analyze/enhanced-photo-capture"
-import { AnalysisProcessingStep } from "@/components/analyze/analysis-processing-step"
-import { AnalysisResultsStep } from "@/components/analyze/analysis-results-step"
+import { PMUAnalysisTool } from "@/components/analyze/pmu-analysis-tool"
 
 const steps = [
   {
@@ -15,26 +13,27 @@ const steps = [
     description: "Biometric data notice",
   },
   {
-    id: "capture",
-    title: "Capture Photo",
-    description: "Take or upload a clear photo",
-  },
-  {
-    id: "processing",
-    title: "AI Analysis",
-    description: "Processing skin characteristics",
-  },
-  {
-    id: "results",
-    title: "Results",
-    description: "View recommendations",
+    id: "analysis",
+    title: "PMU Analysis",
+    description: "Complete skin analysis and pigment recommendations",
   },
 ]
 
+interface PMUAnalysis {
+  undertone: string
+  pmu_pigment_recommendations: {
+    brows: string[]
+    lips: string[]
+    eyeliner: string[]
+  }
+  healed_pigment_prediction: string
+  skincare_suggestions: string[]
+  artist_talking_points: string[]
+}
+
 export function AnalysisWorkflow() {
   const [currentStep, setCurrentStep] = useState(1)
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
-  const [analysisResults, setAnalysisResults] = useState<any>(null)
+  const [analysisResults, setAnalysisResults] = useState<PMUAnalysis | null>(null)
 
   const handleConsent = () => {
     setCurrentStep(2)
@@ -45,52 +44,11 @@ export function AnalysisWorkflow() {
     window.history.back()
   }
 
-  const handlePhotoCapture = (photoUrl: string) => {
-    setCapturedPhoto(photoUrl)
-    setCurrentStep(3)
-    // Start analysis process
-    setTimeout(() => {
-      // Mock analysis results
-      setAnalysisResults({
-        fitzpatrick: 3,
-        undertone: "neutral",
-        confidence: 0.92,
-        recommendations: [
-          {
-            pigmentId: "1",
-            name: "Permablend Honey Magic",
-            brand: "Permablend",
-            why: "Perfect match for Fitzpatrick III with neutral undertones",
-            expectedHealShift: "Slight warm heal, maintains golden base",
-          },
-          {
-            pigmentId: "2",
-            name: "Li Pigments Mocha",
-            brand: "Li Pigments",
-            why: "Warm alternative with rich brown tones",
-            expectedHealShift: "Stable healing with minimal shift",
-          },
-          {
-            pigmentId: "3",
-            name: "Tina Davies Ash Brown",
-            brand: "Tina Davies",
-            why: "Cool alternative for versatile results",
-            expectedHealShift: "May fade to soft gray undertones",
-          },
-        ],
-      })
-      setCurrentStep(4)
-    }, 3000)
-  }
-
-  const handleRetakePhoto = () => {
-    setCapturedPhoto(null)
-    setAnalysisResults(null)
-    setCurrentStep(2)
+  const handleAnalysisComplete = (analysis: PMUAnalysis) => {
+    setAnalysisResults(analysis)
   }
 
   const handleNewAnalysis = () => {
-    setCapturedPhoto(null)
     setAnalysisResults(null)
     setCurrentStep(1)
   }
@@ -107,20 +65,7 @@ export function AnalysisWorkflow() {
       {/* Step Content */}
       {currentStep === 1 && <BiometricConsent onConsent={handleConsent} onDecline={handleDeclineConsent} />}
 
-      {currentStep === 2 && <EnhancedPhotoCapture onPhotoCapture={handlePhotoCapture} capturedPhoto={capturedPhoto} />}
-
-      {currentStep === 3 && (
-        <AnalysisProcessingStep photo={capturedPhoto} onRetake={handleRetakePhoto} results={analysisResults} />
-      )}
-
-      {currentStep === 4 && analysisResults && (
-        <AnalysisResultsStep
-          photo={capturedPhoto}
-          results={analysisResults}
-          onRetake={handleRetakePhoto}
-          onNewAnalysis={handleNewAnalysis}
-        />
-      )}
+      {currentStep === 2 && <PMUAnalysisTool onAnalysisComplete={handleAnalysisComplete} />}
     </div>
   )
 }
