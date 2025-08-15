@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -55,161 +57,204 @@ export default function HomePage() {
         <div className="container mx-auto max-w-5xl text-center relative z-10">
           <div className="mb-6">
             <span className="inline-block px-4 py-2 bg-lavender/10 text-lavender-600 rounded-full text-sm font-medium mb-6">
-              AI-Powered Professional Analysis
+              AI-Powered PMU Assistant
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-8 font-serif leading-tight">
-            Decide with <span className="text-lavender">confidence</span>.
-            <br />
-            Correct with <span className="text-lavender-600">precision</span>.
+            Your AI PMU Assistant — <br />
+            <span className="text-lavender">From Client Screening</span> to{" "}
+            <span className="text-lavender-600">Perfect Pigment</span>.
           </h2>
           <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-            AI-powered contraindication screening and pigment matching for professional PMU artists. Make informed
-            decisions with instant analysis and expert recommendations.
+            Screen clients, match pigments, and showcase your work — all in one platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/intake">
+            <Link href="#pricing">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg"
               >
-                Start Contraindication Screen
+                Join Founders' Beta — $23.99/month
               </Button>
             </Link>
-            <Link href="/analyze">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-lavender/30 hover:border-lavender hover:bg-lavender/5 transition-all duration-300 px-8 py-4 text-lg bg-transparent"
+              onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              See How It Works
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Visual Feature Blocks */}
+      <section className="py-16 px-4 bg-gradient-to-r from-lavender/5 to-beige/10">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card/80 backdrop-blur-sm group">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-lavender to-lavender-600 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <CardTitle className="text-xl font-semibold text-foreground font-serif">AI Contraindications</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Screen meds & conditions instantly for client safety.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card/80 backdrop-blur-sm group">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-lavender to-lavender-600 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z"
+                    />
+                  </svg>
+                </div>
+                <CardTitle className="text-xl font-semibold text-foreground font-serif">
+                  Pigment Match Intelligence
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Get brand-agnostic pigment picks with healing prediction.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card/80 backdrop-blur-sm group">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-lavender to-lavender-600 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <CardTitle className="text-xl font-semibold text-foreground font-serif">Portfolio Share</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Import before/after photos and export client-ready galleries.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Proof Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-foreground mb-4 font-serif">See PMU Pro in Action</h3>
+            <p className="text-lg text-muted-foreground">Real screenshots from the platform</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-lavender/10 to-beige/20 rounded-lg p-6 text-center">
+              <div className="w-full h-32 bg-lavender/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/contraindication-screenshot.png"
+                  alt="Contraindication Screening Interface"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">AI Contraindication Analysis</p>
+            </div>
+            <div className="bg-gradient-to-br from-lavender/10 to-beige/20 rounded-lg p-6 text-center">
+              <div className="w-full h-32 bg-lavender/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/analysis-report-screenshot.png"
+                  alt="Professional Analysis Report"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">Pigment Matching Results</p>
+            </div>
+            <div className="bg-gradient-to-br from-lavender/10 to-beige/20 rounded-lg p-6 text-center">
+              <div className="w-full h-32 bg-lavender/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/portfolio-screenshot.png"
+                  alt="Portfolio Management Interface"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">Client Portfolio Gallery</p>
+            </div>
+            <div className="bg-gradient-to-br from-lavender/10 to-beige/20 rounded-lg p-6 text-center">
+              <div className="w-full h-32 bg-lavender/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/treatment-protocol-screenshot.png"
+                  alt="Treatment Protocol Interface"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">Professional Reports</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Founders' Beta CTA Banner */}
+      <section className="py-12 px-4 bg-gradient-to-r from-lavender/20 to-lavender/10" id="pricing">
+        <div className="container mx-auto max-w-4xl text-center">
+          <div className="bg-gradient-to-r from-lavender/10 to-beige/20 rounded-2xl p-8 border border-lavender/20">
+            <h3 className="text-3xl font-bold text-foreground mb-4 font-serif">
+              Founders' Beta — $23.99/month (Lock in for life)
+            </h3>
+            <p className="text-lg text-muted-foreground mb-6">
+              Full access during beta. Cancel anytime. Limited spots available.
+            </p>
+            <Link href="/billing">
               <Button
                 size="lg"
-                variant="outline"
-                className="border-2 border-lavender/30 hover:border-lavender hover:bg-lavender/5 transition-all duration-300 px-8 py-4 text-lg bg-transparent"
+                className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg"
               >
-                Start Skin Analysis
+                Join Now
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-gradient-to-r from-lavender/5 to-beige/10">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="border-lavender/20 shadow-xl bg-gradient-to-r from-white to-beige/30">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-3xl font-bold text-foreground font-serif mb-4">
-                Free Skin Analysis for Clients
-              </CardTitle>
-              <CardDescription className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Discover your perfect PMU match with our AI-powered Fitzpatrick skin type analysis and connect with
-                licensed artists near you
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Fitzpatrick Explanation */}
-              <div className="bg-gradient-to-r from-lavender/10 to-beige/20 rounded-lg p-6">
-                <h4 className="text-xl font-semibold text-lavender-600 mb-3">What is the Fitzpatrick Scale?</h4>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
-                  The Fitzpatrick Scale is a scientific classification system that categorizes skin types based on how
-                  they react to UV exposure. For PMU, this helps determine the best pigment colors and techniques for
-                  your unique skin tone.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-pink-100 to-pink-200 rounded border"></div>
-                      <span>
-                        <strong>Type I-II:</strong> Very fair to fair skin
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-amber-100 to-amber-200 rounded border"></div>
-                      <span>
-                        <strong>Type III-IV:</strong> Medium to olive skin
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-amber-300 to-amber-400 rounded border"></div>
-                      <span>
-                        <strong>Type V:</strong> Brown skin
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gradient-to-r from-amber-600 to-amber-700 rounded border"></div>
-                      <span>
-                        <strong>Type VI:</strong> Dark brown to black skin
-                      </span>
-                    </div>
-                  </div>
+      {/* Workflow Illustration Section */}
+      <section className="py-16 px-4 bg-gradient-to-r from-beige/10 to-lavender/5" id="how-it-works">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-foreground mb-4 font-serif">
+              How You'll Use PMU Pro in Every Appointment
+            </h3>
+            <p className="text-lg text-muted-foreground">Streamlined workflow from consultation to portfolio</p>
+          </div>
+          <div className="grid md:grid-cols-5 gap-6">
+            {[
+              { step: 1, title: "Intake Form", desc: "Client completes health screening" },
+              { step: 2, title: "AI Analysis", desc: "Instant contraindication & skin assessment" },
+              { step: 3, title: "Pigment Recommendation", desc: "Brand-specific color matches" },
+              { step: 4, title: "Export Report", desc: "Professional consultation summary" },
+              { step: 5, title: "Portfolio Share", desc: "Before/after gallery creation" },
+            ].map((item, index) => (
+              <div key={index} className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-lavender to-lavender-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
+                  {item.step}
                 </div>
+                <h4 className="font-semibold text-foreground mb-2">{item.title}</h4>
+                <p className="text-sm text-muted-foreground">{item.desc}</p>
               </div>
-
-              {/* Additional Factors */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-lavender to-lavender-600 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h5 className="font-semibold text-lavender-600 mb-2">Eye Color</h5>
-                  <p className="text-sm text-muted-foreground">
-                    Helps determine complementary pigment tones and placement on the Fitzpatrick scale
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-lavender to-lavender-600 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM7 3H5a2 2 0 00-2 2v12a4 4 0 004 4h2"
-                      />
-                    </svg>
-                  </div>
-                  <h5 className="font-semibold text-lavender-600 mb-2">Undertone</h5>
-                  <p className="text-sm text-muted-foreground">
-                    Warm, cool, or neutral undertones guide pigment selection for natural results
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-lavender to-lavender-600 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"
-                      />
-                    </svg>
-                  </div>
-                  <h5 className="font-semibold text-lavender-600 mb-2">Sun Sensitivity</h5>
-                  <p className="text-sm text-muted-foreground">
-                    How your skin reacts to sun exposure affects pigment retention and healing
-                  </p>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="text-center pt-6">
-                <Link href="/client-analysis">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg"
-                  >
-                    Start Your Free Analysis
-                  </Button>
-                </Link>
-                <p className="text-sm text-muted-foreground mt-3">
-                  Get personalized recommendations and connect with licensed PMU artists in your area
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -316,8 +361,22 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-12 px-4 bg-gradient-to-r from-beige/30 to-lavender/10">
+      <footer className="border-t border-border/50 py-16 px-4 bg-gradient-to-r from-beige/30 to-lavender/10">
         <div className="container mx-auto text-center">
+          <div className="mb-8">
+            <h4 className="text-3xl font-bold text-foreground font-serif mb-4">Ready to elevate your PMU business?</h4>
+            <p className="text-lg text-muted-foreground mb-6">
+              Join the Founders' Beta today and keep your special rate for life.
+            </p>
+            <Link href="/billing">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg"
+              >
+                Join Beta Now — $23.99/month
+              </Button>
+            </Link>
+          </div>
           <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/artist-signup">
               <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/10 bg-transparent">
