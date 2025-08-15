@@ -1,34 +1,73 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
 async function main() {
-  // Create sample users
-  const user1 = await prisma.user.create({
-    data: {
-      email: 'admin@pmupro.com',
-      name: 'Admin User',
+  console.log("🌱 Seeding database...")
+
+  // Create a demo user
+  const demoUser = await prisma.user.upsert({
+    where: { email: "demo@pmuPro.com" },
+    update: {},
+    create: {
+      email: "demo@pmuPro.com",
+      name: "Demo PMU Artist",
+      role: "artist",
     },
   })
 
-  // Create sample clients
+  console.log("✅ Created demo user:", demoUser.email)
+
+  // Create some demo clients
   const client1 = await prisma.client.create({
     data: {
-      name: 'Jane Smith',
-      email: 'jane.smith@email.com',
-      phone: '+1-555-0123',
+      userId: demoUser.id,
+      name: "Sarah Johnson",
+      email: "sarah@example.com",
+      phone: "+1-555-0123",
+      notes: "First-time PMU client, interested in microblading",
     },
   })
 
   const client2 = await prisma.client.create({
     data: {
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '+1-555-0456',
+      userId: demoUser.id,
+      name: "Maria Garcia",
+      email: "maria@example.com",
+      phone: "+1-555-0124",
+      notes: "Returning client for lip blush touch-up",
     },
   })
 
-  console.log('Seeding completed:', { user1, client1, client2 })
+  console.log("✅ Created demo clients")
+
+  // Create some demo intakes
+  await prisma.intake.create({
+    data: {
+      clientId: client1.id,
+      conditions: ["none"],
+      medications: ["none"],
+      result: "safe",
+      rationale: "No contraindications found. Client is suitable for PMU procedures.",
+      flaggedItems: [],
+    },
+  })
+
+  await prisma.intake.create({
+    data: {
+      clientId: client2.id,
+      conditions: ["sensitive_skin"],
+      medications: ["aspirin"],
+      result: "precaution",
+      rationale:
+        "Client takes aspirin (blood thinner) and has sensitive skin. Recommend patch test and inform about increased bleeding risk.",
+      flaggedItems: ["aspirin", "sensitive_skin"],
+    },
+  })
+
+  console.log("✅ Created demo intakes")
+
+  console.log("🎉 Database seeded successfully!")
 }
 
 main()
