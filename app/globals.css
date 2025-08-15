@@ -5,29 +5,29 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated PMU Pro Brand Colors to lavender/beige/white palette */
+  /* Reverted to original PMU Pro lavender/beige/white color palette */
   --color-lavender: #b19cd9;
   --color-lavender-600: #9b7bc8;
   --color-beige: #eee7dd;
   --color-ivory: #faf8f4;
   --color-ink: #1e2328;
-  --color-muted: #6b7280;
+  --color-muted-text: #6b7280;
 
-  /* Updated to use PMU Pro lavender/beige theme */
+  /* Updated theme colors to use original lavender palette */
   --background: #faf8f4; /* ivory */
   --foreground: #1e2328; /* ink */
-  --card: #faf8f4; /* ivory */
+  --card: #ffffff; /* white */
   --card-foreground: #1e2328; /* ink */
-  --popover: #faf8f4; /* ivory */
+  --popover: #ffffff; /* white */
   --popover-foreground: #1e2328; /* ink */
   --primary: #b19cd9; /* lavender */
-  --primary-foreground: #faf8f4; /* ivory */
+  --primary-foreground: #ffffff; /* white */
   --secondary: #eee7dd; /* beige */
   --secondary-foreground: #1e2328; /* ink */
   --muted: #eee7dd; /* beige */
-  --muted-foreground: #6b7280; /* muted */
-  --accent: #9b7bc8; /* lavender-600 */
-  --accent-foreground: #faf8f4; /* ivory */
+  --muted-foreground: #6b7280; /* muted gray */
+  --accent: #b19cd9; /* lavender */
+  --accent-foreground: #ffffff; /* white */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: #eee7dd; /* beige */
@@ -38,11 +38,11 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.5rem; /* Softer rounded corners as specified */
-  --sidebar: #faf8f4; /* ivory */
+  --radius: 0.5rem;
+  --sidebar: #ffffff; /* white */
   --sidebar-foreground: #1e2328; /* ink */
   --sidebar-primary: #b19cd9; /* lavender */
-  --sidebar-primary-foreground: #faf8f4; /* ivory */
+  --sidebar-primary-foreground: #ffffff; /* white */
   --sidebar-accent: #eee7dd; /* beige */
   --sidebar-accent-foreground: #1e2328; /* ink */
   --sidebar-border: #eee7dd; /* beige */
@@ -50,7 +50,7 @@
 }
 
 .dark {
-  /* Dark mode with adjusted PMU Pro lavender colors */
+  /* Dark mode with original PMU Pro lavender colors */
   --background: #1e2328; /* ink */
   --foreground: #faf8f4; /* ivory */
   --card: #1e2328; /* ink */
@@ -63,7 +63,7 @@
   --secondary-foreground: #faf8f4; /* ivory */
   --muted: #2a2f35; /* darker variant */
   --muted-foreground: #6b7280; /* muted */
-  --accent: #9b7bc8; /* lavender-600 */
+  --accent: #b19cd9; /* lavender */
   --accent-foreground: #faf8f4; /* ivory */
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
@@ -123,7 +123,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Updated PMU Pro custom color utilities for lavender theme */
+  /* Original PMU Pro custom color utilities for lavender theme */
   --color-lavender: #b19cd9;
   --color-lavender-600: #9b7bc8;
   --color-beige: #eee7dd;
@@ -138,20 +138,28 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Added smooth scrolling and improved font rendering */
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Updated custom utility classes for PMU Pro lavender branding */
+/* Updated utility classes to use original lavender/beige color names */
 @layer utilities {
   .text-lavender {
     color: #b19cd9;
   }
   .text-lavender-600 {
     color: #9b7bc8;
+  }
+  .text-beige {
+    color: #eee7dd;
+  }
+  .text-ivory {
+    color: #faf8f4;
+  }
+  .text-ink {
+    color: #1e2328;
   }
   .bg-lavender {
     background-color: #b19cd9;
@@ -165,8 +173,14 @@
   .bg-ivory {
     background-color: #faf8f4;
   }
+  .bg-ink {
+    background-color: #1e2328;
+  }
   .border-lavender {
     border-color: #b19cd9;
+  }
+  .border-beige {
+    border-color: #eee7dd;
   }
   .from-lavender {
     --tw-gradient-from: #b19cd9 var(--tw-gradient-from-position);
@@ -175,14 +189,6 @@
   }
   .to-lavender {
     --tw-gradient-to: #b19cd9 var(--tw-gradient-to-position);
-  }
-  .from-lavender-600 {
-    --tw-gradient-from: #9b7bc8 var(--tw-gradient-from-position);
-    --tw-gradient-to: rgb(155 123 200 / 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-  }
-  .to-lavender-600 {
-    --tw-gradient-to: #9b7bc8 var(--tw-gradient-to-position);
   }
   .from-beige {
     --tw-gradient-from: #eee7dd var(--tw-gradient-from-position);

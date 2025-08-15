@@ -120,9 +120,9 @@ export function NavBar({ currentPath, user }: NavBarProps) {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/20">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-white/20 text-white text-xs">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0">
+                    <Avatar className="h-10 w-10 border-2 border-white/30">
+                      <AvatarFallback className="bg-white text-lavender font-semibold text-sm shadow-lg">
                         {user.initials || user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
