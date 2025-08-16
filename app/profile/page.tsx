@@ -29,6 +29,26 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
+  const handleChangePhoto = () => {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = "image/*"
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const imageUrl = e.target?.result as string
+          // In a real app, you'd upload to a server
+          localStorage.setItem("profile_photo", imageUrl)
+          alert("Profile photo updated successfully!")
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    input.click()
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
       {/* Background Logo */}
@@ -84,6 +104,7 @@ export default function ProfilePage() {
                   variant="outline"
                   size="sm"
                   className="border-lavender text-lavender hover:bg-lavender hover:text-white bg-transparent"
+                  onClick={handleChangePhoto}
                 >
                   <Camera className="h-4 w-4 mr-2" />
                   Change Photo

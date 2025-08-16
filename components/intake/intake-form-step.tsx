@@ -107,7 +107,7 @@ export function IntakeFormStep({ onSubmit }: IntakeFormStepProps) {
             <FileText className="h-5 w-5" />
             Medical Conditions
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm leading-relaxed">
             Select any current medical conditions. This helps assess PMU safety and healing potential.
           </CardDescription>
         </CardHeader>
@@ -167,7 +167,9 @@ export function IntakeFormStep({ onSubmit }: IntakeFormStepProps) {
       <Card>
         <CardHeader>
           <CardTitle>Current Medications</CardTitle>
-          <CardDescription>List all medications, supplements, and vitamins you're currently taking.</CardDescription>
+          <CardDescription className="text-sm leading-relaxed">
+            List all medications, supplements, and vitamins you're currently taking.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-3">
@@ -225,7 +227,9 @@ export function IntakeFormStep({ onSubmit }: IntakeFormStepProps) {
       <Card>
         <CardHeader>
           <CardTitle>Additional Notes</CardTitle>
-          <CardDescription>Any other relevant medical history, allergies, or concerns?</CardDescription>
+          <CardDescription className="text-sm leading-relaxed">
+            Any other relevant medical history, allergies, or concerns?
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
@@ -252,7 +256,7 @@ export function IntakeFormStep({ onSubmit }: IntakeFormStepProps) {
       )}
 
       {/* Submit Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button type="submit" size="lg" className="gap-2">
           <FileText className="h-4 w-4" />
           Analyze Safety Risk

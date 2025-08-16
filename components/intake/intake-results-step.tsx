@@ -21,13 +21,76 @@ interface IntakeResultsStepProps {
 
 export function IntakeResultsStep({ intakeData, results, onNewScreening }: IntakeResultsStepProps) {
   const handleSaveToClient = () => {
-    // TODO: Implement save to client functionality
-    console.log("Save to client")
+    const clientData = {
+      intakeData,
+      results,
+      timestamp: new Date().toISOString(),
+      analysisId: `analysis_${Date.now()}`,
+    }
+
+    // Save to localStorage for now (in production, this would be an API call)
+    const existingClients = JSON.parse(localStorage.getItem("pmu_clients") || "[]")
+    const updatedClients = existingClients.map((client: any) => {
+      if (client.id === intakeData?.clientId) {
+        return {
+          ...client,
+          analyses: [...(client.analyses || []), clientData],
+          lastAnalysis: clientData,
+          lastResult: results.result,
+        }
+      }
+      return client
+    })
+
+    localStorage.setItem("pmu_clients", JSON.stringify(updatedClients))
+    alert("Analysis saved to client file successfully!")
   }
 
   const handleExportConsent = () => {
-    // TODO: Implement export consent form functionality
-    console.log("Export consent form")
+    const consentForm = {
+      clientName: intakeData?.clientId || "Client",
+      date: new Date().toLocaleDateString(),
+      riskLevel: results.result,
+      flaggedItems: results.flaggedItems,
+      recommendations: results.recommendations,
+      rationale: results.rationale,
+      artistSignature: "Digital Signature",
+      clientSignature: "To be signed by client",
+    }
+
+    // Create downloadable consent form
+    const consentText = `
+PMU CONSENT FORM
+
+Client: ${consentForm.clientName}
+Date: ${consentForm.date}
+Risk Assessment: ${consentForm.riskLevel.toUpperCase()}
+
+FLAGGED ITEMS:
+${consentForm.flaggedItems.map((item) => `• ${item}`).join("\n")}
+
+RECOMMENDATIONS:
+${consentForm.recommendations.map((rec) => `• ${rec}`).join("\n")}
+
+CLINICAL RATIONALE:
+${consentForm.rationale}
+
+By signing below, I acknowledge that I have been informed of the risks and recommendations for my PMU procedure.
+
+Client Signature: ___________________________ Date: ___________
+
+Artist Signature: ___________________________ Date: ___________
+    `
+
+    const blob = new Blob([consentText], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `consent_form_${Date.now()}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const getRiskColor = (result: string) => {

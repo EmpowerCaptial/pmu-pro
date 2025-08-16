@@ -95,7 +95,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                 className="object-contain"
               />
             </div>
-            <span className="text-xl font-bold font-serif text-white">PMU Pro</span>
+            <span className="text-xl font-bold font-serif text-white hidden sm:block">PMU Pro</span>
           </Link>
 
           {/* Desktop Navigation */}
