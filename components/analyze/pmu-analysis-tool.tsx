@@ -295,46 +295,92 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
       // Convert data URL to File for API call
       const response = await fetch(photoUrl)
       const blob = await response.blob()
-      const file = new File([blob], 'captured-photo.jpg', { type: 'image/jpeg' })
-      
-      // Import and use the safe API utility
-      const { analyzePhoto } = await import('@/lib/api-utils')
-      const analysisResult = await analyzePhoto(file)
-      
-      if (analysisResult.success && analysisResult.data) {
-        // Transform API response to match PMUAnalysis interface
+      const file = new File([blob], "captured-photo.jpg", { type: "image/jpeg" })
+
+      const analysisResponse = await fetch("/api/photo/analyze", {
+        method: "POST",
+        body: (() => {
+          const formData = new FormData()
+          formData.append("image", file)
+          return formData
+        })(),
+      })
+
+      if (analysisResponse.ok) {
+        const apiResult = await analysisResponse.json()
+
         const transformedAnalysis: PMUAnalysis = {
-          undertone: analysisResult.data.undertone || "Warm",
-          fitzpatrick: analysisResult.data.fitzpatrick || 3,
+          undertone: apiResult.undertone || "Warm",
+          fitzpatrick: apiResult.fitzpatrick || 3,
           pmu_pigment_recommendations: {
-            brows: analysisResult.data.recommendations?.map((rec: any) => ({
-              brand: rec.brand || "Permablend",
-              name: rec.name || "Recommended Pigment",
-              hex_preview: rec.hex_preview || "#8B6914",
-              why_recommended: rec.why || "Professional recommendation based on skin analysis",
-              healing_prediction: rec.expectedHealShift || "Natural healing expected",
-              opacity: "Medium",
-              base_tone: analysisResult.data.undertone || "Warm",
-            })) || mockBrowRecommendations,
-            lips: mockLipRecommendations,
-            eyeliner: mockEyelinerRecommendations,
+            brows:
+              apiResult.pigment_recommendations?.brows?.map((rec: any) => ({
+                brand: rec.brand,
+                name: rec.name,
+                color_code: rec.color_code,
+                hex_preview: rec.hex_preview,
+                why_recommended: `Perfect for ${apiResult.undertone} undertones with Fitzpatrick Type ${apiResult.fitzpatrick}. ${rec.why_recommended}`,
+                healing_prediction: rec.healing_prediction,
+                opacity: rec.opacity,
+                base_tone: apiResult.undertone,
+              })) || mockBrowRecommendations,
+            lips:
+              apiResult.pigment_recommendations?.lips?.map((rec: any) => ({
+                brand: rec.brand,
+                name: rec.name,
+                color_code: rec.color_code,
+                hex_preview: rec.hex_preview,
+                why_recommended: `Complements ${apiResult.undertone} undertones beautifully. ${rec.why_recommended}`,
+                healing_prediction: rec.healing_prediction,
+                opacity: rec.opacity,
+                base_tone: apiResult.undertone,
+              })) || mockLipRecommendations,
+            eyeliner:
+              apiResult.pigment_recommendations?.eyeliner?.map((rec: any) => ({
+                brand: rec.brand,
+                name: rec.name,
+                color_code: rec.color_code,
+                hex_preview: rec.hex_preview,
+                why_recommended: `Ideal for Fitzpatrick Type ${apiResult.fitzpatrick} with ${apiResult.undertone} undertones. ${rec.why_recommended}`,
+                healing_prediction: rec.healing_prediction,
+                opacity: rec.opacity,
+                base_tone: apiResult.undertone,
+              })) || mockEyelinerRecommendations,
           },
-          procell_treatments: mockProcellTreatments,
-          healed_pigment_prediction: "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
-          skincare_suggestions: mockSkincareSuggestions,
-          artist_talking_points: mockArtistTalkingPoints,
+          procell_treatments: {
+            recommended_sessions: apiResult.procell_sessions || 3,
+            area_focus: apiResult.treatment_areas || ["Brow area", "Lip area", "Overall facial skin"],
+            expected_benefits: apiResult.expected_benefits || mockProcellTreatments.expected_benefits,
+          },
+          healed_pigment_prediction:
+            apiResult.healing_prediction ||
+            `Based on your Fitzpatrick Type ${apiResult.fitzpatrick || 3} and ${apiResult.undertone || "warm"} undertones, colors will soften by ~30% and appear warmer after 4 weeks.`,
+          skincare_suggestions: [
+            `${apiResult.procell_sessions || 3} ProCell Microchanneling sessions before PMU for optimal skin prep`,
+            "Daily SPF 30+ to prevent pigment fading and maintain color integrity",
+            "ProCell Healing Serum post-PMU for accelerated recovery",
+            "Avoid retinoids 2 weeks before and after procedure",
+          ],
+          artist_talking_points: [
+            `Your Fitzpatrick Type ${apiResult.fitzpatrick || 3} skin with ${apiResult.undertone || "warm"} undertones is ${apiResult.fitzpatrick <= 3 ? "ideal" : "suitable"} for PMU procedures`,
+            `We'll use ${apiResult.undertone || "warm"}-based pigments to prevent ashy healing and maintain color harmony`,
+            `ProCell pre-treatment can improve skin hydration and pigment acceptance by 30%`,
+            `Post-PMU ProCell treatments boost longevity and maintain vibrancy for 2+ years`,
+            apiResult.special_considerations
+              ? `Special consideration: ${apiResult.special_considerations}`
+              : "Your skin shows excellent PMU candidacy",
+          ].filter(Boolean),
         }
-        
+
         setAnalysis(transformedAnalysis)
         setStep("results")
         onAnalysisComplete(transformedAnalysis)
         return
       }
     } catch (error) {
-      console.error('API analysis failed, using mock data:', error)
+      console.error("API analysis failed, using mock data:", error)
     }
 
-    // Fallback to mock data if API fails
     const mockAnalysis: PMUAnalysis = {
       undertone: "Warm",
       fitzpatrick: 3,
@@ -344,7 +390,8 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
         eyeliner: mockEyelinerRecommendations,
       },
       procell_treatments: mockProcellTreatments,
-      healed_pigment_prediction: "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
+      healed_pigment_prediction:
+        "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
       skincare_suggestions: mockSkincareSuggestions,
       artist_talking_points: mockArtistTalkingPoints,
     }
@@ -633,6 +680,27 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
               </div>
 
               <div className="space-y-3">
+                <h5 className="font-medium">Professional Assessment Summary:</h5>
+                <div className="bg-[#fdf8f6] p-3 rounded text-sm space-y-2">
+                  <p>
+                    <strong>Skin Analysis:</strong> Fitzpatrick Type {analysis.fitzpatrick} with {analysis.undertone}{" "}
+                    undertones
+                  </p>
+                  <p>
+                    <strong>Recommended Pigments:</strong> {analysis.pmu_pigment_recommendations.brows[0]?.brand}{" "}
+                    {analysis.pmu_pigment_recommendations.brows[0]?.name} for brows,{" "}
+                    {analysis.pmu_pigment_recommendations.lips[0]?.brand}{" "}
+                    {analysis.pmu_pigment_recommendations.lips[0]?.name} for lips
+                  </p>
+                  <p>
+                    <strong>ProCell Protocol:</strong> {analysis.procell_treatments.recommended_sessions} pre-treatment
+                    sessions recommended
+                  </p>
+                  <p>
+                    <strong>Expected Outcome:</strong> {analysis.healed_pigment_prediction}
+                  </p>
+                </div>
+
                 <h5 className="font-medium">Professional Recommendations:</h5>
                 {analysis.artist_talking_points.map((point, index) => (
                   <div key={index} className="bg-[#fdf8f6] p-3 rounded text-sm">
@@ -643,8 +711,8 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
 
               <div className="pt-4 border-t text-xs text-gray-500">
                 <p>
-                  This analysis is for consultation purposes only and should be reviewed with a licensed PMU
-                  professional.
+                  This comprehensive analysis integrates skin assessment, pigment selection, and treatment protocols for
+                  optimal PMU results. Review with licensed PMU professional before proceeding.
                 </p>
               </div>
             </div>

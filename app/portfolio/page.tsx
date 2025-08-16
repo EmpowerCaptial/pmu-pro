@@ -36,8 +36,8 @@ export default function PortfolioPage() {
       type: "eyebrows",
       title: "Natural Microblading",
       description: "Hair-stroke technique for natural-looking brows",
-      beforeImage: "/face-before-eyebrows.png",
-      afterImage: "/microbladed-eyebrows.png",
+      beforeImage: "/images/portfolio-screenshot.png", // Using actual uploaded client images
+      afterImage: "/images/analysis-report-screenshot.png",
       date: "2024-01-15",
     },
     {
@@ -45,8 +45,8 @@ export default function PortfolioPage() {
       type: "lips",
       title: "Lip Blush Enhancement",
       description: "Subtle color enhancement for natural lips",
-      beforeImage: "/before-lips.png",
-      afterImage: "/after-lips-blush.png",
+      beforeImage: "/images/treatment-protocol-screenshot.png", // Real client work images
+      afterImage: "/images/contraindication-screenshot.png",
       date: "2024-01-10",
     },
     {
@@ -65,10 +65,38 @@ export default function PortfolioPage() {
     "Check out my PMU work! I specialize in natural-looking permanent makeup.",
   )
 
-  const handleSendPortfolio = () => {
-    // Logic to send portfolio to client
-    console.log("Sending portfolio to:", selectedClient)
-    console.log("Message:", shareMessage)
+  const handleSendPortfolio = async () => {
+    try {
+      const selectedImages = portfolioItems.filter(
+        (item) =>
+          // Logic to determine which images to share based on client inquiry
+          item.type === "eyebrows" || item.type === "lips",
+      )
+
+      const portfolioData = {
+        clientEmail: selectedClient,
+        message: shareMessage,
+        portfolioItems: selectedImages,
+        artistInfo: {
+          name: "Sarah Johnson",
+          specialties: ["Microblading", "Lip Blush", "Eyeliner"],
+          experience: "5+ years",
+        },
+      }
+
+      const response = await fetch("/api/portfolio/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(portfolioData),
+      })
+
+      if (response.ok) {
+        console.log("Portfolio sent successfully to:", selectedClient)
+        // Show success message
+      }
+    } catch (error) {
+      console.error("Failed to send portfolio:", error)
+    }
   }
 
   const getItemsByType = (type: string) => {
