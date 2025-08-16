@@ -1,13 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-// Initialize OpenAI client only if API key is available
-const openai = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "your-openai-api-key-here" 
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-  : null
+// Function to get OpenAI client on demand
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY
+  
+  if (!apiKey || apiKey === "your-openai-api-key-here") {
+    console.log("[v0] OpenAI API key not available or is placeholder")
+    return null
+  }
+  
+  try {
+    return new OpenAI({ apiKey })
+  } catch (error) {
+    console.error("[v0] Failed to initialize OpenAI client:", error)
+    return null
+  }
+}
 
 export async function POST(request: NextRequest) {
   console.log("[v0] Photo analyze API called")
+  console.log("[v0] Environment check - API key exists:", !!process.env.OPENAI_API_KEY)
+  console.log("[v0] Environment check - API key length:", process.env.OPENAI_API_KEY?.length || 0)
+  
   try {
     console.log("[v0] Starting photo analysis...")
 
@@ -54,6 +69,14 @@ export async function POST(request: NextRequest) {
     const dataUrl = `data:${file.type};base64,${base64}`
 
     console.log("[v0] Calling OpenAI for image analysis...")
+
+    // Get OpenAI client
+    const openai = getOpenAIClient()
+    
+    if (!openai) {
+      console.log("[v0] OpenAI client not available, using fallback")
+      throw new Error("OpenAI client not available")
+    }
 
     try {
       const response = await openai.chat.completions.create({
