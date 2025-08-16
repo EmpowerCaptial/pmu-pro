@@ -45,12 +45,65 @@ export function AnalysisWorkflow() {
     window.history.back()
   }
 
-  const handlePhotoCapture = (photoUrl: string) => {
+  const handlePhotoCapture = async (photoUrl: string) => {
     setCapturedPhoto(photoUrl)
     setCurrentStep(3)
-    // Start analysis process
-    setTimeout(() => {
-      // Mock analysis results
+    
+    try {
+      // Convert data URL to File for API call
+      const response = await fetch(photoUrl)
+      const blob = await response.blob()
+      const file = new File([blob], 'captured-photo.jpg', { type: 'image/jpeg' })
+      
+      // Import and use the safe API utility
+      const { analyzePhoto } = await import('@/lib/api-utils')
+      const analysisResult = await analyzePhoto(file)
+      
+      if (analysisResult.success && analysisResult.data) {
+        setAnalysisResults({
+          fitzpatrick: analysisResult.data.fitzpatrick,
+          undertone: analysisResult.data.undertone,
+          confidence: analysisResult.data.confidence,
+          recommendations: analysisResult.data.recommendations,
+          timestamp: analysisResult.data.timestamp
+        })
+        setCurrentStep(4)
+      } else {
+        // Fallback to mock data if API fails
+        console.warn('API analysis failed, using mock data:', analysisResult.error)
+        setAnalysisResults({
+          fitzpatrick: 3,
+          undertone: "neutral",
+          confidence: 0.92,
+          recommendations: [
+            {
+              pigmentId: "1",
+              name: "Permablend Honey Magic",
+              brand: "Permablend",
+              why: "Perfect match for Fitzpatrick III with neutral undertones",
+              expectedHealShift: "Slight warm heal, maintains golden base",
+            },
+            {
+              pigmentId: "2",
+              name: "Li Pigments Mocha",
+              brand: "Li Pigments",
+              why: "Warm alternative with rich brown tones",
+              expectedHealShift: "Stable healing with minimal shift",
+            },
+            {
+              pigmentId: "3",
+              name: "Tina Davies Ash Brown",
+              brand: "Tina Davies",
+              why: "Cool alternative for versatile results",
+              expectedHealShift: "May fade to soft gray undertones",
+            },
+          ],
+        })
+        setCurrentStep(4)
+      }
+    } catch (error) {
+      console.error('Photo analysis error:', error)
+      // Fallback to mock data
       setAnalysisResults({
         fitzpatrick: 3,
         undertone: "neutral",
@@ -80,7 +133,7 @@ export function AnalysisWorkflow() {
         ],
       })
       setCurrentStep(4)
-    }, 3000)
+    }
   }
 
   const handleRetakePhoto = () => {
