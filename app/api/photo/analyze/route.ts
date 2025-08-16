@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Initialize OpenAI client only if API key is available
+const openai = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "your-openai-api-key-here" 
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null
 
 export async function POST(request: NextRequest) {
   console.log("[v0] Photo analyze API called")
