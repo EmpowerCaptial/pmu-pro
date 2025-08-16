@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -24,7 +24,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <img src="/images/pmu-guide-logo-transparent.png" alt="PMU Guide Logo" className="w-8 h-8" />
-                <span className="text-xl font-bold text-ink">PMU Guide</span>
+                <span className="text-xl font-bold text-ink hidden sm:block">PMU Guide</span>
               </div>
 
               {/* Desktop Navigation */}
@@ -101,6 +101,15 @@ export default function HomePage() {
         </header>
 
         <section className="relative py-20 px-4 bg-gradient-to-br from-white via-beige/30 to-lavender/10">
+          {/* Logo behind text */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img
+              src="/images/pmu-guide-logo-transparent.png"
+              alt="PMU Guide Background"
+              className="w-[70%] max-w-3xl h-auto opacity-[0.08] object-contain"
+            />
+          </div>
+
           <div className="container mx-auto max-w-5xl text-center relative z-10">
             <h1 className="text-5xl md:text-7xl font-bold text-ink mb-6 leading-tight">
               Your AI PMU Assistant — <br />
@@ -147,7 +156,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="border-2 border-dashed border-lavender/30 rounded-lg p-8 text-center">
                       <svg
-                        className="w-12 h-12 text-lavender mx-auto mb-4"
+                        className="w-16 h-16 text-lavender mx-auto mb-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -166,7 +175,9 @@ export default function HomePage() {
                         />
                       </svg>
                       <p className="text-ink/70 mb-4">Upload photo or use camera</p>
-                      <Button className="bg-lavender hover:bg-lavender-600 text-white">Try Demo Analysis</Button>
+                      <Link href="/client-analysis">
+                        <Button className="bg-lavender hover:bg-lavender-600 text-white">Try Demo Analysis</Button>
+                      </Link>
                     </div>
                   </div>
 
@@ -201,193 +212,73 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-12 px-4 bg-white">
-          <div className="container mx-auto max-w-6xl">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-lavender/10 rounded-full flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-ink">Built by PMU Educators</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-lavender/10 rounded-full flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-ink">AI-Powered Analysis</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-lavender/10 rounded-full flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-ink">HIPAA-Compliant</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-lavender/10 rounded-full flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-ink">Artists in 15+ Countries</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 px-4 bg-gradient-to-br from-lavender/10 to-beige/30" id="features">
+        <section className="py-16 px-4 bg-white">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-ink mb-4">Professional PMU Tools</h2>
-              <p className="text-lg text-ink/70 max-w-2xl mx-auto">
-                Everything you need for safer, smarter permanent makeup consultations
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h2 className="text-3xl font-bold text-ink mb-8">Built by PMU Educators</h2>
+              <div className="grid md:grid-cols-4 gap-8">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-lavender/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                       />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-ink">AI Contraindications Check</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Flags risks instantly with comprehensive medication and condition screening
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <h3 className="font-semibold text-ink mb-2">Built by PMU Educators</h3>
+                  <p className="text-sm text-ink/70">Created by licensed professionals</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-lavender/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                       />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-ink">Fitzpatrick & Undertone Detection</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Precision pigment matching with AI-powered skin analysis
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <h3 className="font-semibold text-ink mb-2">AI Powered Analysis</h3>
+                  <p className="text-sm text-ink/70">Advanced machine learning</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-lavender/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                       />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-ink">Brand-Agnostic Pigment Match</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Healing predictions included with every recommendation
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <h3 className="font-semibold text-ink mb-2">HIPAA Compliant</h3>
+                  <p className="text-sm text-ink/70">Enterprise-grade security</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-lavender/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-ink">Healing Timeline & Aftercare</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Automated aftercare instructions and healing progress tracking
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-ink">Portfolio Import/Export Tools</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Showcase your work with professional before/after galleries
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="bg-white border-lavender/20 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-lavender/10 rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:bg-lavender/20 transition-colors">
-                    <svg className="w-8 h-8 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-ink">PDF Compliance Reports</CardTitle>
-                  <CardDescription className="text-ink/70">
-                    Professional documentation for client files and insurance
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+                  <h3 className="font-semibold text-ink mb-2">Artists in 15 Countries</h3>
+                  <p className="text-sm text-ink/70">Global professional network</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-white" id="how-it-works">
+        <section className="py-12 px-4 bg-white" id="how-it-works">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-ink mb-4">How It Works</h2>

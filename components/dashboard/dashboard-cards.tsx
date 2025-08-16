@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Camera, FileText, Users, Palette, TrendingUp, Clock, Share, Mail, Microscope, Brush } from "lucide-react"
 import Link from "next/link"
+import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 
 export function DashboardCards() {
   return (
@@ -128,6 +129,31 @@ export function DashboardCards() {
             </Link>
           </CardContent>
         </Card>
+
+        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <FileText className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">Standard Documents</CardTitle>
+            </div>
+            <CardDescription>Legal forms, consent documents, and state regulations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/standard-documents">
+              <Button
+                variant="outline"
+                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Access Documents
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid md:grid-cols-1 gap-6">
+        <MetaMessengerBox />
       </div>
 
       {/* Stats Overview */}
