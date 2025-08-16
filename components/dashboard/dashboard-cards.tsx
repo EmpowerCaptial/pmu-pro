@@ -107,6 +107,27 @@ export function DashboardCards() {
             </Link>
           </CardContent>
         </Card>
+
+        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <Palette className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">Pigment Library</CardTitle>
+            </div>
+            <CardDescription>Professional pigment database with AI-powered matching</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/pigment-library">
+              <Button
+                variant="outline"
+                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
+              >
+                <Palette className="h-4 w-4 mr-2" />
+                Browse Pigments
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Stats Overview */}

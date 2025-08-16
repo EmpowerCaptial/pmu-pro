@@ -65,6 +65,50 @@ export default function PortfolioPage() {
     "Check out my PMU work! I specialize in natural-looking permanent makeup.",
   )
 
+  const [isAddWorkOpen, setIsAddWorkOpen] = useState(false)
+  const [newWork, setNewWork] = useState({
+    type: "eyebrows" as "eyebrows" | "lips" | "eyeliner",
+    title: "",
+    description: "",
+    beforeImage: null as File | null,
+    afterImage: null as File | null,
+  })
+
+  const handleAddWork = () => {
+    if (!newWork.title || !newWork.description || !newWork.beforeImage || !newWork.afterImage) {
+      alert("Please fill in all fields and upload both images")
+      return
+    }
+
+    const newItem: PortfolioItem = {
+      id: Date.now().toString(),
+      type: newWork.type,
+      title: newWork.title,
+      description: newWork.description,
+      beforeImage: URL.createObjectURL(newWork.beforeImage),
+      afterImage: URL.createObjectURL(newWork.afterImage),
+      date: new Date().toISOString().split("T")[0],
+    }
+
+    setPortfolioItems([newItem, ...portfolioItems])
+    setIsAddWorkOpen(false)
+    setNewWork({
+      type: "eyebrows",
+      title: "",
+      description: "",
+      beforeImage: null,
+      afterImage: null,
+    })
+  }
+
+  const handleFileUpload = (type: "before" | "after", file: File | null) => {
+    if (type === "before") {
+      setNewWork({ ...newWork, beforeImage: file })
+    } else {
+      setNewWork({ ...newWork, afterImage: file })
+    }
+  }
+
   const handleSendPortfolio = async () => {
     try {
       const selectedImages = portfolioItems.filter(
@@ -160,10 +204,78 @@ export default function PortfolioPage() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button className="bg-white/90 backdrop-blur-sm border border-lavender text-lavender hover:bg-lavender hover:text-white font-semibold">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Work
-              </Button>
+              <Dialog open={isAddWorkOpen} onOpenChange={setIsAddWorkOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-white/90 backdrop-blur-sm border border-lavender text-lavender hover:bg-lavender hover:text-white font-semibold">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Work
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white/95 backdrop-blur-sm max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Portfolio Work</DialogTitle>
+                    <DialogDescription>Upload before and after images of your PMU work</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="work-type">Type</Label>
+                      <select
+                        id="work-type"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        value={newWork.type}
+                        onChange={(e) => setNewWork({ ...newWork, type: e.target.value as any })}
+                      >
+                        <option value="eyebrows">Eyebrows</option>
+                        <option value="lips">Lips</option>
+                        <option value="eyeliner">Eyeliner</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="work-title">Title</Label>
+                      <Input
+                        id="work-title"
+                        placeholder="e.g., Natural Microblading"
+                        value={newWork.title}
+                        onChange={(e) => setNewWork({ ...newWork, title: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="work-description">Description</Label>
+                      <Textarea
+                        id="work-description"
+                        placeholder="Describe the technique and results..."
+                        value={newWork.description}
+                        onChange={(e) => setNewWork({ ...newWork, description: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="before-image">Before Image</Label>
+                        <Input
+                          id="before-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload("before", e.target.files?.[0] || null)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="after-image">After Image</Label>
+                        <Input
+                          id="after-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload("after", e.target.files?.[0] || null)}
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={handleAddWork} className="w-full bg-lavender hover:bg-lavender-600">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add to Portfolio
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 

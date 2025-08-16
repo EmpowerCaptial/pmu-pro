@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Camera, Upload, RotateCcw, CheckCircle, AlertCircle, Palette, Sparkles } from "lucide-react"
+import { findPigmentMatches, type PigmentMatch } from "@/lib/pigment-matching"
 
 interface PMUAnalysisToolProps {
   onAnalysisComplete: (analysis: PMUAnalysis) => void
@@ -289,7 +290,7 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
   }
 
   const performAnalysis = async (photoUrl: string) => {
-    console.log("[v0] Starting performAnalysis with photoUrl:", photoUrl?.substring(0, 50) + '...')
+    console.log("[v0] Starting performAnalysis with photoUrl:", photoUrl?.substring(0, 50) + "...")
     setStep("analysis")
     console.log("[v0] Starting PMU analysis...")
 
@@ -324,43 +325,69 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
           console.log("[v0] API returned mock data, not real AI analysis")
         }
 
+        const browMatches = findPigmentMatches(
+          apiResult.skin_tone || "Medium",
+          apiResult.undertone || "Warm",
+          "Natural Brown",
+          "Brows",
+        )
+        const lipMatches = findPigmentMatches(
+          apiResult.skin_tone || "Medium",
+          apiResult.undertone || "Warm",
+          "Natural Coral",
+          "Lips",
+        )
+        const eyelinerMatches = findPigmentMatches(
+          apiResult.skin_tone || "Medium",
+          apiResult.undertone || "Warm",
+          "Classic Liner",
+          "Eyeliner",
+        )
+
         const transformedAnalysis: PMUAnalysis = {
           undertone: apiResult.undertone || "Warm",
           fitzpatrick: apiResult.fitzpatrick || 3,
           pmu_pigment_recommendations: {
             brows:
-              apiResult.pigment_recommendations?.brows?.map((rec: any) => ({
-                brand: rec.brand,
-                name: rec.name,
-                color_code: rec.color_code,
-                hex_preview: rec.hex_preview,
-                why_recommended: `Perfect for ${apiResult.undertone} undertones with Fitzpatrick Type ${apiResult.fitzpatrick}. ${rec.why_recommended}`,
-                healing_prediction: rec.healing_prediction,
-                opacity: rec.opacity,
-                base_tone: apiResult.undertone,
-              })) || mockBrowRecommendations,
+              browMatches.length > 0
+                ? browMatches.slice(0, 2).map((match: PigmentMatch) => ({
+                    brand: match.brand,
+                    name: match.pigmentName,
+                    hex_preview: match.swatch || "#8B6914",
+                    why_recommended:
+                      match.mixingNotes ||
+                      `Perfect for ${apiResult.undertone} undertones with Fitzpatrick Type ${apiResult.fitzpatrick}`,
+                    healing_prediction: "Will heal to a beautiful natural tone with minimal color shift",
+                    opacity: "Medium",
+                    base_tone: apiResult.undertone,
+                  }))
+                : mockBrowRecommendations,
             lips:
-              apiResult.pigment_recommendations?.lips?.map((rec: any) => ({
-                brand: rec.brand,
-                name: rec.name,
-                color_code: rec.color_code,
-                hex_preview: rec.hex_preview,
-                why_recommended: `Complements ${apiResult.undertone} undertones beautifully. ${rec.why_recommended}`,
-                healing_prediction: rec.healing_prediction,
-                opacity: rec.opacity,
-                base_tone: apiResult.undertone,
-              })) || mockLipRecommendations,
+              lipMatches.length > 0
+                ? lipMatches.slice(0, 2).map((match: PigmentMatch) => ({
+                    brand: match.brand,
+                    name: match.pigmentName,
+                    hex_preview: match.swatch || "#FF7F50",
+                    why_recommended: match.mixingNotes || `Complements ${apiResult.undertone} undertones beautifully`,
+                    healing_prediction: "Will heal to a natural warm tone, perfect for daily wear",
+                    opacity: "Medium",
+                    base_tone: apiResult.undertone,
+                  }))
+                : mockLipRecommendations,
             eyeliner:
-              apiResult.pigment_recommendations?.eyeliner?.map((rec: any) => ({
-                brand: rec.brand,
-                name: rec.name,
-                color_code: rec.color_code,
-                hex_preview: rec.hex_preview,
-                why_recommended: `Ideal for Fitzpatrick Type ${apiResult.fitzpatrick} with ${apiResult.undertone} undertones. ${rec.why_recommended}`,
-                healing_prediction: rec.healing_prediction,
-                opacity: rec.opacity,
-                base_tone: apiResult.undertone,
-              })) || mockEyelinerRecommendations,
+              eyelinerMatches.length > 0
+                ? eyelinerMatches.slice(0, 1).map((match: PigmentMatch) => ({
+                    brand: match.brand,
+                    name: match.pigmentName,
+                    hex_preview: match.swatch || "#2F1B14",
+                    why_recommended:
+                      match.mixingNotes ||
+                      `Ideal for Fitzpatrick Type ${apiResult.fitzpatrick} with ${apiResult.undertone} undertones`,
+                    healing_prediction: "May soften to rich brown, very natural looking",
+                    opacity: "High",
+                    base_tone: apiResult.undertone,
+                  }))
+                : mockEyelinerRecommendations,
           },
           procell_treatments: {
             recommended_sessions: apiResult.procell_sessions || 3,
@@ -395,7 +422,6 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
         const errorText = await analysisResponse.text()
         console.error("[v0] API call failed with status:", analysisResponse.status, "Error:", errorText)
       }
-      
     } catch (error) {
       console.error("[v0] API analysis failed, using mock data:", error)
     }

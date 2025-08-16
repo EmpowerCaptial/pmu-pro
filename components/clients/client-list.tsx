@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { RiskPill } from "@/components/ui/risk-pill"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, Users, Eye, Calendar, Phone, Mail } from "lucide-react"
+import { Search, Users, Eye, Calendar, Phone, Mail, Edit, Plus, Send } from "lucide-react"
 import Link from "next/link"
 
 // Mock data - in real app this would come from API/database
@@ -51,6 +51,24 @@ const mockClients = [
 export function ClientList() {
   const [searchQuery, setSearchQuery] = useState("")
   const [clients] = useState(mockClients)
+
+  const handleEditClient = (clientId: string) => {
+    window.location.href = `/clients/${clientId}/edit`
+  }
+
+  const handleNewAnalysis = (clientId: string) => {
+    // Store client ID for the analysis
+    localStorage.setItem("current_analysis_client", clientId)
+    window.location.href = "/analyze"
+  }
+
+  const handleSendEmail = (client: any) => {
+    const subject = encodeURIComponent(`PMU Pro - Please Contact Studio Owner`)
+    const body = encodeURIComponent(
+      `Dear ${client.name},\n\nThank you for your interest in our PMU services. To schedule your consultation or discuss your treatment options, please contact our studio owner directly.\n\nWe look forward to helping you achieve your beauty goals!\n\nBest regards,\nPMU Pro Team\n\nNote: Please reach out to the studio owner for personalized consultation and scheduling.`,
+    )
+    window.location.href = `mailto:${client.email}?subject=${subject}&body=${body}`
+  }
 
   const filteredClients = clients.filter(
     (client) =>
@@ -166,12 +184,41 @@ export function ClientList() {
                     {client.notes && <p className="text-sm text-muted-foreground max-w-md">{client.notes}</p>}
                   </div>
                 </div>
-                <Link href={`/clients/${client.id}`}>
-                  <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                    <Eye className="h-4 w-4" />
-                    View Details
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 bg-transparent"
+                    onClick={() => handleSendEmail(client)}
+                  >
+                    <Send className="h-4 w-4" />
+                    Email
                   </Button>
-                </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 bg-transparent"
+                    onClick={() => handleEditClient(client.id)}
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 bg-transparent"
+                    onClick={() => handleNewAnalysis(client.id)}
+                  >
+                    <Plus className="h-4 w-4" />
+                    New Analysis
+                  </Button>
+                  <Link href={`/clients/${client.id}`}>
+                    <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+                      <Eye className="h-4 w-4" />
+                      View Details
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>
