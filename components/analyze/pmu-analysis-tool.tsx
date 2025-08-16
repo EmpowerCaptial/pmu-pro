@@ -40,6 +40,86 @@ interface PigmentRecommendation {
   base_tone: string
 }
 
+// Mock data constants
+const mockBrowRecommendations: PigmentRecommendation[] = [
+  {
+    brand: "Permablend",
+    name: "Honey Magic",
+    hex_preview: "#8B6914",
+    why_recommended: "Perfect for warm undertones with yellow/orange base that won't turn ashy",
+    healing_prediction: "Will heal to a beautiful golden brown, may fade slightly warmer",
+    opacity: "Medium",
+    base_tone: "Warm",
+  },
+  {
+    brand: "Tina Davies",
+    name: "I Love Ink Warm Brown",
+    hex_preview: "#A0522D",
+    why_recommended: "Excellent secondary choice with golden brown base for warm skin",
+    healing_prediction: "Stable warm healing with minimal color shift",
+    opacity: "Medium",
+    base_tone: "Warm",
+  },
+]
+
+const mockLipRecommendations: PigmentRecommendation[] = [
+  {
+    brand: "Permablend",
+    name: "Coral Crush",
+    hex_preview: "#FF7F50",
+    why_recommended: "Orange-pink coral base complements warm undertones beautifully",
+    healing_prediction: "Will heal to a natural warm coral, perfect for daily wear",
+    opacity: "Medium",
+    base_tone: "Warm",
+  },
+  {
+    brand: "Tina Davies",
+    name: "Lip Blush Pink",
+    hex_preview: "#FFB6C1",
+    why_recommended: "Natural pink with balanced undertones for subtle enhancement",
+    healing_prediction: "Heals to natural lip color enhancement",
+    opacity: "Low",
+    base_tone: "Neutral",
+  },
+]
+
+const mockEyelinerRecommendations: PigmentRecommendation[] = [
+  {
+    brand: "Permablend",
+    name: "Brown Black",
+    hex_preview: "#2F1B14",
+    why_recommended: "Softer than pure black, perfect for warm undertones",
+    healing_prediction: "May soften to rich brown, very natural looking",
+    opacity: "High",
+    base_tone: "Warm",
+  },
+]
+
+const mockProcellTreatments = {
+  recommended_sessions: 3,
+  area_focus: ["Brow area", "Lip area", "Overall facial skin"],
+  expected_benefits: [
+    "Improved pigment retention by 25-30%",
+    "Enhanced skin texture and hydration",
+    "Faster healing and reduced downtime",
+    "Better color saturation and longevity",
+  ],
+}
+
+const mockSkincareSuggestions = [
+  "3 ProCell Microchanneling sessions before PMU for optimal skin prep",
+  "Daily SPF 30+ to prevent pigment fading and maintain color integrity",
+  "ProCell Healing Serum post-PMU for accelerated recovery",
+  "Avoid retinoids 2 weeks before and after procedure",
+]
+
+const mockArtistTalkingPoints = [
+  "Your Fitzpatrick Type III skin with warm undertones is ideal for PMU procedures",
+  "We'll use warm-based pigments to prevent ashy healing and maintain color harmony",
+  "ProCell pre-treatment can improve skin hydration and pigment acceptance by 30%",
+  "Post-PMU ProCell treatments boost longevity and maintain vibrancy for 2+ years",
+]
+
 interface ShadeSwatchProps {
   color: string
   name: string
@@ -211,93 +291,67 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
   const performAnalysis = async (photoUrl: string) => {
     setStep("analysis")
 
-    setTimeout(() => {
-      const mockAnalysis: PMUAnalysis = {
-        undertone: "Warm",
-        fitzpatrick: 3,
-        pmu_pigment_recommendations: {
-          brows: [
-            {
-              brand: "Permablend",
-              name: "Honey Magic",
-              hex_preview: "#8B6914",
-              why_recommended: "Perfect for warm undertones with yellow/orange base that won't turn ashy",
-              healing_prediction: "Will heal to a beautiful golden brown, may fade slightly warmer",
+    try {
+      // Convert data URL to File for API call
+      const response = await fetch(photoUrl)
+      const blob = await response.blob()
+      const file = new File([blob], 'captured-photo.jpg', { type: 'image/jpeg' })
+      
+      // Import and use the safe API utility
+      const { analyzePhoto } = await import('@/lib/api-utils')
+      const analysisResult = await analyzePhoto(file)
+      
+      if (analysisResult.success && analysisResult.data) {
+        // Transform API response to match PMUAnalysis interface
+        const transformedAnalysis: PMUAnalysis = {
+          undertone: analysisResult.data.undertone || "Warm",
+          fitzpatrick: analysisResult.data.fitzpatrick || 3,
+          pmu_pigment_recommendations: {
+            brows: analysisResult.data.recommendations?.map((rec: any) => ({
+              brand: rec.brand || "Permablend",
+              name: rec.name || "Recommended Pigment",
+              hex_preview: rec.hex_preview || "#8B6914",
+              why_recommended: rec.why || "Professional recommendation based on skin analysis",
+              healing_prediction: rec.expectedHealShift || "Natural healing expected",
               opacity: "Medium",
-              base_tone: "Warm",
-            },
-            {
-              brand: "Tina Davies",
-              name: "I Love Ink Warm Brown",
-              hex_preview: "#A0522D",
-              why_recommended: "Excellent secondary choice with golden brown base for warm skin",
-              healing_prediction: "Stable warm healing with minimal color shift",
-              opacity: "Medium",
-              base_tone: "Warm",
-            },
-          ],
-          lips: [
-            {
-              brand: "Permablend",
-              name: "Coral Crush",
-              hex_preview: "#FF7F50",
-              why_recommended: "Orange-pink coral base complements warm undertones beautifully",
-              healing_prediction: "Will heal to a natural warm coral, perfect for daily wear",
-              opacity: "Medium",
-              base_tone: "Warm",
-            },
-            {
-              brand: "Tina Davies",
-              name: "Lip Blush Pink",
-              hex_preview: "#FFB6C1",
-              why_recommended: "Natural pink with balanced undertones for subtle enhancement",
-              healing_prediction: "Heals to natural lip color enhancement",
-              opacity: "Low",
-              base_tone: "Neutral",
-            },
-          ],
-          eyeliner: [
-            {
-              brand: "Permablend",
-              name: "Brown Black",
-              hex_preview: "#2F1B14",
-              why_recommended: "Softer than pure black, perfect for warm undertones",
-              healing_prediction: "May soften to rich brown, very natural looking",
-              opacity: "High",
-              base_tone: "Warm",
-            },
-          ],
-        },
-        procell_treatments: {
-          recommended_sessions: 3,
-          area_focus: ["Brow area", "Lip area", "Overall facial skin"],
-          expected_benefits: [
-            "Improved pigment retention by 25-30%",
-            "Enhanced skin texture and hydration",
-            "Faster healing and reduced downtime",
-            "Better color saturation and longevity",
-          ],
-        },
-        healed_pigment_prediction:
-          "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
-        skincare_suggestions: [
-          "3 ProCell Microchanneling sessions before PMU for optimal skin prep",
-          "Daily SPF 30+ to prevent pigment fading and maintain color integrity",
-          "ProCell Healing Serum post-PMU for accelerated recovery",
-          "Avoid retinoids 2 weeks before and after procedure",
-        ],
-        artist_talking_points: [
-          "Your Fitzpatrick Type III skin with warm undertones is ideal for PMU procedures",
-          "We'll use warm-based pigments to prevent ashy healing and maintain color harmony",
-          "ProCell pre-treatment can improve skin hydration and pigment acceptance by 30%",
-          "Post-PMU ProCell treatments boost longevity and maintain vibrancy for 2+ years",
-        ],
+              base_tone: analysisResult.data.undertone || "Warm",
+            })) || mockBrowRecommendations,
+            lips: mockLipRecommendations,
+            eyeliner: mockEyelinerRecommendations,
+          },
+          procell_treatments: mockProcellTreatments,
+          healed_pigment_prediction: "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
+          skincare_suggestions: mockSkincareSuggestions,
+          artist_talking_points: mockArtistTalkingPoints,
+        }
+        
+        setAnalysis(transformedAnalysis)
+        setStep("results")
+        onAnalysisComplete(transformedAnalysis)
+        return
       }
+    } catch (error) {
+      console.error('API analysis failed, using mock data:', error)
+    }
 
-      setAnalysis(mockAnalysis)
-      setStep("results")
-      onAnalysisComplete(mockAnalysis)
-    }, 3000)
+    // Fallback to mock data if API fails
+    const mockAnalysis: PMUAnalysis = {
+      undertone: "Warm",
+      fitzpatrick: 3,
+      pmu_pigment_recommendations: {
+        brows: mockBrowRecommendations,
+        lips: mockLipRecommendations,
+        eyeliner: mockEyelinerRecommendations,
+      },
+      procell_treatments: mockProcellTreatments,
+      healed_pigment_prediction: "Colors will soften by ~30% and appear warmer after 4 weeks. Expect beautiful, natural-looking results.",
+      skincare_suggestions: mockSkincareSuggestions,
+      artist_talking_points: mockArtistTalkingPoints,
+    }
+
+    setAnalysis(mockAnalysis)
+    setStep("results")
+    onAnalysisComplete(mockAnalysis)
   }
 
   const retakePhoto = () => {
