@@ -11,14 +11,22 @@ export default function BillingPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: "price_basic_monthly", // Replace with actual Stripe price ID
+          priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID || "price_basic_monthly",
           plan: "basic",
+          successUrl: `${window.location.origin}/billing/success`,
+          cancelUrl: `${window.location.origin}/billing`,
         }),
       })
+      
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+      
       const { url } = await response.json()
       if (url) window.location.href = url
     } catch (error) {
       console.error("Checkout error:", error)
+      alert("Failed to start checkout. Please try again.")
     }
   }
 
@@ -28,14 +36,22 @@ export default function BillingPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: "price_premium_monthly", // Replace with actual Stripe price ID
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID || "price_premium_monthly",
           plan: "premium",
+          successUrl: `${window.location.origin}/billing/success`,
+          cancelUrl: `${window.location.origin}/billing`,
         }),
       })
+      
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+      
       const { url } = await response.json()
       if (url) window.location.href = url
     } catch (error) {
       console.error("Checkout error:", error)
+      alert("Failed to start checkout. Please try again.")
     }
   }
 
