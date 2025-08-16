@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Camera, FileText, Users, Palette, TrendingUp, Clock, Share, Mail } from "lucide-react"
+import { Camera, FileText, Users, Palette, TrendingUp, Clock, Share, Mail, Microscope, Brush } from "lucide-react"
 import Link from "next/link"
 
 export function DashboardCards() {
   return (
     <div className="space-y-8">
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-4 gap-6">
         <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
@@ -49,6 +49,26 @@ export function DashboardCards() {
         <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
+              <Microscope className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">ProCell Analysis</CardTitle>
+            </div>
+            <CardDescription>Advanced skin segmentation for therapy planning</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/procell-analysis">
+              <Button
+                variant="outline"
+                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
+              >
+                Start ProCell Analysis
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
               <Share className="h-5 w-5 text-lavender" />
               <CardTitle className="text-lg font-bold">Send Client Analysis</CardTitle>
             </div>
@@ -62,6 +82,27 @@ export function DashboardCards() {
               >
                 <Mail className="h-4 w-4 mr-2" />
                 Send Analysis Link
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <Brush className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">Virtual Brow Try-On</CardTitle>
+            </div>
+            <CardDescription>Interactive brow shape and color visualization tool</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/trybrows">
+              <Button
+                variant="outline"
+                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
+              >
+                <Brush className="h-4 w-4 mr-2" />
+                Open TryBrows Tool
               </Button>
             </Link>
           </CardContent>
