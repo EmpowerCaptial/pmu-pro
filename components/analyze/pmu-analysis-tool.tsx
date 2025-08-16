@@ -290,13 +290,17 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
 
   const performAnalysis = async (photoUrl: string) => {
     setStep("analysis")
+    console.log("[v0] Starting PMU analysis...")
 
     try {
       // Convert data URL to File for API call
+      console.log("[v0] Converting photo for API call...")
       const response = await fetch(photoUrl)
       const blob = await response.blob()
       const file = new File([blob], "captured-photo.jpg", { type: "image/jpeg" })
+      console.log("[v0] Photo converted, file size:", file.size)
 
+      console.log("[v0] Calling /api/photo/analyze...")
       const analysisResponse = await fetch("/api/photo/analyze", {
         method: "POST",
         body: (() => {
@@ -306,8 +310,18 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
         })(),
       })
 
+      console.log("[v0] API response status:", analysisResponse.status)
+      console.log("[v0] API response ok:", analysisResponse.ok)
+
       if (analysisResponse.ok) {
         const apiResult = await analysisResponse.json()
+        console.log("[v0] API result received:", apiResult)
+
+        if (apiResult.source === "openai") {
+          console.log("[v0] Using real OpenAI analysis results")
+        } else {
+          console.log("[v0] API returned mock data, not real AI analysis")
+        }
 
         const transformedAnalysis: PMUAnalysis = {
           undertone: apiResult.undertone || "Warm",
@@ -376,11 +390,15 @@ export function PMUAnalysisTool({ onAnalysisComplete }: PMUAnalysisToolProps) {
         setStep("results")
         onAnalysisComplete(transformedAnalysis)
         return
+      } else {
+        const errorText = await analysisResponse.text()
+        console.error("[v0] API call failed with status:", analysisResponse.status, "Error:", errorText)
       }
     } catch (error) {
-      console.error("API analysis failed, using mock data:", error)
+      console.error("[v0] API analysis failed, using mock data:", error)
     }
 
+    console.warn("[v0] Falling back to mock analysis data - OpenAI analysis failed")
     const mockAnalysis: PMUAnalysis = {
       undertone: "Warm",
       fitzpatrick: 3,
