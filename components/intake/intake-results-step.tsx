@@ -72,9 +72,9 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
             label: "Flagged Items",
             value:
               results.flaggedItems.length > 0 ? (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 max-w-full">
                   {results.flaggedItems.map((item, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" className="text-xs break-words max-w-full">
                       {item}
                     </Badge>
                   ))}
@@ -115,22 +115,22 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
           <CardDescription>AI assessment rationale and clinical considerations</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-muted/30 rounded-lg">
+          <div className="p-3 sm:p-4 bg-muted/30 rounded-lg">
             <h4 className="font-medium mb-2">Clinical Rationale:</h4>
-            <p className="text-sm text-muted-foreground">{results.rationale}</p>
+            <p className="text-sm text-muted-foreground break-words leading-relaxed">{results.rationale}</p>
           </div>
 
           {results.flaggedItems.length > 0 && (
-            <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+            <div className="p-3 sm:p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <h4 className="font-medium text-yellow-800">Items Requiring Attention:</h4>
+                <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                <h4 className="font-medium text-yellow-800 break-words">Items Requiring Attention:</h4>
               </div>
               <ul className="text-sm text-yellow-700 space-y-1">
                 {results.flaggedItems.map((item, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="w-1 h-1 bg-yellow-600 rounded-full"></span>
-                    {item}
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-1 h-1 bg-yellow-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span className="break-words">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -146,12 +146,12 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
           <CardDescription>Medical history provided for this assessment</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium mb-2">Medical Conditions:</h4>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 max-w-full">
                 {intakeData?.conditions.map((condition, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
+                  <Badge key={index} variant="outline" className="text-xs break-words max-w-full">
                     {condition}
                   </Badge>
                 ))}
@@ -159,9 +159,9 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
             </div>
             <div>
               <h4 className="font-medium mb-2">Current Medications:</h4>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 max-w-full">
                 {intakeData?.medications.map((medication, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
+                  <Badge key={index} variant="outline" className="text-xs break-words max-w-full">
                     {medication}
                   </Badge>
                 ))}
@@ -172,7 +172,9 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
           {intakeData?.notes && (
             <div>
               <h4 className="font-medium mb-2">Additional Notes:</h4>
-              <p className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">{intakeData.notes}</p>
+              <p className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg break-words leading-relaxed">
+                {intakeData.notes}
+              </p>
             </div>
           )}
         </CardContent>
@@ -180,17 +182,17 @@ export function IntakeResultsStep({ intakeData, results, onNewScreening }: Intak
 
       {/* Actions */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button onClick={onNewScreening} className="gap-2">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center">
+            <Button onClick={onNewScreening} className="gap-2 w-full sm:w-auto">
               <Plus className="h-4 w-4" />
               New Screening
             </Button>
-            <Button variant="outline" onClick={handleExportConsent} className="gap-2 bg-transparent">
+            <Button variant="outline" onClick={handleExportConsent} className="gap-2 bg-transparent w-full sm:w-auto">
               <FileText className="h-4 w-4" />
               Generate Consent Form
             </Button>
-            <Button variant="outline" onClick={() => window.history.back()} className="bg-transparent">
+            <Button variant="outline" onClick={() => window.history.back()} className="bg-transparent w-full sm:w-auto">
               Back to Dashboard
             </Button>
           </div>

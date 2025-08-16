@@ -14,21 +14,21 @@ A professional PMU (Permanent Makeup) management system built with Next.js, Pris
 ## Getting Started
 
 1. Install dependencies:
-```bash
+\`\`\`bash
 npm install
-```
+\`\`\`
 
 2. Set up the database:
-```bash
+\`\`\`bash
 npm run db:generate
 npm run db:push
 npm run db:seed
-```
+\`\`\`
 
 3. Run the development server:
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

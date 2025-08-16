@@ -194,15 +194,147 @@ class OpenAIProvider implements AIProvider {
   }
 }
 
+// Groq provider implementation
+class GroqProvider implements AIProvider {
+  name = "Groq"
+  private apiKey: string
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey
+  }
+
+  async analyzeIntake(data: IntakeAnalysisRequest): Promise<ContraindicationResult> {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "mixtral-8x7b-32768",
+          messages: [
+            {
+              role: "system",
+              content: `You are a PMU (Permanent Makeup) safety expert. Analyze client intake data for contraindications. 
+              
+              Respond with a JSON object containing:
+              - result: "safe" | "precaution" | "not_recommended"
+              - rationale: detailed explanation
+              - flaggedItems: array of concerning items
+              - recommendations: array of action items
+              - confidence: number between 0-1
+              
+              High-risk medications include: isotretinoin, accutane, warfarin, chemotherapy drugs
+              High-risk conditions include: active infections, keloid scarring, uncontrolled diabetes, autoimmune disorders`,
+            },
+            {
+              role: "user",
+              content: `Analyze this PMU intake:
+              Conditions: ${data.conditions.join(", ")}
+              Medications: ${data.medications.join(", ")}
+              Notes: ${data.notes || "None"}`,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 1000,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status}`)
+      }
+
+      const result = await response.json()
+      const content = result.choices[0]?.message?.content
+
+      try {
+        return JSON.parse(content)
+      } catch {
+        // Fallback to mock if JSON parsing fails
+        const mockProvider = new MockAIProvider()
+        return mockProvider.analyzeIntake(data)
+      }
+    } catch (error) {
+      console.error("Groq API error:", error)
+      // Fallback to mock provider
+      const mockProvider = new MockAIProvider()
+      return mockProvider.analyzeIntake(data)
+    }
+  }
+
+  async detectSkin(imageData: string): Promise<SkinAnalysisResult> {
+    // For now, use mock implementation as Groq doesn't have vision capabilities
+    const mockProvider = new MockAIProvider()
+    return mockProvider.detectSkin(imageData)
+  }
+
+  async matchPigment(request: PigmentMatchRequest): Promise<PigmentRecommendation> {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "mixtral-8x7b-32768",
+          messages: [
+            {
+              role: "system",
+              content: `You are a PMU pigment matching expert. Recommend pigments based on Fitzpatrick skin type and undertones.
+              
+              Respond with JSON containing:
+              - best: {pigmentId, why, expectedHealShift}
+              - warmAlt: {pigmentId, why, expectedHealShift}  
+              - coolAlt: {pigmentId, why, expectedHealShift}`,
+            },
+            {
+              role: "user",
+              content: `Match pigment for:
+              Fitzpatrick: ${request.fitzpatrick}
+              Undertone: ${request.undertone}
+              Use case: ${request.useCase}`,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 500,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status}`)
+      }
+
+      const result = await response.json()
+      const content = result.choices[0]?.message?.content
+
+      try {
+        return JSON.parse(content)
+      } catch {
+        const mockProvider = new MockAIProvider()
+        return mockProvider.matchPigment(request)
+      }
+    } catch (error) {
+      console.error("Groq API error:", error)
+      const mockProvider = new MockAIProvider()
+      return mockProvider.matchPigment(request)
+    }
+  }
+}
+
 // AI Client singleton
 class AIClient {
   private provider: AIProvider
 
   constructor() {
     // Initialize with appropriate provider based on environment
+    const groqKey = process.env.GROQ_API_KEY
     const openaiKey = process.env.OPENAI_API_KEY
 
-    if (openaiKey) {
+    if (groqKey) {
+      this.provider = new GroqProvider(groqKey)
+    } else if (openaiKey) {
       this.provider = new OpenAIProvider(openaiKey)
     } else {
       this.provider = new MockAIProvider()

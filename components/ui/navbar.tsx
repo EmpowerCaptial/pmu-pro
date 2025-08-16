@@ -120,9 +120,9 @@ export function NavBar({ currentPath, user }: NavBarProps) {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/20">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-white/20 text-white text-xs">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0">
+                    <Avatar className="h-10 w-10 border-2 border-white/30">
+                      <AvatarFallback className="bg-white text-lavender font-semibold text-sm shadow-lg">
                         {user.initials || user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -180,7 +180,10 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent
+                side="right"
+                className="w-80 bg-gradient-to-b from-lavender to-lavender-600 border-lavender-600"
+              >
                 <div className="flex flex-col space-y-4 mt-8">
                   {navItems.map((item) => (
                     <Link
@@ -188,10 +191,10 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={cn(
-                        "flex items-center space-x-3 text-sm font-medium transition-colors hover:text-primary p-2 rounded-md",
+                        "flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md",
                         currentPath === item.href
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground hover:bg-muted",
+                          ? "text-white bg-white/20"
+                          : "text-white/70 hover:text-white hover:bg-white/10",
                       )}
                     >
                       {item.icon}

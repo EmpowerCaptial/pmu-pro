@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -28,6 +29,8 @@ export function ArtistSignupForm() {
     agreed: false,
   })
 
+  const router = useRouter()
+
   const specialtyOptions = [
     "Eyebrows",
     "Lips",
@@ -50,8 +53,26 @@ export function ArtistSignupForm() {
       alert("Please agree to the terms and conditions")
       return
     }
-    // This would submit to approval system
-    alert("Application submitted! We'll review your credentials and contact you within 3-5 business days.")
+
+    try {
+      // This would submit to approval system in production
+      const response = await fetch("/api/artist/submit-application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        alert("Application submitted! Please select your subscription plan to complete registration.")
+        // Redirect to billing page for subscription selection
+        router.push("/billing")
+      } else {
+        throw new Error("Failed to submit application")
+      }
+    } catch (error) {
+      console.error("Application submission error:", error)
+      alert("There was an error submitting your application. Please try again.")
+    }
   }
 
   return (
@@ -264,12 +285,12 @@ export function ArtistSignupForm() {
           className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 py-3"
           disabled={!formData.agreed}
         >
-          Submit Application for Review
+          Submit Application & Choose Plan
         </Button>
 
         <div className="text-center text-sm text-muted-foreground">
+          <p>After submission, you'll select your subscription plan to complete registration.</p>
           <p>Applications are typically reviewed within 3-5 business days.</p>
-          <p>You'll receive an email confirmation once approved.</p>
         </div>
       </CardContent>
     </Card>
