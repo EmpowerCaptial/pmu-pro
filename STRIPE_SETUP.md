@@ -17,12 +17,12 @@ In your Stripe Dashboard:
 ### 3. Update Environment Variables
 Replace the placeholder values in your `.env.local` file:
 
-```bash
+\`\`\`bash
 # Replace with your actual Stripe keys
 STRIPE_SECRET_KEY=sk_test_your_actual_secret_key_here
 STRIPE_PUBLISHABLE_KEY=pk_test_your_actual_publishable_key_here
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_actual_publishable_key_here
-```
+\`\`\`
 
 ### 4. Create Products and Prices
 In Stripe Dashboard:
@@ -32,12 +32,12 @@ In Stripe Dashboard:
    - **PMU Tools + Local Listing** - $35/month
 3. Copy the **Price IDs** and update your `.env.local`:
 
-```bash
+\`\`\`bash
 STRIPE_BASIC_PRICE_ID=price_1234567890abcdef
 STRIPE_PREMIUM_PRICE_ID=price_0987654321fedcba
 NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID=price_1234567890abcdef
 NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID=price_0987654321fedcba
-```
+\`\`\`
 
 ### 5. Set Up Webhooks (Important!)
 1. In Stripe Dashboard, go to **Developers > Webhooks**
@@ -51,9 +51,9 @@ NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID=price_0987654321fedcba
    - `invoice.payment_failed`
 5. Copy the **Signing secret** and add it to `.env.local`:
 
-```bash
+\`\`\`bash
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_signing_secret
-```
+\`\`\`
 
 ## 🧪 Testing
 
