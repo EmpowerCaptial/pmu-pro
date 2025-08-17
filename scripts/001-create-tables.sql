@@ -4,13 +4,27 @@
 -- Enable UUID extension for PostgreSQL
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
+-- Users table for professional authentication
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-    email TEXT UNIQUE NOT NULL,
-    name TEXT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    business_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    license_number VARCHAR(100) NOT NULL,
+    license_state VARCHAR(50) NOT NULL,
+    years_experience VARCHAR(10),
+    selected_plan VARCHAR(50) NOT NULL DEFAULT 'pro',
+    license_file VARCHAR(255),
+    insurance_file VARCHAR(255),
+    has_active_subscription BOOLEAN DEFAULT false,
+    is_license_verified BOOLEAN DEFAULT false,
     role TEXT DEFAULT 'artist',
     stripe_id TEXT UNIQUE,
+    stripe_customer_id TEXT,
+    stripe_subscription_id TEXT,
+    subscription_status VARCHAR(50) DEFAULT 'inactive',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -85,6 +99,11 @@ CREATE TABLE IF NOT EXISTS pigments (
 );
 
 -- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_subscription ON users(has_active_subscription);
+CREATE INDEX IF NOT EXISTS idx_users_verified ON users(is_license_verified);
+CREATE INDEX IF NOT EXISTS idx_users_license_number ON users(license_number);
+CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
 CREATE INDEX IF NOT EXISTS idx_photos_client_id ON photos(client_id);
 CREATE INDEX IF NOT EXISTS idx_intakes_client_id ON intakes(client_id);

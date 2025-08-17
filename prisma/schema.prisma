@@ -11,16 +11,30 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      String   @default("artist")
-  stripeId  String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  name                    String
+  email                   String   @unique
+  password                String
+  businessName            String
+  phone                   String?
+  licenseNumber           String
+  licenseState            String
+  yearsExperience         String?
+  selectedPlan            String   @default("pro")
+  licenseFile             String?
+  insuranceFile           String?
+  hasActiveSubscription   Boolean  @default(false)
+  isLicenseVerified       Boolean  @default(false)
+  role                    String   @default("artist")
+  stripeId                String?  @unique
+  stripeCustomerId        String?
+  stripeSubscriptionId    String?
+  subscriptionStatus      String   @default("inactive")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
   
   // Relations
-  clients   Client[]
+  clients                 Client[]
   
   @@map("users")
 }

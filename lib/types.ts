@@ -2,13 +2,54 @@
 
 export interface User {
   id: string
+  name: string
   email: string
-  name?: string
+  password: string
+  businessName: string
+  phone?: string
+  licenseNumber: string
+  licenseState: string
+  yearsExperience?: string
+  selectedPlan: string
+  licenseFile?: string
+  insuranceFile?: string
+  hasActiveSubscription: boolean
+  isLicenseVerified: boolean
   role: string
   stripeId?: string
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
+  subscriptionStatus: string
   createdAt: Date
   updatedAt: Date
 }
+
+// Registration/signup interface
+export interface UserRegistration {
+  name: string
+  email: string
+  password: string
+  businessName: string
+  phone?: string
+  licenseNumber: string
+  licenseState: string
+  yearsExperience?: string
+  selectedPlan: string
+  licenseFile?: File
+  insuranceFile?: File
+}
+
+// Login interface
+export interface UserLogin {
+  email: string
+  password: string
+}
+
+// Subscription status types
+export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled' | 'past_due' | 'trialing'
+
+// Plan types
+export type PlanType = 'basic' | 'pro' | 'premium'
 
 export interface Client {
   id: string
