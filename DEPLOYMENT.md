@@ -10,7 +10,7 @@ You need to configure these environment variables in your Vercel dashboard:
 
 #### **Required Environment Variables:**
 
-```bash
+\`\`\`bash
 # Database
 DATABASE_URL="your-production-database-url"
 
@@ -36,7 +36,7 @@ NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID="price_your_premium_plan_price_id"
 # NextAuth (Optional - if using NextAuth later)
 NEXTAUTH_URL="https://your-domain.vercel.app"
 NEXTAUTH_SECRET="your-nextauth-secret"
-```
+\`\`\`
 
 ### 2. Setting Environment Variables on Vercel
 
@@ -51,19 +51,19 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 ### 3. Database Setup for Production
 
 #### **Option A: Vercel Postgres (Recommended)**
-```bash
+\`\`\`bash
 # Create a Vercel Postgres database
 vercel postgres create pmu-pro-db
 
 # Get the connection string and add to environment variables
 DATABASE_URL="postgres://..."
-```
+\`\`\`
 
 #### **Option B: External Database (PlanetScale, Supabase, etc.)**
-```bash
+\`\`\`bash
 # Use your external database connection string
 DATABASE_URL="your-external-database-url"
-```
+\`\`\`
 
 ### 4. Domain Configuration
 
@@ -79,7 +79,7 @@ DATABASE_URL="your-external-database-url"
 
 Create `vercel.json` in your project root:
 
-```json
+\`\`\`json
 {
   "framework": "nextjs",
   "buildCommand": "pnpm run build",
@@ -96,28 +96,28 @@ Create `vercel.json` in your project root:
     "NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID": "@stripe-premium-price-id"
   }
 }
-```
+\`\`\`
 
 ### 6. Deployment Steps
 
 1. **Connect Repository**:
-   ```bash
+   \`\`\`bash
    # If not already connected
    vercel --prod
-   ```
+   \`\`\`
 
 2. **Deploy**:
-   ```bash
+   \`\`\`bash
    # Push to main branch triggers automatic deployment
    git push origin main
-   ```
+   \`\`\`
 
 3. **Run Database Migration**:
-   ```bash
+   \`\`\`bash
    # After first deployment, run migration
    vercel env pull .env.production
    DATABASE_URL=$(cat .env.production | grep DATABASE_URL | cut -d '=' -f2) npx prisma db push
-   ```
+   \`\`\`
 
 ### 7. Post-Deployment Checklist
 
