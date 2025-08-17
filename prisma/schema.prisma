@@ -1,131 +1,118 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                      String   @id @default(cuid())
-  name                    String
-  email                   String   @unique
-  password                String
-  businessName            String
-  phone                   String?
-  licenseNumber           String
-  licenseState            String
-  yearsExperience         String?
-  selectedPlan            String   @default("pro")
-  licenseFile             String?
-  insuranceFile           String?
-  hasActiveSubscription   Boolean  @default(false)
-  isLicenseVerified       Boolean  @default(false)
-  role                    String   @default("artist")
-  stripeId                String?  @unique
-  stripeCustomerId        String?
-  stripeSubscriptionId    String?
-  subscriptionStatus      String   @default("inactive")
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  
-  // Relations
-  clients                 Client[]
-  
+  id                    String   @id @default(cuid())
+  name                  String
+  email                 String   @unique
+  password              String
+  businessName          String
+  phone                 String?
+  licenseNumber         String
+  licenseState          String
+  yearsExperience       String?
+  selectedPlan          String   @default("pro")
+  licenseFile           String?
+  insuranceFile         String?
+  hasActiveSubscription Boolean  @default(false)
+  isLicenseVerified     Boolean  @default(false)
+  role                  String   @default("artist")
+  stripeId              String?  @unique
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  subscriptionStatus    String   @default("inactive")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  clients               Client[]
+
   @@map("users")
 }
 
 model Client {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String
   name      String
   email     String?
   phone     String?
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  photos    Photo[]
-  intakes   Intake[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   analyses  Analysis[]
-  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intakes   Intake[]
+  photos    Photo[]
+
   @@map("clients")
 }
 
 model Photo {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   clientId  String
   url       String
   filename  String?
-  lighting  String?  // "natural" | "artificial" | "mixed"
-  quality   String?  // "good" | "fair" | "poor"
-  createdAt DateTime @default(now())
-  
-  // Relations
-  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  lighting  String?
+  quality   String?
+  createdAt DateTime   @default(now())
   analyses  Analysis[]
-  
+  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   @@map("photos")
 }
 
 model Intake {
-  id          String   @id @default(cuid())
-  clientId    String
-  conditions  String[] // e.g. ["diabetes","eczema","keloid_history"]
-  medications String[] // normalized medication names
-  notes       String?
-  result      String?  // "safe" | "precaution" | "not_recommended"
-  rationale   String?  // AI explanation
-  flaggedItems String[] // specific items that caused concern
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+  id           String   @id @default(cuid())
+  clientId     String
+  conditions   String
+  medications  String
+  notes        String?
+  result       String?
+  rationale    String?
+  flaggedItems String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   @@map("intakes")
 }
 
 model Analysis {
-  id            String   @id @default(cuid())
-  clientId      String
-  photoId       String?
-  fitzpatrick   Int?     // 1-6 scale
-  undertone     String?  // "cool" | "neutral" | "warm"
-  confidence    Float?   // 0.0-1.0 confidence score
-  recommendation Json?   // structured pigment recommendations
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relations
-  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  photo         Photo?   @relation(fields: [photoId], references: [id], onDelete: SetNull)
-  
+  id             String   @id @default(cuid())
+  clientId       String
+  photoId        String?
+  fitzpatrick    Int?
+  undertone      String?
+  confidence     Float?
+  recommendation Json?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  photo          Photo?   @relation(fields: [photoId], references: [id])
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   @@map("analyses")
 }
 
 model Pigment {
-  id          String   @id @default(cuid())
-  brand       String
-  name        String
-  baseTone    String   // "warm" | "cool" | "neutral"
-  hueNotes    String   // e.g. "yellow/orange bias", "ash undertones"
-  opacity     String   // "low" | "medium" | "high"
-  idealFitz   String   // "I-III", "IV-VI", "I-VI" etc.
-  tempShift   String?  // expected healing shift description
-  useCase     String   // "brows" | "lips" | "liner" | "all"
-  hexPreview  String?  // hex color for swatch preview
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id         String   @id @default(cuid())
+  brand      String
+  name       String
+  baseTone   String
+  hueNotes   String
+  opacity    String
+  idealFitz  String
+  tempShift  String?
+  useCase    String
+  hexPreview String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@unique([brand, name])
   @@map("pigments")
 }

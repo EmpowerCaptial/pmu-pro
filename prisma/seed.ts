@@ -12,7 +12,17 @@ async function main() {
     create: {
       email: "demo@pmuPro.com",
       name: "Demo PMU Artist",
+      password: "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/lewFBnXt.BVG/sBNO", // bcrypt hash of "demo123"
+      businessName: "Demo PMU Studio",
+      phone: "+1-555-DEMO",
+      licenseNumber: "PMU-12345",
+      licenseState: "CA",
+      yearsExperience: "5+",
+      selectedPlan: "pro",
+      hasActiveSubscription: false,
+      isLicenseVerified: true,
       role: "artist",
+      subscriptionStatus: "inactive"
     },
   })
 
@@ -45,23 +55,23 @@ async function main() {
   await prisma.intake.create({
     data: {
       clientId: client1.id,
-      conditions: ["none"],
-      medications: ["none"],
+      conditions: '["none"]',
+      medications: '["none"]',
       result: "safe",
       rationale: "No contraindications found. Client is suitable for PMU procedures.",
-      flaggedItems: [],
+      flaggedItems: '[]',
     },
   })
 
   await prisma.intake.create({
     data: {
       clientId: client2.id,
-      conditions: ["sensitive_skin"],
-      medications: ["aspirin"],
+      conditions: '["sensitive_skin"]',
+      medications: '["aspirin"]',
       result: "precaution",
       rationale:
         "Client takes aspirin (blood thinner) and has sensitive skin. Recommend patch test and inform about increased bleeding risk.",
-      flaggedItems: ["aspirin", "sensitive_skin"],
+      flaggedItems: '["aspirin", "sensitive_skin"]',
     },
   })
 
