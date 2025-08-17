@@ -7,42 +7,42 @@ This guide will help you set up professional authentication for PMU Pro with lic
 ### Step 1: Update Your Database Schema
 
 **Option A: Fresh Database (Recommended)**
-```bash
+\`\`\`bash
 # If you're starting fresh, the new schema is already in:
 # scripts/001-create-tables.sql
 
 # Apply it to your database:
 psql $DATABASE_URL -f scripts/001-create-tables.sql
-```
+\`\`\`
 
 **Option B: Existing Database**
-```bash
+\`\`\`bash
 # If you have existing data, use the migration script:
 psql $DATABASE_URL -f scripts/003-migrate-users-table.sql
 
 # Or run the automated migration:
 ./scripts/migrate-database.sh
-```
+\`\`\`
 
 ### Step 2: Push Schema to Prisma
-```bash
+\`\`\`bash
 # Update your database with Prisma
 npx prisma db push
 
 # Generate the updated Prisma client
 npx prisma generate
-```
+\`\`\`
 
 ### Step 3: Add Environment Variables
 Add these to your `.env.local`:
-```bash
+\`\`\`bash
 # JWT Authentication
 JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
 
 # Optional: File upload settings
 UPLOAD_DIR=uploads
 MAX_FILE_SIZE=5000000  # 5MB
-```
+\`\`\`
 
 ## 🔑 Authentication Features
 
@@ -57,7 +57,7 @@ MAX_FILE_SIZE=5000000  # 5MB
 
 ### 📋 User Registration Fields
 
-```typescript
+\`\`\`typescript
 interface UserRegistration {
   name: string              // Full name
   email: string            // Email (unique)
@@ -71,12 +71,12 @@ interface UserRegistration {
   licenseFile?: File       // License document upload
   insuranceFile?: File     // Insurance document upload
 }
-```
+\`\`\`
 
 ## 🛠️ Implementation Examples
 
 ### Registration API Route
-```typescript
+\`\`\`typescript
 // app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/auth'
@@ -94,10 +94,10 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-```
+\`\`\`
 
 ### Login API Route
-```typescript
+\`\`\`typescript
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/auth'
@@ -115,10 +115,10 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-```
+\`\`\`
 
 ### Protected Route Middleware
-```typescript
+\`\`\`typescript
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/auth'
@@ -156,7 +156,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/api/protected/:path*', '/dashboard/:path*']
 }
-```
+\`\`\`
 
 ## 🔐 Security Features
 
