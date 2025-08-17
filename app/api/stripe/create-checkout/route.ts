@@ -1,12 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { stripe, validateStripeConfig } from "@/lib/stripe"
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate Stripe configuration before proceeding
+    validateStripeConfig()
+    
     const { priceId, plan, successUrl, cancelUrl } = await request.json()
 
     if (!priceId) {
       return NextResponse.json({ error: "Price ID is required" }, { status: 400 })
+    }
+
+    if (!stripe) {
+      return NextResponse.json({ error: "Stripe is not configured" }, { status: 500 })
     }
 
     // Create Stripe checkout session
@@ -38,6 +45,15 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Stripe checkout error:", error)
+    
+    // Return more specific error messages
+    if (error instanceof Error && error.message.includes('STRIPE_SECRET_KEY')) {
+      return NextResponse.json(
+        { error: "Stripe configuration is missing. Please check environment variables." }, 
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: "Failed to create checkout session" }, 
       { status: 500 }
