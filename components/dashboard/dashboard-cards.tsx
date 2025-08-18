@@ -1,7 +1,18 @@
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Camera, FileText, Users, Palette, TrendingUp, Clock, Share, Mail, Microscope, Brush } from "lucide-react"
+import {
+  Camera,
+  FileText,
+  Users,
+  Palette,
+  TrendingUp,
+  Clock,
+  Share,
+  Mail,
+  Microscope,
+  Brush,
+  ClipboardList,
+} from "lucide-react"
 import Link from "next/link"
 import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 
@@ -10,7 +21,7 @@ export function DashboardCards() {
     <div className="space-y-8">
       {/* Quick Actions */}
       <div className="grid md:grid-cols-4 gap-6">
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <FileText className="h-5 w-5 text-lavender" />
@@ -20,14 +31,41 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/intake">
-              <Button className="w-full bg-lavender hover:bg-lavender-600 text-white font-semibold">
-                Start Contraindication Screen
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 py-3 px-4 text-center">
+                  <span className="text-white font-semibold text-shadow-lg shadow-black/50">
+                    Start Contraindication Screen
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <ClipboardList className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">PMU Intake Forms</CardTitle>
+            </div>
+            <CardDescription>Professional client intake and consent documentation</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/intake-forms">
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center">
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Complete Intake Forms
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <Camera className="h-5 w-5 text-lavender" />
@@ -37,17 +75,19 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/analyze">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                Start Skin Analysis
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center">
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Start Skin Analysis
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <Microscope className="h-5 w-5 text-lavender" />
@@ -57,17 +97,41 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/procell-analysis">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                Start ProCell Analysis
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center">
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Start ProCell Analysis
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <Palette className="h-5 w-5 text-lavender" />
+              <CardTitle className="text-lg font-bold">Color Correction</CardTitle>
+            </div>
+            <CardDescription>AI-powered pigment correction and neutralization tool</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/color-correction">
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center flex items-center justify-center gap-2">
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Start Color Correction
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <Share className="h-5 w-5 text-lavender" />
@@ -77,18 +141,20 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/send-analysis">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Send Analysis Link
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center flex items-center justify-center gap-2">
+                  <Mail className="h-4 w-4 text-lavender-700" />
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Send Analysis Link
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <Brush className="h-5 w-5 text-lavender" />
@@ -98,18 +164,20 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/trybrows">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                <Brush className="h-4 w-4 mr-2" />
-                Open TryBrows Tool
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center flex items-center justify-center gap-2">
+                  <Brush className="h-4 w-4 text-lavender-700" />
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Open TryBrows Tool
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
               <Palette className="h-5 w-5 text-lavender" />
@@ -119,34 +187,15 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent>
             <Link href="/pigment-library">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                <Palette className="h-4 w-4 mr-2" />
-                Browse Pigments
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">Standard Documents</CardTitle>
-            </div>
-            <CardDescription>Legal forms, consent documents, and state regulations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/standard-documents">
-              <Button
-                variant="outline"
-                className="w-full bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold hover:bg-lavender/10"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Access Documents
-              </Button>
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
+                <div className="relative z-10 py-3 px-4 text-center flex items-center justify-center gap-2">
+                  <Palette className="h-4 w-4 text-lavender-700" />
+                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                    Browse Pigments
+                  </span>
+                </div>
+              </div>
             </Link>
           </CardContent>
         </Card>

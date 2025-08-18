@@ -30,6 +30,7 @@ import {
   Calendar,
   Heart,
   Briefcase,
+  FileText,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -154,6 +155,12 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/standard-documents" className="cursor-pointer">
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Standard Documents</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/20" />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-white hover:bg-white/20">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -201,6 +208,14 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       <span>{item.label}</span>
                     </Link>
                   ))}
+                  <Link
+                    href="/standard-documents"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Standard Documents</span>
+                  </Link>
                 </div>
               </SheetContent>
             </Sheet>
