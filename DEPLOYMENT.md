@@ -12,24 +12,24 @@ You need to configure these environment variables in your Vercel dashboard:
 
 \`\`\`bash
 # Database
-DATABASE_URL="your-production-database-url"
+DATABASE_URL="your-neon-database-url"
 
 # JWT Authentication
-JWT_SECRET="your-super-secure-jwt-secret-for-production"
+JWT_SECRET="your-generated-jwt-secret"
 
 # AI Services
 GROQ_API_KEY="your-groq-api-key"
 OPENAI_API_KEY="your-openai-api-key"
 
-# Stripe (Test Mode - Replace with live keys when ready)
-STRIPE_SECRET_KEY="sk_test_your_actual_stripe_secret_key"
-STRIPE_PUBLISHABLE_KEY="pk_test_your_actual_stripe_publishable_key"
-STRIPE_WEBHOOK_SECRET="whsec_your_webhook_signing_secret"
+# Stripe (LIVE MODE - Production Ready)
+STRIPE_SECRET_KEY="your-stripe-live-secret-key"
+STRIPE_PUBLISHABLE_KEY="your-stripe-live-publishable-key"
+STRIPE_WEBHOOK_SECRET="your-stripe-webhook-secret"
 STRIPE_BASIC_PRICE_ID="price_your_basic_plan_price_id"
 STRIPE_PREMIUM_PRICE_ID="price_your_premium_plan_price_id"
 
 # Public Variables (Client-side)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_your_actual_stripe_publishable_key"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="your-stripe-live-publishable-key"
 NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID="price_your_basic_plan_price_id"
 NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID="price_your_premium_plan_price_id"
 

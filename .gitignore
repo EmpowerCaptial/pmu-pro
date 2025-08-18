@@ -25,3 +25,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.ENV_VARS_TEMP.md
