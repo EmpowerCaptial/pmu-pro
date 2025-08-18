@@ -48,6 +48,8 @@ NEXTAUTH_SECRET="your-nextauth-secret"
    - **Value**: Your actual value
    - **Environment**: Select `Production`, `Preview`, and `Development`
 
+> **Important**: After adding environment variables, redeploy your project for changes to take effect.
+
 ### 3. Database Setup for Production
 
 #### **Option A: Vercel Postgres (Recommended)**
