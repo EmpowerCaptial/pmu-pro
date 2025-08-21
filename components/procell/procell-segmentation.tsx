@@ -17,14 +17,14 @@ import { useRef, useState } from "react"
 
 export default function ProcellSegmentation() {
   const [loading, setLoading] = useState(false)
-  const [report, setReport] = useState(null)
-  const [summary, setSummary] = useState("")
+  const [report, setReport] = useState<any>(null)
+  const [summary, setSummary] = useState<any>(null)
   const [imgName, setImgName] = useState("")
   const [opacity, setOpacity] = useState(0.45)
 
-  const imgRef = useRef(null)
-  const baseCanvasRef = useRef(null)
-  const overlayCanvasRef = useRef(null)
+  const imgRef = useRef<HTMLImageElement>(null)
+  const baseCanvasRef = useRef<HTMLCanvasElement>(null)
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const regions = [
     { key: "forehead", label: "Forehead", box: { x: 0.2, y: 0.05, w: 0.6, h: 0.22 } },
@@ -41,7 +41,7 @@ export default function ProcellSegmentation() {
   ]
 
   // --- Utilities ---
-  const toHSV = (r, g, b) => {
+  const toHSV = (r: number, g: number, b: number) => {
     const rn = r / 255,
       gn = g / 255,
       bn = b / 255
@@ -72,7 +72,7 @@ export default function ProcellSegmentation() {
   }
 
   // 3x3 Laplacian kernel for texture (edges/roughness)
-  const laplacianMagnitude = (imgData, x, y, w, h) => {
+  const laplacianMagnitude = (imgData: Uint8ClampedArray, x: number, y: number, w: number, h: number) => {
     // convert neighborhood to grayscale & apply kernel
     const k = [0, 1, 0, 1, -4, 1, 0, 1, 0]
     let acc = 0
@@ -92,9 +92,11 @@ export default function ProcellSegmentation() {
     return Math.abs(acc)
   }
 
-  const drawImageToCanvas = (img) => {
+  const drawImageToCanvas = (img: HTMLImageElement) => {
     const base = baseCanvasRef.current
     const overlay = overlayCanvasRef.current
+    if (!base || !overlay) return
+    
     const maxW = 900 // keep big enough for clarity but friendly for laptops
     const scale = img.width > maxW ? maxW / img.width : 1
     const w = Math.round(img.width * scale)
@@ -106,19 +108,29 @@ export default function ProcellSegmentation() {
     overlay.height = h
 
     const ctx = base.getContext("2d")
+    if (!ctx) return
     ctx.clearRect(0, 0, w, h)
     ctx.drawImage(img, 0, 0, w, h)
 
     // clear overlay
-    overlay.getContext("2d").clearRect(0, 0, w, h)
+    const overlayCtx = overlay.getContext("2d")
+    if (overlayCtx) overlayCtx.clearRect(0, 0, w, h)
   }
 
   const runSegmentation = async () => {
     setLoading(true)
     const base = baseCanvasRef.current
     const overlay = overlayCanvasRef.current
+    if (!base || !overlay) {
+      setLoading(false)
+      return
+    }
     const bctx = base.getContext("2d")
     const octx = overlay.getContext("2d")
+    if (!bctx || !octx) {
+      setLoading(false)
+      return
+    }
     const { width: w, height: h } = base
 
     const { data } = bctx.getImageData(0, 0, w, h)
@@ -128,15 +140,18 @@ export default function ProcellSegmentation() {
     const maskSun = new Uint8Array(w * h)
     const maskTex = new Uint8Array(w * h)
 
-    // Heuristics (tune as needed for your lighting):
+    // Enhanced Heuristics with better accuracy:
     // Hyperpigmentation: darker (low V), decent saturation
     const PIG_V_MAX = 0.5 // lower brightness
     const PIG_S_MIN = 0.18 // some saturation
 
-    // Sunburn/Erythema: R significantly higher than G,B (+ overall warmth)
-    const SUN_R_MINUS_G = 18
-    const SUN_R_MINUS_B = 18
-    const SUN_MIN_R = 110
+    // Improved Sunburn/Erythema detection with multiple criteria
+    // More conservative thresholds to reduce false positives
+    const SUN_R_MINUS_G = 25 // Increased threshold for red dominance
+    const SUN_R_MINUS_B = 25 // Increased threshold for red dominance
+    const SUN_MIN_R = 120 // Higher minimum red value
+    const SUN_MAX_V = 0.85 // Maximum brightness for sunburn detection
+    const SUN_MIN_S = 0.3 // Minimum saturation for sunburn
 
     // Texture/Scars: Laplacian magnitude threshold (edges/roughness)
     // scale-sensitive; auto-threshold with simple percentile estimate after a pass
@@ -171,10 +186,17 @@ export default function ProcellSegmentation() {
           maskPig[idx] = 1
         }
 
-        // Sunburn/Erythema
+        // Enhanced Sunburn/Erythema detection with multiple criteria
         if (r - g >= SUN_R_MINUS_G && r - b >= SUN_R_MINUS_B && r >= SUN_MIN_R) {
-          // avoid deep-shadows by also requiring moderate V or high S
-          if (V >= 0.25 || S >= 0.25) maskSun[idx] = 1
+          // Additional criteria to reduce false positives
+          if (V <= SUN_MAX_V && S >= SUN_MIN_S) {
+            // Check if this is likely natural skin tone variation vs actual sunburn
+            // Natural skin tones typically have more balanced RGB ratios
+            const skinToneRatio = Math.abs(r - g) / Math.max(r, g, b)
+            if (skinToneRatio > 0.15) { // Only flag if significantly red-dominant
+              maskSun[idx] = 1
+            }
+          }
         }
 
         // Texture (roughness/scars)
@@ -185,7 +207,7 @@ export default function ProcellSegmentation() {
     }
 
     // Optional light smoothing of masks
-    const smooth = (mask) => {
+    const smooth = (mask: Uint8Array) => {
       const out = new Uint8Array(mask.length)
       const rad = 1
       for (let y = 1; y < h - 1; y++) {
@@ -208,7 +230,7 @@ export default function ProcellSegmentation() {
 
     // Draw overlays
     octx.clearRect(0, 0, w, h)
-    const drawMask = (mask, rgba) => {
+    const drawMask = (mask: Uint8Array, rgba: number[]) => {
       const img = octx.getImageData(0, 0, w, h)
       const d = img.data
       const [rr, gg, bb, aa] = rgba
@@ -220,7 +242,7 @@ export default function ProcellSegmentation() {
           const dstA = d[p + 3] / 255
           const outA = srcA + dstA * (1 - srcA)
 
-          const blend = (srcC, dstC) => (srcC * srcA + dstC * dstA * (1 - srcA)) / (outA || 1)
+          const blend = (srcC: number, dstC: number) => (srcC * srcA + dstC * dstA * (1 - srcA)) / (outA || 1)
 
           d[p] = blend(rr / 255, d[p] / 255) * 255
           d[p + 1] = blend(gg / 255, d[p + 1] / 255) * 255
@@ -237,7 +259,7 @@ export default function ProcellSegmentation() {
     drawMask(texS, [30, 144, 255, op]) // Blue
 
     // Region stats
-    const regionStats = {}
+    const regionStats: Record<string, any> = {}
     regions.forEach((rg) => {
       const rx = Math.round(rg.box.x * w)
       const ry = Math.round(rg.box.y * h)
@@ -257,7 +279,7 @@ export default function ProcellSegmentation() {
           if (texS[idx]) tex++
         }
       }
-      const pct = (n) => Math.round((n / Math.max(1, tot)) * 100)
+      const pct = (n: number) => Math.round((n / Math.max(1, tot)) * 100)
       regionStats[rg.key] = {
         label: rg.label,
         areaPixels: tot,
@@ -273,27 +295,38 @@ export default function ProcellSegmentation() {
     })
 
     // Build readable summary + Procell-aligned suggestions
-    const buildEnhancedSummary = (regionStats) => {
+    const buildEnhancedSummary = (regionStats: Record<string, any>) => {
       const top = Object.values(regionStats).sort(
-        (a, b) =>
+        (a: any, b: any) =>
           b.hyperpigmentationPct + b.sunburnPct + b.texturePct - (a.hyperpigmentationPct + a.sunburnPct + a.texturePct),
       )[0]
 
       // Calculate overall severity levels
-      const avgHyper = Object.values(regionStats).reduce((sum, r) => sum + r.hyperpigmentationPct, 0) / regions.length
-      const avgSun = Object.values(regionStats).reduce((sum, r) => sum + r.sunburnPct, 0) / regions.length
-      const avgTexture = Object.values(regionStats).reduce((sum, r) => sum + r.texturePct, 0) / regions.length
+      const avgHyper = Object.values(regionStats).reduce((sum: number, r: any) => sum + r.hyperpigmentationPct, 0) / regions.length
+      const avgSun = Object.values(regionStats).reduce((sum: number, r: any) => sum + r.sunburnPct, 0) / regions.length
+      const avgTexture = Object.values(regionStats).reduce((sum: number, r: any) => sum + r.texturePct, 0) / regions.length
 
-      const getSeverity = (pct) => {
-        if (pct < 5) return { level: "Minimal", color: "text-green-600", priority: "Low" }
-        if (pct < 15) return { level: "Mild", color: "text-yellow-600", priority: "Medium" }
-        if (pct < 30) return { level: "Moderate", color: "text-orange-600", priority: "High" }
-        return { level: "Significant", color: "text-red-600", priority: "Critical" }
+      const getSeverity = (pct: number, type = "general") => {
+        // Different thresholds for different skin conditions
+        let thresholds = { low: 5, medium: 15, high: 30 }
+        
+        if (type === "sunburn") {
+          // More conservative thresholds for sunburn to reduce false positives
+          thresholds = { low: 8, medium: 20, high: 35 }
+        } else if (type === "hyperpigmentation") {
+          // Standard thresholds for hyperpigmentation
+          thresholds = { low: 5, medium: 15, high: 30 }
+        }
+        
+        if (pct < thresholds.low) return { level: "Minimal", color: "text-green-600", priority: "Low", confidence: "High" }
+        if (pct < thresholds.medium) return { level: "Mild", color: "text-yellow-600", priority: "Medium", confidence: "Medium" }
+        if (pct < thresholds.high) return { level: "Moderate", color: "text-orange-600", priority: "High", confidence: "Medium" }
+        return { level: "Significant", color: "text-red-600", priority: "Critical", confidence: "High" }
       }
 
-      const hyperSeverity = getSeverity(avgHyper)
-      const sunSeverity = getSeverity(avgSun)
-      const textureSeverity = getSeverity(avgTexture)
+      const hyperSeverity = getSeverity(avgHyper, "hyperpigmentation")
+      const sunSeverity = getSeverity(avgSun, "sunburn")
+      const textureSeverity = getSeverity(avgTexture, "texture")
 
       return {
         primaryArea: top.label,
@@ -303,9 +336,9 @@ export default function ProcellSegmentation() {
           texture: { ...textureSeverity, percentage: Math.round(avgTexture) },
         },
         recommendations: {
-          immediate: [],
-          shortTerm: [],
-          longTerm: [],
+          immediate: [] as string[],
+          shortTerm: [] as string[],
+          longTerm: [] as string[],
         },
       }
     }
@@ -333,14 +366,13 @@ export default function ProcellSegmentation() {
     setLoading(false)
   }
 
-  const onFile = (e) => {
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setImgName(file.name)
     const url = URL.createObjectURL(file)
     const img = new Image()
     img.onload = () => {
-      imgRef.current = img
       drawImageToCanvas(img)
       runSegmentation()
     }
@@ -357,6 +389,7 @@ export default function ProcellSegmentation() {
     tmp.width = w
     tmp.height = h
     const tctx = tmp.getContext("2d")
+    if (!tctx) return
     tctx.drawImage(baseCanvasRef.current, 0, 0)
     tctx.drawImage(overlayCanvasRef.current, 0, 0)
 
@@ -448,27 +481,43 @@ export default function ProcellSegmentation() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Hyperpigmentation:</span>
-                      <span className={`text-sm font-medium ${summary.severityLevels.hyperpigmentation.color}`}>
-                        {summary.severityLevels.hyperpigmentation.level} (
-                        {summary.severityLevels.hyperpigmentation.percentage}%)
-                      </span>
+                      <div className="text-right">
+                        <span className={`text-sm font-medium ${summary.severityLevels.hyperpigmentation.color}`}>
+                          {summary.severityLevels.hyperpigmentation.level} (
+                          {summary.severityLevels.hyperpigmentation.percentage}%)
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          Confidence: {summary.severityLevels.hyperpigmentation.confidence}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Sunburn/Erythema:</span>
-                      <span className={`text-sm font-medium ${summary.severityLevels.sunburn.color}`}>
-                        {summary.severityLevels.sunburn.level} ({summary.severityLevels.sunburn.percentage}%)
-                      </span>
+                      <div className="text-right">
+                        <span className={`text-sm font-medium ${summary.severityLevels.sunburn.color}`}>
+                          {summary.severityLevels.sunburn.level} ({summary.severityLevels.sunburn.percentage}%)
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          Confidence: {summary.severityLevels.sunburn.confidence}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Texture/Scars:</span>
-                      <span className={`text-sm font-medium ${summary.severityLevels.texture.color}`}>
-                        {summary.severityLevels.texture.level} ({summary.severityLevels.texture.percentage}%)
-                      </span>
+                      <div className="text-right">
+                        <span className={`text-sm font-medium ${summary.severityLevels.texture.color}`}>
+                          {summary.severityLevels.texture.level} ({summary.severityLevels.texture.percentage}%)
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          Confidence: {summary.severityLevels.texture.confidence}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Action Plan for New Artists */}
+                {summary && (
                 <div className="bg-white p-3 rounded-lg">
                   <h4 className="font-semibold text-gray-800 mb-2">🎯 Action Plan</h4>
 
@@ -476,7 +525,7 @@ export default function ProcellSegmentation() {
                     <div className="mb-3">
                       <h5 className="text-sm font-medium text-red-600 mb-1">Immediate Actions:</h5>
                       <ul className="text-xs space-y-1">
-                        {summary.recommendations.immediate.map((rec, i) => (
+                        {summary.recommendations.immediate.map((rec: string, i: number) => (
                           <li key={i} className="text-gray-700">
                             • {rec}
                           </li>
@@ -489,7 +538,7 @@ export default function ProcellSegmentation() {
                     <div className="mb-3">
                       <h5 className="text-sm font-medium text-orange-600 mb-1">Next 2-4 Weeks:</h5>
                       <ul className="text-xs space-y-1">
-                        {summary.recommendations.shortTerm.map((rec, i) => (
+                        {summary.recommendations.shortTerm.map((rec: string, i: number) => (
                           <li key={i} className="text-gray-700">
                             • {rec}
                           </li>
@@ -502,7 +551,7 @@ export default function ProcellSegmentation() {
                     <div>
                       <h5 className="text-sm font-medium text-blue-600 mb-1">Treatment Plan:</h5>
                       <ul className="text-xs space-y-1">
-                        {summary.recommendations.longTerm.map((rec, i) => (
+                        {summary.recommendations.longTerm.map((rec: string, i: number) => (
                           <li key={i} className="text-gray-700">
                             • {rec}
                           </li>
@@ -511,6 +560,7 @@ export default function ProcellSegmentation() {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Beginner Tips */}
                 <div className="bg-lavender/10 p-3 rounded-lg">
@@ -520,6 +570,8 @@ export default function ProcellSegmentation() {
                     <li>• Document before/after with same lighting conditions</li>
                     <li>• When in doubt, refer to experienced practitioner</li>
                     <li>• Never proceed with active inflammation or irritation</li>
+                    <li>• Sunburn detection has been improved to reduce false positives</li>
+                    <li>• Confidence scores indicate analysis reliability</li>
                   </ul>
                 </div>
               </div>

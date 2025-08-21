@@ -9,7 +9,7 @@ import type { UserRegistration, UserLogin, User } from '@/lib/types'
 const prisma = new PrismaClient()
 
 export class AuthService {
-  private static JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+  private static JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key'
   private static JWT_EXPIRES_IN = '7d'
 
   /**
@@ -72,7 +72,7 @@ export class AuthService {
         isVerified: user.isLicenseVerified 
       },
       this.JWT_SECRET,
-      { expiresIn: this.JWT_EXPIRES_IN }
+      { expiresIn: this.JWT_EXPIRES_IN } as jwt.SignOptions
     )
 
     // Remove password from response
@@ -111,7 +111,7 @@ export class AuthService {
         hasActiveSubscription: user.hasActiveSubscription
       },
       this.JWT_SECRET,
-      { expiresIn: this.JWT_EXPIRES_IN }
+      { expiresIn: this.JWT_EXPIRES_IN } as jwt.SignOptions
     )
 
     // Remove password from response

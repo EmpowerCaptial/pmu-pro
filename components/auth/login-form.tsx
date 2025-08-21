@@ -31,15 +31,28 @@ export function LoginForm() {
       })
 
       if (response.ok) {
-        setIsSuccess(true)
-        setMessage("Check your email for a magic link to sign in!")
-
-        setTimeout(() => {
-          localStorage.setItem("user", JSON.stringify({ email, name: "Demo PMU Artist" }))
-          router.push("/dashboard")
-        }, 2000)
+        const data = await response.json()
+        
+        if (data.requiresPayment) {
+          // User needs to complete payment
+          setMessage("Payment required. Redirecting to billing...")
+          setTimeout(() => {
+            router.push("/billing")
+          }, 2000)
+        } else if (data.verificationPending) {
+          // License verification pending
+          setMessage("License verification pending. Please wait...")
+          setTimeout(() => {
+            router.push("/auth/verification-pending")
+          }, 2000)
+        } else {
+          // Normal magic link flow
+          setIsSuccess(true)
+          setMessage("Check your email for a magic link to sign in!")
+        }
       } else {
-        setMessage("Something went wrong. Please try again.")
+        const errorData = await response.json()
+        setMessage(errorData.message || "Something went wrong. Please try again.")
       }
     } catch (error) {
       setMessage("Network error. Please check your connection.")
@@ -49,7 +62,7 @@ export function LoginForm() {
   }
 
   const handleRequestAccess = () => {
-    router.push("/request-access")
+    router.push("/artist-signup")
   }
 
   return (

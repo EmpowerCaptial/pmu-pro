@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm run build",
-  "devCommand": "pnpm run dev",
-  "installCommand": "pnpm install",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
@@ -13,15 +13,7 @@
   },
   "build": {
     "env": {
-      "STRIPE_SECRET_KEY": "@stripe-secret-key",
-      "STRIPE_PUBLISHABLE_KEY": "@stripe-publishable-key",
-      "STRIPE_WEBHOOK_SECRET": "@stripe-webhook-secret",
-      "STRIPE_BASIC_PRICE_ID": "@stripe-basic-price-id",
-      "STRIPE_PREMIUM_PRICE_ID": "@stripe-premium-price-id",
-      "DATABASE_URL": "@database-url",
-      "JWT_SECRET": "@jwt-secret",
-      "GROQ_API_KEY": "@groq-api-key",
-      "OPENAI_API_KEY": "@openai-api-key"
+      "NODE_ENV": "production"
     }
   }
 }

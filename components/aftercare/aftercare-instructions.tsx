@@ -193,21 +193,21 @@ export function AftercareInstructions() {
 
       {/* Instructions */}
       <div className="space-y-6">
-        <Card className={`border-lavender/20 bg-gradient-to-r ${procedures[selectedProcedure].color}`}>
+        <Card className={`border-lavender/20 bg-gradient-to-r ${(procedures as any)[selectedProcedure]?.color || 'from-lavender/10 to-lavender/20'}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="font-serif text-2xl">
-                {procedures[selectedProcedure].name} Aftercare Instructions
+                {(procedures as any)[selectedProcedure]?.name || 'PMU'} Aftercare Instructions
               </CardTitle>
               <Badge variant="secondary" className="bg-lavender/20 text-lavender-700">
                 <Calendar className="h-3 w-3 mr-1" />
-                {procedures[selectedProcedure].healingTime} healing
+                {(procedures as any)[selectedProcedure]?.healingTime || '2-4 weeks'} healing
               </Badge>
             </div>
           </CardHeader>
         </Card>
 
-        {procedures[selectedProcedure].instructions.map((phase, index) => (
+                        {(procedures as any)[selectedProcedure]?.instructions?.map((phase: any, index: number) => (
           <Card key={index} className="border-lavender/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 font-serif text-lg">
@@ -217,7 +217,7 @@ export function AftercareInstructions() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {phase.details.map((detail, detailIndex) => (
+                {phase.details.map((detail: any, detailIndex: number) => (
                   <li key={detailIndex} className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-lavender rounded-full mt-2 flex-shrink-0" />
                     <span className="text-sm">{detail}</span>

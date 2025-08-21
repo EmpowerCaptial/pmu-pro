@@ -20,6 +20,7 @@ import {
   ZoomOut,
   Move,
   Home,
+  Palette,
 } from "lucide-react"
 import { findPigmentMatches, type PigmentMatch } from "@/lib/pigment-matching"
 
@@ -183,15 +184,6 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
   const [analysisProgress, setAnalysisProgress] = useState(0)
   const [currentAnalysisStep, setCurrentAnalysisStep] = useState("")
   const [cameraError, setCameraError] = useState<string | null>(null)
-
-  const [activeOverlays, setActiveOverlays] = useState<Record<string, boolean>>({
-    wrinkles: false,
-    pores: false,
-    pigmentation: false,
-    redness: false,
-    texture: false,
-    spots: false,
-  })
 
   const [zoom, setZoom] = useState(1)
   const [panX, setPanX] = useState(0)
@@ -434,10 +426,7 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
   }
 
   const toggleOverlay = (overlayType: string) => {
-    setActiveOverlays((prev) => ({
-      ...prev,
-      [overlayType]: !prev[overlayType],
-    }))
+    // This function is no longer needed as overlays are removed
   }
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.2, 3))
@@ -454,14 +443,14 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
     setIsAnalyzing(false)
     setCameraError(null)
     setAnalysisProgress(0)
-    setActiveOverlays({
-      wrinkles: false,
-      pores: false,
-      pigmentation: false,
-      redness: false,
-      texture: false,
-      spots: false,
-    })
+    // setActiveOverlays({ // This line is removed
+    //   wrinkles: false,
+    //   pores: false,
+    //   pigmentation: false,
+    //   redness: false,
+    //   texture: false,
+    //   spots: false,
+    // })
     resetView()
   }
 
@@ -606,41 +595,6 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
                         }}
                       />
 
-                      {analysis &&
-                        Object.entries(activeOverlays).map(([overlayType, isActive]) => {
-                          if (!isActive) return null
-                          const concern = analysis.skinConcerns.find((c) => c.type === overlayType)
-                          if (!concern) return null
-
-                          return (
-                            <div key={overlayType} className="absolute inset-0 pointer-events-none">
-                              {concern.areas.map((area, index) => (
-                                <div
-                                  key={index}
-                                  className="absolute w-4 h-4 rounded-full opacity-60"
-                                  style={{
-                                    left: `${area.x}%`,
-                                    top: `${area.y}%`,
-                                    backgroundColor:
-                                      overlayType === "wrinkles"
-                                        ? "#ff6b6b"
-                                        : overlayType === "pores"
-                                          ? "#4ecdc4"
-                                          : overlayType === "pigmentation"
-                                            ? "#ffe66d"
-                                            : overlayType === "redness"
-                                              ? "#ff8b94"
-                                              : overlayType === "texture"
-                                                ? "#a8e6cf"
-                                                : "#ffd93d",
-                                    transform: `scale(${area.intensity})`,
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          )
-                        })}
-
                       {/* Analysis progress overlay */}
                       {isAnalyzing && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
@@ -670,20 +624,13 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
 
                       {analysis && (
                         <div className="flex items-center space-x-4">
-                          <span className="text-sm text-gray-600">Overlays:</span>
-                          {Object.entries(activeOverlays).map(([overlayType, isActive]) => (
-                            <div key={overlayType} className="flex items-center space-x-1">
-                              <Switch checked={isActive} onCheckedChange={() => toggleOverlay(overlayType)} size="sm" />
-                              <span className="text-xs text-gray-600 capitalize">{overlayType.replace("_", " ")}</span>
-                            </div>
-                          ))}
+                          <span className="text-sm text-gray-600">Analysis Complete</span>
+                          <Button variant="outline" onClick={retakePhoto}>
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            New Scan
+                          </Button>
                         </div>
                       )}
-
-                      <Button variant="outline" onClick={retakePhoto}>
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        New Scan
-                      </Button>
                     </div>
                   </div>
                 )}
@@ -700,10 +647,14 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
                     <CardTitle className="text-lg">Results Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div className="text-center p-3 bg-blue-50 rounded-lg">
                         <div className="text-lg font-bold text-blue-600">Type {analysis.fitzpatrick}</div>
                         <div className="text-xs text-gray-600">Fitzpatrick</div>
+                      </div>
+                      <div className="text-center p-3 bg-purple-50 rounded-lg">
+                        <div className="text-lg font-bold text-purple-600 capitalize">{analysis.undertone}</div>
+                        <div className="text-xs text-gray-600">Undertone</div>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-lg">
                         <div className="text-lg font-bold text-green-600">{analysis.pmuReadiness.overall}/100</div>
@@ -721,23 +672,37 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
                 {/* Pigment Recommendation */}
                 <Card className="bg-white shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-lg">Pigment Recommendation</CardTitle>
+                    <CardTitle className="text-lg flex items-center">
+                      <Palette className="w-5 h-5 mr-2 text-amber-500" />
+                      Pigment Recommendations
+                    </CardTitle>
+                    <p className="text-sm text-gray-600">Based on Type {analysis.fitzpatrick} • {analysis.undertone} Undertone</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {analysis.pigmentRecommendations.brows.slice(0, 2).map((pigment, index) => (
-                      <div key={index} className="p-3 border rounded-lg">
+                    {analysis.pigmentRecommendations.brows.slice(0, 3).map((pigment, index) => (
+                      <div key={index} className="p-3 border border-amber-200 rounded-lg bg-amber-50">
                         <div className="flex items-center space-x-3">
                           <div
-                            className="w-6 h-6 rounded-full border"
+                            className="w-8 h-8 rounded-full border-2 border-gray-300 flex-shrink-0"
                             style={{ backgroundColor: pigment.hex_preview }}
                           />
-                          <div>
-                            <div className="font-medium text-sm">{pigment.brand}</div>
-                            <div className="text-xs text-gray-600">{pigment.name}</div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm text-gray-900">{pigment.name}</div>
+                            <div className="text-sm text-gray-700 font-medium">{pigment.brand}</div>
+                            <div className="text-xs text-gray-500">{pigment.color_code || 'N/A'}</div>
                           </div>
+                          <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 border-amber-300">
+                            #{index + 1}
+                          </Badge>
                         </div>
                       </div>
                     ))}
+                    {analysis.pigmentRecommendations.brows.length === 0 && (
+                      <div className="text-center p-4 text-gray-500">
+                        <Palette className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p>Pigment recommendations will be generated based on your skin analysis</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

@@ -21,7 +21,7 @@ export default function IntakeFormsPage() {
     emergencyContact: "",
     emergencyPhone: "",
     occupation: "",
-    medicalHistory: [],
+    medicalHistory: [] as string[],
     allergies: "",
     medications: "",
     photoConsent: "",

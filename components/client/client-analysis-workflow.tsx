@@ -29,7 +29,12 @@ export function ClientAnalysisWorkflow() {
     photo: null as File | null,
   })
 
-  const steps = ["Personal Info", "Skin Analysis", "Photo Upload", "Find Artists"]
+  const steps = [
+    { id: "personal-info", title: "Personal Info" },
+    { id: "skin-analysis", title: "Skin Analysis" },
+    { id: "photo-upload", title: "Photo Upload" },
+    { id: "find-artists", title: "Find Artists" }
+  ]
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -59,7 +64,7 @@ export function ClientAnalysisWorkflow() {
 
       <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
         <CardHeader>
-          <CardTitle className="font-serif text-lavender-600">{steps[currentStep]}</CardTitle>
+          <CardTitle className="font-serif text-lavender-600">{steps[currentStep].title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {currentStep === 0 && (

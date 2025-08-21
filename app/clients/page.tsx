@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { NavBar } from "@/components/ui/navbar"
-import { ClientList } from "@/components/clients/client-list"
+import ClientList from "@/components/clients/client-list"
 import { Button } from "@/components/ui/button"
 import { Plus, Home } from "lucide-react"
 import Link from "next/link"

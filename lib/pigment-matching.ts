@@ -23,7 +23,9 @@ export function findPigmentMatches(
       const toneMatch =
         pigment.aiPigmentMatchTags.skinToneMatches.includes(clientSkinTone) ||
         pigment.aiPigmentMatchTags.skinToneMatches.includes("All")
-      const undertoneMatch = pigment.aiPigmentMatchTags.undertoneMatches.includes(clientUndertone)
+      const undertoneMatch = pigment.aiPigmentMatchTags.undertoneMatches.some(
+        undertone => undertone.toLowerCase() === clientUndertone.toLowerCase()
+      )
       const resultMatch = pigment.aiPigmentMatchTags.desiredHealedResults.some(
         (result) =>
           result.toLowerCase().includes(desiredResult.toLowerCase()) ||
@@ -35,7 +37,9 @@ export function findPigmentMatches(
     .map((match) => {
       let confidenceScore = 0
       if (match.aiPigmentMatchTags.skinToneMatches.includes(clientSkinTone)) confidenceScore += 40
-      if (match.aiPigmentMatchTags.undertoneMatches.includes(clientUndertone)) confidenceScore += 30
+      if (match.aiPigmentMatchTags.undertoneMatches.some(
+        undertone => undertone.toLowerCase() === clientUndertone.toLowerCase()
+      )) confidenceScore += 30
       if (
         match.aiPigmentMatchTags.desiredHealedResults.some(
           (result) => result.toLowerCase() === desiredResult.toLowerCase(),

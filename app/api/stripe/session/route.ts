@@ -9,6 +9,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Session ID is required" }, { status: 400 })
   }
 
+  if (!stripe) {
+    return NextResponse.json(
+      { error: 'Stripe is not configured' },
+      { status: 500 }
+    )
+  }
+
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId)
     

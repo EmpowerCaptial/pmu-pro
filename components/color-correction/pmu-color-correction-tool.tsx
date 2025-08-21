@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useSaveToClient } from "@/hooks/use-save-to-client"
+import { SaveToClientPrompt, ToolResult } from "@/components/client/save-to-client-prompt"
 // PMU GUIDE – Brow Pigment Color Correction (PerfectCorp-style)
 // Drop-in React component for v0.dev. Tailwind + Framer Motion.
 // Upgrades in this version:
@@ -16,7 +18,7 @@ const USE_AI_DEFAULT = true // flip to true to default to API analysis
 const DEFAULT_TARGET_HEX = "#7a5533" // rich neutral brown
 
 // Known brand tech sheet links (edit to your preferred sources)
-const TECH_SHEETS = {
+const TECH_SHEETS: Record<string, string> = {
   Permablend: "https://perma-blend.com/pages/resources",
   "Li Pigments": "https://lipigments.com/pages/technical",
   "Tina Davies": "https://tinadavies.com/pages/resources",
@@ -27,9 +29,9 @@ const TECH_SHEETS = {
 // If you don't have one yet, cards will still render without stock labels.
 
 // --- Utility: clamp, blend, rgb↔hsv/hex ---
-const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
+const clamp = (n: number, min: number, max: number): number => Math.max(min, Math.min(max, n))
 
-function rgbToHsv(r, g, b) {
+function rgbToHsv(r: number, g: number, b: number): { h: number; s: number; v: number } {
   r /= 255
   g /= 255
   b /= 255
@@ -57,7 +59,7 @@ function rgbToHsv(r, g, b) {
   return { h, s, v }
 }
 
-function hsvToRgb(h, s, v) {
+function hsvToRgb(h: number, s: number, v: number): { r: number; g: number; b: number } {
   const c = v * s,
     x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
     m = v - c
@@ -92,18 +94,20 @@ function hsvToRgb(h, s, v) {
   return { r: Math.round((r1 + m) * 255), g: Math.round((g1 + m) * 255), b: Math.round((b1 + m) * 255) }
 }
 
-function blendRgb(a, b, t) {
+function blendRgb(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }, t: number): { r: number; g: number; b: number } {
   return {
     r: Math.round(a.r * (1 - t) + b.r * t),
     g: Math.round(a.g * (1 - t) + b.g * t),
     b: Math.round(a.b * (1 - t) + b.b * t),
   }
 }
-function rgbToHex({ r, g, b }) {
-  const h = (n) => n.toString(16).padStart(2, "0")
+
+function rgbToHex({ r, g, b }: { r: number; g: number; b: number }): string {
+  const h = (n: number): string => n.toString(16).padStart(2, "0")
   return `#${h(r)}${h(g)}${h(b)}`
 }
-function hexToRgb(hex) {
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const m = hex.replace("#", "")
   return {
     r: Number.parseInt(m.slice(0, 2), 16),
@@ -113,7 +117,7 @@ function hexToRgb(hex) {
 }
 
 // --- Heuristic classification (fallback when AI off/unavailable) ---
-function classifyCast(rgb) {
+function classifyCast(rgb: { r: number; g: number; b: number }): { key: string; label: string } {
   const { h, s, v } = rgbToHsv(rgb.r, rgb.g, rgb.b)
   if (v < 0.35 && s < 0.25) return { key: "blue_gray", label: "Cool Gray/Blue (Ashy)" }
   if (h >= 200 && h <= 260 && s >= 0.15) return { key: "blue_gray", label: "Blue/Steel" }
@@ -124,7 +128,7 @@ function classifyCast(rgb) {
   return { key: "neutral", label: "Neutral/Soft" }
 }
 
-const DEFAULT_CORRECTOR_MAP = {
+const DEFAULT_CORRECTOR_MAP: Record<string, any> = {
   blue_gray: {
     label: "Neutralize cool gray/blue with WARM ORANGE/PEACH base",
     hue: 25,
@@ -200,8 +204,8 @@ const DEFAULT_CORRECTOR_MAP = {
 }
 const DEFAULT_BRAND_ORDER = ["Permablend", "Li Pigments", "Tina Davies", "Brow Daddy"]
 
-function Badge({ children, tone = "pink" }) {
-  const tones = {
+function Badge({ children, tone = "pink" }: { children: React.ReactNode; tone?: string }) {
+  const tones: Record<string, string> = {
     pink: "bg-pink-100 text-pink-700",
     green: "bg-emerald-100 text-emerald-700",
     red: "bg-rose-100 text-rose-700",
@@ -211,7 +215,7 @@ function Badge({ children, tone = "pink" }) {
   return <span className={`px-2 py-1 rounded-full text-xs ${tones[tone] || tones.gray}`}>{children}</span>
 }
 
-function Swatch({ title, color, round = true }) {
+function Swatch({ title, color, round = true }: { title: string; color: string; round?: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <div
@@ -226,7 +230,7 @@ function Swatch({ title, color, round = true }) {
   )
 }
 
-function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }) {
+function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }: { brand: string; items?: string[]; inventory?: Record<string, any>; onQuickOrder?: (sku: string) => void }) {
   const sheet = TECH_SHEETS[brand]
   return (
     <motion.div
@@ -287,11 +291,11 @@ function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }) {
 }
 
 function PMUColorCorrectionTool() {
-  const [img, setImg] = useState(null)
+  const [img, setImg] = useState<HTMLImageElement | null>(null)
   const [imgUrl, setImgUrl] = useState("")
-  const [avgColor, setAvgColor] = useState(null)
-  const [sel, setSel] = useState(null)
-  const [drag, setDrag] = useState(null)
+  const [avgColor, setAvgColor] = useState<{ r: number; g: number; b: number } | null>(null)
+  const [sel, setSel] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
+  const [drag, setDrag] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null)
   const [useAI, setUseAI] = useState(USE_AI_DEFAULT)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState("")
@@ -300,13 +304,36 @@ function PMUColorCorrectionTool() {
   const [inventory, setInventory] = useState({})
   const [targetHex, setTargetHex] = useState(DEFAULT_TARGET_HEX)
   const [overlayOpacity, setOverlayOpacity] = useState(0.55)
+  const [isMobile, setIsMobile] = useState(false)
 
-  const baseRef = useRef(null)
-  const overlayRef = useRef(null)
-  const previewRef = useRef(null)
+  // Save to client file functionality
+  const {
+    showSavePrompt,
+    currentToolResult,
+    promptToSave,
+    hideSavePrompt,
+    handleSave,
+    handleSkip,
+    isSaving,
+    saveError
+  } = useSaveToClient()
+
+  const baseRef = useRef<HTMLCanvasElement>(null)
+  const overlayRef = useRef<HTMLCanvasElement>(null)
+  const previewRef = useRef<HTMLCanvasElement>(null)
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Load image
-  const onFile = (e) => {
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
     if (!f) return
     const url = URL.createObjectURL(f)
@@ -320,44 +347,95 @@ function PMUColorCorrectionTool() {
   useEffect(() => {
     if (!img || !baseRef.current || !overlayRef.current || !previewRef.current) return
     const base = baseRef.current
-    const maxW = 1100
+    const overlay = overlayRef.current
+    const preview = previewRef.current
+    
+    const baseCtx = base.getContext("2d")
+    const overlayCtx = overlay.getContext("2d")
+    const previewCtx = preview.getContext("2d")
+    
+    if (!baseCtx || !overlayCtx || !previewCtx) return
+    
+    const maxW = isMobile ? 400 : 1100 // Smaller max width for mobile
     const sc = img.width > maxW ? maxW / img.width : 1
     base.width = Math.round(img.width * sc)
     base.height = Math.round(img.height * sc)
-    base.getContext("2d").drawImage(img, 0, 0, base.width, base.height)
-    const overlay = overlayRef.current
+    baseCtx.drawImage(img, 0, 0, base.width, base.height)
+    
     overlay.width = base.width
     overlay.height = base.height
-    overlay.getContext("2d").clearRect(0, 0, overlay.width, overlay.height)
-    const preview = previewRef.current
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height)
+    
     preview.width = base.width
     preview.height = base.height
-    preview.getContext("2d").drawImage(img, 0, 0, preview.width, preview.height)
+    previewCtx.drawImage(img, 0, 0, preview.width, preview.height)
     setSel(null)
     setAvgColor(null)
     setAiError("")
-  }, [img])
+  }, [img, isMobile])
 
-  // Pointer events for selection
-  const onDown = (e) => {
+  // Unified pointer events for both mouse and touch with proper scaling
+  const getPointerPosition = (e: MouseEvent | TouchEvent) => {
+    if (!overlayRef.current) return { x: 0, y: 0 }
+    const rect = overlayRef.current.getBoundingClientRect()
+    const canvas = overlayRef.current
+    let clientX, clientY
+    
+    if ('touches' in e && e.touches && e.touches[0]) {
+      // Touch event
+      clientX = e.touches[0].clientX
+      clientY = e.touches[0].clientY
+    } else if ('clientX' in e) {
+      // Mouse event
+      clientX = e.clientX
+      clientY = e.clientY
+    } else {
+      return { x: 0, y: 0 }
+    }
+    
+    // Calculate the scale factor between display size and actual canvas size
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    
+    // Convert display coordinates to canvas coordinates
+    const canvasX = (clientX - rect.left) * scaleX
+    const canvasY = (clientY - rect.top) * scaleY
+    
+    return {
+      x: canvasX,
+      y: canvasY
+    }
+  }
+
+  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!overlayRef.current) return
-    const r = overlayRef.current.getBoundingClientRect()
-    setDrag({ x: e.clientX - r.left, y: e.clientY - r.top })
+    e.preventDefault()
+    const pos = getPointerPosition(e.nativeEvent)
+    setDrag({ startX: pos.x, startY: pos.y, endX: pos.x, endY: pos.y })
   }
-  const onMove = (e) => {
+
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!overlayRef.current || !drag) return
-    const r = overlayRef.current.getBoundingClientRect()
-    const x = e.clientX - r.left,
-      y = e.clientY - r.top
-    setSel({ x: Math.min(drag.x, x), y: Math.min(drag.y, y), w: Math.abs(x - drag.x), h: Math.abs(y - drag.y) })
+    e.preventDefault()
+    const pos = getPointerPosition(e.nativeEvent)
+    const newDrag = { ...drag, endX: pos.x, endY: pos.y }
+    setDrag(newDrag)
+    setSel({ 
+      x: Math.min(drag.startX, pos.x), 
+      y: Math.min(drag.startY, pos.y), 
+      w: Math.abs(pos.x - drag.startX), 
+      h: Math.abs(pos.y - drag.startY) 
+    })
   }
-  const onUp = async () => {
+
+  const onPointerUp = async (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drag) return
+    e.preventDefault()
     setDrag(null)
     if (sel) {
       computeAverageColor()
       if (useAI) await analyzeViaApi()
-      else updatePreviewTint()
+      else updatePreviewTint(null)
     }
   }
 
@@ -365,6 +443,7 @@ function PMUColorCorrectionTool() {
   const computeAverageColor = () => {
     if (!sel || !baseRef.current) return
     const ctx = baseRef.current.getContext("2d")
+    if (!ctx) return
     const sx = Math.max(0, Math.floor(sel.x)),
       sy = Math.max(0, Math.floor(sel.y)),
       sw = Math.max(1, Math.floor(sel.w)),
@@ -389,15 +468,31 @@ function PMUColorCorrectionTool() {
   useEffect(() => {
     if (!overlayRef.current) return
     const ctx = overlayRef.current.getContext("2d")
+    if (!ctx) return
     ctx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height)
     if (sel) {
       ctx.save()
-      ctx.strokeStyle = "rgba(255,255,255,0.9)"
-      ctx.lineWidth = 2
-      ctx.shadowColor = "rgba(0,0,0,0.4)"
-      ctx.shadowBlur = 6
+      // Enhanced selection border for better mobile visibility
+      ctx.strokeStyle = "rgba(255,255,255,0.95)"
+      ctx.lineWidth = 3
+      ctx.shadowColor = "rgba(0,0,0,0.6)"
+      ctx.shadowBlur = 8
       ctx.strokeRect(sel.x, sel.y, sel.w, sel.h)
-      ctx.fillStyle = `rgba(255,255,255,${overlayOpacity * 0.15})`
+      
+      // Add corner indicators for better mobile UX
+      const cornerSize = 8
+      ctx.fillStyle = "rgba(255,255,255,0.9)"
+      // Top-left corner
+      ctx.fillRect(sel.x - 2, sel.y - 2, cornerSize, cornerSize)
+      // Top-right corner
+      ctx.fillRect(sel.x + sel.w - cornerSize + 2, sel.y - 2, cornerSize, cornerSize)
+      // Bottom-left corner
+      ctx.fillRect(sel.x - 2, sel.y + sel.h - cornerSize + 2, cornerSize, cornerSize)
+      // Bottom-right corner
+      ctx.fillRect(sel.x + sel.w - cornerSize + 2, sel.y + sel.h - cornerSize + 2, cornerSize, cornerSize)
+      
+      // Semi-transparent fill
+      ctx.fillStyle = `rgba(255,255,255,${overlayOpacity * 0.2})`
       ctx.fillRect(sel.x, sel.y, sel.w, sel.h)
       ctx.restore()
     }
@@ -411,11 +506,28 @@ function PMUColorCorrectionTool() {
   )
 
   // AI state
-  const [aiResult, setAiResult] = useState(null) // { detectedCast:{key,label}, corrector:{hex, label}, brands:[{brand,name,sku,url}], currentHex }
+  const [aiResult, setAiResult] = useState<any>(null) // { detectedCast:{key,label}, corrector:{hex, label}, brands:[{brand,name,sku,url}], currentHex }
 
   // Call AI endpoint
   async function analyzeViaApi() {
     if (!sel || !baseRef.current) return
+
+    // Function to prompt for saving results
+    const promptToSaveResults = () => {
+      const toolResult: ToolResult = {
+        type: 'color-correction',
+        data: {
+          originalColor: avgColor ? `rgb(${avgColor.r}, ${avgColor.g}, ${avgColor.b})` : null,
+          correctedColor: correctorHeuristic?.hex || targetHex,
+          recommendations: correctorHeuristic?.brands || {},
+          analysisType: 'color-correction',
+          timestamp: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString(),
+        toolName: 'Color Correction Analysis'
+      }
+      promptToSave(toolResult)
+    }
     setAiLoading(true)
     setAiError("")
     try {
@@ -433,7 +545,7 @@ function PMUColorCorrectionTool() {
       setAiResult(data)
       updatePreviewTint(data.corrector?.hex || null)
       // kick inventory fetch
-      const skus = (data.brands || []).map((b) => b.sku).filter(Boolean)
+      const skus = (data.brands || []).map((b: any) => b.sku).filter(Boolean)
       if (skus.length) {
         const inv = await fetch(`/api/inventory?skus=${encodeURIComponent(skus.join(","))}`)
         if (inv.ok) {
@@ -442,18 +554,19 @@ function PMUColorCorrectionTool() {
         }
       }
     } catch (e) {
-      setAiError(e.message || "AI error")
+      setAiError(e instanceof Error ? e.message : "AI error")
       setAiResult(null)
-      updatePreviewTint()
+      updatePreviewTint(null)
     } finally {
       setAiLoading(false)
     }
   }
 
   // --- Before/After Simulator: tint only selection ---
-  function updatePreviewTint(forceHex) {
+  function updatePreviewTint(forceHex: string | null) {
     if (!previewRef.current || !baseRef.current) return
     const p = previewRef.current.getContext("2d")
+    if (!p) return
     const b = baseRef.current
     p.clearRect(0, 0, p.canvas.width, p.canvas.height)
     p.drawImage(b, 0, 0)
@@ -501,19 +614,19 @@ function PMUColorCorrectionTool() {
 
   // --- UI ---
   return (
-    <div className="w-full max-w-7xl mx-auto p-4">
+    <div className={`w-full max-w-7xl mx-auto ${isMobile ? 'p-2' : 'p-4'} select-none`}>
       {/* Top Bar */}
-      <div className="mb-4 rounded-3xl bg-gradient-to-r from-rose-100 via-pink-50 to-amber-50 border shadow-xl p-4 flex items-center justify-between">
+      <div className={`mb-4 rounded-3xl bg-gradient-to-r from-rose-100 via-pink-50 to-amber-50 border shadow-xl ${isMobile ? 'p-3' : 'p-4'} ${isMobile ? 'flex-col gap-3' : 'flex items-center justify-between'}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 shadow" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900">PMU GUIDE — Color Correction</h1>
+            <h1 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-gray-900`}>PMU GUIDE — Color Correction</h1>
             <p className="text-xs text-gray-600">
               AI pigment neutralizer with brand modifiers, stock, and live preview.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
           <input type="file" accept="image/*" onChange={onFile} id="imgUpload" className="hidden" />
           <label
             htmlFor="imgUpload"
@@ -536,24 +649,42 @@ function PMUColorCorrectionTool() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-5">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'} gap-5`}>
         {/* LEFT: Image + Overlay + Before/After Preview */}
         <div className="rounded-3xl border bg-white/70 backdrop-blur-md shadow-xl p-3">
           {!img && (
-            <div className="aspect-video w-full rounded-2xl bg-white/60 border border-dashed flex items-center justify-center text-gray-400">
-              Upload a photo to begin
+            <div className="aspect-video w-full rounded-2xl bg-white/60 border border-dashed flex flex-col items-center justify-center text-gray-400 gap-2">
+              <div>Upload a photo to begin</div>
+              {isMobile && (
+                <div className="text-xs text-center px-4">
+                  👆 After uploading, touch and drag over the brows to analyze color
+                </div>
+              )}
             </div>
           )}
-          <div className="relative">
+          <div className="relative" style={{ touchAction: 'none' }}>
             <canvas ref={baseRef} className="w-full rounded-2xl" />
             <canvas
               ref={overlayRef}
               className="w-full rounded-2xl absolute inset-0 cursor-crosshair"
-              onMouseDown={onDown}
-              onMouseMove={onMove}
-              onMouseUp={onUp}
-              onMouseLeave={onUp}
+              style={{ touchAction: 'none' }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerLeave={onPointerUp}
             />
+            {/* Mobile touch indicator */}
+            {isMobile && (
+              <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+                👆 Touch & drag to select area
+              </div>
+            )}
+            {/* Selection size indicator */}
+            {sel && (
+              <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+                {Math.round(sel.w)} × {Math.round(sel.h)} px
+              </div>
+            )}
           </div>
           <div className="mt-3">
             <div className="text-xs text-gray-600 mb-1">Before/After (AI-tinted selection)</div>
@@ -568,7 +699,7 @@ function PMUColorCorrectionTool() {
                 value={overlayOpacity}
                 onChange={(e) => {
                   setOverlayOpacity(Number.parseFloat(e.target.value))
-                  updatePreviewTint()
+                  updatePreviewTint(null)
                 }}
                 className="w-48"
               />
@@ -586,7 +717,18 @@ function PMUColorCorrectionTool() {
               {avgColor && <Badge>{aiResult?.detectedCast?.label || castHeuristic?.label || "—"}</Badge>}
             </div>
             {!avgColor ? (
-              <p className="text-sm text-gray-600">Draw a rectangle over the brows to analyze color.</p>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  {isMobile 
+                    ? 'Touch and drag over the brows to analyze color.' 
+                    : 'Draw a rectangle over the brows to analyze color.'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {isMobile 
+                    ? 'Use your finger or stylus to select the area' 
+                    : 'Click and drag to select the area'}
+                </p>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 <Swatch title="Current" color={currentHex} />
@@ -600,7 +742,7 @@ function PMUColorCorrectionTool() {
                       value={targetHex}
                       onChange={(e) => {
                         setTargetHex(e.target.value)
-                        updatePreviewTint()
+                        updatePreviewTint(null)
                       }}
                       className="w-12 h-12 rounded-xl border"
                     />
@@ -609,7 +751,7 @@ function PMUColorCorrectionTool() {
                       value={targetHex}
                       onChange={(e) => {
                         setTargetHex(e.target.value)
-                        updatePreviewTint()
+                        updatePreviewTint(null)
                       }}
                       className="px-2 py-1 rounded-xl border text-sm font-mono w-28"
                     />
@@ -629,13 +771,13 @@ function PMUColorCorrectionTool() {
           {/* Brand Cards */}
           <AnimatePresence>
             {(aiResult?.brands?.length || correctorHeuristic) && (
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-3`}>
                 {(aiResult?.brands?.length
-                  ? Object.groupBy(aiResult.brands, (b) => b.brand)
+                  ? Object.groupBy(aiResult.brands, (b: any) => b.brand)
                   : Object.fromEntries(
                       brandOrder.map((b) => [
                         b,
-                        (correctorHeuristic?.brands?.[b] || []).map((name) => ({
+                        (correctorHeuristic?.brands?.[b] || []).map((name: any) => ({
                           brand: b,
                           name,
                           sku: `${b}:${name}`,
@@ -644,11 +786,11 @@ function PMUColorCorrectionTool() {
                     )) &&
                   Object.entries(
                     aiResult?.brands?.length
-                      ? Object.groupBy(aiResult.brands, (b) => b.brand)
+                      ? Object.groupBy(aiResult.brands, (b: any) => b.brand)
                       : Object.fromEntries(
                           brandOrder.map((b) => [
                             b,
-                            (correctorHeuristic?.brands?.[b] || []).map((name) => ({
+                            (correctorHeuristic?.brands?.[b] || []).map((name: any) => ({
                               brand: b,
                               name,
                               sku: `${b}:${name}`,
@@ -659,7 +801,7 @@ function PMUColorCorrectionTool() {
                     <BrandCard
                       key={brand}
                       brand={brand}
-                      items={list.map((x) => x.name)}
+                      items={list.map((x: any) => x.name)}
                       inventory={inventory}
                       onQuickOrder={(sku) => console.log("Order", sku)}
                     />
@@ -674,6 +816,17 @@ function PMUColorCorrectionTool() {
         Esthetic guidance only. Always patch-test and follow brand technical sheets. Lighting and camera quality affect
         results.
       </div>
+
+      {/* Save to Client File Prompt */}
+      {showSavePrompt && currentToolResult && (
+        <SaveToClientPrompt
+          toolResult={currentToolResult}
+          onSave={handleSave}
+          onSkip={handleSkip}
+          isOpen={showSavePrompt}
+          onOpenChange={hideSavePrompt}
+        />
+      )}
     </div>
   )
 }

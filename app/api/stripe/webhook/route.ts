@@ -1,6 +1,32 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe, validateStripeConfig } from "@/lib/stripe"
 import Stripe from "stripe"
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+// Helper function to update user subscription
+async function updateUserSubscription(email: string, subscriptionData: {
+  stripeCustomerId: string
+  stripeSubscriptionId: string
+  subscriptionStatus: string
+  hasActiveSubscription: boolean
+}) {
+  try {
+    await prisma.user.update({
+      where: { email },
+      data: {
+        stripeCustomerId: subscriptionData.stripeCustomerId,
+        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+        subscriptionStatus: subscriptionData.subscriptionStatus,
+        hasActiveSubscription: subscriptionData.hasActiveSubscription
+      }
+    })
+  } catch (error) {
+    console.error('Error updating user in database:', error)
+    throw error
+  }
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -51,9 +77,27 @@ export async function POST(request: NextRequest) {
           const customerId = session.customer as string
           const plan = session.metadata?.plan
           
-          // TODO: Update user record in your database
-          // Example: await updateUserSubscription(customerId, subscriptionId, plan)
-          console.log(`New subscription: ${subscriptionId} for customer: ${customerId} on plan: ${plan}`)
+          try {
+            // Get subscription details from Stripe
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+            
+            // Find user by email (from session metadata or customer email)
+            const userEmail = session.customer_details?.email || session.metadata?.email
+            
+            if (userEmail) {
+              // Update user subscription in database
+              await updateUserSubscription(userEmail, {
+                stripeCustomerId: customerId,
+                stripeSubscriptionId: subscriptionId,
+                subscriptionStatus: subscription.status,
+                hasActiveSubscription: subscription.status === 'active' || subscription.status === 'trialing'
+              })
+              
+              console.log(`Updated user subscription: ${userEmail} - Status: ${subscription.status}`)
+            }
+          } catch (error) {
+            console.error('Error updating user subscription:', error)
+          }
         }
         break
 
@@ -61,32 +105,107 @@ export async function POST(request: NextRequest) {
         const updatedSubscription = event.data.object as Stripe.Subscription
         console.log('Subscription updated:', updatedSubscription.id)
         
-        // Handle subscription changes (plan changes, etc.)
-        // TODO: Update user subscription in database
+        try {
+          // Find user by subscription ID
+          const user = await prisma.user.findFirst({
+            where: { stripeSubscriptionId: updatedSubscription.id }
+          })
+          
+          if (user) {
+            await updateUserSubscription(user.email, {
+              stripeCustomerId: updatedSubscription.customer as string,
+              stripeSubscriptionId: updatedSubscription.id,
+              subscriptionStatus: updatedSubscription.status,
+              hasActiveSubscription: updatedSubscription.status === 'active' || updatedSubscription.status === 'trialing'
+            })
+            
+            console.log(`Updated subscription for user: ${user.email} - Status: ${updatedSubscription.status}`)
+          }
+        } catch (error) {
+          console.error('Error updating subscription:', error)
+        }
         break
 
       case 'customer.subscription.deleted':
         const deletedSubscription = event.data.object as Stripe.Subscription
         console.log('Subscription canceled:', deletedSubscription.id)
         
-        // Handle subscription cancellation
-        // TODO: Update user record to remove subscription access
+        try {
+          // Find user by subscription ID and deactivate subscription
+          const user = await prisma.user.findFirst({
+            where: { stripeSubscriptionId: deletedSubscription.id }
+          })
+          
+          if (user) {
+            await updateUserSubscription(user.email, {
+              stripeCustomerId: deletedSubscription.customer as string,
+              stripeSubscriptionId: deletedSubscription.id,
+              subscriptionStatus: 'canceled',
+              hasActiveSubscription: false
+            })
+            
+            console.log(`Deactivated subscription for user: ${user.email}`)
+          }
+        } catch (error) {
+          console.error('Error deactivating subscription:', error)
+        }
         break
 
       case 'invoice.payment_succeeded':
         const invoice = event.data.object as Stripe.Invoice
         console.log('Payment succeeded for invoice:', invoice.id)
         
-        // Handle successful payment
-        // TODO: Extend user's subscription period
+        try {
+          // Access subscription ID from invoice data
+          const subscriptionId = (invoice as any).subscription
+          if (subscriptionId) {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+            const user = await prisma.user.findFirst({
+              where: { stripeSubscriptionId: subscription.id }
+            })
+            
+            if (user) {
+              await updateUserSubscription(user.email, {
+                stripeCustomerId: subscription.customer as string,
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: subscription.status,
+                hasActiveSubscription: subscription.status === 'active' || subscription.status === 'trialing'
+              })
+              
+              console.log(`Payment succeeded for user: ${user.email}`)
+            }
+          }
+        } catch (error) {
+          console.error('Error handling successful payment:', error)
+        }
         break
 
       case 'invoice.payment_failed':
         const failedInvoice = event.data.object as Stripe.Invoice
         console.log('Payment failed for invoice:', failedInvoice.id)
         
-        // Handle failed payment
-        // TODO: Send notification to user about failed payment
+        try {
+          const subscriptionId = (failedInvoice as any).subscription
+          if (subscriptionId) {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+            const user = await prisma.user.findFirst({
+              where: { stripeSubscriptionId: subscription.id }
+            })
+            
+            if (user) {
+              await updateUserSubscription(user.email, {
+                stripeCustomerId: subscription.customer as string,
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: subscription.status,
+                hasActiveSubscription: false
+              })
+              
+              console.log(`Payment failed for user: ${user.email} - Status: ${subscription.status}`)
+            }
+          }
+        } catch (error) {
+          console.error('Error handling failed payment:', error)
+        }
         break
 
       default:

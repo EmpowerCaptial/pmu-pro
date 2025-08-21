@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Save, User } from "lucide-react"
 import Link from "next/link"
+import { addClient } from "@/lib/client-storage"
 
 export function NewClientForm() {
   const router = useRouter()
@@ -27,11 +28,16 @@ export function NewClientForm() {
     setIsLoading(true)
 
     try {
-      // TODO: Implement API call to create client
-      console.log("Creating client:", formData)
+      // Create new client with storage system
+      const newClient = addClient({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        notes: formData.notes,
+        totalAnalyses: 0,
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log("Client created successfully:", newClient)
 
       // Redirect to client list
       router.push("/clients")

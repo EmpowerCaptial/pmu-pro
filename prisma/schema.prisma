@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("NEON_DATABASE_URL")
 }
 
 model User {
@@ -30,23 +30,32 @@ model User {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   clients               Client[]
+  magicLinkTokens       MagicLinkToken[]
 
   @@map("users")
 }
 
 model Client {
-  id        String     @id @default(cuid())
-  userId    String
-  name      String
-  email     String?
-  phone     String?
-  notes     String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  analyses  Analysis[]
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  intakes   Intake[]
-  photos    Photo[]
+  id                String      @id @default(cuid())
+  userId            String
+  name              String
+  email             String?
+  phone             String?
+  dateOfBirth       DateTime?   // Client's date of birth
+  emergencyContact  String?     // Emergency contact information
+  medicalHistory    String?     // Medical history notes
+  allergies         String?     // Known allergies
+  skinType          String?     // Fitzpatrick skin type
+  notes             String?
+  isActive          Boolean     @default(true) // Whether client is still active
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  analyses   Analysis[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intakes    Intake[]
+  photos     Photo[]
+  documents  Document[]
+  procedures Procedure[]
 
   @@map("clients")
 }
@@ -115,4 +124,67 @@ model Pigment {
 
   @@unique([brand, name])
   @@map("pigments")
+}
+
+model MagicLinkToken {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("magic_link_tokens")
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  clientId    String
+  type        DocumentType
+  fileUrl     String
+  filename    String?
+  fileSize    Int?     // File size in bytes
+  mimeType    String?  // MIME type of the file
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Procedure {
+  id                  String   @id @default(cuid())
+  clientId            String
+  procedureType       String   // Type of procedure (e.g., "Microblading", "Powder Brows", "Eyeliner")
+  voltage             Float    // Voltage used during procedure
+  needleConfiguration String   // Needle configuration details
+  pigmentBrand        String   // Brand of pigment used
+  pigmentColor        String   // Color of pigment used
+  lotNumber           String   // Lot number of the pigment
+  depth               String?  // Depth of pigment placement
+  duration            Int?     // Duration of procedure in minutes
+  areaTreated         String?  // Specific area treated
+  notes               String?  // Additional notes about the procedure
+  procedureDate       DateTime // When the procedure was performed
+  followUpDate        DateTime? // Scheduled follow-up date
+  isCompleted         Boolean  @default(false) // Whether procedure is completed
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("procedures")
+}
+
+enum DocumentType {
+  ID_DOCUMENT
+  CONSENT_FORM
+  WAIVER
+  INTAKE_FORM
+  CONTRAINDICATION_FORM
+  ANALYSIS_REPORT
+  PHOTO
+  OTHER
 }

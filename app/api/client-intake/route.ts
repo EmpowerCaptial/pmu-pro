@@ -1,10 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
+// Only create database connection if NEON_DATABASE_URL is available
+// Add fallback for build-time environment variable loading
+const databaseUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL
+const sql = databaseUrl && databaseUrl.startsWith('postgresql://') ? neon(databaseUrl) : null
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if database connection is available
+    if (!sql) {
+      return NextResponse.json({ error: "Database connection not available" }, { status: 503 })
+    }
+
     const formData = await request.formData()
     const clientDataStr = formData.get("clientData") as string
     const idDocument = formData.get("idDocument") as File | null

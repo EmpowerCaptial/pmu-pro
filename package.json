@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "prisma generate && next build",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -23,7 +23,7 @@
     "@radix-ui/react-checkbox": "latest",
     "@radix-ui/react-dialog": "latest",
     "@radix-ui/react-dropdown-menu": "latest",
-    "@radix-ui/react-label": "latest",
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-progress": "latest",
     "@radix-ui/react-radio-group": "latest",
     "@radix-ui/react-select": "latest",
@@ -50,6 +50,7 @@
     "stripe": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "undici": "^7.14.0",
     "ws": "latest",
     "zod": "latest"
   },

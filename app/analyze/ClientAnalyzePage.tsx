@@ -1,8 +1,7 @@
 "use client"
 
 import { NavBar } from "@/components/ui/navbar"
-import { AnalysisWorkflow } from "@/components/analyze/analysis-workflow"
-import FitzpatrickProSelector from "@/components/fitzpatrick/fitzpatrick-pro-selector"
+import { UnifiedSkinAnalysis } from "@/components/analyze/unified-skin-analysis"
 import { Button } from "@/components/ui/button"
 import { Home } from "lucide-react"
 import Link from "next/link"
@@ -14,31 +13,16 @@ export default function ClientAnalyzePage() {
     initials: "DA",
   }
 
-  const handleAnalyze = async (formState: any) => {
-    // Simulate AI analysis
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    return {
-      type: formState.selectedType,
-      confidence: 92,
-      pigments: [
-        { name: "Warm Brown", hex: "#8B4513", code: "WB-001" },
-        { name: "Neutral Taupe", hex: "#A0826D", code: "NT-002" },
-      ],
-      techniques: {
-        needleSpeed: "Medium speed recommended",
-        depth: "Shallow to medium depth",
-        care: "Standard aftercare protocol",
-      },
-      reasoning: "Based on your skin type and undertone, these pigments will provide the most natural-looking results.",
-    }
+  const handleAnalysisComplete = (result: any) => {
+    console.log("Unified analysis completed:", result)
   }
 
   const handleSave = (result: any) => {
-    console.log("Saving result:", result)
+    console.log("Saving unified analysis result:", result)
   }
 
   const handleExport = (result: any) => {
-    console.log("Exporting result:", result)
+    console.log("Exporting unified analysis result:", result)
   }
 
   return (
@@ -57,9 +41,9 @@ export default function ClientAnalyzePage() {
           <div className="flex items-center gap-4 text-center">
             <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-10 h-10 object-contain" />
             <div>
-              <h1 className="text-3xl font-bold text-foreground font-serif mb-2">Professional Skin Analysis</h1>
+              <h1 className="text-3xl font-bold text-foreground font-serif mb-2">Unified Skin Analysis</h1>
               <p className="text-muted-foreground">
-                AI-powered Fitzpatrick classification and undertone detection for precise pigment matching
+                One photo, comprehensive analysis: Fitzpatrick type, undertone detection, and pigment recommendations
               </p>
             </div>
           </div>
@@ -75,10 +59,11 @@ export default function ClientAnalyzePage() {
           </Link>
         </div>
 
-        <div className="space-y-6">
-          <FitzpatrickProSelector onAnalyze={handleAnalyze} onSave={handleSave} onExport={handleExport} />
-          <AnalysisWorkflow />
-        </div>
+        <UnifiedSkinAnalysis 
+          onAnalysisComplete={handleAnalysisComplete}
+          onSave={handleSave}
+          onExport={handleExport}
+        />
       </main>
     </div>
   )

@@ -1,57 +1,40 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Home } from "lucide-react"
+import { Home, Check, Star } from "lucide-react"
 import Link from "next/link"
+import { BILLING_PLANS, getPriceId } from "@/lib/billing-config"
 
 export default function BillingPage() {
-  const handleBasicCheckout = async () => {
+  const handleCheckout = async (plan: 'basic' | 'premium') => {
     try {
+      const priceId = getPriceId(plan)
+      
       const response = await fetch("/api/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID || "price_basic_monthly",
-          plan: "basic",
+          priceId: priceId,
+          plan: plan,
           successUrl: `${window.location.origin}/billing/success`,
           cancelUrl: `${window.location.origin}/billing`,
         }),
       })
       
       if (!response.ok) {
-        throw new Error('Failed to create checkout session')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create checkout session')
       }
       
       const { url } = await response.json()
-      if (url) window.location.href = url
-    } catch (error) {
-      console.error("Checkout error:", error)
-      alert("Failed to start checkout. Please try again.")
-    }
-  }
-
-  const handlePremiumCheckout = async () => {
-    try {
-      const response = await fetch("/api/stripe/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID || "price_premium_monthly",
-          plan: "premium",
-          successUrl: `${window.location.origin}/billing/success`,
-          cancelUrl: `${window.location.origin}/billing`,
-        }),
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session')
+      if (url) {
+        window.location.href = url
+      } else {
+        throw new Error('No checkout URL received')
       }
-      
-      const { url } = await response.json()
-      if (url) window.location.href = url
     } catch (error) {
       console.error("Checkout error:", error)
-      alert("Failed to start checkout. Please try again.")
+      alert(`Failed to start checkout: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -103,40 +86,22 @@ export default function BillingPage() {
           {/* Basic Plan */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-lavender/20 hover:shadow-xl transition-all duration-300">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-serif font-bold text-ink mb-2">PMU Tools</h3>
-              <div className="text-4xl font-bold text-lavender mb-2">$22</div>
+              <h3 className="text-2xl font-serif font-bold text-ink mb-2">{BILLING_PLANS.basic.name}</h3>
+              <div className="text-4xl font-bold text-lavender mb-2">${BILLING_PLANS.basic.price}</div>
               <div className="text-muted">per month</div>
             </div>
 
             <ul className="space-y-4 mb-8">
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">AI Contraindication Screening</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Fitzpatrick Skin Analysis</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Pigment Matching Recommendations</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Client Management System</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Aftercare Instructions & Reminders</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Booking & Scheduling Tools</span>
-              </li>
+              {BILLING_PLANS.basic.features.map((feature, index) => (
+                <li key={index} className="flex items-center">
+                  <Check className="w-5 h-5 text-lavender mr-3" />
+                  <span className="text-ink">{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <button
-              onClick={handleBasicCheckout}
+              onClick={() => handleCheckout('basic')}
               className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               Get Started
@@ -146,46 +111,30 @@ export default function BillingPage() {
           {/* Premium Plan */}
           <div className="bg-gradient-to-br from-lavender/10 to-beige/20 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-2 border-lavender/30 relative overflow-hidden">
             {/* Popular badge */}
-            <div className="absolute top-4 right-4 bg-lavender text-white px-3 py-1 rounded-full text-sm font-semibold">
-              Most Popular
-            </div>
+            {BILLING_PLANS.premium.popular && (
+              <div className="absolute top-4 right-4 bg-lavender text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                Most Popular
+              </div>
+            )}
 
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-serif font-bold text-ink mb-2">PMU Tools + Local Listing</h3>
-              <div className="text-4xl font-bold text-lavender mb-2">$35</div>
+              <h3 className="text-2xl font-serif font-bold text-ink mb-2">{BILLING_PLANS.premium.name}</h3>
+              <div className="text-4xl font-bold text-lavender mb-2">${BILLING_PLANS.premium.price}</div>
               <div className="text-muted">per month</div>
-              <div className="text-sm text-lavender-600 mt-1">$22 Tools + $13 Local Listing</div>
             </div>
 
             <ul className="space-y-4 mb-8">
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink font-semibold">Everything in PMU Tools, plus:</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Local Artist Directory Listing</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Client Referral System</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Enhanced Profile Visibility</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-2 h-2 bg-lavender rounded-full mr-3"></div>
-                <span className="text-ink">Priority Customer Support</span>
-              </li>
-              <li className="flex items-center text-amber-600">
-                <div className="w-2 h-2 bg-amber-500 rounded-full mr-3"></div>
-                <span className="font-medium">Requires License Verification & Approval</span>
-              </li>
+              {BILLING_PLANS.premium.features.map((feature, index) => (
+                <li key={index} className="flex items-center">
+                  <Check className="w-5 h-5 text-lavender mr-3" />
+                  <span className="text-muted">{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <button
-              onClick={handlePremiumCheckout}
+              onClick={() => handleCheckout('premium')}
               className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               Upgrade to Premium

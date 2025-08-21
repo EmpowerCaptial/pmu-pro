@@ -137,6 +137,15 @@ export default function HomePage() {
               >
                 See How It Works
               </Button>
+              <Link href="/waitlist">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-lavender text-lavender hover:bg-lavender/5 transition-all duration-300 px-8 py-4 text-lg bg-transparent"
+                >
+                  Join Free Waitlist
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -148,6 +157,23 @@ export default function HomePage() {
               <p className="text-lg text-ink/70">
                 Upload or take a photo to see instant skin analysis and pigment recommendations
               </p>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {['Type I', 'Type II', 'Type III', 'Type IV', 'Type V', 'Type VI'].map((type) => (
+                  <button
+                    key={type}
+                    className="px-3 py-1 text-sm border border-lavender/30 rounded-full hover:bg-lavender/10 transition-colors"
+                    onClick={() => {
+                      const demoResults = document.getElementById('demo-results');
+                      if (demoResults) {
+                        demoResults.style.display = 'block';
+                        demoResults.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <Card className="bg-white border-lavender/20 shadow-lg">
@@ -175,14 +201,29 @@ export default function HomePage() {
                         />
                       </svg>
                       <p className="text-ink/70 mb-4">Upload photo or use camera</p>
-                      <Link href="/client-analysis">
-                        <Button className="bg-lavender hover:bg-lavender-600 text-white">Try Demo Analysis</Button>
-                      </Link>
+                      <div className="space-y-3">
+                        <Link href="/client-analysis">
+                          <Button className="bg-lavender hover:bg-lavender-600 text-white w-full">Try Full Analysis</Button>
+                        </Link>
+                        <Button 
+                          className="bg-lavender/20 hover:bg-lavender/30 text-lavender border border-lavender/30 w-full"
+                          onClick={() => {
+                            // Demo functionality - show sample results
+                            const demoResults = document.getElementById('demo-results');
+                            if (demoResults) {
+                              demoResults.style.display = 'block';
+                              demoResults.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }}
+                        >
+                          View Demo Results
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="bg-beige/50 rounded-lg p-6">
+                    <div id="demo-results" className="bg-beige/50 rounded-lg p-6">
                       <h3 className="font-semibold text-ink mb-3">AI Analysis Results:</h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
@@ -197,11 +238,24 @@ export default function HomePage() {
                           <span className="text-ink/70">Recommended Pigment:</span>
                           <span className="font-medium text-lavender">Honey Brown</span>
                         </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink/70">Skin Sensitivity:</span>
+                          <span className="font-medium text-ink">Medium</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink/70">Healing Time:</span>
+                          <span className="font-medium text-ink">4-6 weeks</span>
+                        </div>
                       </div>
                       <div className="mt-4 p-3 bg-lavender/10 rounded border-l-4 border-lavender">
                         <p className="text-sm text-ink">
                           <strong>AI Suggestion:</strong> Consider ProCell Therapy for optimal skin health before
-                          treatment.
+                          treatment. Honey Brown pigment will complement your warm undertones beautifully.
+                        </p>
+                      </div>
+                      <div className="mt-4 p-3 bg-green-50 rounded border-l-4 border-green-400">
+                        <p className="text-sm text-green-800">
+                          <strong>✓ Safe for Treatment:</strong> No contraindications detected. You're a good candidate for PMU.
                         </p>
                       </div>
                     </div>
@@ -465,13 +519,15 @@ export default function HomePage() {
                     Join Founders' Beta Now
                   </Button>
                 </Link>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-lavender text-lavender hover:bg-lavender/5 px-8 py-4 text-lg w-full bg-transparent"
-                >
-                  Join Free Waitlist
-                </Button>
+                <Link href="/waitlist">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-lavender text-lavender hover:bg-lavender/5 px-8 py-4 text-lg w-full bg-transparent"
+                  >
+                    Join Free Waitlist
+                  </Button>
+                </Link>
               </div>
             </Card>
           </div>
@@ -625,18 +681,18 @@ export default function HomePage() {
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Help Center
+                    <a href="/waitlist" className="hover:text-white transition-colors">
+                      Join Waitlist
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Training
+                    <a href="/artist-signup" className="hover:text-white transition-colors">
+                      Artist Signup
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Community
+                    <a href="/client-analysis" className="hover:text-white transition-colors">
+                      Try Analysis
                     </a>
                   </li>
                 </ul>
@@ -645,8 +701,8 @@ export default function HomePage() {
                 <h3 className="font-semibold mb-4">Company</h3>
                 <ul className="space-y-2 text-white/70">
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      About
+                    <a href="/waitlist" className="hover:text-white transition-colors">
+                      Contact Us
                     </a>
                   </li>
                   <li>

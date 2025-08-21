@@ -17,6 +17,75 @@ export default function ProcellAnalysisPage() {
     initials: "DA",
   }
 
+  // Mock analysis result - in a real app this would be state
+  const analysisResult = {
+    redPercentage: "0.0",
+    severity: "None",
+    description: "No analysis performed yet",
+    recommendation: "Upload an image to begin analysis",
+    analyzed: false
+  }
+
+  const analyzeImage = (imageData: ImageData) => {
+    const data = imageData.data
+    let redPixels = 0
+    let totalPixels = 0
+    
+    // Improved red detection algorithm with better thresholds
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      
+      totalPixels++
+      
+      // More sophisticated red detection that accounts for natural skin tones
+      // Red should be significantly higher than green and blue for skin burn detection
+      const redDominance = r - Math.max(g, b)
+      const redRatio = r / (g + b + 1) // Avoid division by zero
+      
+      // Adjusted thresholds for more accurate detection
+      // Only count as red if red is clearly dominant and ratio is high enough
+      if (redDominance > 30 && redRatio > 1.4 && r > 150) {
+        redPixels++
+      }
+    }
+    
+    const redPercentage = (redPixels / totalPixels) * 100
+    
+    // Adjusted severity levels based on more accurate detection
+    let severity = 'Low'
+    let description = 'Minimal skin irritation detected'
+    let recommendation = 'Continue with normal care routine'
+    
+    if (redPercentage > 15) {
+      severity = 'High'
+      description = 'Significant skin irritation or burn detected'
+      recommendation = 'Immediate attention required. Consider postponing treatment.'
+    } else if (redPercentage > 8) {
+      severity = 'Medium'
+      description = 'Moderate skin irritation detected'
+      recommendation = 'Proceed with caution. Monitor closely during treatment.'
+    } else if (redPercentage > 3) {
+      severity = 'Low'
+      description = 'Mild skin irritation detected'
+      recommendation = 'Proceed with standard protocols. Monitor for changes.'
+    } else {
+      severity = 'None'
+      description = 'No significant skin irritation detected'
+      recommendation = 'Safe to proceed with treatment.'
+    }
+    
+    // In a real app, this would update state
+    console.log('Analysis result:', {
+      redPercentage: redPercentage.toFixed(1),
+      severity,
+      description,
+      recommendation,
+      analyzed: true
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">

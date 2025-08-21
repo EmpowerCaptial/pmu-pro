@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { PigmentCard } from "@/components/ui/pigment-card"
+
 import { ResultPanel } from "@/components/ui/result-panel"
 import { Save, Download, RotateCcw, Plus, Share } from "lucide-react"
 
@@ -140,30 +140,21 @@ export function AnalysisResultsStep({ photo, results, onRetake, onNewAnalysis }:
 
         <div className="grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {results.recommendations.map((rec, index) => (
-            <PigmentCard
-              key={rec.pigmentId}
-              pigment={{
-                id: rec.pigmentId,
-                name: rec.name,
-                brand: rec.brand,
-                baseTone: index === 0 ? "neutral" : index === 1 ? "warm" : "cool",
-                hueNotes: index === 0 ? "balanced undertones" : index === 1 ? "golden base" : "ash undertones",
-                opacity: "medium",
-                idealFitz: `${results.fitzpatrick - 1}-${results.fitzpatrick + 1}`,
-                tempShift: rec.expectedHealShift,
-                useCase: "brows",
-                hexPreview: index === 0 ? "#8B6914" : index === 1 ? "#A0522D" : "#696969",
-                isActive: true,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              }}
-              recommendation={{
-                why: rec.why,
-                expectedHealShift: rec.expectedHealShift,
-              }}
-              isRecommended={index === 0}
-              onSelect={() => handleSelectPigment(rec.pigmentId)}
-            />
+            <Card key={rec.pigmentId} className="p-4">
+              <CardHeader>
+                <CardTitle className="text-lg">{rec.name}</CardTitle>
+                <CardDescription>{rec.brand}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-sm"><strong>Why:</strong> {rec.why}</p>
+                  <p className="text-sm"><strong>Expected Heal Shift:</strong> {rec.expectedHealShift}</p>
+                  {index === 0 && (
+                    <Badge className="bg-green-100 text-green-800">Top Recommendation</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
