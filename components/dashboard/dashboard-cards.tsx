@@ -28,47 +28,48 @@ export function DashboardCards() {
     <div className="space-y-8">
       {/* Quick Actions */}
       <div className="grid md:grid-cols-6 gap-6">
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-lavender/10 to-lavender/20 backdrop-blur-sm border-lavender/40 col-span-2">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">New Client Screening</CardTitle>
+              <div className="w-8 h-8 bg-lavender rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <CardTitle className="text-xl font-bold text-lavender-800">Unified Client Onboarding</CardTitle>
             </div>
-            <CardDescription>Start contraindication assessment for a new client</CardDescription>
+            <CardDescription className="text-lavender-700">
+              Complete client screening, PMU intake, and consent forms in one comprehensive application
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/intake">
-              <div className="relative group cursor-pointer">
-                <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-white font-semibold text-shadow-lg shadow-black/50">
-                    Start Contraindication Screen
-                  </span>
+            <div className="flex gap-3">
+              <Link href="/unified-onboarding" className="flex-1">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-4 px-6 text-center">
+                    <span className="text-white font-bold text-lg text-shadow-lg shadow-black/50">
+                      🎯 Start Client Onboarding
+                    </span>
+                    <p className="text-lavender-100 text-sm mt-1">
+                      Screening • Intake • Consent • Assessment
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-2">
-              <ClipboardList className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">PMU Intake Forms</CardTitle>
+              </Link>
+              
+              <Link href="/clients/new" className="flex-1">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-4 px-6 text-center">
+                    <span className="text-white font-bold text-lg text-shadow-lg shadow-black/50">
+                      👤 Quick Add Client
+                    </span>
+                    <p className="text-blue-100 text-sm mt-1">
+                      Basic info only
+                    </p>
+                  </div>
+                </div>
+              </Link>
             </div>
-            <CardDescription>Professional client intake and consent documentation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/intake-forms">
-              <div className="relative group cursor-pointer">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
-                <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
-                    Complete Intake Forms
-                  </span>
-                </div>
-              </div>
-            </Link>
           </CardContent>
         </Card>
 
@@ -204,6 +205,54 @@ export function DashboardCards() {
                 </div>
               </div>
             </Link>
+          </CardContent>
+        </Card>
+
+        {/* Service Management Card */}
+        <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40 col-span-2">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <CardTitle className="text-xl font-bold text-blue-800">Service Management</CardTitle>
+            </div>
+            <CardDescription className="text-blue-700">
+              View all procedures, edit prices, and select multiple services for checkout
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Link href="/services" className="flex-1">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-4 px-6 text-center">
+                    <span className="text-white font-bold text-lg text-shadow-lg shadow-black/50">
+                      🎯 Manage Services
+                    </span>
+                    <p className="text-blue-100 text-sm mt-1">
+                      View • Edit • Select • Checkout
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              
+              <Link href="/checkout" className="flex-1">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-4 px-6 text-center">
+                    <span className="text-white font-bold text-lg text-shadow-lg shadow-black/50">
+                      💳 Quick Checkout
+                    </span>
+                    <p className="text-green-100 text-sm mt-1">
+                      Direct to checkout
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
