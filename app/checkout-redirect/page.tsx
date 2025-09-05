@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function CheckoutRedirectPage() {
+function CheckoutRedirectContent() {
   const searchParams = useSearchParams()
   const [redirecting, setRedirecting] = useState(true)
   const checkoutUrl = searchParams.get('url')
@@ -50,5 +50,21 @@ export default function CheckoutRedirectPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutRedirectPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-ink mb-4">Loading...</h1>
+          <p className="text-muted">Preparing checkout redirect...</p>
+        </div>
+      </div>
+    }>
+      <CheckoutRedirectContent />
+    </Suspense>
   )
 }
