@@ -21,144 +21,299 @@ import {
   Timer,
   TrendingUp,
   Send,
-  Tag
+  Tag,
+  FileText,
+  Camera,
+  Palette,
+  Shield,
+  Bell,
+  Zap,
+  Target,
+  Star,
+  Heart,
+  MessageSquare,
+  Download,
+  Upload,
+  Edit,
+  Trash2,
+  Eye,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Package,
+  Share
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-const features = [
+// Core Business Features
+const coreFeatures = [
   {
     id: 'services',
-    title: 'Service Management',
-    description: 'Manage your PMU services, pricing, and procedures',
+    title: 'Services',
+    description: 'Manage services & pricing',
     icon: BookOpen,
     href: '/services',
     color: 'bg-blue-500',
-    status: 'active'
+    status: 'active',
+    category: 'core'
   },
+  {
+    id: 'clients',
+    title: 'Clients',
+    description: 'Client management',
+    icon: Users,
+    href: '/clients',
+    color: 'bg-green-500',
+    status: 'active',
+    category: 'core'
+  },
+  {
+    id: 'booking',
+    title: 'Booking',
+    description: 'Appointment scheduling',
+    icon: Calendar,
+    href: '/booking',
+    color: 'bg-purple-500',
+    status: 'active',
+    category: 'core'
+  },
+  {
+    id: 'billing',
+    title: 'Billing',
+    description: 'Payment processing',
+    icon: CreditCard,
+    href: '/billing',
+    color: 'bg-indigo-500',
+    status: 'active',
+    category: 'core'
+  }
+]
+
+// Business Management Features
+const businessFeatures = [
   {
     id: 'reports',
-    title: 'Reports & Analytics',
-    description: 'View business performance and client analytics',
+    title: 'Reports',
+    description: 'Business analytics',
     icon: BarChart3,
     href: '/reports',
-    color: 'bg-green-500',
-    status: 'coming-soon'
+    color: 'bg-emerald-500',
+    status: 'active',
+    category: 'business'
   },
   {
-    id: 'payouts',
-    title: 'Payouts & Payments',
-    description: 'Manage artist payouts and payment processing',
-    icon: CreditCard,
-    href: '/payouts',
-    color: 'bg-purple-500',
-    status: 'coming-soon'
-  },
-  {
-    id: 'teams',
-    title: 'Team Management',
-    description: 'Manage staff, roles, and permissions',
-    icon: Users,
+    id: 'staff',
+    title: 'Staff',
+    description: 'Team management',
+    icon: UserCheck,
     href: '/staff',
-    color: 'bg-indigo-500',
-    status: 'active'
+    color: 'bg-orange-500',
+    status: 'active',
+    category: 'business'
   },
   {
     id: 'time-clock',
     title: 'Time Clock',
-    description: 'Track work hours with GPS location verification',
+    description: 'Track work hours',
     icon: Clock,
     href: '/time-clock',
-    color: 'bg-orange-500',
-    status: 'coming-soon'
-  },
-  {
-    id: 'geo-tracker',
-    title: 'GPS Tracker',
-    description: 'Location-based time tracking and verification',
-    icon: MapPin,
-    href: '/geo-tracker',
     color: 'bg-red-500',
-    status: 'coming-soon'
+    status: 'coming-soon',
+    category: 'business'
   },
   {
     id: 'expenses',
-    title: 'Expense Tracking',
-    description: 'Track business expenses and receipts',
+    title: 'Expenses',
+    description: 'Track costs',
     icon: Receipt,
     href: '/expenses',
     color: 'bg-yellow-500',
-    status: 'coming-soon'
+    status: 'coming-soon',
+    category: 'business'
   },
+  {
+    id: 'payouts',
+    title: 'Payouts',
+    description: 'Artist payments',
+    icon: DollarSign,
+    href: '/payouts',
+    color: 'bg-teal-500',
+    status: 'coming-soon',
+    category: 'business'
+  },
+  {
+    id: 'inventory',
+    title: 'Inventory',
+    description: 'Product tracking',
+    icon: Package,
+    href: '/inventory',
+    color: 'bg-pink-500',
+    status: 'coming-soon',
+    category: 'business'
+  }
+]
+
+// Marketing & Growth Features
+const marketingFeatures = [
   {
     id: 'email-marketing',
     title: 'Email Marketing',
-    description: 'Send newsletters and promotional campaigns',
+    description: 'Newsletters & campaigns',
     icon: Mail,
     href: '/email-marketing',
-    color: 'bg-pink-500',
-    status: 'coming-soon'
+    color: 'bg-rose-500',
+    status: 'coming-soon',
+    category: 'marketing'
   },
   {
     id: 'gift-cards',
     title: 'Gift Cards',
-    description: 'Create and manage gift card programs',
+    description: 'Create & manage',
     icon: Gift,
     href: '/gift-cards',
-    color: 'bg-teal-500',
-    status: 'coming-soon'
+    color: 'bg-violet-500',
+    status: 'coming-soon',
+    category: 'marketing'
+  },
+  {
+    id: 'loyalty',
+    title: 'Loyalty Program',
+    description: 'Reward customers',
+    icon: Star,
+    href: '/loyalty',
+    color: 'bg-amber-500',
+    status: 'coming-soon',
+    category: 'marketing'
+  },
+  {
+    id: 'reviews',
+    title: 'Reviews',
+    description: 'Manage feedback',
+    icon: MessageSquare,
+    href: '/reviews',
+    color: 'bg-cyan-500',
+    status: 'coming-soon',
+    category: 'marketing'
+  },
+  {
+    id: 'social',
+    title: 'Social Media',
+    description: 'Content management',
+    icon: Share,
+    href: '/social',
+    color: 'bg-sky-500',
+    status: 'coming-soon',
+    category: 'marketing'
+  },
+  {
+    id: 'referrals',
+    title: 'Referrals',
+    description: 'Referral program',
+    icon: Users,
+    href: '/referrals',
+    color: 'bg-lime-500',
+    status: 'coming-soon',
+    category: 'marketing'
   }
 ]
 
-const quickActions = [
+// Professional Tools
+const professionalFeatures = [
   {
-    title: 'Add New Service',
-    description: 'Create a new PMU service',
-    icon: Plus,
-    href: '/services/new',
-    color: 'bg-lavender'
+    id: 'analysis',
+    title: 'Skin Analysis',
+    description: 'AI-powered analysis',
+    icon: Camera,
+    href: '/analyze',
+    color: 'bg-fuchsia-500',
+    status: 'active',
+    category: 'professional'
   },
   {
-    title: 'View Reports',
-    description: 'Check business analytics',
-    icon: TrendingUp,
-    href: '/reports',
-    color: 'bg-green-600'
+    id: 'pigment-library',
+    title: 'Pigment Library',
+    description: 'Color matching',
+    icon: Palette,
+    href: '/pigment-library',
+    color: 'bg-slate-500',
+    status: 'active',
+    category: 'professional'
   },
   {
-    title: 'Manage Staff',
-    description: 'Team and permissions',
-    icon: UserCheck,
-    href: '/staff',
-    color: 'bg-indigo-600'
+    id: 'consent-forms',
+    title: 'Consent Forms',
+    description: 'Digital signatures',
+    icon: FileText,
+    href: '/consent-forms',
+    color: 'bg-stone-500',
+    status: 'active',
+    category: 'professional'
   },
   {
-    title: 'Track Time',
-    description: 'Clock in/out with GPS',
-    icon: Timer,
-    href: '/time-clock',
-    color: 'bg-orange-600'
+    id: 'aftercare',
+    title: 'Aftercare',
+    description: 'Client instructions',
+    icon: Heart,
+    href: '/aftercare',
+    color: 'bg-emerald-600',
+    status: 'active',
+    category: 'professional'
+  },
+  {
+    id: 'portfolio',
+    title: 'Portfolio',
+    description: 'Showcase work',
+    icon: Camera,
+    href: '/portfolio',
+    color: 'bg-indigo-600',
+    status: 'active',
+    category: 'professional'
+  },
+  {
+    id: 'training',
+    title: 'Training',
+    description: 'Staff education',
+    icon: BookOpen,
+    href: '/training',
+    color: 'bg-purple-600',
+    status: 'coming-soon',
+    category: 'professional'
   }
 ]
+
+// All features combined
+const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures, ...professionalFeatures]
 
 export default function FeaturesPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const filteredFeatures = features.filter(feature =>
-    feature.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    feature.description.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const categories = [
+    { id: 'all', name: 'All Features', count: allFeatures.length },
+    { id: 'core', name: 'Core', count: coreFeatures.length },
+    { id: 'business', name: 'Business', count: businessFeatures.length },
+    { id: 'marketing', name: 'Marketing', count: marketingFeatures.length },
+    { id: 'professional', name: 'Professional', count: professionalFeatures.length }
+  ]
+
+  const filteredFeatures = allFeatures.filter(feature => {
+    const matchesSearch = feature.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         feature.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || feature.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>
+        return <div className="w-2 h-2 bg-green-500 rounded-full"></div>
       case 'coming-soon':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Coming Soon</Badge>
+        return <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
       case 'beta':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Beta</Badge>
+        return <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
       default:
         return null
     }
@@ -175,39 +330,37 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-ink mb-2">Features</h1>
-            <p className="text-muted">Access all PMU Pro tools and features</p>
+            <p className="text-muted">Complete PMU business management suite</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Settings className="h-6 w-6 text-gray-400" />
-            <span className="text-sm text-gray-500">Settings</span>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push('/settings')}
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-ink mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <Card 
-                key={action.title}
-                className="cursor-pointer hover:shadow-md transition-shadow border-gray-200"
-                onClick={() => router.push(action.href)}
-              >
-                <CardContent className="p-4 text-center">
-                  <div className={`w-12 h-12 rounded-full ${action.color} flex items-center justify-center mx-auto mb-3`}>
-                    <action.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-sm text-gray-900 mb-1">{action.title}</h3>
-                  <p className="text-xs text-gray-600">{action.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(category.id)}
+              className="text-xs"
+            >
+              {category.name} ({category.count})
+            </Button>
+          ))}
         </div>
 
         {/* Search */}
@@ -217,53 +370,72 @@ export default function FeaturesPage() {
             placeholder="Search features..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Features Grid - Compact GlossGenius Style */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {filteredFeatures.map((feature) => (
             <Card 
               key={feature.id}
-              className={`cursor-pointer hover:shadow-lg transition-all duration-200 border-gray-200 ${
+              className={`cursor-pointer hover:shadow-md transition-all duration-200 border-gray-200 h-24 ${
                 feature.status === 'active' ? 'hover:border-lavender/50' : 'opacity-75'
               }`}
               onClick={() => handleFeatureClick(feature)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center`}>
-                    <feature.icon className="h-6 w-6 text-white" />
-                  </div>
-                  {getStatusBadge(feature.status)}
+              <CardContent className="p-3 h-full flex flex-col items-center justify-center text-center">
+                <div className={`w-8 h-8 rounded-lg ${feature.color} flex items-center justify-center mb-2`}>
+                  <feature.icon className="h-4 w-4 text-white" />
                 </div>
-                <CardTitle className="text-lg text-gray-900">{feature.title}</CardTitle>
-                <CardDescription className="text-sm text-gray-600">
-                  {feature.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">
-                    {feature.status === 'active' ? 'Click to open' : 'Coming soon'}
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    {feature.status === 'active' && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    )}
-                    {feature.status === 'coming-soon' && (
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    )}
-                  </div>
+                <h3 className="font-semibold text-xs text-gray-900 mb-1 leading-tight">{feature.title}</h3>
+                <p className="text-xs text-gray-600 leading-tight">{feature.description}</p>
+                <div className="mt-1">
+                  {getStatusBadge(feature.status)}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
+        {/* Quick Stats */}
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {allFeatures.filter(f => f.status === 'active').length}
+              </div>
+              <div className="text-sm text-gray-600">Active Features</div>
+            </CardContent>
+          </Card>
+          <Card className="border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-600 mb-1">
+                {allFeatures.filter(f => f.status === 'coming-soon').length}
+              </div>
+              <div className="text-sm text-gray-600">Coming Soon</div>
+            </CardContent>
+          </Card>
+          <Card className="border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {allFeatures.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Features</div>
+            </CardContent>
+          </Card>
+          <Card className="border-gray-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">
+                4
+              </div>
+              <div className="text-sm text-gray-600">Categories</div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Coming Soon Section */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-lavender/10 to-purple/10 rounded-lg border border-lavender/20">
+        <div className="mt-8 p-6 bg-gradient-to-r from-lavender/10 to-purple/10 rounded-lg border border-lavender/20">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">More Features Coming Soon</h3>
             <p className="text-gray-600 mb-4">
@@ -275,6 +447,9 @@ export default function FeaturesPage() {
               <Badge variant="outline" className="border-lavender/30 text-lavender">Client Portal</Badge>
               <Badge variant="outline" className="border-lavender/30 text-lavender">Automated Reminders</Badge>
               <Badge variant="outline" className="border-lavender/30 text-lavender">Social Media Integration</Badge>
+              <Badge variant="outline" className="border-lavender/30 text-lavender">GPS Time Tracking</Badge>
+              <Badge variant="outline" className="border-lavender/30 text-lavender">Expense Tracking</Badge>
+              <Badge variant="outline" className="border-lavender/30 text-lavender">Email Marketing</Badge>
             </div>
           </div>
         </div>
