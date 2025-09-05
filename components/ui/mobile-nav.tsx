@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -50,6 +50,11 @@ export default function MobileNav() {
   const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Handle scroll visibility
   const handleScroll = () => {
@@ -67,10 +72,16 @@ export default function MobileNav() {
   }
 
   // Add scroll listener
-  useState(() => {
+  useEffect(() => {
+    if (!isMounted) return
+    
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  })
+  }, [isMounted, lastScrollY])
+
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <div 
