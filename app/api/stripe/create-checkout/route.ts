@@ -82,19 +82,31 @@ async function createEnhancedCheckoutSession(data: CreateCheckoutRequest): Promi
     // Enhanced customer creation with Undici
     const customer = await createOrRetrieveCustomer(data.customerEmail)
     
+    // Step 2: Update customer with complete address before checkout
+    await stripe.customers.update(customer.id, {
+      address: {
+        line1: '123 Main St',
+        city: 'Springfield',
+        state: 'MO',
+        postal_code: '65806',
+        country: 'US'
+      }
+    });
+    
     // Enhanced checkout session creation
     const session = await stripe.checkout.sessions.create({
-      customer: customer.id,
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: data.priceId,
-          quantity: 1,
-        },
-      ],
       mode: 'subscription',
+      line_items: [{ price: data.priceId, quantity: 1 }],
       success_url: data.successUrl,
       cancel_url: data.cancelUrl,
+      automatic_tax: { enabled: true },
+      
+      // For subscription mode, customer is automatically created/retrieved
+      customer: customer.id,                  // Use the existing customer
+      customer_update: { address: 'auto' },   // save entered address to it
+      billing_address_collection: 'required',
+      
+      payment_method_types: ['card'],
       metadata: {
         ...data.metadata,
         customerEmail: data.customerEmail,
@@ -107,21 +119,7 @@ async function createEnhancedCheckoutSession(data: CreateCheckoutRequest): Promi
           source: 'PMU-Pro-Enhanced'
         }
       },
-      billing_address_collection: 'required',
-      customer_update: {
-        address: 'auto',
-        name: 'auto',
-      },
-      allow_promotion_codes: true,
-      invoice_creation: {
-        enabled: true,
-        invoice_data: {
-          description: 'PMU Pro Subscription',
-          metadata: {
-            source: 'PMU-Pro-Enhanced'
-          }
-        }
-      }
+      allow_promotion_codes: true
     })
 
     // Enhanced session logging with Undici
@@ -146,6 +144,7 @@ async function createOrRetrieveCustomer(email: string): Promise<Stripe.Customer>
     if (existingCustomers.data.length > 0) {
       // Enhanced customer update with Undici
       const customer = existingCustomers.data[0]
+      
       await updateCustomerMetadata(customer.id, {
         lastLogin: new Date().toISOString(),
         source: 'PMU-Pro-Enhanced'
@@ -162,13 +161,7 @@ async function createOrRetrieveCustomer(email: string): Promise<Stripe.Customer>
         subscriptionType: 'PMU-Pro'
       },
       description: 'PMU Pro Customer',
-      preferred_locales: ['en'],
-      shipping: {
-        name: 'PMU Pro Customer',
-        address: {
-          country: 'US'
-        }
-      }
+      preferred_locales: ['en']
     })
 
     // Enhanced customer logging
