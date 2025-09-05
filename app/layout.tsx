@@ -5,7 +5,12 @@ import "./globals.css"
 import { LeahChat } from "@/components/chat/leah-chat"
 import PWARegistration from "@/components/pwa/pwa-registration"
 import PWAUpdateManager from "@/components/pwa/pwa-update-manager"
-import MobileNav from "@/components/ui/mobile-nav"
+import dynamic from 'next/dynamic'
+
+const MobileNav = dynamic(() => import('@/components/ui/mobile-nav'), {
+  ssr: false,
+  loading: () => null
+})
 
 const inter = Inter({
   subsets: ["latin"],

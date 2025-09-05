@@ -54,30 +54,26 @@ export default function MobileNav() {
 
   useEffect(() => {
     setIsMounted(true)
-  }, [])
-
-  // Handle scroll visibility
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY
     
-    if (currentScrollY > lastScrollY && currentScrollY > 100) {
-      // Scrolling down
-      setIsVisible(false)
-    } else {
-      // Scrolling up
-      setIsVisible(true)
+    // Handle scroll visibility
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down
+        setIsVisible(false)
+      } else {
+        // Scrolling up
+        setIsVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
     }
-    
-    setLastScrollY(currentScrollY)
-  }
 
-  // Add scroll listener
-  useEffect(() => {
-    if (!isMounted) return
-    
+    // Add scroll listener
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [isMounted, lastScrollY])
+  }, [lastScrollY])
 
   if (!isMounted) {
     return null
