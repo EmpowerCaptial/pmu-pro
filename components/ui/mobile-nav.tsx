@@ -33,8 +33,8 @@ const navItems = [
     color: 'text-purple-600'
   },
   {
-    name: 'Services',
-    href: '/services',
+    name: 'Features',
+    href: '/features',
     icon: BookOpen,
     color: 'text-orange-600'
   },
