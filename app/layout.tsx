@@ -5,12 +5,12 @@ import "./globals.css"
 import { LeahChat } from "@/components/chat/leah-chat"
 import PWARegistration from "@/components/pwa/pwa-registration"
 import PWAUpdateManager from "@/components/pwa/pwa-update-manager"
-import dynamic from 'next/dynamic'
-
-const MobileNav = dynamic(() => import('@/components/ui/mobile-nav'), {
-  ssr: false,
-  loading: () => null
-})
+// Mobile navigation temporarily disabled for deployment
+// import dynamic from 'next/dynamic'
+// const MobileNav = dynamic(() => import('@/components/ui/mobile-nav'), {
+//   ssr: false,
+//   loading: () => null
+// })
 
 const inter = Inter({
   subsets: ["latin"],
@@ -78,7 +78,7 @@ export default function RootLayout({
         {children}
         <LeahChat />
         <PWAUpdateManager />
-        <MobileNav />
+        {/* <MobileNav /> */}
       </body>
     </html>
   )
