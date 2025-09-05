@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ToolResult } from '@/components/client/save-to-client-prompt'
+import { addClientAnalysis, getClientById } from '@/lib/client-storage'
 
 interface UseSaveToClientReturn {
   showSavePrompt: boolean
@@ -35,30 +36,42 @@ export function useSaveToClient(): UseSaveToClientReturn {
     setSaveError(null)
 
     try {
-      const response = await fetch('/api/client-tools/save-result', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          clientId,
-          toolResult: result
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save to client file')
+      // Check if client exists
+      const client = getClientById(clientId)
+      if (!client) {
+        throw new Error('Client not found')
       }
 
-      const saveResult = await response.json()
-      console.log('Successfully saved to client file:', saveResult)
+      // Convert ToolResult to ClientAnalysis format
+      const analysisData = {
+        type: result.type,
+        result: (result.data?.riskLevel === 'High Risk' ? 'not_recommended' : 
+                result.data?.riskLevel === 'Moderate Risk' ? 'precaution' : 'safe') as 'safe' | 'precaution' | 'not_recommended',
+        notes: result.data?.summary || result.data?.notes || '',
+        conditions: result.data?.medicalConditions || [],
+        medications: result.data?.medications || [],
+        rationale: result.data?.recommendations || '',
+        fitzpatrick: result.data?.fitzpatrick || undefined,
+        undertone: result.data?.undertone || undefined,
+        confidence: result.data?.confidence || undefined,
+        recommendedPigments: result.data?.recommendedPigments || [],
+        imageUrl: result.data?.imageUrl || undefined
+      }
+
+      // Save to client profile
+      const savedAnalysis = addClientAnalysis(clientId, analysisData)
       
-      // Hide the prompt after successful save
-      hideSavePrompt()
-      
-      // You can add a success notification here
-      // toast.success(`Results saved to client file successfully!`)
+      if (savedAnalysis) {
+        console.log('Successfully saved to client file:', savedAnalysis)
+        
+        // Hide the prompt after successful save
+        hideSavePrompt()
+        
+        // Show success message
+        alert(`Results saved to ${client.name}'s profile successfully!`)
+      } else {
+        throw new Error('Failed to save analysis to client profile')
+      }
       
     } catch (error) {
       console.error('Error saving to client file:', error)

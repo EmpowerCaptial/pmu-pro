@@ -1,41 +1,57 @@
 // Billing configuration for PMU Pro
 export const BILLING_PLANS = {
-  basic: {
-    id: 'basic',
-    name: 'PMU Pro Basic',
-    description: 'Essential tools for PMU artists',
+  starter: {
+    id: 'starter',
+    name: 'Starter',
+    description: 'Perfect for new PMU artists',
     price: 29,
-    priceId: 'price_1OqX8X2eZvKYlo2C9QZQZQZQ', // This should be your actual Stripe price ID
+    priceId: 'price_starter_monthly', // This should be your actual Stripe price ID
     features: [
-      'AI Contraindication Analysis',
-      'Basic Photo Analysis',
-      'Client Management',
-      'Basic Reports',
-      'Email Support',
-      'Document Upload',
-      'Standard Forms'
+      'Up to 50 clients',
+      'Consent form management',
+      'Client CRM',
+      'Document upload & signatures',
+      'Portfolio management',
+      'Basic analytics',
+      'Email support'
     ],
     popular: false
   },
-  premium: {
-    id: 'premium',
-    name: 'PMU Pro Premium',
-    description: 'Complete PMU business solution',
-    price: 36.99,
-    priceId: 'price_1OqX8X2eZvKYlo2C9QZQZQZQ', // This should be your actual Stripe price ID
+  professional: {
+    id: 'professional',
+    name: 'Professional',
+    description: 'For established PMU artists',
+    price: 49,
+    priceId: 'price_professional_monthly', // This should be your actual Stripe price ID
     features: [
-      'Everything in Basic',
-      'Advanced AI Analysis',
-      'Pigment Matching',
-      'Portfolio Sharing',
-      'Advanced Analytics',
-      'Priority Support',
-      'Custom Branding',
-      'Unified Skin Analysis',
-      'Color Correction Tools',
-      'ProCell Analysis'
+      'Unlimited clients',
+      'All Starter features',
+      'Advanced analytics',
+      'Custom branding',
+      'Priority support',
+      'API access',
+      'Advanced reporting',
+      'Client portal access'
     ],
     popular: true
+  },
+  studio: {
+    id: 'studio',
+    name: 'Studio',
+    description: 'For PMU studios and teams',
+    price: 79,
+    priceId: 'price_studio_monthly', // This should be your actual Stripe price ID
+    features: [
+      'All Professional features',
+      'Multi-artist support',
+      'Team management',
+      'Advanced integrations',
+      'Dedicated support',
+      'Custom onboarding',
+      'White-label options',
+      'Advanced security'
+    ],
+    popular: false
   }
 }
 
@@ -50,12 +66,13 @@ export const COMPANY_INFO = {
 
 // For development/testing, you can use these test price IDs
 export const TEST_PRICE_IDS = {
-  basic: 'price_1OqX8X2eZvKYlo2C9QZQZQZQ',
-  premium: 'price_1OqX8X2eZvKYlo2C9QZQZQZQ'
+  starter: 'price_1S44Qn2NnsVhahaHDeNYTT9A',
+  professional: 'price_1S44RZ2NnsVhahaHfPua5Llk',
+  studio: 'price_1S44TP2NnsVhahaHGr8H7L3f'
 }
 
 // Get the appropriate price ID based on environment
-export function getPriceId(plan: 'basic' | 'premium'): string {
+export function getPriceId(plan: 'starter' | 'professional' | 'studio'): string {
   // In production, you would use real Stripe price IDs
   // For now, we'll use test IDs
   return TEST_PRICE_IDS[plan]

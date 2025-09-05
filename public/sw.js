@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pmu-pro-v1.0.0';
+const CACHE_NAME = 'pmu-pro-v1.2025.09.05.1548';
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -6,24 +6,40 @@ const urlsToCache = [
   '/clients',
   '/pigment-library',
   '/library',
-  '/help',
-  '/static/css/app.css',
-  '/static/js/app.js'
+  '/help'
 ];
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+  console.log('🔄 Service Worker installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        console.log('✅ Opened cache:', CACHE_NAME);
+        return cache.addAll(urlsToCache).catch((error) => {
+          console.warn('⚠️ Some resources failed to cache:', error);
+          // Continue with installation even if some resources fail
+          return Promise.resolve();
+        });
+      })
+      .then(() => {
+        // Skip waiting to activate immediately
+        console.log('🚀 Service Worker installed, skipping waiting...');
+        return self.skipWaiting();
       })
   );
 });
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  // Skip caching for API endpoints, PDFs, and other dynamic content
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('.pdf') ||
+      event.request.url.includes('/documents/') ||
+      event.request.url.includes('/sample-documents/')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -32,23 +48,31 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         return fetch(event.request);
-      }
-    )
+      }).catch((error) => {
+        console.warn('Fetch failed:', error);
+        // Return a fallback response or let the browser handle it
+        return fetch(event.request);
+      })
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
+  console.log('🔄 Service Worker activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('🗑️ Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      // Take control of all clients immediately
+      console.log('🎯 Service Worker activated, taking control...');
+      return self.clients.claim();
     })
   );
 });

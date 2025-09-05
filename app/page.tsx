@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -60,7 +60,7 @@ export default function HomePage() {
                   className="bg-lavender hover:bg-lavender-600 text-white px-6 py-2"
                   onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
                 >
-                  Join Founders' Beta
+                  Start Free Trial
                 </Button>
 
                 {/* Mobile Menu Button */}
@@ -111,41 +111,40 @@ export default function HomePage() {
           </div>
 
           <div className="container mx-auto max-w-5xl text-center relative z-10">
-            <h1 className="text-5xl md:text-7xl font-bold text-ink mb-6 leading-tight">
-              Your AI PMU Assistant — <br />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-ink mb-4 md:mb-6 leading-tight">
+              Your AI PMU Assistant — <br className="hidden sm:block" />
               <span className="text-lavender">Safer Consults</span>,{" "}
-              <span className="text-lavender">Smarter Pigment Choices</span>, <br />
+              <span className="text-lavender">Smarter Pigment Choices</span>, <br className="hidden sm:block" />
               <span className="text-lavender">Stunning Results</span>.
             </h1>
-            <p className="text-xl text-ink/70 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-ink/70 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
               Screen clients, match pigments, and showcase your artistry — all in one platform.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/artist-signup">
+            <div className="flex flex-col gap-4 sm:gap-6 justify-center px-4">
+              <Link href="/auth/login" className="w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg"
+                  className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full"
                 >
-                  Join Founders' Beta — $23.99/mo
+                  Start 30-Day Free Trial
                 </Button>
               </Link>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-lavender text-lavender hover:bg-lavender/5 transition-all duration-300 px-8 py-4 text-lg bg-transparent"
+                className="border-2 border-lavender text-lavender hover:bg-lavender/5 transition-all duration-300 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg bg-transparent w-full sm:w-auto"
                 onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
               >
                 See How It Works
               </Button>
-              <Link href="/waitlist">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-lavender text-lavender hover:bg-lavender/5 transition-all duration-300 px-8 py-4 text-lg bg-transparent"
-                >
-                  Join Free Waitlist
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-lavender text-lavender hover:bg-lavender/5 transition-all duration-300 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg bg-transparent w-full sm:w-auto"
+                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                View Pricing Plans
+              </Button>
             </div>
           </div>
         </section>
@@ -465,70 +464,282 @@ export default function HomePage() {
         </section>
 
         <section className="py-20 px-4 bg-gradient-to-br from-lavender/10 to-beige/30" id="pricing">
-          <div className="container mx-auto max-w-4xl text-center">
-            <h2 className="text-4xl font-bold text-ink mb-6">Founders' Beta Pricing</h2>
-            <Card className="bg-white border-lavender/20 shadow-xl p-8">
-              <div className="mb-6">
-                <div className="text-5xl font-bold text-lavender mb-2">$23.99</div>
-                <div className="text-lg text-ink/70">per month • includes all tools & local artist search</div>
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-ink mb-6">Simple, Transparent Pricing</h2>
+              <p className="text-xl text-ink/70 mb-8">
+                Start with a 30-day free trial. No credit card required.
+              </p>
+              <div className="inline-flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
+                <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-green-800 font-medium">30-Day Free Trial • Cancel Anytime</span>
               </div>
-              <ul className="space-y-3 mb-8 text-left max-w-md mx-auto">
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">Unlimited contraindication screenings</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">AI pigment matching & recommendations</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">Professional portfolio tools</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">Local artist search & directory listing</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">PDF compliance reports</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-lavender" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-ink">Cancel anytime</span>
-                </li>
-              </ul>
-              <div className="space-y-4">
-                <Link href="/artist-signup">
-                  <Button
-                    size="lg"
-                    className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-8 py-4 text-lg w-full"
-                  >
-                    Join Founders' Beta Now
-                  </Button>
-                </Link>
-                <Link href="/waitlist">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-lavender text-lavender hover:bg-lavender/5 px-8 py-4 text-lg w-full bg-transparent"
-                  >
-                    Join Free Waitlist
-                  </Button>
-                </Link>
-              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              {/* Starter Plan */}
+              <Card className="relative border-gray-200 hover:border-lavender/50 transition-all duration-300">
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-2xl font-bold text-gray-900">Starter</CardTitle>
+                  <div className="space-y-2">
+                    <div className="text-4xl font-bold text-gray-900">$29</div>
+                    <div className="text-gray-600">per month</div>
+                  </div>
+                  <CardDescription className="text-gray-600 mt-4">Perfect for new PMU artists</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Up to 50 clients</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Consent form management</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Client CRM</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Document upload & signatures</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Portfolio management</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Basic analytics</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Email support</span>
+                    </li>
+                  </ul>
+                  <Link href="/auth/login">
+                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Professional Plan */}
+              <Card className="relative border-lavender border-2 shadow-lg scale-105">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-lavender text-white px-4 py-1 text-sm rounded-full">
+                    Most Popular
+                  </div>
+                </div>
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-2xl font-bold text-gray-900">Professional</CardTitle>
+                  <div className="space-y-2">
+                    <div className="text-4xl font-bold text-gray-900">$49</div>
+                    <div className="text-gray-600">per month</div>
+                  </div>
+                  <CardDescription className="text-gray-600 mt-4">For established PMU artists</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Unlimited clients</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">All Starter features</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Advanced analytics</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Custom branding</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Priority support</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">API access</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Advanced reporting</span>
+                    </li>
+                  </ul>
+                  <Link href="/auth/login">
+                    <Button className="w-full bg-lavender hover:bg-lavender-600 text-white">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Studio Plan */}
+              <Card className="relative border-gray-200 hover:border-lavender/50 transition-all duration-300">
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-2xl font-bold text-gray-900">Studio</CardTitle>
+                  <div className="space-y-2">
+                    <div className="text-4xl font-bold text-gray-900">$79</div>
+                    <div className="text-gray-600">per month</div>
+                  </div>
+                  <CardDescription className="text-gray-600 mt-4">For multi-artist studios</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">All Professional features</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Multi-artist management</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Team collaboration tools</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Advanced scheduling</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">White-label options</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Dedicated account manager</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Custom integrations</span>
+                    </li>
+                  </ul>
+                  <Link href="/auth/login">
+                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Trial Benefits */}
+            <Card className="bg-gradient-to-r from-lavender/10 to-beige/20">
+              <CardContent className="p-8 text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">What You Get During Your Free Trial</h3>
+                <div className="grid md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Full access to all features</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Unlimited client management</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Document upload & signatures</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Portfolio management</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Consent form automation</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Email notifications</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Analytics & reporting</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">Priority support</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <Link href="/auth/login">
+                    <Button size="lg" className="bg-lavender hover:bg-lavender-600 text-white px-8 py-4 text-lg">
+                      Start Your Free Trial Now
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </section>
@@ -588,29 +799,29 @@ export default function HomePage() {
             <div className="space-y-4">
               {[
                 {
-                  question: "Who is PMU Guide for?",
+                  question: "How does the free trial work?",
                   answer:
-                    "PMU Guide is designed for licensed permanent makeup artists, PMU educators, and beauty professionals who want to provide safer, more accurate consultations with AI-powered analysis.",
+                    "Start with a 30-day free trial with full access to all PMU Pro features. No credit card required. After 30 days, choose a plan that fits your practice or cancel anytime.",
                 },
                 {
-                  question: "What's included in the beta?",
+                  question: "What's included in the trial?",
                   answer:
-                    "The Founders' Beta includes all core features: AI contraindication screening, Fitzpatrick analysis, pigment matching, portfolio tools, and professional reporting. You'll also get priority support and input on new features.",
+                    "The trial includes unlimited client management, consent forms, document signatures, portfolio tools, analytics, and all core PMU Pro features. You get the full experience to see if PMU Pro fits your practice.",
                 },
                 {
-                  question: "Can I cancel anytime?",
+                  question: "Can I change plans anytime?",
                   answer:
-                    "Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees.",
+                    "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and you'll only pay the difference for the current billing period.",
                 },
                 {
-                  question: "Will my price go up?",
+                  question: "What happens to my data if I cancel?",
                   answer:
-                    "No! Founders' Beta members lock in the $23.99/month rate for life. This price will never increase for early adopters.",
+                    "Your data is safely stored for 90 days after cancellation. You can reactivate your account anytime during this period to restore all your client information and documents.",
                 },
                 {
                   question: "Is my client data secure?",
                   answer:
-                    "Absolutely. PMU Guide is HIPAA-compliant with enterprise-grade security. All client data is encrypted and stored securely with strict access controls.",
+                    "Absolutely. PMU Pro is HIPAA-compliant with enterprise-grade security. All client data is encrypted and stored securely with strict access controls and regular security audits.",
                 },
               ].map((faq, index) => (
                 <Card key={index} className="bg-white border-lavender/20">
@@ -681,13 +892,13 @@ export default function HomePage() {
                     </a>
                   </li>
                   <li>
-                    <a href="/waitlist" className="hover:text-white transition-colors">
-                      Join Waitlist
+                    <a href="/pricing" className="hover:text-white transition-colors">
+                      Pricing Plans
                     </a>
                   </li>
                   <li>
-                    <a href="/artist-signup" className="hover:text-white transition-colors">
-                      Artist Signup
+                    <a href="/auth/login" className="hover:text-white transition-colors">
+                      Start Free Trial
                     </a>
                   </li>
                   <li>
@@ -727,9 +938,9 @@ export default function HomePage() {
         </footer>
 
         <div className="fixed bottom-4 left-4 right-4 md:hidden z-50">
-          <Link href="/artist-signup">
+          <Link href="/auth/login">
             <Button size="lg" className="bg-lavender hover:bg-lavender-600 text-white shadow-lg w-full py-4 text-lg">
-              Join Beta — $23.99/mo
+              Start Free Trial
             </Button>
           </Link>
         </div>

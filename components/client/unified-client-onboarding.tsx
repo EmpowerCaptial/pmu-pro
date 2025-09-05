@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,6 +30,9 @@ import {
   Clock
 } from 'lucide-react'
 import { useSaveToClient } from '@/hooks/use-save-to-client'
+import { ToolResult } from '@/components/client/save-to-client-prompt'
+import { addClient, getClients } from '@/lib/client-storage'
+import { useRouter } from 'next/navigation'
 
 interface ClientOnboardingData {
   // Basic Information
@@ -99,6 +103,7 @@ const SUN_EXPOSURE_OPTIONS = [
 ]
 
 export default function UnifiedClientOnboarding() {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<ClientOnboardingData>({
     firstName: '',
@@ -110,29 +115,29 @@ export default function UnifiedClientOnboarding() {
     emergencyPhone: '',
     medicalConditions: [],
     medications: [],
-    allergies: [],
-    skinConditions: [],
-    previousPMU: false,
-    previousPMUDetails: '',
-    desiredService: '',
-    desiredColor: '',
-    previousExperience: '',
-    expectations: '',
-    sunExposure: '',
-    skincareRoutine: '',
-    exerciseHabits: '',
-    smokingStatus: '',
-    photoConsent: false,
-    medicalRelease: false,
-    liabilityWaiver: false,
-    aftercareAgreement: false,
-    notes: '',
-    concerns: ''
+            allergies: [],
+        skinConditions: [],
+        previousPMU: false,
+        previousPMUDetails: '',
+        desiredService: '',
+        desiredColor: '',
+        previousExperience: '',
+        expectations: '',
+        sunExposure: '',
+        skincareRoutine: '',
+        exerciseHabits: '',
+        smokingStatus: '',
+        photoConsent: false,
+        medicalRelease: false,
+        liabilityWaiver: false,
+        aftercareAgreement: false,
+        notes: '',
+        concerns: ''
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
-  const { promptToSaveResults } = useSaveToClient()
+  const { promptToSave } = useSaveToClient()
 
   const totalSteps = 5
 
@@ -166,17 +171,21 @@ export default function UnifiedClientOnboarding() {
     
     try {
       // Generate comprehensive client profile
-      const clientProfile = {
-        type: 'unified-onboarding',
-        data: formData,
-        summary: generateClientSummary(formData),
-        recommendations: generateRecommendations(formData),
-        contraindications: checkContraindications(formData),
-        riskLevel: assessRiskLevel(formData)
+      const clientProfile: ToolResult = {
+        type: 'intake' as const,
+        data: {
+          ...formData,
+          summary: generateClientSummary(formData),
+          recommendations: generateRecommendations(formData),
+          contraindications: checkContraindications(formData),
+          riskLevel: assessRiskLevel(formData)
+        },
+        timestamp: new Date().toISOString(),
+        toolName: 'Unified Client Onboarding'
       }
 
       // Prompt to save to client file
-      promptToSaveResults(clientProfile)
+      promptToSave(clientProfile)
       
       setIsComplete(true)
     } catch (error) {
@@ -247,15 +256,42 @@ export default function UnifiedClientOnboarding() {
 
   const assessRiskLevel = (data: ClientOnboardingData) => {
     let riskScore = 0
+    const riskFactors = []
     
-    if (data.medicalConditions.length > 0) riskScore += 2
-    if (data.allergies.length > 0) riskScore += 1
-    if (data.previousPMU) riskScore += 1
-    if (data.smokingStatus === 'Yes') riskScore += 1
+    // Medical conditions (higher weight - more serious)
+    if (data.medicalConditions.length > 0) {
+      riskScore += data.medicalConditions.length * 2
+      riskFactors.push(`${data.medicalConditions.length} medical condition(s)`)
+    }
     
-    if (riskScore === 0) return 'Low Risk'
-    if (riskScore <= 2) return 'Moderate Risk'
-    return 'High Risk'
+    // Allergies (medium weight)
+    if (data.allergies.length > 0) {
+      riskScore += data.allergies.length
+      riskFactors.push(`${data.allergies.length} allergy/allergy(s)`)
+    }
+    
+    // Previous PMU (low weight - not necessarily risky)
+    if (data.previousPMU) {
+      riskScore += 1
+      riskFactors.push('Previous PMU work')
+    }
+    
+    // Smoking (medium weight)
+    if (data.smokingStatus === 'Yes') {
+      riskScore += 2
+      riskFactors.push('Smoking')
+    }
+    
+    // Determine risk level with more nuanced logic
+    if (riskScore === 0) {
+      return { level: 'Low Risk', factors: ['No risk factors identified'], score: riskScore }
+    } else if (riskScore <= 2) {
+      return { level: 'Moderate Risk', factors: riskFactors, score: riskScore }
+    } else if (riskScore <= 4) {
+      return { level: 'Elevated Risk', factors: riskFactors, score: riskScore }
+    } else {
+      return { level: 'High Risk', factors: riskFactors, score: riskScore }
+    }
   }
 
   const downloadForm = () => {
@@ -319,13 +355,59 @@ Concerns: ${formData.concerns}
 
 ASSESSMENT SUMMARY
 ------------------
-Risk Level: ${assessRiskLevel(formData)}
+Risk Level: ${assessRiskLevel(formData).level}
 Contraindications: ${checkContraindications(formData).join(', ') || 'None'}
 Recommendations: ${generateRecommendations(formData).join(', ')}
 
 Date: ${new Date().toLocaleDateString()}
 Time: ${new Date().toLocaleTimeString()}
     `.trim()
+  }
+
+  const createClient = () => {
+    try {
+      console.log('Creating client with data:', formData)
+      
+      const newClient = addClient({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        notes: `Client Onboarding Summary: ${formData.firstName} ${formData.lastName} - ${formData.desiredService} - Risk: ${assessRiskLevel(formData).level}`,
+        totalAnalyses: 0,
+        lastResult: assessRiskLevel(formData).level === 'High Risk' ? 'not_recommended' : 
+                   assessRiskLevel(formData).level === 'Moderate Risk' ? 'precaution' : 'safe',
+        emergencyContact: formData.emergencyContact,
+        emergencyPhone: formData.emergencyPhone,
+        dateOfBirth: formData.dateOfBirth,
+        medicalConditions: formData.medicalConditions,
+        allergies: formData.allergies,
+        skinConditions: formData.skinConditions,
+        previousPMU: formData.previousPMU,
+        previousPMUDetails: formData.previousPMUDetails,
+        desiredService: formData.desiredService,
+        desiredColor: formData.desiredColor,
+        sunExposure: formData.sunExposure,
+        skincareRoutine: formData.skincareRoutine,
+        exerciseHabits: formData.exerciseHabits,
+        smokingStatus: formData.smokingStatus,
+        medications: formData.medications,
+        photoConsent: formData.photoConsent,
+        medicalRelease: formData.medicalRelease,
+        liabilityWaiver: formData.liabilityWaiver,
+        aftercareAgreement: formData.aftercareAgreement
+      })
+      
+      console.log('Client created successfully:', newClient)
+      
+      // Verify the client was saved
+      const allClients = getClients()
+      console.log('All clients after creation:', allClients)
+      
+      return newClient
+    } catch (error) {
+      console.error('Error creating client:', error)
+      return null
+    }
   }
 
   if (isComplete) {
@@ -337,16 +419,16 @@ Time: ${new Date().toLocaleTimeString()}
             Client Onboarding Complete!
           </h2>
           <p className="text-gray-600 mb-6">
-            {formData.firstName} {formData.lastName} has been successfully onboarded.
+            {formData.firstName} {formData.lastName} has been successfully onboarded and added to your client database.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 bg-lavender/5 rounded-lg border border-lavender/20">
               <h4 className="font-medium text-lavender-700 mb-2">Risk Assessment</h4>
-              <Badge className={assessRiskLevel(formData) === 'High Risk' ? 'bg-red-100 text-red-800' : 
-                               assessRiskLevel(formData) === 'Moderate Risk' ? 'bg-yellow-100 text-yellow-800' : 
+              <Badge className={assessRiskLevel(formData).level === 'High Risk' ? 'bg-red-100 text-red-800' : 
+                               assessRiskLevel(formData).level === 'Moderate Risk' ? 'bg-yellow-100 text-yellow-800' : 
                                'bg-green-100 text-green-800'}>
-                {assessRiskLevel(formData)}
+                {assessRiskLevel(formData).level}
               </Badge>
             </div>
             
@@ -362,27 +444,84 @@ Time: ${new Date().toLocaleTimeString()}
               </p>
             </div>
           </div>
+
+          {/* Risk Explanation Section */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+            <h4 className="font-medium text-gray-800 mb-3">Risk Assessment Details</h4>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Risk Score:</span>
+                <span className="font-medium">{assessRiskLevel(formData).score}/10</span>
+              </div>
+              <div className="flex items-start justify-between">
+                <span className="text-sm text-gray-600">Risk Factors:</span>
+                <div className="text-right">
+                  {assessRiskLevel(formData).factors.length > 0 ? (
+                    assessRiskLevel(formData).factors.map((factor, index) => (
+                      <div key={index} className="text-sm text-gray-700">• {factor}</div>
+                    ))
+                  ) : (
+                    <span className="text-sm text-green-600">None identified</span>
+                  )}
+                </div>
+              </div>
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  <strong>Note:</strong> This assessment helps identify clients who may need additional medical clearance or special precautions. 
+                  Always consult with healthcare professionals when in doubt.
+                </p>
+              </div>
+            </div>
+          </div>
           
           <div className="flex gap-3 justify-center">
+            <Button 
+              onClick={() => {
+                const newClient = createClient()
+                if (newClient) {
+                  alert(`Client ${newClient.name} created successfully! You can now view them in your client database.`)
+                  router.push('/clients')
+                } else {
+                  alert('Error creating client. Please try again.')
+                }
+              }} 
+              className="bg-lavender hover:bg-lavender-600 text-white"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save to Client Database
+            </Button>
             <Button onClick={downloadForm} variant="outline" className="border-lavender text-lavender">
               <Download className="h-4 w-4 mr-2" />
               Download Form
             </Button>
-            <Button onClick={() => {
-              setFormData({
-                firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '',
-                emergencyContact: '', emergencyPhone: '', medicalConditions: [], medications: [],
-                allergies: [], skinConditions: [], previousPMU: false, previousPMUDetails: '',
-                desiredService: '', desiredColor: '', previousExperience: '', expectations: '',
-                sunExposure: '', skincareRoutine: '', exerciseHabits: '', smokingStatus: '',
-                photoConsent: false, medicalRelease: false, liabilityWaiver: false,
-                aftercareAgreement: false, notes: '', concerns: ''
-              })
-              setCurrentStep(1)
-              setIsComplete(false)
-            }} className="bg-lavender hover:bg-lavender-600 text-white">
+            <Link href="/dashboard">
+              <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Return to Dashboard
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <Button 
+              onClick={() => {
+                setFormData({
+                  firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '',
+                  emergencyContact: '', emergencyPhone: '', medicalConditions: [], medications: [],
+                  allergies: [], skinConditions: [], previousPMU: false, previousPMUDetails: '',
+                  desiredService: '', desiredColor: '', previousExperience: '', expectations: '',
+                  sunExposure: '', skincareRoutine: '', exerciseHabits: '', smokingStatus: '',
+                  photoConsent: false, medicalRelease: false, liabilityWaiver: false,
+                  aftercareAgreement: false, notes: '', concerns: ''
+                })
+                setCurrentStep(1)
+                setIsComplete(false)
+              }} 
+              variant="ghost" 
+              className="text-lavender hover:bg-lavender/5"
+            >
               <User className="h-4 w-4 mr-2" />
-              New Client
+              Start New Client Onboarding
             </Button>
           </div>
         </CardContent>
@@ -395,20 +534,60 @@ Time: ${new Date().toLocaleTimeString()}
       {/* Header */}
       <Card className="border-lavender/20 bg-white">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-lavender-700 flex items-center justify-center gap-3">
-            <User className="h-8 w-8" />
-            Unified Client Onboarding
-          </CardTitle>
-          <CardDescription className="text-lg">
-            Complete client screening and PMU intake in one comprehensive form
-          </CardDescription>
+          {/* Mobile Layout */}
+          <div className="md:hidden mb-4">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="text-lavender hover:bg-lavender/5 w-full mb-3">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Return to Dashboard
+              </Button>
+            </Link>
+            <CardTitle className="text-2xl font-bold text-lavender-700 flex items-center justify-center gap-3">
+              <User className="h-6 w-6" />
+              Unified Client Onboarding
+            </CardTitle>
+            <CardDescription className="text-base">
+              Complete client screening and PMU intake in one comprehensive form
+            </CardDescription>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:block">
+            <div className="flex items-center justify-between mb-4">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="text-lavender hover:bg-lavender/5">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Return to Dashboard
+                </Button>
+              </Link>
+              <div className="flex-1"></div>
+            </div>
+            <CardTitle className="text-3xl font-bold text-lavender-700 flex items-center justify-center gap-3">
+              <User className="h-8 w-8" />
+              Unified Client Onboarding
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Complete client screening and PMU intake in one comprehensive form
+            </CardDescription>
+          </div>
         </CardHeader>
       </Card>
 
       {/* Progress Bar */}
       <Card className="border-lavender/20 bg-white">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
+          {/* Mobile Layout */}
+          <div className="md:hidden text-center mb-2">
+            <span className="text-sm font-medium text-gray-700 block mb-1">
+              Step {currentStep} of {totalSteps}
+            </span>
+            <span className="text-sm text-gray-500 block mb-2">
+              {Math.round((currentStep / totalSteps) * 100)}% Complete
+            </span>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">
               Step {currentStep} of {totalSteps}
             </span>
@@ -416,6 +595,7 @@ Time: ${new Date().toLocaleTimeString()}
               {Math.round((currentStep / totalSteps) * 100)}% Complete
             </span>
           </div>
+          
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-lavender h-2 rounded-full transition-all duration-300"
@@ -635,7 +815,7 @@ Time: ${new Date().toLocaleTimeString()}
                     <SelectTrigger>
                       <SelectValue placeholder="Select desired service" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
                       {PMU_SERVICES.map((service) => (
                         <SelectItem key={service} value={service}>{service}</SelectItem>
                       ))}
@@ -696,7 +876,7 @@ Time: ${new Date().toLocaleTimeString()}
                     <SelectTrigger>
                       <SelectValue placeholder="Select sun exposure level" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
                       {SUN_EXPOSURE_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
@@ -731,7 +911,7 @@ Time: ${new Date().toLocaleTimeString()}
                     <SelectTrigger>
                       <SelectValue placeholder="Select smoking status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
                       <SelectItem value="No">No</SelectItem>
                       <SelectItem value="Yes">Yes</SelectItem>
                       <SelectItem value="Former">Former smoker</SelectItem>

@@ -621,7 +621,7 @@ export default function FitzpatrickProSelector({ onAnalyze, onSave, onExport }: 
         </div>
 
                     {/* Undertone Detection - From Image Analysis */}
-            <div className="space-y-3">
+        <div className="space-y-3">
               <Label className="text-sm font-medium">Undertone (From Image Analysis)</Label>
               <div className="p-4 bg-lavender/10 rounded-lg border border-lavender/30">
                 {result ? (
@@ -638,8 +638,8 @@ export default function FitzpatrickProSelector({ onAnalyze, onSave, onExport }: 
                     Undertone will be automatically detected from your uploaded photo during analysis.
                   </p>
                 )}
-              </div>
-            </div>
+          </div>
+        </div>
 
         {/* Sun Response */}
         <div className="space-y-3">
@@ -714,13 +714,13 @@ export default function FitzpatrickProSelector({ onAnalyze, onSave, onExport }: 
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {result.pigments.map((pigment, index) => (
+                {result.pigments.map((pigment, index) => (
                         <div key={index} className="p-4 bg-white rounded-lg border border-amber-200 hover:shadow-md transition-shadow">
                           <div className="flex items-start gap-3">
-                            <div 
+                    <div
                               className="w-8 h-8 rounded-full border-2 border-gray-300 flex-shrink-0"
-                              style={{ backgroundColor: pigment.hex }}
-                            />
+                      style={{ backgroundColor: pigment.hex }}
+                    />
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-900 mb-1">{pigment.name}</h4>
                               <p className="text-sm text-gray-600 font-medium mb-1">{pigment.brand}</p>
@@ -805,9 +805,9 @@ export default function FitzpatrickProSelector({ onAnalyze, onSave, onExport }: 
                               <span className="font-medium">Why:</span> {pigment.reasoning}
                             </p>
                           )}
-                        </div>
-                      ))}
-                    </div>
+                  </div>
+                ))}
+              </div>
                   </CardContent>
                 </Card>
               )}

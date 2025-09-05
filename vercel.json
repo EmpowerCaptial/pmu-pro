@@ -15,5 +15,22 @@
     "env": {
       "NODE_ENV": "production"
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/documents/signature-demo",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/public-signature-demo",
+      "destination": "/documents/signature-demo"
+    }
+  ]
 }

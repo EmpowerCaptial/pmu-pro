@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bell, Shield, Palette } from "lucide-react"
 
 export default function SettingsPage() {
+  const { currentUser, isAuthenticated } = useDemoAuth()
   const [settings, setSettings] = useState({
     emailNotifications: true,
     smsNotifications: false,
@@ -37,7 +39,14 @@ export default function SettingsPage() {
         <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-96 h-96 opacity-5 object-contain" />
       </div>
 
-      <NavBar currentPath="/settings" user={{ name: "Sarah Johnson", email: "sarah@pmuartist.com", initials: "SJ" }} />
+      <NavBar 
+        currentPath="/settings" 
+        user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+        } : undefined} 
+      />
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6">

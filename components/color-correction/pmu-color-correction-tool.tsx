@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSaveToClient } from "@/hooks/use-save-to-client"
+import { pigmentLibrary } from "@/lib/pigment-data"
 import { SaveToClientPrompt, ToolResult } from "@/components/client/save-to-client-prompt"
 // PMU GUIDE – Brow Pigment Color Correction (PerfectCorp-style)
 // Drop-in React component for v0.dev. Tailwind + Framer Motion.
@@ -232,6 +233,17 @@ function Swatch({ title, color, round = true }: { title: string; color: string; 
 
 function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }: { brand: string; items?: string[]; inventory?: Record<string, any>; onQuickOrder?: (sku: string) => void }) {
   const sheet = TECH_SHEETS[brand]
+  
+  // Get the first pigment color for this brand to use as the brand indicator
+  const getBrandColor = () => {
+    const brandPigment = pigmentLibrary.find(p => p.brand === brand)
+    if (brandPigment?.digitalSwatch) {
+      return brandPigment.digitalSwatch
+    }
+    // Fallback to gradient if no pigment found
+    return "bg-gradient-to-br from-pink-400 to-rose-600"
+  }
+  
   return (
     <motion.div
       layout
@@ -242,7 +254,14 @@ function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }: { brand:
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-600" />
+          <div 
+            className="w-8 h-8 rounded-full shadow border"
+            style={{ 
+              background: getBrandColor().startsWith('/') 
+                ? `url(${getBrandColor()}) center/cover` 
+                : getBrandColor() 
+            }}
+          />
           <div className="text-sm font-semibold">{brand}</div>
         </div>
         {sheet && (
@@ -259,9 +278,33 @@ function BrandCard({ brand, items = [], inventory = {}, onQuickOrder }: { brand:
           const tone = stock == null ? "gray" : stock > 10 ? "green" : stock > 0 ? "amber" : "red"
           const label =
             stock == null ? "Check stock" : stock > 10 ? "In Stock" : stock > 0 ? `Low (${stock})` : "Out of Stock"
+          
+          // Get the actual pigment color
+          const getPigmentColor = () => {
+            const pigment = pigmentLibrary.find(p => p.brand === brand && p.pigmentName === name)
+            if (pigment?.digitalSwatch) {
+              return pigment.digitalSwatch
+            }
+            return null
+          }
+          
+          const pigmentColor = getPigmentColor()
+          
           return (
             <li key={i} className="flex items-center justify-between gap-2 text-sm">
-              <span>{name}</span>
+              <div className="flex items-center gap-2">
+                {pigmentColor && (
+                  <div 
+                    className="w-4 h-4 rounded-full shadow border"
+                    style={{ 
+                      background: pigmentColor.startsWith('/') 
+                        ? `url(${pigmentColor}) center/cover` 
+                        : pigmentColor 
+                    }}
+                  />
+                )}
+                <span>{name}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <Badge tone={tone}>{label}</Badge>
                 {buyUrl ? (
@@ -304,6 +347,7 @@ function PMUColorCorrectionTool() {
   const [inventory, setInventory] = useState({})
   const [targetHex, setTargetHex] = useState(DEFAULT_TARGET_HEX)
   const [overlayOpacity, setOverlayOpacity] = useState(0.55)
+  const [imageZoom, setImageZoom] = useState(1.2)
   const [isMobile, setIsMobile] = useState(false)
 
   // Save to client file functionality
@@ -356,8 +400,9 @@ function PMUColorCorrectionTool() {
     
     if (!baseCtx || !overlayCtx || !previewCtx) return
     
-    const maxW = isMobile ? 400 : 1100 // Smaller max width for mobile
-    const sc = img.width > maxW ? maxW / img.width : 1
+    // Allow closer zooming for better precision
+    const maxW = isMobile ? 600 : 1400 // Increased max width for better zoom
+    const sc = img.width > maxW ? maxW / img.width : 1.2 // Default 1.2x zoom for better detail
     base.width = Math.round(img.width * sc)
     base.height = Math.round(img.height * sc)
     baseCtx.drawImage(img, 0, 0, base.width, base.height)
@@ -373,6 +418,34 @@ function PMUColorCorrectionTool() {
     setAvgColor(null)
     setAiError("")
   }, [img, isMobile])
+
+  // Update image zoom
+  const updateImageZoom = () => {
+    if (!img || !baseRef.current || !overlayRef.current || !previewRef.current) return
+    const base = baseRef.current
+    const overlay = overlayRef.current
+    const preview = previewRef.current
+    
+    const baseCtx = base.getContext("2d")
+    const overlayCtx = overlay.getContext("2d")
+    const previewCtx = preview.getContext("2d")
+    
+    if (!baseCtx || !overlayCtx || !previewCtx) return
+    
+    const maxW = isMobile ? 600 : 1400
+    const sc = img.width > maxW ? maxW / img.width : imageZoom
+    base.width = Math.round(img.width * sc)
+    base.height = Math.round(img.height * sc)
+    baseCtx.drawImage(img, 0, 0, base.width, base.height)
+    
+    overlay.width = base.width
+    overlay.height = base.height
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height)
+    
+    preview.width = base.width
+    preview.height = base.height
+    previewCtx.drawImage(img, 0, 0, preview.width, preview.height)
+  }
 
   // Unified pointer events for both mouse and touch with proper scaling
   const getPointerPosition = (e: MouseEvent | TouchEvent) => {
@@ -689,20 +762,38 @@ function PMUColorCorrectionTool() {
           <div className="mt-3">
             <div className="text-xs text-gray-600 mb-1">Before/After (AI-tinted selection)</div>
             <canvas ref={previewRef} className="w-full rounded-2xl border" />
-            <div className="mt-2 flex items-center gap-3">
-              <label className="text-xs text-gray-600">Overlay strength</label>
-              <input
-                type="range"
-                min={0.1}
-                max={0.9}
-                step={0.05}
-                value={overlayOpacity}
-                onChange={(e) => {
-                  setOverlayOpacity(Number.parseFloat(e.target.value))
-                  updatePreviewTint(null)
-                }}
-                className="w-48"
-              />
+            <div className="mt-2 space-y-2">
+              <div className="flex items-center gap-3">
+                <label className="text-xs text-gray-600">Overlay strength</label>
+                <input
+                  type="range"
+                  min={0.1}
+                  max={0.9}
+                  step={0.05}
+                  value={overlayOpacity}
+                  onChange={(e) => {
+                    setOverlayOpacity(Number.parseFloat(e.target.value))
+                    updatePreviewTint(null)
+                  }}
+                  className="w-48"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-xs text-gray-600">Image zoom</label>
+                <input
+                  type="range"
+                  min={0.8}
+                  max={2.5}
+                  step={0.1}
+                  value={imageZoom}
+                  onChange={(e) => {
+                    setImageZoom(Number.parseFloat(e.target.value))
+                    updateImageZoom()
+                  }}
+                  className="w-48"
+                />
+                <span className="text-xs text-gray-500">{Math.round(imageZoom * 100)}%</span>
+              </div>
               {aiLoading && <Badge>Analyzing…</Badge>}
               {aiError && <Badge tone="red">{aiError}</Badge>}
             </div>

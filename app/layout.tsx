@@ -3,6 +3,9 @@ import type { Metadata } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
 import "./globals.css"
 import { LeahChat } from "@/components/chat/leah-chat"
+import PWARegistration from "@/components/pwa/pwa-registration"
+import PWAUpdateManager from "@/components/pwa/pwa-update-manager"
+import MobileNav from "@/components/ui/mobile-nav"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,9 +66,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <head>
+        <PWARegistration />
+      </head>
       <body>
         {children}
         <LeahChat />
+        <PWAUpdateManager />
+        <MobileNav />
       </body>
     </html>
   )

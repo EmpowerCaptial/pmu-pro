@@ -1,20 +1,24 @@
-import type { Metadata } from "next"
+"use client"
+
 import { NavBar } from "@/components/ui/navbar"
+import { SendAnalysisForm } from "@/components/send-analysis/send-analysis-form"
 import { Button } from "@/components/ui/button"
 import { Home } from "lucide-react"
 import Link from "next/link"
-import { SendAnalysisForm } from "@/components/send-analysis/send-analysis-form"
-
-export const metadata: Metadata = {
-  title: "Send Client Analysis - PMU Pro",
-  description: "Send skin analysis links to clients for remote consultation",
-}
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export default function SendAnalysisPage() {
-  const mockUser = {
-    name: "Demo PMU Artist",
-    email: "demo@pmupro.com",
-    initials: "DA",
+  const { currentUser } = useDemoAuth()
+  
+  // Fallback user if not authenticated
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
   }
 
   return (
@@ -27,7 +31,7 @@ export default function SendAnalysisPage() {
         />
       </div>
 
-      <NavBar currentPath="/send-analysis" user={mockUser} />
+      <NavBar currentPath="/send-analysis" user={user} />
       <main className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">

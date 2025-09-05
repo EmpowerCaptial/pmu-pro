@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,20 +13,63 @@ import { Badge } from "@/components/ui/badge"
 import { Camera, MapPin, Phone, Mail, Calendar, Award } from "lucide-react"
 
 export default function ProfilePage() {
+  const { currentUser, isAuthenticated } = useDemoAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
   const [profile, setProfile] = useState({
-    name: "Sarah Johnson",
-    email: "sarah@pmuartist.com",
-    phone: "(555) 123-4567",
-    location: "Los Angeles, CA",
-    bio: "Certified PMU artist with 5+ years of experience specializing in natural-looking eyebrows, lip blush, and eyeliner enhancement.",
-    certifications: ["PMU Certification", "Microblading License", "Lip Blush Specialist"],
-    experience: "5 years",
-    specialties: ["Eyebrows", "Lips", "Eyeliner"],
+    name: currentUser?.name || "PMU Artist",
+    email: currentUser?.email || "",
+    phone: "",
+    location: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "US"
+    },
+    bio: "",
+    certifications: [],
+    experience: "",
+    specialties: [],
   })
 
+  // Load saved profile data on component mount
+  useEffect(() => {
+    if (currentUser) {
+      // Load profile photo
+      const savedPhoto = localStorage.getItem(`profile_photo_${currentUser.email}`)
+      if (savedPhoto) {
+        setProfilePhoto(savedPhoto)
+      }
+
+      // Load profile data
+      const savedProfile = localStorage.getItem(`profile_${currentUser.email}`)
+      if (savedProfile) {
+        const parsedProfile = JSON.parse(savedProfile)
+        setProfile(prev => ({
+          ...prev,
+          ...parsedProfile,
+          name: currentUser.name || prev.name,
+          email: currentUser.email || prev.email
+        }))
+      } else {
+        // Initialize with current user data
+        setProfile(prev => ({
+          ...prev,
+          name: currentUser.name || prev.name,
+          email: currentUser.email || prev.email
+        }))
+      }
+    }
+  }, [currentUser])
+
   const handleSave = () => {
-    // Save profile logic here
+    if (currentUser) {
+      // Save profile to localStorage with user-specific key
+      localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(profile))
+      alert("Profile saved successfully!")
+    }
     setIsEditing(false)
   }
 
@@ -35,12 +79,13 @@ export default function ProfilePage() {
     input.accept = "image/*"
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
+      if (file && currentUser) {
         const reader = new FileReader()
         reader.onload = (e) => {
           const imageUrl = e.target?.result as string
-          // In a real app, you'd upload to a server
-          localStorage.setItem("profile_photo", imageUrl)
+          // Save photo with user-specific key
+          localStorage.setItem(`profile_photo_${currentUser.email}`, imageUrl)
+          setProfilePhoto(imageUrl)
           alert("Profile photo updated successfully!")
         }
         reader.readAsDataURL(file)
@@ -56,12 +101,32 @@ export default function ProfilePage() {
         <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-96 h-96 opacity-5 object-contain" />
       </div>
 
-      <NavBar currentPath="/profile" user={{ name: profile.name, email: profile.email, initials: "SJ" }} />
+      <NavBar 
+        currentPath="/profile" 
+        user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+        } : undefined} 
+      />
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          {/* Mobile Layout */}
+          <div className="md:hidden text-center mb-6">
+            <h1 className="text-2xl font-bold font-serif text-ink mb-2">My Profile</h1>
+            <p className="text-sm text-muted-foreground mb-4">Manage your professional information</p>
+            <Button
+              onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+              className="bg-white/90 backdrop-blur-sm border border-lavender text-lavender hover:bg-lavender hover:text-white font-semibold w-full"
+            >
+              {isEditing ? "Save Changes" : "Edit Profile"}
+            </Button>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold font-serif text-ink">My Profile</h1>
               <p className="text-muted-foreground">Manage your professional information</p>
@@ -77,14 +142,59 @@ export default function ProfilePage() {
           {/* Profile Card */}
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
             <CardHeader>
-              <div className="flex items-center space-x-4">
+              {/* Mobile Layout */}
+              <div className="md:hidden text-center mb-4">
+                <Avatar className="h-16 w-16 mx-auto mb-3">
+                  {profilePhoto ? (
+                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-lavender text-white text-lg">
+                      {profile.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <CardTitle className="text-xl font-serif text-ink">{profile.name}</CardTitle>
+                <CardDescription className="text-base">Professional PMU Artist</CardDescription>
+                <div className="flex flex-col items-center space-y-2 mt-3 text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{profile.address.street && profile.address.city ? 
+                      `${profile.address.street}, ${profile.address.city}, ${profile.address.state}` : 
+                      profile.location || "Location not set"
+                    }</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>{profile.experience} experience</span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-lavender text-lavender hover:bg-lavender hover:text-white bg-transparent mt-3 w-full"
+                  onClick={handleChangePhoto}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Change Photo
+                </Button>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden md:flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarFallback className="bg-lavender text-white text-xl">
-                    {profile.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
+                  {profilePhoto ? (
+                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-lavender text-white text-xl">
+                      {profile.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <div className="flex-1">
                   <CardTitle className="text-2xl font-serif text-ink">{profile.name}</CardTitle>
@@ -92,7 +202,10 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-4 w-4" />
-                      <span>{profile.location}</span>
+                      <span>{profile.address.street && profile.address.city ? 
+                        `${profile.address.street}, ${profile.address.city}, ${profile.address.state}` : 
+                        profile.location || "Location not set"
+                      }</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-4 w-4" />
@@ -141,6 +254,96 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <span>{profile.phone}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Address */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Business Address</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="street">Street Address</Label>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      {isEditing ? (
+                        <Input
+                          id="street"
+                          value={profile.address.street}
+                          onChange={(e) => setProfile({ 
+                            ...profile, 
+                            address: { ...profile.address, street: e.target.value }
+                          })}
+                          placeholder="123 Main Street"
+                        />
+                      ) : (
+                        <span>{profile.address.street || "Not provided"}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    {isEditing ? (
+                      <Input
+                        id="city"
+                        value={profile.address.city}
+                        onChange={(e) => setProfile({ 
+                          ...profile, 
+                          address: { ...profile.address, city: e.target.value }
+                        })}
+                        placeholder="Seattle"
+                      />
+                    ) : (
+                      <span>{profile.address.city || "Not provided"}</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State</Label>
+                    {isEditing ? (
+                      <Input
+                        id="state"
+                        value={profile.address.state}
+                        onChange={(e) => setProfile({ 
+                          ...profile, 
+                          address: { ...profile.address, state: e.target.value }
+                        })}
+                        placeholder="WA"
+                      />
+                    ) : (
+                      <span>{profile.address.state || "Not provided"}</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode">ZIP Code</Label>
+                    {isEditing ? (
+                      <Input
+                        id="zipCode"
+                        value={profile.address.zipCode}
+                        onChange={(e) => setProfile({ 
+                          ...profile, 
+                          address: { ...profile.address, zipCode: e.target.value }
+                        })}
+                        placeholder="98101"
+                      />
+                    ) : (
+                      <span>{profile.address.zipCode || "Not provided"}</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country</Label>
+                    {isEditing ? (
+                      <Input
+                        id="country"
+                        value={profile.address.country}
+                        onChange={(e) => setProfile({ 
+                          ...profile, 
+                          address: { ...profile.address, country: e.target.value }
+                        })}
+                        placeholder="US"
+                      />
+                    ) : (
+                      <span>{profile.address.country || "US"}</span>
                     )}
                   </div>
                 </div>

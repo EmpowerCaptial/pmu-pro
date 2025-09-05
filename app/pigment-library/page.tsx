@@ -324,12 +324,12 @@ export default function PigmentLibraryPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header with Return Button */}
         <div className="flex items-center justify-between mb-8">
-          <Link href="/dashboard">
+                <Link href="/dashboard">
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Return to Dashboard
-            </Button>
-          </Link>
+                  </Button>
+                </Link>
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
               <Palette className="h-12 w-12 text-lavender" />
@@ -365,7 +365,7 @@ export default function PigmentLibraryPage() {
               </option>
             ))}
           </select>
-        </div>
+      </div>
 
         {/* Results Count */}
         <div className="mb-6">
@@ -373,19 +373,19 @@ export default function PigmentLibraryPage() {
             Showing {filteredPigments.length} of {pigments.length} pigments
             {selectedBrand !== 'all' && ` from ${selectedBrand}`}
           </p>
-        </div>
+    </div>
 
         {/* Pigment Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPigments.map((pigment) => (
             <Card key={pigment.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
+          <CardHeader>
                 <div className="flex justify-between items-start mb-2">
                   <Badge variant="secondary" className="bg-lavender/20 text-lavender">
                     {pigment.brand}
                   </Badge>
                   <Badge variant="outline">{pigment.opacity}</Badge>
-                </div>
+            </div>
                 <CardTitle className="text-lg">{pigment.name}</CardTitle>
                 <CardDescription>{pigment.description}</CardDescription>
               </CardHeader>
@@ -407,7 +407,7 @@ export default function PigmentLibraryPage() {
 
                   {/* Recommendations */}
                   <div className="space-y-3">
-                    <div>
+              <div>
                       <div className="text-sm font-medium mb-1">Ideal for Fitzpatrick Types:</div>
                       <div className="flex gap-1">
                         {pigment.fitzpatrickTypes.map(type => (
@@ -415,16 +415,16 @@ export default function PigmentLibraryPage() {
                             Type {type}
                           </Badge>
                         ))}
-                      </div>
-                    </div>
+              </div>
+            </div>
                     <div>
                       <div className="text-sm font-medium mb-1">Best Undertones:</div>
                       <div className="flex gap-1">
                         {pigment.undertones.map(undertone => (
                           <Badge key={undertone} variant="outline">
                             {undertone}
-                          </Badge>
-                        ))}
+                </Badge>
+              ))}
                       </div>
                     </div>
                   </div>
@@ -440,11 +440,11 @@ export default function PigmentLibraryPage() {
                       Download
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
 
         {filteredPigments.length === 0 && (
           <div className="text-center py-12">
@@ -471,9 +471,9 @@ export default function PigmentLibraryPage() {
           </div>
           <p className="text-sm text-muted-foreground mt-4">
             Email: <a href="mailto:admin@thepmuguide.com" className="text-lavender hover:underline">admin@thepmuguide.com</a>
-          </p>
-        </div>
-      </div>
+              </p>
+            </div>
+          </div>
     </div>
   )
 }

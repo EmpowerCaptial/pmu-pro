@@ -104,12 +104,12 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Resource Library</h1>
-          <p className="text-lg text-gray-600">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Resource Library</h1>
+          <p className="text-lg text-muted-foreground">
             Official Missouri Board documents and professional resources for PMU artists
           </p>
         </div>
@@ -123,29 +123,34 @@ export default function LibraryPage() {
           </Link>
         </div>
 
-        {/* Search and Tabs */}
+        {/* Search and Category Dropdown */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lavender h-4 w-4" />
               <Input
                 placeholder="Search documents by title, description, or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-lavender/30 focus:border-lavender"
               />
             </div>
+            
+            {/* Category Dropdown */}
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="w-full sm:w-48 px-4 py-2 border border-lavender/30 rounded-md bg-white focus:border-lavender focus:outline-none text-sm font-medium text-foreground shadow-sm"
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {getCategoryName(category)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
-              {categories.map((category) => (
-                <TabsTrigger key={category} value={category} className="text-xs md:text-sm">
-                  {getCategoryName(category)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
         </div>
 
         {/* Results Count */}

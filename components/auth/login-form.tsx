@@ -9,14 +9,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Mail } from "lucide-react"
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
   const router = useRouter()
+  const { login, isLoading: authLoading } = useDemoAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,38 +28,14 @@ export function LoginForm() {
     setMessage("")
 
     try {
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        
-        if (data.requiresPayment) {
-          // User needs to complete payment
-          setMessage("Payment required. Redirecting to billing...")
-          setTimeout(() => {
-            router.push("/billing")
-          }, 2000)
-        } else if (data.verificationPending) {
-          // License verification pending
-          setMessage("License verification pending. Please wait...")
-          setTimeout(() => {
-            router.push("/auth/verification-pending")
-          }, 2000)
-        } else {
-          // Normal magic link flow
-          setIsSuccess(true)
-          setMessage("Check your email for a magic link to sign in!")
-        }
-      } else {
-        const errorData = await response.json()
-        setMessage(errorData.message || "Something went wrong. Please try again.")
-      }
+      const result = await login(email, password)
+      setIsSuccess(true)
+      setMessage("Login successful! Redirecting to dashboard...")
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 1500)
     } catch (error) {
-      setMessage("Network error. Please check your connection.")
+      setMessage("Invalid email or password. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -69,7 +49,7 @@ export function LoginForm() {
     <Card className="border-border shadow-lg">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-semibold text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">Enter your email to receive a secure magic link</CardDescription>
+        <CardDescription className="text-center">Sign in to your PMU Pro account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,7 +58,7 @@ export function LoginForm() {
             <Input
               id="email"
               type="email"
-              placeholder="artist@example.com"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -87,31 +67,68 @@ export function LoginForm() {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                className="bg-background pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+
           {message && (
             <Alert className={isSuccess ? "border-primary bg-primary/5" : "border-destructive bg-destructive/5"}>
-              <Mail className="h-4 w-4" />
+              {isSuccess ? <Mail className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
               <AlertDescription>{message}</AlertDescription>
             </Alert>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading || !email}>
+          <Button 
+            type="submit" 
+            className="w-full bg-lavender hover:bg-lavender-600 text-white font-semibold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105" 
+            disabled={isLoading || authLoading || !email || !password}
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending magic link...
+                Signing In...
               </>
             ) : (
-              "Send magic link"
+              "Sign In"
             )}
           </Button>
-        </form>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>New to PMU Pro?</p>
-          <Button variant="link" className="p-0 h-auto font-normal" onClick={handleRequestAccess}>
-            Request professional access
-          </Button>
-        </div>
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="link"
+              onClick={handleRequestAccess}
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
+              Don't have an account? Request access
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   )

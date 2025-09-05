@@ -41,8 +41,8 @@ export const DEMO_USER: DemoUser = {
 }
 
 export const DEMO_CREDENTIALS = {
-  username: 'demo',
-  password: 'pmupro2024'
+  username: 'demo@pmupro.com',
+  password: 'demopmu'
 }
 
 // Demo data that resets after session
@@ -112,10 +112,8 @@ export function setDemoMode(enabled: boolean): void {
     localStorage.setItem('demo-mode', 'true')
     localStorage.setItem('demo-session-start', Date.now().toString())
   } else {
-    localStorage.removeItem('demo-mode')
-    localStorage.removeItem('demo-session-start')
-    localStorage.removeItem('demo-clients')
-    localStorage.removeItem('demo-analyses')
+    // Clear all demo-related data when exiting demo mode
+    clearAllDemoData()
   }
 }
 
@@ -177,7 +175,7 @@ export function addDemoAnalysis(analysis: any) {
   }
   const newAnalysis = { ...analysis, id: `demo-analysis-${Date.now()}` }
   analyses.push(newAnalysis)
-  localStorage.setItem('demo-analyses', JSON.stringify(newAnalysis))
+  localStorage.setItem('demo-analyses', JSON.stringify(analyses))
 }
 
 // Reset demo data to initial state
@@ -185,6 +183,16 @@ export function resetDemoData(): void {
   if (typeof window === 'undefined') return
   localStorage.setItem('demo-clients', JSON.stringify(DEMO_DATA.clients))
   localStorage.setItem('demo-analyses', JSON.stringify(DEMO_DATA.analyses))
+}
+
+// Clear all demo data and return to initial state
+export function clearAllDemoData(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('demo-mode')
+  localStorage.removeItem('demo-session-start')
+  localStorage.removeItem('demo-clients')
+  localStorage.removeItem('demo-analyses')
+  localStorage.removeItem('demoUser')
 }
 
 // Initialize demo data

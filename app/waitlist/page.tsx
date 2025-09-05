@@ -12,7 +12,26 @@ export default function WaitlistPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="flex items-center justify-between mb-8">
+        {/* Mobile Header */}
+        <div className="md:hidden mb-6">
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-bold text-foreground font-serif mb-2">Join Our Waitlist</h1>
+            <p className="text-sm text-muted-foreground">Get early access to PMU Guide when we launch</p>
+          </div>
+          <Link href="/">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 hover:bg-lavender/10 hover:border-lavender bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold w-full"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+          </Link>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between mb-8">
           <div className="text-center flex-1">
             <h1 className="text-3xl font-bold text-foreground font-serif mb-2">Join Our Waitlist</h1>
             <p className="text-muted-foreground">Get early access to PMU Guide when we launch</p>

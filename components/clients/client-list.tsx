@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Search, Eye, Edit, Plus, User, Mail, Phone, Calendar, MapPin } from 'lucide-react'
-import { getClients, Client } from '@/lib/client-storage'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Search, Eye, Edit, Plus, User, Mail, Phone, Calendar, MapPin, Trash2, FileText } from 'lucide-react'
+import { getClients, Client, onClientsUpdate, deleteClient } from '@/lib/client-storage'
 import Link from 'next/link'
 
 export default function ClientList() {
@@ -15,9 +17,20 @@ export default function ClientList() {
   const [filteredClients, setFilteredClients] = useState<Client[]>([])
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [showActions, setShowActions] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState("")
+  const [deleteError, setDeleteError] = useState("")
 
   useEffect(() => {
     loadClients()
+    
+    // Listen for real-time updates
+    const unsubscribe = onClientsUpdate((updatedClients) => {
+      setClients(updatedClients)
+    })
+    
+    return unsubscribe
   }, [])
 
   useEffect(() => {
@@ -51,7 +64,26 @@ export default function ClientList() {
     }
   }
 
+  const handleDeleteClick = (client: Client) => {
+    setClientToDelete(client)
+    setIsDeleteDialogOpen(true)
+    setDeleteConfirmation("")
+    setDeleteError("")
+  }
 
+  const handleDelete = () => {
+    if (clientToDelete && deleteConfirmation === clientToDelete.name) {
+      deleteClient(clientToDelete.id)
+      setIsDeleteDialogOpen(false)
+      setClientToDelete(null)
+      setDeleteConfirmation("")
+      setDeleteError("")
+      // Refresh the client list
+      loadClients()
+    } else {
+      setDeleteError("Client name does not match. Please type the exact client name to confirm deletion.")
+    }
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -108,7 +140,7 @@ export default function ClientList() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-gray-400" />
                       <span className="truncate">{client.email}</span>
@@ -122,25 +154,35 @@ export default function ClientList() {
                   {/* Client Actions - Show when name is clicked */}
                   {showActions === client.id && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-2 gap-2">
                         <Link href={`/clients/${client.id}/edit`}>
-                          <Button size="sm" variant="outline" className="text-xs">
+                          <Button size="sm" variant="outline" className="text-xs w-full">
                             <Edit className="h-3 w-3 mr-1" />
                             Edit
                           </Button>
                         </Link>
                         <Link href={`/clients/${client.id}/profile`}>
-                          <Button size="sm" variant="outline" className="text-xs">
+                          <Button size="sm" variant="outline" className="text-xs w-full">
                             <User className="h-3 w-3 mr-1" />
                             Profile
                           </Button>
                         </Link>
-                        <Link href="/analyze">
-                          <Button size="sm" variant="outline" className="text-xs">
+                        <Link href={`/clients/${client.id}/documents`}>
+                          <Button size="sm" variant="outline" className="text-xs w-full">
+                            <FileText className="h-3 w-3 mr-1" />
+                            Signatures
+                          </Button>
+                        </Link>
+                        <Link href={`/analyze/${client.id}`}>
+                          <Button size="sm" variant="outline" className="text-xs w-full">
                             <Plus className="h-3 w-3 mr-1" />
                             New Analysis
                           </Button>
                         </Link>
+                        <Button size="sm" variant="outline" className="text-xs text-red-600 w-full" onClick={() => handleDeleteClick(client)}>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -187,6 +229,60 @@ export default function ClientList() {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-white border border-gray-200 shadow-xl">
+          <DialogHeader className="bg-red-50 border-b border-red-200 p-6 -m-6 mb-6">
+            <DialogTitle className="text-red-600 font-semibold text-lg">Delete Client Profile</DialogTitle>
+            <DialogDescription className="text-gray-700 mt-2">
+              This action cannot be undone. This will permanently delete <strong className="text-red-600">{clientToDelete?.name}</strong>'s profile and all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-gray-800 font-medium">
+                To confirm deletion, please type the client's full name: <strong className="text-red-600">{clientToDelete?.name}</strong>
+              </Label>
+              <Input
+                id="name"
+                value={deleteConfirmation}
+                onChange={(e) => {
+                  setDeleteConfirmation(e.target.value)
+                  setDeleteError("")
+                }}
+                placeholder="Type the client's full name"
+                className={`col-span-3 ${deleteError ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"} focus:ring-2 focus:ring-red-500`}
+              />
+              {deleteError && (
+                <p className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">{deleteError}</p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="bg-gray-50 p-4 -mx-6 -mb-6 rounded-b-lg">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteDialogOpen(false)
+                setDeleteConfirmation("")
+                setDeleteError("")
+              }}
+              className="border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

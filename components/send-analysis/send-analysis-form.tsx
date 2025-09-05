@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Copy, Check, User, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function SendAnalysisForm() {
   const [clientName, setClientName] = useState("")
@@ -18,11 +19,19 @@ export function SendAnalysisForm() {
   const [analysisLink, setAnalysisLink] = useState("")
   const [copied, setCopied] = useState(false)
   const router = useRouter()
+  const { currentUser } = useDemoAuth()
+  
+  // Fallback user if not authenticated
+  const user = currentUser || {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
 
   const generateAnalysisLink = () => {
     // Generate unique analysis link for client
     const linkId = Math.random().toString(36).substring(2, 15)
-    const link = `${window.location.origin}/client-analysis?id=${linkId}&artist=${encodeURIComponent("Demo PMU Artist")}`
+    const link = `${window.location.origin}/client-analysis?id=${linkId}&artist=${encodeURIComponent(user.name)}`
     setAnalysisLink(link)
     setLinkGenerated(true)
   }
@@ -64,7 +73,7 @@ The analysis takes just a few minutes and will provide valuable insights for you
 Please click the link below to get started:
 
 Best regards,
-Demo PMU Artist
+${user.name}
 PMU Pro Certified Artist`
 
   return (

@@ -31,8 +31,13 @@ import {
   Heart,
   Briefcase,
   FileText,
+  Bot,
+  Target,
+  BarChart3,
+  Crown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 interface NavItem {
   href: string
@@ -62,16 +67,13 @@ interface NavBarProps {
 export function NavBar({ currentPath, user }: NavBarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const { logout } = useDemoAuth()
 
   const handleSignOut = async () => {
     try {
-      // Clear any local storage or session data
-      localStorage.removeItem("user")
-      sessionStorage.clear()
-
-      // Call sign out API if needed
-      await fetch("/api/auth/signout", { method: "POST" })
-
+      // Use demo auth logout
+      logout()
+      
       // Redirect to login page
       router.push("/auth/login")
     } catch (error) {
@@ -124,7 +126,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0">
                     <Avatar className="h-10 w-10 border-2 border-white/30">
                       <AvatarFallback className="bg-white text-lavender font-semibold text-sm shadow-lg">
-                        {user.initials || user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                        {user.initials || user.name?.split(' ').map(n => n[0]).join('') || user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -160,6 +162,29 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       <FileText className="mr-2 h-4 w-4" />
                       <span>Standard Documents</span>
                     </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/ai-settings" className="cursor-pointer">
+                      <Bot className="mr-2 h-4 w-4" />
+                      <span>AI Assistant</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/brow-mapping" className="cursor-pointer">
+                      <Target className="mr-2 h-4 w-4" />
+                      <span>Brow Mapping Tool</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/pricing" className="cursor-pointer">
+                      <Crown className="mr-2 h-4 w-4" />
+                      <span>Upgrade Plan</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white/50 cursor-not-allowed opacity-50">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Enhanced CRM</span>
+                    <span className="ml-auto text-xs text-white/40">Coming Soon</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/20" />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-white hover:bg-white/20">
@@ -215,6 +240,30 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     <span>Standard Documents</span>
+                  </Link>
+                  <Link
+                    href="/ai-settings"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                  >
+                    <Bot className="mr-2 h-4 w-4" />
+                    <span>AI Assistant</span>
+                  </Link>
+                  <Link
+                    href="/brow-mapping"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                  >
+                    <Target className="mr-2 h-4 w-4" />
+                    <span>Brow Mapping Tool</span>
+                  </Link>
+                  <Link
+                    href="/enhanced-clients"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                  >
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Enhanced CRM</span>
                   </Link>
                 </div>
               </SheetContent>

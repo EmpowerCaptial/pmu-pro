@@ -30,18 +30,27 @@ interface DemoDataProviderProps {
 }
 
 export default function DemoDataProvider({ children }: DemoDataProviderProps) {
-  const [demoClients, setDemoClients] = useState(getDemoClients())
-  const [demoAnalyses, setDemoAnalyses] = useState(getDemoAnalyses())
-  const [remainingTime, setRemainingTime] = useState(getRemainingDemoTime())
+  const [demoClients, setDemoClients] = useState<any[]>([])
+  const [demoAnalyses, setDemoAnalyses] = useState<any[]>([])
+  const [remainingTime, setRemainingTime] = useState(0)
 
   useEffect(() => {
+    // Only initialize demo data if in demo mode
     if (!isDemoMode()) return
 
-    const interval = setInterval(() => {
+    try {
+      setDemoClients(getDemoClients())
+      setDemoAnalyses(getDemoAnalyses())
       setRemainingTime(getRemainingDemoTime())
-    }, 60000) // Update every minute
 
-    return () => clearInterval(interval)
+      const interval = setInterval(() => {
+        setRemainingTime(getRemainingDemoTime())
+      }, 60000) // Update every minute
+
+      return () => clearInterval(interval)
+    } catch (error) {
+      console.error('Error initializing demo data:', error)
+    }
   }, [])
 
   if (!isDemoMode()) {

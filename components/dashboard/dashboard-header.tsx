@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, Settings, User } from "lucide-react"
+import { LogOut, Settings, User, Target } from "lucide-react"
 import Link from "next/link"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 export function DashboardHeader() {
   const router = useRouter()
@@ -53,6 +54,7 @@ export function DashboardHeader() {
           </div>
 
           <div className="flex items-center space-x-4">
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -79,6 +81,12 @@ export function DashboardHeader() {
                   <Link href="/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/brow-mapping" className="cursor-pointer">
+                    <Target className="mr-2 h-4 w-4" />
+                    <span>Brow Mapping Tool</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

@@ -104,10 +104,12 @@ export async function POST(request: NextRequest) {
               role: "system",
               content: `You are a professional dermatologist and PMU specialist with expertise in Fitzpatrick skin type classification. 
               
+              IMPORTANT: Be extremely careful about sunburn/erythema detection. Only classify as sunburn if you see clear, unmistakable signs of recent sun damage (redness, inflammation, peeling). Most people do NOT have sunburn in normal photos.
+              
               Analyze the skin image for:
               1. Skin tone (0-100 scale, where 0=very light, 100=very dark)
               2. Undertone (cool/neutral/warm)
-              3. Sun reaction pattern (always_burns/usually_burns/sometimes_burns/rarely_burns/never_burns)
+              3. Sun reaction pattern - ONLY use "always_burns" if you see clear sunburn, otherwise use "usually_burns" for fair skin, "sometimes_burns" for medium skin, "rarely_burns" for olive skin, "never_burns" for dark skin
               4. Tanning ability (never/minimal/moderate/good/excellent/maximum)
               5. Freckling (heavy/moderate/light/rare/none)
               6. Eye color
@@ -122,7 +124,11 @@ export async function POST(request: NextRequest) {
               content: [
                 {
                   type: "text",
-                  text: `Analyze this facial image for comprehensive PMU consultation and return ONLY this JSON format:
+                  text: `Analyze this facial image for comprehensive PMU consultation. 
+
+CRITICAL: For sun reaction, be conservative. Only use "always_burns" if you see obvious, recent sunburn (redness, inflammation). Most people have normal skin tone without sunburn.
+
+Return ONLY this JSON format:
 {
   "success": true,
   "data": {

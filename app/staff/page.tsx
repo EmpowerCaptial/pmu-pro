@@ -59,7 +59,7 @@ export default function StaffLoginPage() {
         />
       </div>
 
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-lavender/20 shadow-xl">
+      <Card className="w-full max-w-sm sm:max-w-md bg-white/80 backdrop-blur-sm border-lavender/20 shadow-xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-lavender/10 rounded-full">

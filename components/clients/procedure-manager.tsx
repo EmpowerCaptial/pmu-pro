@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Syringe, Calendar, MapPin, Clock, Settings, Palette } from 'lucide-react'
+import { Plus, Syringe, Calendar, MapPin, Clock, Settings, Palette, DollarSign } from 'lucide-react'
+import { serviceStorage, type PMUService } from '@/lib/service-storage'
 
 interface Procedure {
   id: string
+  serviceId?: string // Link to service from service management
   procedureType: string
   voltage: number
   needleConfiguration: string
@@ -25,6 +27,7 @@ interface Procedure {
   followUpDate: string
   isCompleted: boolean
   notes: string
+  price?: number // Price from service
 }
 
 const PROCEDURE_TYPES = [
@@ -48,7 +51,10 @@ interface ProcedureManagerProps {
 }
 
 export function ProcedureManager({ clientId, procedures, onProceduresChange }: ProcedureManagerProps) {
+  const [services, setServices] = useState<PMUService[]>([])
+  const [selectedService, setSelectedService] = useState<PMUService | null>(null)
   const [newProcedure, setNewProcedure] = useState({
+    serviceId: '',
     procedureType: '',
     voltage: '',
     needleConfiguration: '',
@@ -63,6 +69,26 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
     notes: ''
   })
 
+  useEffect(() => {
+    // Load services from storage
+    const activeServices = serviceStorage.getActiveServices()
+    setServices(activeServices)
+  }, [])
+
+  const handleServiceSelect = (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId)
+    if (service) {
+      setSelectedService(service)
+      setNewProcedure(prev => ({
+        ...prev,
+        serviceId: service.id,
+        procedureType: service.name,
+        duration: service.duration.toString(),
+        areaTreated: service.category
+      }))
+    }
+  }
+
   const handleProcedureSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -72,6 +98,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
       
       const newProc: Procedure = {
         id: `proc${Date.now()}`,
+        serviceId: newProcedure.serviceId,
         procedureType: newProcedure.procedureType,
         voltage: parseFloat(newProcedure.voltage),
         needleConfiguration: newProcedure.needleConfiguration,
@@ -84,7 +111,8 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
         procedureDate: newProcedure.procedureDate,
         followUpDate: newProcedure.followUpDate,
         isCompleted: false,
-        notes: newProcedure.notes
+        notes: newProcedure.notes,
+        price: selectedService?.price
       }
 
       const updatedProcedures = [newProc, ...procedures]
@@ -92,6 +120,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
       
       // Reset form
       setNewProcedure({
+        serviceId: '',
         procedureType: '',
         voltage: '',
         needleConfiguration: '',
@@ -105,6 +134,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
         followUpDate: '',
         notes: ''
       })
+      setSelectedService(null)
     } catch (error) {
       console.error('Error creating procedure:', error)
     }
@@ -139,20 +169,55 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
         </CardHeader>
         <CardContent>
           <form onSubmit={handleProcedureSubmit} className="space-y-4">
+            {/* Service Selection */}
+            <div>
+              <Label htmlFor="service-select">Select Service *</Label>
+              <Select value={newProcedure.serviceId} onValueChange={handleServiceSelect}>
+                <SelectTrigger className="bg-white border-gray-300">
+                  <SelectValue placeholder="Choose from your services" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-300">
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id} className="hover:bg-lavender/10">
+                      <div className="flex items-center justify-between w-full">
+                        <span>{service.name}</span>
+                        <span className="text-sm text-gray-500 ml-2">${service.price}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedService && (
+                <div className="mt-2 p-3 bg-lavender/10 rounded-lg">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{selectedService.name}</span>
+                    <div className="flex items-center gap-4 text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="w-3 h-3" />
+                        ${selectedService.price}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {selectedService.duration}m
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">{selectedService.description}</p>
+                </div>
+              )}
+            </div>
+
             {/* Basic Procedure Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="procedure-type">Procedure Type *</Label>
-                <Select value={newProcedure.procedureType} onValueChange={(value) => setNewProcedure(prev => ({ ...prev, procedureType: value }))}>
-                  <SelectTrigger className="bg-white border-gray-300">
-                    <SelectValue placeholder="Select procedure type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-300">
-                    {PROCEDURE_TYPES.map((type) => (
-                      <SelectItem key={type} value={type} className="hover:bg-lavender/10">{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="procedure-type"
+                  value={newProcedure.procedureType}
+                  onChange={(e) => setNewProcedure(prev => ({ ...prev, procedureType: e.target.value }))}
+                  placeholder="e.g., Eyebrow Microblading"
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="procedure-date">Procedure Date *</Label>
@@ -365,6 +430,12 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
                         <p className="font-medium">{proc.lotNumber}</p>
                       </div>
                     </div>
+                    {proc.price && (
+                      <div className="flex items-center gap-2 text-green-600 font-semibold">
+                        <DollarSign className="w-4 h-4" />
+                        <span>${proc.price}</span>
+                      </div>
+                    )}
                     {proc.depth && (
                       <div>
                         <Label className="text-gray-600">Depth</Label>

@@ -12,17 +12,36 @@ export default function ColorCorrectionPage() {
 
       <div className="relative z-10">
         {/* Header */}
-        <div className="p-6 border-b bg-white/80 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto flex items-center gap-4">
-            <Link href="/dashboard">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-lavender/10 hover:bg-lavender/20 transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="font-medium">Return to Dashboard</span>
-              </button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">PMU Color Correction Tool</h1>
-              <p className="text-gray-600">AI-powered pigment analysis and correction recommendations</p>
+        <div className="p-4 md:p-6 border-b bg-white/80 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto">
+            {/* Mobile Layout */}
+            <div className="md:hidden text-center mb-4">
+              <div className="mb-3">
+                <Link href="/dashboard">
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-lavender/10 hover:bg-lavender/20 transition-colors w-full">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="font-medium">Return to Dashboard</span>
+                  </button>
+                </Link>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">PMU Color Correction Tool</h1>
+                <p className="text-sm text-gray-600">AI-powered pigment analysis and correction recommendations</p>
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link href="/dashboard">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-lavender/10 hover:bg-lavender/20 transition-colors">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="font-medium">Return to Dashboard</span>
+                </button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">PMU Color Correction Tool</h1>
+                <p className="text-gray-600">AI-powered pigment analysis and correction recommendations</p>
+              </div>
             </div>
           </div>
         </div>

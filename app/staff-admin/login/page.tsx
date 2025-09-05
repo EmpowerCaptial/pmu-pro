@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, Eye, EyeOff, Lock, AlertTriangle, Users, Crown, UserCheck } from 'lucide-react'
-import { validateStaffLogin, type StaffMember } from '@/lib/staff-auth'
+import { validateStaffLogin, type StaffMember, getStaffMembers } from '@/lib/staff-auth'
 
 export default function StaffAdminLoginPage() {
   const [username, setUsername] = useState('')
@@ -27,6 +27,27 @@ export default function StaffAdminLoginPage() {
       const staffMember = validateStaffLogin(username, password)
       
       if (staffMember) {
+        // Check if this is a new user who needs to set their password
+        const allStaff = getStaffMembers()
+        const fullStaffMember = allStaff.find(s => s.id === staffMember.id)
+        
+        if (fullStaffMember && !fullStaffMember.passwordSet) {
+          // Store minimal auth data and redirect to password change
+          localStorage.setItem('staffAuth', JSON.stringify({
+            id: staffMember.id,
+            username: staffMember.username,
+            role: staffMember.role,
+            firstName: staffMember.firstName,
+            lastName: staffMember.lastName,
+            permissions: staffMember.permissions,
+            timestamp: Date.now(),
+            needsPasswordChange: true
+          }))
+          
+          router.push('/staff-admin/change-password')
+          return
+        }
+        
         // Store authentication in localStorage (in production, use proper session management)
         localStorage.setItem('staffAuth', JSON.stringify({
           id: staffMember.id,

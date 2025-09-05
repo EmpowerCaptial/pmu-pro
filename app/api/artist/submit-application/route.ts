@@ -1,24 +1,39 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { ArtistApplicationService } from "@/lib/artist-application-service"
 
 export async function POST(request: NextRequest) {
   try {
     const applicationData = await request.json()
 
-    // In production, this would:
-    // 1. Save application to database
-    // 2. Send notification to staff for review
-    // 3. Send confirmation email to artist
+    // Submit application using the new service
+    const application = ArtistApplicationService.submitApplication({
+      name: applicationData.name,
+      email: applicationData.email,
+      phone: applicationData.phone,
+      businessName: applicationData.businessName,
+      businessAddress: applicationData.businessAddress,
+      licenseNumber: applicationData.licenseNumber,
+      licenseState: applicationData.licenseState,
+      experience: applicationData.experience,
+      specialties: applicationData.specialties || [],
+      portfolioUrl: applicationData.portfolioUrl,
+      socialMedia: applicationData.socialMedia || []
+    })
 
-    console.log("Artist application submitted:", applicationData)
+    console.log("Artist application submitted:", application)
 
-    // Simulate successful submission
+    // Return success response
     return NextResponse.json({
       success: true,
-      message: "Application submitted successfully",
-      applicationId: `APP-${Date.now()}`,
+      message: "Application submitted successfully. You now have immediate access to your 30-day free trial.",
+      applicationId: application.id,
+      trialStarted: true
     })
   } catch (error) {
     console.error("Application submission error:", error)
-    return NextResponse.json({ error: "Failed to submit application" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to submit application",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 })
   }
 }

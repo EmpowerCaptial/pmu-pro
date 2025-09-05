@@ -67,7 +67,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory pb-20">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <img
           src="/images/pmu-guide-logo.png"

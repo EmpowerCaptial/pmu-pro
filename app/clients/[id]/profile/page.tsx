@@ -6,11 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { User, FileText, Syringe, AlertTriangle, Calendar, Phone, Mail, Heart, ArrowLeft, Users } from 'lucide-react'
+import { User, FileText, Syringe, AlertTriangle, Calendar, Phone, Mail, Heart, ArrowLeft, Users, Send } from 'lucide-react'
 import { Label } from '@/components/ui/label'
-import { DocumentManager } from '@/components/clients/document-manager'
+import { DocumentUpload } from '@/components/clients/document-upload'
 import { ProcedureManager } from '@/components/clients/procedure-manager'
+import { InsuranceManager } from '@/components/clients/insurance-manager'
+import { SendConsentFormButton } from '@/components/consent/send-consent-form-button'
+import { ClientConsentFormsTab } from '@/components/consent/client-consent-forms-tab'
 import Link from 'next/link'
+import { getClientById, type Client as ClientData, onClientsUpdate, type ClientDocument } from '@/lib/client-storage'
+
+const getInitials = (name: string) => {
+  return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()
+}
 
 interface Client {
   id: string
@@ -58,89 +66,142 @@ export default function ClientProfilePage() {
   const params = useParams()
   const clientId = params.id as string
   const [client, setClient] = useState<Client | null>(null)
-  const [documents, setDocuments] = useState<Document[]>([])
+  const [documents, setDocuments] = useState<ClientDocument[]>([])
   const [procedures, setProcedures] = useState<Procedure[]>([])
+  const [actualClientData, setActualClientData] = useState<ClientData | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Mock client data for now
-    setClient({
-      id: clientId,
-      name: 'Jane Doe',
-      email: 'jane@example.com',
-      phone: '+1234567890',
-      dateOfBirth: '1990-05-15',
-      emergencyContact: 'John Doe +1234567891',
-      medicalHistory: 'No known medical conditions',
-      allergies: 'None reported',
-      skinType: 'Type III',
-      notes: 'Prefers natural-looking brows',
-      isActive: true
+    const loadClientData = () => {
+      console.log('Loading client data for ID:', clientId)
+      
+      // Load actual client data from storage
+      const actualClient = getClientById(clientId)
+      console.log('Found actual client:', actualClient)
+      
+      if (actualClient) {
+        // Store the actual client data for use with managers
+        setActualClientData(actualClient)
+        
+        // Load documents from actual client data
+        setDocuments(actualClient.documents || [])
+        
+        // Convert storage client data to profile format
+        const profileClient: Client = {
+          id: actualClient.id,
+          name: actualClient.name,
+          email: actualClient.email,
+          phone: actualClient.phone,
+          dateOfBirth: actualClient.dateOfBirth || 'Not provided',
+          emergencyContact: actualClient.emergencyContact || 'Not provided',
+          medicalHistory: actualClient.medicalConditions?.length > 0 
+            ? actualClient.medicalConditions.join(', ') 
+            : 'No known medical conditions',
+          allergies: actualClient.allergies?.length > 0 
+            ? actualClient.allergies.join(', ') 
+            : 'None reported',
+          skinType: 'Type III', // Default for now
+          notes: actualClient.notes || 'No additional notes',
+          isActive: true
+        }
+        
+        console.log('Setting profile client:', profileClient)
+        setClient(profileClient)
+      } else {
+        console.error('No client found with ID:', clientId)
+        setClient(null)
+      }
+      
+      setLoading(false)
+    }
+
+    // Initial load
+    loadClientData()
+
+    // Subscribe to client updates
+    const unsubscribe = onClientsUpdate((updatedClients) => {
+      console.log('Clients updated, reloading client data...')
+      const updatedClient = updatedClients.find(c => c.id === clientId)
+      if (updatedClient) {
+        console.log('Found updated client:', updatedClient)
+        loadClientData()
+      }
     })
 
-    // Mock documents
-    setDocuments([
-      {
-        id: 'doc1',
-        type: 'CONSENT_FORM',
-        filename: 'Consent_Form_Jane_Doe.pdf',
-        fileUrl: '/sample-consent-form.pdf',
-        fileSize: 245760,
-        mimeType: 'application/pdf',
-        notes: 'Signed consent form for microblading procedure',
-        createdAt: '2024-08-01T00:00:00Z'
-      },
-      {
-        id: 'doc2',
-        type: 'INTAKE_FORM',
-        filename: 'Intake_Form_Jane_Doe.pdf',
-        fileUrl: '/sample-intake-form.pdf',
-        fileSize: 189440,
-        mimeType: 'application/pdf',
-        notes: 'Completed intake form with medical history',
-        createdAt: '2024-08-01T00:00:00Z'
-      }
-    ])
-
-    // Mock procedures
-    setProcedures([
-      {
-        id: 'proc1',
-        procedureType: 'Microblading',
-        voltage: 7.5,
-        needleConfiguration: '18 needles, 0.18mm',
-        pigmentBrand: 'Permablend',
-        pigmentColor: 'Medium Brown',
-        lotNumber: 'MB-2024-001',
-        depth: '0.2-0.3mm',
-        duration: 120,
-        areaTreated: 'Eyebrows',
-        procedureDate: '2024-08-15T00:00:00Z',
-        followUpDate: '2024-09-15T00:00:00Z',
-        isCompleted: true,
-        notes: 'Client tolerated procedure well. Natural hair stroke technique applied.'
-      }
-    ])
+    return unsubscribe
   }, [clientId])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-lavender mx-auto"></div>
+            <p className="mt-4 text-lg text-gray-600">Loading client profile...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!client) {
-    return <div>Loading...</div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center space-y-4">
+            <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+              <h2 className="text-xl font-semibold text-red-800 mb-2">Client Not Found</h2>
+              <p className="text-red-600 mb-4">
+                Could not find client with ID: <code className="bg-red-100 px-2 py-1 rounded">{clientId}</code>
+              </p>
+              <Link href="/clients">
+                <Button variant="outline">
+                  Back to Client List
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{client.name}</h1>
-            <div className="flex items-center gap-4 text-gray-600">
-              <span>Client ID: {client.id}</span>
-              <Badge variant={client.isActive ? "default" : "secondary"}>
-                {client.isActive ? 'Active' : 'Inactive'}
-              </Badge>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {(actualClientData as any)?.avatar ? (
+                <img
+                  src={(actualClientData as any).avatar}
+                  alt={client.name}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-lavender"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-lavender to-purple-500 flex items-center justify-center text-white font-semibold text-xl">
+                  {getInitials(client.name)}
+                </div>
+              )}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{client.name}</h1>
+              <div className="flex items-center gap-4 text-gray-600">
+                <span>Client ID: {client.id}</span>
+                <Badge variant={client.isActive ? "default" : "secondary"}>
+                  {client.isActive ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
+            <SendConsentFormButton
+              clientId={clientId}
+              clientName={client.name}
+              variant="default"
+              size="default"
+            />
             <Link href="/clients">
               <Button variant="outline" className="gap-2 bg-lavender/10 border-lavender/30 text-lavender-700 hover:bg-lavender/20">
                 <ArrowLeft className="h-4 w-4" />
@@ -158,11 +219,12 @@ export default function ClientProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="procedures">Procedures</TabsTrigger>
           <TabsTrigger value="medical">Medical</TabsTrigger>
+          <TabsTrigger value="forms">Forms</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -235,10 +297,17 @@ export default function ClientProfilePage() {
         </TabsContent>
 
         <TabsContent value="documents">
-          <DocumentManager 
+          <DocumentUpload 
             clientId={clientId}
             documents={documents}
-            onDocumentsChange={setDocuments}
+            onDocumentsUpdate={() => {
+              // Reload client data when documents are updated
+              const actualClient = getClientById(clientId)
+              if (actualClient) {
+                setActualClientData(actualClient)
+                setDocuments(actualClient.documents || [])
+              }
+            }}
           />
         </TabsContent>
 
@@ -284,41 +353,26 @@ export default function ClientProfilePage() {
           </Card>
 
           {/* Insurance Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Insurance Information
-              </CardTitle>
-              <CardDescription>
-                Client insurance provider and coverage details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Insurance Provider</Label>
-                  <p className="text-sm">Blue Cross Blue Shield</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Policy Number</Label>
-                  <p className="text-sm">BCBS-123456789</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Group Number</Label>
-                  <p className="text-sm">GRP-987654</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Coverage Type</Label>
-                  <p className="text-sm">PPO</p>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Additional Notes</Label>
-                <p className="text-sm">Coverage verified for cosmetic procedures. Prior authorization may be required.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <InsuranceManager
+            clientId={clientId}
+            insurance={actualClientData?.insurance || []}
+            onInsuranceUpdate={() => {
+              // Reload client data when insurance is updated
+              const actualClient = getClientById(clientId)
+              if (actualClient) {
+                setActualClientData(actualClient)
+                // Trigger page refresh to show updated data
+                window.location.reload()
+              }
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="forms" className="space-y-6">
+          <ClientConsentFormsTab 
+            clientId={clientId}
+            clientName={client.name}
+          />
         </TabsContent>
       </Tabs>
     </div>

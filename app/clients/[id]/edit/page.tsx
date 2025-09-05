@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,30 +10,126 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
+import { getClientById, updateClient, type Client as ClientData } from "@/lib/client-storage"
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
+  const { currentUser, isAuthenticated } = useDemoAuth()
   const [client, setClient] = useState({
     id: params.id,
-    name: "Sarah Johnson",
-    email: "sarah@example.com",
-    phone: "+1-555-0123",
-    notes: "First-time PMU client, interested in microblading",
-    address: "123 Main St, Los Angeles, CA",
-    emergencyContact: "John Johnson - (555) 456-7890",
+    name: "",
+    email: "",
+    phone: "",
+    notes: "",
+    emergencyContact: "",
   })
+  const [loading, setLoading] = useState(true)
+  const [originalClient, setOriginalClient] = useState<ClientData | null>(null)
+
+  useEffect(() => {
+    const loadClientData = () => {
+      console.log('Loading client data for editing, ID:', params.id)
+      
+      // Load actual client data from storage
+      const actualClient = getClientById(params.id)
+      console.log('Found actual client for editing:', actualClient)
+      
+      if (actualClient) {
+        setOriginalClient(actualClient)
+        setClient({
+          id: actualClient.id,
+          name: actualClient.name || "",
+          email: actualClient.email || "",
+          phone: actualClient.phone || "",
+          notes: actualClient.notes || "",
+          emergencyContact: actualClient.emergencyContact || "",
+        })
+      } else {
+        console.error('No client found for editing with ID:', params.id)
+      }
+      
+      setLoading(false)
+    }
+
+    loadClientData()
+  }, [params.id])
 
   const handleSave = () => {
-    // Save client data
-    const existingClients = JSON.parse(localStorage.getItem("pmu_clients") || "[]")
-    const updatedClients = existingClients.map((c: any) => (c.id === client.id ? { ...c, ...client } : c))
-    localStorage.setItem("pmu_clients", JSON.stringify(updatedClients))
-    alert("Client information updated successfully!")
-    window.location.href = "/clients"
+    if (!originalClient) {
+      alert("Error: Original client data not found!")
+      return
+    }
+
+    try {
+      // Update the client with new data
+      const updatedClient = {
+        ...originalClient,
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        notes: client.notes,
+        emergencyContact: client.emergencyContact,
+        updatedAt: new Date().toISOString()
+      }
+
+      const success = updateClient(params.id, updatedClient)
+      
+      if (success) {
+        alert("Client information updated successfully!")
+        window.location.href = "/clients"
+      } else {
+        alert("Error updating client. Please try again.")
+      }
+    } catch (error) {
+      console.error('Error saving client:', error)
+      alert("Error saving client data. Please try again.")
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-lavender mx-auto"></div>
+            <p className="mt-4 text-lg text-gray-600">Loading client data...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!originalClient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center space-y-4">
+            <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+              <h2 className="text-xl font-semibold text-red-800 mb-2">Client Not Found</h2>
+              <p className="text-red-600 mb-4">
+                Could not find client with ID: <code className="bg-red-100 px-2 py-1 rounded">{params.id}</code>
+              </p>
+              <Link href="/clients">
+                <Button variant="outline">
+                  Back to Client List
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-      <NavBar currentPath="/clients" user={{ name: "Demo Artist", email: "demo@pmupro.com", initials: "DA" }} />
+      <NavBar 
+        currentPath="/clients" 
+        user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+        } : undefined} 
+      />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
@@ -85,15 +182,6 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                     onChange={(e) => setClient({ ...client, emergencyContact: e.target.value })}
                   />
                 </div>
-              </div>
-
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={client.address}
-                  onChange={(e) => setClient({ ...client, address: e.target.value })}
-                />
               </div>
 
               <div>

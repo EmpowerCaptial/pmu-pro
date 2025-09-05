@@ -318,38 +318,74 @@ export default function HelpPage() {
         }
       ]
     },
-    staff: {
-      title: "Staff Management System 👨‍💼",
-      description: "Role-based access control and team management",
-      icon: <Shield className="h-8 w-8 text-indigo-500" />,
+    aiAssistant: {
+      title: "AI Assistant Integration 🤖",
+      description: "Automate customer service and booking with intelligent AI",
+      icon: <MessageSquare className="h-8 w-8 text-purple-500" />,
       sections: [
         {
-          title: "Staff Roles and Permissions",
-          content: "PMU Pro includes a comprehensive staff management system with role-based access control.",
-          roles: [
-            "Representative - Basic access, view-only with approval",
-            "Manager - Enhanced access, can approve changes",
-            "Director - Full access to all features and settings"
+          title: "What is the AI Assistant?",
+          content: "The AI Assistant is an intelligent system that can automatically respond to customer messages on Facebook Messenger, book appointments, and provide 24/7 customer support for your PMU business.",
+          benefits: [
+            "24/7 automated customer service",
+            "Automatic appointment booking",
+            "Instant responses to common questions",
+            "Integration with your booking platforms",
+            "Reduces manual work and improves response time"
           ]
         },
         {
-          title: "Accessing Staff Admin",
-          content: "Staff members can access the administrative system through the staff login.",
+          title: "Setting Up Your AI Assistant",
+          content: "Configure your AI Assistant to match your business needs and customer service style.",
           steps: [
-            "1. Navigate to staff admin login",
-            "2. Enter username and password",
-            "3. Access role-appropriate features",
-            "4. Use Artist View Mode for client assistance"
+            "1. Go to AI Assistant Settings in your dashboard",
+            "2. Choose between AI Mode or Manual Response",
+            "3. Set your business hours and availability",
+            "4. Connect your booking platforms (Calendly, Square, etc.)",
+            "5. Customize your greeting and response style",
+            "6. Test the system with a sample message"
           ]
         },
         {
-          title: "Artist View Mode",
-          content: "Staff can view client accounts from the user's perspective to provide better support.",
+          title: "AI Response Modes",
+          content: "Choose how your AI Assistant handles customer interactions.",
           features: [
-            "View user dashboard and features",
-            "Access client information",
-            "Provide technical support",
-            "Role-based editing permissions"
+            "AI Mode - Fully automated responses and booking",
+            "Manual Mode - AI collects info, you handle responses",
+            "Hybrid Mode - AI handles simple queries, you handle complex ones",
+            "Booking Integration - AI checks availability and books appointments"
+          ]
+        },
+        {
+          title: "Booking Platform Integration",
+          content: "Connect your AI Assistant to your existing booking systems for seamless appointment scheduling.",
+          platforms: [
+            "Calendly - Popular scheduling platform",
+            "Acuity Scheduling - Advanced booking system",
+            "Square Appointments - Payment-integrated booking",
+            "Booksy - Beauty industry specific platform"
+          ]
+        },
+        {
+          title: "Customizing AI Responses",
+          content: "Personalize your AI Assistant to match your brand voice and business style.",
+          tips: [
+            "Write a friendly, professional greeting",
+            "Include your business hours and location",
+            "Add information about your services and pricing",
+            "Set up common FAQ responses",
+            "Configure appointment confirmation messages"
+          ]
+        },
+        {
+          title: "Monitoring and Control",
+          content: "Stay in control of your AI Assistant and monitor its performance.",
+          features: [
+            "Review all AI conversations",
+            "Override AI responses when needed",
+            "Monitor booking success rates",
+            "Adjust settings based on performance",
+            "Switch between AI and manual modes instantly"
           ]
         }
       ]
@@ -458,10 +494,39 @@ export default function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header with Return Button */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige relative overflow-hidden">
+      {/* Background Logo Watermark - Fixed Position */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <img
+          src="/images/pmu-guide-logo.png"
+          alt="PMU Guide Background"
+          className="w-[60%] max-w-2xl h-auto opacity-5 object-contain"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Mobile Header - Title First */}
+        <div className="md:hidden mb-8">
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <HelpCircle className="h-10 w-10 text-lavender" />
+              <h1 className="text-2xl font-bold text-foreground">How to Use PMU Pro</h1>
+            </div>
+            <p className="text-base text-muted-foreground px-4">
+              Master all PMU Pro features with our comprehensive guide
+            </p>
+          </div>
+          <div className="flex justify-start">
+            <Link href="/dashboard">
+              <Button variant="outline" className="gap-2 bg-white/90 backdrop-blur-sm border-lavender/30 hover:bg-lavender/10">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Desktop Header - Original Layout */}
+        <div className="hidden md:flex items-center justify-between mb-8">
           <Link href="/dashboard">
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
@@ -495,8 +560,9 @@ export default function HelpPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-4">
+        <div className="mb-8">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center justify-center gap-4">
             <Button 
               onClick={() => setShowTicketForm(true)}
               className="gap-2 bg-lavender hover:bg-lavender/90"
@@ -513,21 +579,140 @@ export default function HelpPage() {
               Download Guide
             </Button>
           </div>
+
+          {/* Mobile Actions - Square Grid Layout */}
+          <div className="md:hidden grid grid-cols-2 gap-3">
+            <Button 
+              onClick={() => setShowTicketForm(true)}
+              className="h-20 bg-gradient-to-br from-lavender to-purple-600 hover:from-lavender/90 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="text-center">
+                <MessageSquare className="h-6 w-6 mx-auto mb-2" />
+                <span className="text-sm">Support Ticket</span>
+              </div>
+            </Button>
+            <Button 
+              variant="outline"
+              className="h-20 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+            >
+              <div className="text-center">
+                <Mail className="h-6 w-6 mx-auto mb-2" />
+                <span className="text-sm">Contact Support</span>
+              </div>
+            </Button>
+            <Button 
+              variant="outline"
+              className="h-20 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+            >
+              <div className="text-center">
+                <Download className="h-6 w-6 mx-auto mb-2" />
+                <span className="text-sm">Download Guide</span>
+              </div>
+            </Button>
+            <Button 
+              variant="outline"
+              className="h-20 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+            >
+              <div className="text-center">
+                <HelpCircle className="h-6 w-6 mx-auto mb-2" />
+                <span className="text-sm">Quick Help</span>
+              </div>
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="clients">Clients</TabsTrigger>
-            <TabsTrigger value="skinAnalysis">Skin Analysis</TabsTrigger>
-            <TabsTrigger value="pigmentLibrary">Pigments</TabsTrigger>
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-            <TabsTrigger value="colorCorrection">Correction</TabsTrigger>
-            <TabsTrigger value="staff">Staff</TabsTrigger>
-            <TabsTrigger value="pwa">PWA</TabsTrigger>
+          {/* Desktop Tab List */}
+          <TabsList className="hidden lg:grid w-full grid-cols-9 bg-white/90 backdrop-blur-sm border border-lavender/20 p-1 rounded-lg">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-lavender/10 transition-all duration-200"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="dashboard"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-blue-50 transition-all duration-200"
+            >
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger 
+              value="clients"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-green-50 transition-all duration-200"
+            >
+              Clients
+            </TabsTrigger>
+            <TabsTrigger 
+              value="skinAnalysis"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-purple-50 transition-all duration-200"
+            >
+              Skin Analysis
+            </TabsTrigger>
+            <TabsTrigger 
+              value="pigmentLibrary"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-orange-50 transition-all duration-200"
+            >
+              Pigments
+            </TabsTrigger>
+            <TabsTrigger 
+              value="resources"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-50 transition-all duration-200"
+            >
+              Resources
+            </TabsTrigger>
+            <TabsTrigger 
+              value="colorCorrection"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-yellow-50 transition-all duration-200"
+            >
+              Correction
+            </TabsTrigger>
+            <TabsTrigger 
+              value="aiAssistant"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-purple-50 transition-all duration-200"
+            >
+              AI Assistant
+            </TabsTrigger>
+            <TabsTrigger 
+              value="pwa"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-teal-50 transition-all duration-200"
+            >
+              PWA
+            </TabsTrigger>
           </TabsList>
+
+          {/* Mobile Box Grid - Enhanced Professional Design */}
+          <div className="lg:hidden grid grid-cols-2 gap-3 p-2">
+            {[
+              { key: 'overview', title: 'Overview', icon: <Rocket className="h-7 w-7" />, color: 'from-lavender to-purple-500', description: 'Get Started' },
+              { key: 'dashboard', title: 'Dashboard', icon: <Target className="h-7 w-7" />, color: 'from-blue-500 to-blue-600', description: 'Main Hub' },
+              { key: 'clients', title: 'Clients', icon: <Users className="h-7 w-7" />, color: 'from-green-500 to-green-600', description: 'Management' },
+              { key: 'skinAnalysis', title: 'Skin Analysis', icon: <Eye className="h-7 w-7" />, color: 'from-purple-500 to-purple-600', description: 'AI Tools' },
+              { key: 'pigmentLibrary', title: 'Pigments', icon: <Palette className="h-7 w-7" />, color: 'from-orange-500 to-orange-600', description: 'Color Guide' },
+              { key: 'resources', title: 'Resources', icon: <FileText className="h-7 w-7" />, color: 'from-red-500 to-red-600', description: 'Documents' },
+              { key: 'colorCorrection', title: 'Correction', icon: <Zap className="h-7 w-7" />, color: 'from-yellow-500 to-yellow-600', description: 'Fix Issues' },
+              { key: 'aiAssistant', title: 'AI Assistant', icon: <MessageSquare className="h-7 w-7" />, color: 'from-purple-600 to-pink-500', description: 'Smart Help' },
+              { key: 'pwa', title: 'PWA Guide', icon: <Smartphone className="h-7 w-7" />, color: 'from-teal-500 to-teal-600', description: 'Mobile App' }
+            ].map((tab) => (
+              <Card 
+                key={tab.key}
+                className={`cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border-0 ${
+                  activeTab === tab.key 
+                    ? 'ring-2 ring-lavender ring-offset-2 shadow-xl bg-gradient-to-br from-lavender/10 to-purple-100' 
+                    : 'hover:shadow-lg bg-white/95 backdrop-blur-sm'
+                }`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className={`w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-r ${tab.color} flex items-center justify-center text-white shadow-lg`}>
+                    {tab.icon}
+                  </div>
+                  <h3 className="font-bold text-sm text-gray-800 mb-1">{tab.title}</h3>
+                  <p className="text-xs text-gray-600 font-medium">{tab.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
           {/* Content for each tab */}
           {filteredContent.map(([key, content]) => (

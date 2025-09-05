@@ -220,9 +220,9 @@ const PIGMENT_DATABASE: Pigment[] = [
 
 export function EnhancedPigmentLibrary() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedBrand, setSelectedBrand] = useState('')
-  const [selectedFitzpatrick, setSelectedFitzpatrick] = useState('')
-  const [selectedUndertone, setSelectedUndertone] = useState('')
+  const [selectedBrand, setSelectedBrand] = useState('all')
+  const [selectedFitzpatrick, setSelectedFitzpatrick] = useState('all')
+  const [selectedUndertone, setSelectedUndertone] = useState('all')
   const [selectedPigment, setSelectedPigment] = useState<Pigment | null>(null)
 
   // Filter pigments based on search and filters
@@ -231,9 +231,9 @@ export function EnhancedPigmentLibrary() {
                          pigment.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          pigment.code.toLowerCase().includes(searchQuery.toLowerCase())
     
-    const matchesBrand = !selectedBrand || pigment.brand === selectedBrand
-    const matchesFitzpatrick = !selectedFitzpatrick || pigment.fitzpatrickTypes.includes(selectedFitzpatrick)
-    const matchesUndertone = !selectedUndertone || pigment.undertones.includes(selectedUndertone)
+    const matchesBrand = selectedBrand === 'all' || !selectedBrand || pigment.brand === selectedBrand
+    const matchesFitzpatrick = selectedFitzpatrick === 'all' || !selectedFitzpatrick || pigment.fitzpatrickTypes.includes(selectedFitzpatrick)
+    const matchesUndertone = selectedUndertone === 'all' || !selectedUndertone || pigment.undertones.includes(selectedUndertone)
 
     return matchesSearch && matchesBrand && matchesFitzpatrick && matchesUndertone
   })
@@ -244,9 +244,9 @@ export function EnhancedPigmentLibrary() {
 
   const clearFilters = () => {
     setSearchQuery('')
-    setSelectedBrand('')
-    setSelectedFitzpatrick('')
-    setSelectedUndertone('')
+    setSelectedBrand('all')
+    setSelectedFitzpatrick('all')
+    setSelectedUndertone('all')
   }
 
   return (
@@ -286,8 +286,8 @@ export function EnhancedPigmentLibrary() {
                 <SelectTrigger>
                   <SelectValue placeholder="All Brands" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Brands</SelectItem>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem value="all">All Brands</SelectItem>
                   {POPULAR_BRANDS.map(brand => (
                     <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                   ))}
@@ -300,8 +300,8 @@ export function EnhancedPigmentLibrary() {
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem value="all">All Types</SelectItem>
                   {FITZPATRICK_TYPES.map(type => (
                     <SelectItem key={type} value={type}>Type {type}</SelectItem>
                   ))}
@@ -314,8 +314,8 @@ export function EnhancedPigmentLibrary() {
                 <SelectTrigger>
                   <SelectValue placeholder="All Undertones" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Undertones</SelectItem>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem value="all">All Undertones</SelectItem>
                   {UNDERTONES.map(undertone => (
                     <SelectItem key={undertone} value={undertone}>{undertone}</SelectItem>
                   ))}

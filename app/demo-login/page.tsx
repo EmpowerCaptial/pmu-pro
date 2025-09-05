@@ -19,7 +19,7 @@ import {
   FileText,
   Smartphone
 } from 'lucide-react'
-import { DEMO_CREDENTIALS, setDemoMode } from '@/lib/demo-auth'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { useRouter } from 'next/navigation'
 
 export default function DemoLoginPage() {
@@ -29,42 +29,41 @@ export default function DemoLoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { login } = useDemoAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    if (username === DEMO_CREDENTIALS.username && password === DEMO_CREDENTIALS.password) {
-      setDemoMode(true)
+    try {
+      // Use the useDemoAuth login function
+      const user = await login(username, password)
+      
+      // Set demo mode flag for demo features
+      localStorage.setItem('demo-mode', 'true')
+      localStorage.setItem('demo-session-start', Date.now().toString())
+      
       router.push('/dashboard')
-    } else {
+    } catch (error) {
       setError('Invalid demo credentials. Please check your username and password.')
+    } finally {
+      setIsLoading(false)
     }
-    
-    setIsLoading(false)
-  }
-
-  const handleQuickLogin = () => {
-    setUsername(DEMO_CREDENTIALS.username)
-    setPassword(DEMO_CREDENTIALS.password)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
-              <Play className="w-6 h-6 text-white" />
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+              <Play className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">PMU Pro Demo</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">PMU Pro Demo</h1>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
             Experience the full power of PMU Pro with our interactive demo. 
             Explore all features with sample data that resets after your session.
           </p>
@@ -80,6 +79,19 @@ export default function DemoLoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Demo Access Notice */}
+              <Alert className="border-green-200 bg-green-50">
+                <Shield className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  <div className="text-center">
+                    <p className="font-medium mb-1">Demo Access</p>
+                    <p className="text-sm">
+                      Contact admin@thepmuguide.com for demo credentials
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+              
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-gray-700">Username</Label>
@@ -132,49 +144,11 @@ export default function DemoLoginPage() {
                   {isLoading ? 'Accessing Demo...' : 'Access Demo'}
                 </Button>
               </form>
-
-              <div className="text-center">
-                <Button 
-                  variant="outline" 
-                  onClick={handleQuickLogin}
-                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
-                >
-                  Quick Fill Demo Credentials
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
           {/* Demo Features */}
           <div className="space-y-6">
-            {/* Demo Credentials */}
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-800 flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Demo Credentials
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="bg-white p-3 rounded-lg border border-green-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Username:</span>
-                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
-                      {DEMO_CREDENTIALS.username}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="bg-white p-3 rounded-lg border border-green-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Password:</span>
-                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
-                      {DEMO_CREDENTIALS.password}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Demo Restrictions */}
             <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
               <CardHeader>
@@ -246,7 +220,7 @@ export default function DemoLoginPage() {
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
           <p>This is a demonstration environment. No real data will be saved or transmitted.</p>
-          <p className="mt-1">For production access, please contact <a href="mailto:admin@thepmuguide.com" className="text-purple-600 hover:underline">admin@thepmuguide.com</a></p>
+          <p className="mt-1">For demo access, please contact <a href="mailto:admin@thepmuguide.com" className="text-purple-600 hover:underline">admin@thepmuguide.com</a></p>
         </div>
       </div>
     </div>

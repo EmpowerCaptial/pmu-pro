@@ -294,11 +294,11 @@ export default function ProcellSegmentation() {
       octx.strokeRect(rx, ry, rw, rh)
     })
 
-    // Build readable summary + Procell-aligned suggestions
-    const buildEnhancedSummary = (regionStats: Record<string, any>) => {
+    // Build intelligent clinical decision framework + ProCell protocols
+    const buildClinicalDecision = (regionStats: Record<string, any>) => {
       const top = Object.values(regionStats).sort(
         (a: any, b: any) =>
-          b.hyperpigmentationPct + b.sunburnPct + b.texturePct - (a.hyperpigmentationPct + a.sunburnPct + a.texturePct),
+          b.hyperpigmentationPct + b.sunburnPct + b.texturePct - (a.hyperpigmentationPct + a.sunburnPct + b.texturePct),
       )[0]
 
       // Calculate overall severity levels
@@ -328,6 +328,59 @@ export default function ProcellSegmentation() {
       const sunSeverity = getSeverity(avgSun, "sunburn")
       const textureSeverity = getSeverity(avgTexture, "texture")
 
+      // Clinical Decision Framework
+      const clinicalDecision = {
+        canProceed: true,
+        riskLevel: "Low",
+        primaryConcern: "",
+        treatmentModifications: [] as string[],
+        rescheduleReason: "",
+        confidence: "High"
+      }
+
+      // Erythema/Sunburn Assessment - Most Critical
+      if (avgSun > 25) {
+        clinicalDecision.canProceed = false
+        clinicalDecision.riskLevel = "Critical"
+        clinicalDecision.primaryConcern = "Active erythema/sunburn detected"
+        clinicalDecision.rescheduleReason = "Defer until erythema resolves (7-14 days minimum)"
+        clinicalDecision.confidence = "High"
+      } else if (avgSun > 15) {
+        clinicalDecision.canProceed = true
+        clinicalDecision.riskLevel = "Moderate"
+        clinicalDecision.primaryConcern = "Moderate erythema - proceed with caution"
+        clinicalDecision.treatmentModifications.push("Reduce needle depth by 25%")
+        clinicalDecision.treatmentModifications.push("Decrease number of passes by 30%")
+        clinicalDecision.treatmentModifications.push("Use calming serums (aloe, centella)")
+        clinicalDecision.confidence = "Medium"
+      } else if (avgSun > 8) {
+        clinicalDecision.canProceed = true
+        clinicalDecision.riskLevel = "Low"
+        clinicalDecision.primaryConcern = "Mild baseline redness - proceed normally"
+        clinicalDecision.treatmentModifications.push("Standard protocol with gentle approach")
+        clinicalDecision.confidence = "High"
+      }
+
+      // Hyperpigmentation Assessment
+      if (avgHyper > 20) {
+        clinicalDecision.treatmentModifications.push("Plan 4-6 ProCell sessions, 4 weeks apart")
+        clinicalDecision.treatmentModifications.push("Start strict SPF 30+ protocol 2 weeks before treatment")
+        clinicalDecision.treatmentModifications.push("Consider tyrosinase inhibitors pre-treatment")
+      } else if (avgHyper > 10) {
+        clinicalDecision.treatmentModifications.push("Plan 3-4 ProCell sessions, 4 weeks apart")
+        clinicalDecision.treatmentModifications.push("SPF 30+ daily starting 1 week before")
+      }
+
+      // Texture/Scar Assessment
+      if (avgTexture > 15) {
+        clinicalDecision.treatmentModifications.push("Focus on texture improvement with microchanneling")
+        clinicalDecision.treatmentModifications.push("Assess scar type: atrophic vs hypertrophic")
+        clinicalDecision.treatmentModifications.push("Consider deeper needle depth for scar remodeling")
+      } else if (avgTexture > 8) {
+        clinicalDecision.treatmentModifications.push("Standard texture improvement protocol")
+        clinicalDecision.treatmentModifications.push("Monitor for early textural changes")
+      }
+
       return {
         primaryArea: top.label,
         severityLevels: {
@@ -335,6 +388,8 @@ export default function ProcellSegmentation() {
           sunburn: { ...sunSeverity, percentage: Math.round(avgSun) },
           texture: { ...textureSeverity, percentage: Math.round(avgTexture) },
         },
+        clinicalDecision,
+        treatmentProtocol: generateTreatmentProtocol(clinicalDecision, avgHyper, avgSun, avgTexture, top.label),
         recommendations: {
           immediate: [] as string[],
           shortTerm: [] as string[],
@@ -343,22 +398,108 @@ export default function ProcellSegmentation() {
       }
     }
 
-    const enhancedSummary = buildEnhancedSummary(regionStats)
+    // Generate specific treatment protocol based on analysis
+    const generateTreatmentProtocol = (clinicalDecision: any, hyper: number, sun: number, texture: number, primaryArea: string) => {
+      const protocol = {
+        needleDepth: "1.5mm",
+        passes: 3,
+        serums: [] as string[],
+        aftercare: [] as string[],
+        sessionCount: 3,
+        interval: "4 weeks",
+        specialInstructions: [] as string[]
+      }
 
-    // Build treatment recommendations based on severity
-    if (enhancedSummary.severityLevels.sunburn.percentage > 10) {
-      enhancedSummary.recommendations.immediate.push("⚠️ STOP: Defer all procedures until erythema resolves (7-14 days)")
+      // Adjust based on erythema
+      if (sun > 15) {
+        protocol.needleDepth = "1.0mm"
+        protocol.passes = 2
+        protocol.serums.push("Centella Asiatica (calming)")
+        protocol.serums.push("Aloe Vera (anti-inflammatory)")
+        protocol.specialInstructions.push("Gentle pressure, avoid aggressive manipulation")
+      } else if (sun > 8) {
+        protocol.needleDepth = "1.25mm"
+        protocol.passes = 2
+        protocol.serums.push("Hyaluronic Acid (hydration)")
+        protocol.specialInstructions.push("Monitor for increased sensitivity")
+      }
+
+      // Adjust based on hyperpigmentation
+      if (hyper > 20) {
+        protocol.sessionCount = 6
+        protocol.serums.push("Vitamin C (brightening)")
+        protocol.serums.push("Niacinamide (even tone)")
+        protocol.aftercare.push("Strict sun avoidance for 2 weeks")
+        protocol.aftercare.push("SPF 50+ daily application")
+      } else if (hyper > 10) {
+        protocol.sessionCount = 4
+        protocol.serums.push("Vitamin C (brightening)")
+        protocol.aftercare.push("SPF 30+ daily application")
+      }
+
+      // Adjust based on texture
+      if (texture > 15) {
+        protocol.needleDepth = "2.0mm"
+        protocol.passes = 4
+        protocol.serums.push("Growth Factors (collagen stimulation)")
+        protocol.serums.push("Peptides (tissue remodeling)")
+        protocol.specialInstructions.push("Focus on scar tissue with cross-hatching technique")
+      } else if (texture > 8) {
+        protocol.needleDepth = "1.5mm"
+        protocol.passes = 3
+        protocol.serums.push("Hyaluronic Acid (hydration)")
+        protocol.specialInstructions.push("Standard texture improvement approach")
+      }
+
+      // Area-specific adjustments
+      if (primaryArea === "Nose") {
+        protocol.specialInstructions.push("Focus most passes on nose region")
+        protocol.specialInstructions.push("Use smaller needle size for precision")
+        protocol.specialInstructions.push("Monitor for increased sensitivity in this area")
+      } else if (primaryArea === "Forehead") {
+        protocol.specialInstructions.push("Gentle approach due to thinner skin")
+        protocol.specialInstructions.push("Avoid aggressive manipulation")
+      }
+
+      return protocol
+    }
+
+    const enhancedSummary = buildClinicalDecision(regionStats)
+
+    // Build intelligent recommendations based on clinical decision
+    if (!enhancedSummary.clinicalDecision.canProceed) {
+      enhancedSummary.recommendations.immediate.push(`🚫 STOP IMMEDIATELY: ${enhancedSummary.clinicalDecision.rescheduleReason}`)
       enhancedSummary.recommendations.immediate.push("Apply cooling, anti-inflammatory treatments")
+      enhancedSummary.recommendations.immediate.push("Reassess in 7-14 days")
+    } else {
+      if (enhancedSummary.clinicalDecision.riskLevel === "Moderate") {
+        enhancedSummary.recommendations.immediate.push("⚠️ PROCEED WITH CAUTION: Moderate risk detected")
+        enhancedSummary.recommendations.immediate.push("Use modified treatment protocol")
+        enhancedSummary.recommendations.immediate.push("Monitor client response closely")
+      } else {
+        enhancedSummary.recommendations.immediate.push("✅ SAFE TO PROCEED: Low risk assessment")
+        enhancedSummary.recommendations.immediate.push("Follow standard treatment protocol")
+      }
     }
 
-    if (enhancedSummary.severityLevels.hyperpigmentation.percentage > 15) {
-      enhancedSummary.recommendations.shortTerm.push("Start strict SPF 30+ protocol 2 weeks before treatment")
-      enhancedSummary.recommendations.longTerm.push("Plan 4-6 ProCell sessions, 4 weeks apart")
+    // Add treatment-specific recommendations
+    enhancedSummary.recommendations.shortTerm.push(`Needle Depth: ${enhancedSummary.treatmentProtocol.needleDepth}`)
+    enhancedSummary.recommendations.shortTerm.push(`Number of Passes: ${enhancedSummary.treatmentProtocol.passes}`)
+    enhancedSummary.recommendations.shortTerm.push(`Sessions: ${enhancedSummary.treatmentProtocol.sessionCount} at ${enhancedSummary.treatmentProtocol.interval} intervals`)
+
+    if (enhancedSummary.treatmentProtocol.serums.length > 0) {
+      enhancedSummary.recommendations.shortTerm.push(`Recommended Serums: ${enhancedSummary.treatmentProtocol.serums.join(", ")}`)
     }
 
-    if (enhancedSummary.severityLevels.texture.percentage > 20) {
-      enhancedSummary.recommendations.longTerm.push("Consider ProCell microchanneling for texture improvement")
-      enhancedSummary.recommendations.shortTerm.push("Assess scar type: atrophic vs hypertrophic")
+    enhancedSummary.recommendations.longTerm.push("Monitor healing progression")
+    enhancedSummary.recommendations.longTerm.push("Document before/after photos")
+    enhancedSummary.recommendations.longTerm.push("Adjust protocol based on response")
+
+    if (enhancedSummary.treatmentProtocol.specialInstructions.length > 0) {
+      enhancedSummary.recommendations.longTerm.push("Special Instructions:")
+      enhancedSummary.treatmentProtocol.specialInstructions.forEach(instruction => {
+        enhancedSummary.recommendations.longTerm.push(`  • ${instruction}`)
+      })
     }
 
     setSummary(enhancedSummary)
@@ -472,8 +613,126 @@ export default function ProcellSegmentation() {
           <div className="p-3 bg-gray-50 rounded-xl h-full">
             {summary ? (
               <div className="space-y-4">
+                {/* Clinical Decision Framework */}
+                <div className={`p-3 rounded-lg border-l-4 ${
+                  summary.clinicalDecision.canProceed 
+                    ? summary.clinicalDecision.riskLevel === "Moderate" 
+                      ? "bg-yellow-50 border-yellow-400" 
+                      : "bg-green-50 border-green-400"
+                    : "bg-red-50 border-red-400"
+                }`}>
+                  <h3 className="font-semibold text-gray-800 mb-2">🔬 Clinical Decision</h3>
+                  
+                  {/* Decision Status */}
+                  <div className="mb-3 p-2 rounded bg-white/80">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Status:</span>
+                      <span className={`text-sm font-bold ${
+                        summary.clinicalDecision.canProceed 
+                          ? summary.clinicalDecision.riskLevel === "Moderate" 
+                            ? "text-yellow-700" 
+                            : "text-green-700"
+                          : "text-red-700"
+                      }`}>
+                        {summary.clinicalDecision.canProceed ? "PROCEED" : "STOP"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Risk Level:</span>
+                      <span className={`text-sm font-bold ${summary.clinicalDecision.riskLevel === "Critical" ? "text-red-700" : summary.clinicalDecision.riskLevel === "Moderate" ? "text-yellow-700" : "text-green-700"}`}>
+                        {summary.clinicalDecision.riskLevel}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Confidence:</span>
+                      <span className="text-sm font-bold text-blue-700">{summary.clinicalDecision.confidence}</span>
+                    </div>
+                  </div>
+
+                  {/* Primary Concern */}
+                  {summary.clinicalDecision.primaryConcern && (
+                    <div className="mb-3 p-2 rounded bg-white/80">
+                      <p className="text-sm text-gray-700">
+                        <strong>Primary Concern:</strong> {summary.clinicalDecision.primaryConcern}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Treatment Modifications */}
+                  {summary.clinicalDecision.treatmentModifications.length > 0 && (
+                    <div className="mb-3 p-2 rounded bg-white/80">
+                      <p className="text-sm font-medium text-gray-700 mb-1">Treatment Modifications:</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {summary.clinicalDecision.treatmentModifications.map((mod: string, i: number) => (
+                          <li key={i}>• {mod}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Reschedule Reason */}
+                  {summary.clinicalDecision.rescheduleReason && (
+                    <div className="p-2 rounded bg-red-100 border border-red-200">
+                      <p className="text-sm text-red-800 font-medium">
+                        🚫 {summary.clinicalDecision.rescheduleReason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Treatment Protocol */}
+                <div className="bg-white p-3 rounded-lg border-l-4 border-blue-400">
+                  <h3 className="font-semibold text-blue-800 mb-2">💉 Treatment Protocol</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Needle Depth:</span>
+                      <p className="text-blue-700 font-bold">{summary.treatmentProtocol.needleDepth}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Passes:</span>
+                      <p className="text-blue-700 font-bold">{summary.treatmentProtocol.passes}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Sessions:</span>
+                      <p className="text-blue-700 font-bold">{summary.treatmentProtocol.sessionCount}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Interval:</span>
+                      <p className="text-blue-700 font-bold">{summary.treatmentProtocol.interval}</p>
+                    </div>
+                  </div>
+
+                  {/* Recommended Serums */}
+                  {summary.treatmentProtocol.serums.length > 0 && (
+                    <div className="mt-3 p-2 rounded bg-blue-50">
+                      <p className="text-sm font-medium text-blue-800 mb-1">Recommended Serums:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {summary.treatmentProtocol.serums.map((serum: string, i: number) => (
+                          <span key={i} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {serum}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Special Instructions */}
+                  {summary.treatmentProtocol.specialInstructions.length > 0 && (
+                    <div className="mt-3 p-2 rounded bg-purple-50">
+                      <p className="text-sm font-medium text-purple-800 mb-1">Special Instructions:</p>
+                      <ul className="text-xs text-purple-700 space-y-1">
+                        {summary.treatmentProtocol.specialInstructions.map((instruction: string, i: number) => (
+                          <li key={i}>• {instruction}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Analysis Results */}
                 <div className="bg-white p-3 rounded-lg border-l-4 border-lavender">
-                  <h3 className="font-semibold text-lavender mb-2">📊 Quick Assessment</h3>
+                  <h3 className="font-semibold text-lavender mb-2">📊 Analysis Results</h3>
                   <p className="text-sm text-gray-700 mb-2">
                     <strong>Primary concern area:</strong> {summary.primaryArea}
                   </p>

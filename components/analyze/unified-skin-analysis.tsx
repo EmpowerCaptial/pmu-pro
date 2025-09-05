@@ -285,7 +285,10 @@ export function UnifiedSkinAnalysis({ onAnalysisComplete, onSave, onExport }: Un
 
   const handleSave = () => {
     if (analysisResult && onSave) {
+      console.log('Saving analysis result:', analysisResult)
       onSave(analysisResult)
+    } else {
+      console.error('Cannot save: analysisResult or onSave not available', { analysisResult, onSave })
     }
   }
 

@@ -37,7 +37,8 @@ export default function DemoBanner() {
 
   const handleExitDemo = () => {
     setDemoMode(false)
-    window.location.reload()
+    // Redirect to login page instead of just reloading
+    window.location.href = '/demo-login'
   }
 
   const formatTime = (minutes: number) => {
