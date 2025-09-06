@@ -8,19 +8,26 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('🔍 Deposit payment API called');
+    
     // Get authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log('❌ Missing or invalid authorization header');
       return NextResponse.json({ error: "Missing or invalid authorization header" }, { status: 401 });
     }
 
     const token = authHeader.substring(7);
+    console.log('🔑 Token received:', token.substring(0, 20) + '...');
     
     // Verify the JWT token and get user
     const user = await AuthService.verifyToken(token);
     if (!user) {
+      console.log('❌ Invalid or expired token');
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
+    
+    console.log('✅ User authenticated:', user.email);
 
     // Get deposit payment data from request body
     const { 
@@ -33,15 +40,20 @@ export async function POST(req: NextRequest) {
       linkExpirationDays = 7
     } = await req.json();
     
+    console.log('📊 Deposit data:', { clientId, amount, totalAmount, currency });
+    
     if (!clientId || !amount || !totalAmount) {
+      console.log('❌ Missing required fields');
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     if (amount >= totalAmount) {
+      console.log('❌ Deposit amount must be less than total amount');
       return NextResponse.json({ error: "Deposit amount must be less than total amount" }, { status: 400 });
     }
 
     // Create deposit payment
+    console.log('💳 Creating deposit payment...');
     const depositPayment = await DepositPaymentService.createDepositPayment({
       clientId,
       userId: user.id,
@@ -52,8 +64,11 @@ export async function POST(req: NextRequest) {
       notes,
       linkExpirationDays
     });
+    
+    console.log('✅ Deposit payment created:', depositPayment.id);
 
     // Get client and user information for email
+    console.log('👤 Fetching client and user info...');
     const client = await prisma.client.findUnique({
       where: { id: clientId }
     });
@@ -61,10 +76,14 @@ export async function POST(req: NextRequest) {
     const userInfo = await prisma.user.findUnique({
       where: { id: user.id }
     });
+    
+    console.log('👤 Client found:', client ? 'Yes' : 'No', client?.email || 'No email');
+    console.log('👤 User info found:', userInfo ? 'Yes' : 'No');
 
     // Send deposit email if client has email
     if (client?.email && userInfo) {
       try {
+        console.log('📧 Sending deposit email to:', client.email);
         const depositLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/deposit/${depositPayment.depositLink}`;
         
         await DepositEmailService.sendDepositEmail(
@@ -78,9 +97,11 @@ export async function POST(req: NextRequest) {
         
         console.log(`✅ Deposit email sent to ${client.email}`);
       } catch (emailError) {
-        console.error('Failed to send deposit email:', emailError);
+        console.error('❌ Failed to send deposit email:', emailError);
         // Don't fail the entire request if email fails
       }
+    } else {
+      console.log('⚠️ No email sent - client email:', client?.email || 'missing', 'user info:', userInfo ? 'found' : 'missing');
     }
 
     return NextResponse.json({ 
@@ -91,7 +112,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Create deposit payment error:", error);
+    console.error("❌ Create deposit payment error:", error);
     return NextResponse.json(
       { 
         error: "Failed to create deposit payment", 
