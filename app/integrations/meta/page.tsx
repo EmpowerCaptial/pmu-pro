@@ -58,6 +58,36 @@ export default function MetaIntegrationPage() {
     }
   }, [isAuthenticated, currentUser]);
 
+  // Handle OAuth callback parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pagesParam = urlParams.get('pages');
+    const successMessage = urlParams.get('success');
+    const errorMessage = urlParams.get('error');
+
+    if (successMessage) {
+      setSuccess(decodeURIComponent(successMessage));
+    }
+
+    if (errorMessage) {
+      setError(decodeURIComponent(errorMessage));
+    }
+
+    if (pagesParam) {
+      try {
+        const parsedPages = JSON.parse(decodeURIComponent(pagesParam));
+        setPages(parsedPages);
+        setStep("pages");
+        
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (error) {
+        console.error('Failed to parse pages parameter:', error);
+        setError('Failed to load Facebook pages');
+      }
+    }
+  }, []);
+
   const loadConnections = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -87,32 +117,18 @@ export default function MetaIntegrationPage() {
     setError(null);
     
     try {
-      // In a real implementation, this would redirect to Facebook OAuth
-      // For demo purposes, we'll simulate the flow
-      const mockPages: FacebookPage[] = [
-        {
-          id: "123456789",
-          name: "PMU Studio by " + (currentUser?.name || "Artist"),
-          access_token: "mock_token_123",
-          expires_in: 5183944, // 60 days
-          hasInstagram: true,
-          instagramId: "ig_123456789"
-        },
-        {
-          id: "987654321",
-          name: "Beauty Studio",
-          access_token: "mock_token_456",
-          expires_in: 5183944,
-          hasInstagram: false
-        }
-      ];
+      // Redirect to Facebook OAuth for seamless connection
+      const facebookAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?` +
+        `client_id=${process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID}&` +
+        `redirect_uri=${encodeURIComponent(window.location.origin + '/integrations/meta/callback')}&` +
+        `scope=email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic&` +
+        `response_type=code&` +
+        `state=${currentUser?.id || 'demo'}`;
       
-      setPages(mockPages);
-      setStep("pages");
-      setSuccess("Facebook connected! Choose a page to continue.");
+      // Redirect to Facebook OAuth
+      window.location.href = facebookAuthUrl;
     } catch (error) {
       setError("Failed to connect to Facebook. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -293,7 +309,8 @@ export default function MetaIntegrationPage() {
                   <div>
                     <h3 className="font-semibold mb-2">Connect Your Facebook Page</h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      Connect your Facebook page to enable Instagram integration and AI-powered responses
+                      One-click connection to your Facebook page and Instagram business account. 
+                      No coding or technical knowledge required!
                     </p>
                   </div>
                   <Button 
@@ -304,15 +321,21 @@ export default function MetaIntegrationPage() {
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Connecting...
+                        Redirecting to Facebook...
                       </>
                     ) : (
                       <>
                         <Facebook className="h-4 w-4 mr-2" />
-                        Continue with Facebook
+                        Connect with Facebook
                       </>
                     )}
                   </Button>
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <p className="text-xs text-green-800">
+                      <strong>Seamless Experience:</strong> You'll be redirected to Facebook, 
+                      log in with your account, and return automatically with your pages ready to connect.
+                    </p>
+                  </div>
                 </div>
               )}
 
