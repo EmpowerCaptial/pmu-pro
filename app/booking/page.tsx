@@ -411,12 +411,12 @@ export default function BookingCalendar() {
       {/* New Appointment Modal */}
       <Dialog open={showNewAppointmentModal} onOpenChange={setShowNewAppointmentModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200 shadow-2xl">
-          <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-6 -m-6 mb-6 border-b border-gray-100">
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Calendar className="h-5 w-5 text-lavender" />
+          <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-6 -m-6 mb-6 border-b border-gray-200 rounded-t-lg">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-xl">
+              <Calendar className="h-6 w-6 text-lavender" />
               New Appointment
             </DialogTitle>
-            <DialogDescription className="text-gray-600 mt-2">
+            <DialogDescription className="text-gray-700 mt-3 text-base font-medium bg-white/80 p-3 rounded-lg border border-gray-200">
               Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
             </DialogDescription>
           </DialogHeader>
@@ -505,49 +505,49 @@ export default function BookingCalendar() {
 
             {/* New Client Form */}
             {clientSelectionType === 'new' && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <Label className="text-lg font-semibold text-gray-900">New Client Information</Label>
+              <div className="space-y-4 p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-xl font-bold text-gray-900 bg-lavender/10 px-4 py-2 rounded-lg">New Client Information</Label>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
-                    className="bg-white hover:bg-gray-50 border-gray-300"
+                    className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 font-medium"
                   >
-                    Back
+                    ← Back
                   </Button>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="clientName" className="text-gray-700 font-medium">Client Name *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientName" className="text-gray-800 font-semibold text-base">Client Name *</Label>
                     <Input
                       id="clientName"
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
                       placeholder="Enter client name"
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="clientEmail" className="text-gray-700 font-medium">Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientEmail" className="text-gray-800 font-semibold text-base">Email</Label>
                     <Input
                       id="clientEmail"
                       type="email"
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
                       placeholder="Enter email address"
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="clientPhone" className="text-gray-700 font-medium">Phone</Label>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="clientPhone" className="text-gray-800 font-semibold text-base">Phone</Label>
                     <Input
                       id="clientPhone"
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
                       placeholder="Enter phone number"
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
                 </div>
@@ -556,14 +556,14 @@ export default function BookingCalendar() {
 
             {/* Appointment Details */}
             {(selectedClient || clientSelectionType === 'new') && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <Label className="text-lg font-semibold text-gray-900">Appointment Details</Label>
+              <div className="space-y-4 p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
+                <Label className="text-xl font-bold text-gray-900 bg-lavender/10 px-4 py-2 rounded-lg">Appointment Details</Label>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="service" className="text-gray-700 font-medium">Service *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="service" className="text-gray-800 font-semibold text-base">Service *</Label>
                     <Select value={appointmentData.service} onValueChange={(value) => setAppointmentData({...appointmentData, service: value})}>
-                      <SelectTrigger className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20">
+                      <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
@@ -577,48 +577,48 @@ export default function BookingCalendar() {
                     </Select>
                   </div>
                   
-                  <div>
-                    <Label htmlFor="time" className="text-gray-700 font-medium">Time *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="time" className="text-gray-800 font-semibold text-base">Time *</Label>
                     <Input
                       id="time"
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
                   
-                  <div>
-                    <Label htmlFor="duration" className="text-gray-700 font-medium">Duration (minutes)</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration" className="text-gray-800 font-semibold text-base">Duration (minutes)</Label>
                     <Input
                       id="duration"
                       type="number"
                       value={appointmentData.duration}
                       onChange={(e) => setAppointmentData({...appointmentData, duration: parseInt(e.target.value) || 60})}
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
                   
-                  <div>
-                    <Label htmlFor="price" className="text-gray-700 font-medium">Price ($)</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-gray-800 font-semibold text-base">Price ($)</Label>
                     <Input
                       id="price"
                       type="number"
                       value={appointmentData.price}
                       onChange={(e) => setAppointmentData({...appointmentData, price: parseFloat(e.target.value) || 0})}
-                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                     />
                   </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="notes" className="text-gray-700 font-medium">Notes</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="text-gray-800 font-semibold text-base">Notes</Label>
                   <Input
                     id="notes"
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
                     placeholder="Any additional notes..."
-                    className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                    className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 text-base"
                   />
                 </div>
               </div>
