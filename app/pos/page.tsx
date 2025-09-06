@@ -111,6 +111,9 @@ export default function POSPage() {
   const [actionMenuAppointment, setActionMenuAppointment] = useState<any>(null)
   const [showNotesModal, setShowNotesModal] = useState(false)
   const [notes, setNotes] = useState('')
+  
+  // Coming Soon Feature
+  const isComingSoon = true
 
   const filteredAppointments = appointments.filter(apt =>
     apt.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -259,7 +262,46 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative">
+      {/* Coming Soon Overlay */}
+      {isComingSoon && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-full max-w-md mx-4 border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="text-center border-b border-gray-100">
+              <div className="w-16 h-16 bg-gradient-to-br from-lavender to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-900">Point of Sale</CardTitle>
+              <CardDescription className="text-lg text-gray-600">
+                Coming Soon!
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 text-center space-y-4">
+              <div className="space-y-2">
+                <p className="text-gray-700">
+                  We're working hard to bring you a comprehensive Point of Sale system that will include:
+                </p>
+                <ul className="text-left text-sm text-gray-600 space-y-1">
+                  <li>• Appointment checkout and payment processing</li>
+                  <li>• Multiple payment methods (Card, Cash, Venmo, PayPal)</li>
+                  <li>• Tip management and tax calculation</li>
+                  <li>• Receipt generation and QR code payments</li>
+                  <li>• Real-time appointment status updates</li>
+                </ul>
+              </div>
+              <div className="pt-4">
+                <Button 
+                  onClick={() => window.history.back()}
+                  className="w-full bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white"
+                >
+                  Go Back
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

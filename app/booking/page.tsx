@@ -1,9 +1,13 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Calendar, 
   Clock, 
@@ -12,8 +16,11 @@ import {
   ChevronLeft, 
   ChevronRight,
   Phone,
-  Mail
+  Mail,
+  Search,
+  UserPlus
 } from 'lucide-react'
+import { getClients, Client } from '@/lib/client-storage'
 
 interface Appointment {
   id: string
@@ -73,6 +80,92 @@ export default function BookingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
+  
+  // New Appointment Modal States
+  const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false)
+  const [clientSelectionType, setClientSelectionType] = useState<'new' | 'existing' | null>(null)
+  const [clients, setClients] = useState<Client[]>([])
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [clientSearchTerm, setClientSearchTerm] = useState('')
+  const [newClientData, setNewClientData] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  })
+  const [appointmentData, setAppointmentData] = useState({
+    service: '',
+    time: '',
+    duration: 60,
+    price: 0,
+    notes: ''
+  })
+
+  // Load clients on component mount
+  useEffect(() => {
+    const loadedClients = getClients()
+    setClients(loadedClients)
+  }, [])
+
+  // Filter clients based on search term
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+    client.email.toLowerCase().includes(clientSearchTerm.toLowerCase())
+  )
+
+  const handleNewAppointmentClick = () => {
+    setShowNewAppointmentModal(true)
+    setClientSelectionType(null)
+    setSelectedClient(null)
+    setClientSearchTerm('')
+    setNewClientData({ name: '', email: '', phone: '' })
+    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '' })
+  }
+
+  const handleClientSelection = (type: 'new' | 'existing') => {
+    setClientSelectionType(type)
+  }
+
+  const handleCreateAppointment = () => {
+    if (!selectedDate) {
+      alert('Please select a date first')
+      return
+    }
+
+    const client = clientSelectionType === 'existing' ? selectedClient : {
+      id: Date.now().toString(),
+      name: newClientData.name,
+      email: newClientData.email,
+      phone: newClientData.phone
+    }
+
+    if (!client || !client.name) {
+      alert('Please select or enter client information')
+      return
+    }
+
+    if (!appointmentData.service || !appointmentData.time) {
+      alert('Please fill in service and time')
+      return
+    }
+
+    const newAppointment: Appointment = {
+      id: Date.now().toString(),
+      clientName: client.name,
+      clientEmail: client.email || '',
+      clientPhone: client.phone || '',
+      service: appointmentData.service,
+      date: selectedDate,
+      time: appointmentData.time,
+      duration: appointmentData.duration,
+      price: appointmentData.price,
+      status: 'scheduled',
+      notes: appointmentData.notes
+    }
+
+    setAppointments([...appointments, newAppointment])
+    setShowNewAppointmentModal(false)
+    alert('Appointment created successfully!')
+  }
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -148,7 +241,10 @@ export default function BookingCalendar() {
             <h1 className="text-3xl font-bold text-ink mb-2">Booking Calendar</h1>
             <p className="text-muted">Manage your appointments and schedule</p>
           </div>
-          <Button className="bg-lavender hover:bg-lavender-600 text-white">
+          <Button 
+            onClick={handleNewAppointmentClick}
+            className="bg-lavender hover:bg-lavender-600 text-white"
+          >
             <Plus className="w-4 h-4 mr-2" />
             New Appointment
           </Button>
@@ -311,6 +407,233 @@ export default function BookingCalendar() {
           </div>
         </div>
       </div>
+
+      {/* New Appointment Modal */}
+      <Dialog open={showNewAppointmentModal} onOpenChange={setShowNewAppointmentModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              New Appointment
+            </DialogTitle>
+            <DialogDescription>
+              Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Client Selection Type */}
+            {!clientSelectionType && (
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold">Select Client Type</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => handleClientSelection('existing')}
+                    className="h-20 bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <User className="h-6 w-6" />
+                      <span className="font-semibold">Existing Client</span>
+                    </div>
+                  </Button>
+                  <Button
+                    onClick={() => handleClientSelection('new')}
+                    className="h-20 bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <UserPlus className="h-6 w-6" />
+                      <span className="font-semibold">New Client</span>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Existing Client Selection */}
+            {clientSelectionType === 'existing' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-semibold">Select Existing Client</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setClientSelectionType(null)}
+                  >
+                    Back
+                  </Button>
+                </div>
+                
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search clients..."
+                    value={clientSearchTerm}
+                    onChange={(e) => setClientSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredClients.length > 0 ? (
+                    filteredClients.map((client) => (
+                      <div
+                        key={client.id}
+                        onClick={() => setSelectedClient(client)}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedClient?.id === client.id
+                            ? 'bg-lavender text-white border-lavender'
+                            : 'hover:bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="font-semibold">{client.name}</div>
+                        <div className="text-sm opacity-75">
+                          {client.email} • {client.phone}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No clients found</p>
+                      <p className="text-sm">Try adjusting your search or add a new client</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* New Client Form */}
+            {clientSelectionType === 'new' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-semibold">New Client Information</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setClientSelectionType(null)}
+                  >
+                    Back
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="clientName">Client Name *</Label>
+                    <Input
+                      id="clientName"
+                      value={newClientData.name}
+                      onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
+                      placeholder="Enter client name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="clientEmail">Email</Label>
+                    <Input
+                      id="clientEmail"
+                      type="email"
+                      value={newClientData.email}
+                      onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="clientPhone">Phone</Label>
+                    <Input
+                      id="clientPhone"
+                      value={newClientData.phone}
+                      onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Appointment Details */}
+            {(selectedClient || clientSelectionType === 'new') && (
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold">Appointment Details</Label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="service">Service *</Label>
+                    <Select value={appointmentData.service} onValueChange={(value) => setAppointmentData({...appointmentData, service: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="microblading">Microblading</SelectItem>
+                        <SelectItem value="lip-blush">Lip Blush</SelectItem>
+                        <SelectItem value="eyeliner">Eyeliner</SelectItem>
+                        <SelectItem value="eyebrow-mapping">Eyebrow Mapping</SelectItem>
+                        <SelectItem value="consultation">Consultation</SelectItem>
+                        <SelectItem value="touch-up">Touch-up</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="time">Time *</Label>
+                    <Input
+                      id="time"
+                      type="time"
+                      value={appointmentData.time}
+                      onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="duration">Duration (minutes)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={appointmentData.duration}
+                      onChange={(e) => setAppointmentData({...appointmentData, duration: parseInt(e.target.value) || 60})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="price">Price ($)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={appointmentData.price}
+                      onChange={(e) => setAppointmentData({...appointmentData, price: parseFloat(e.target.value) || 0})}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Input
+                    id="notes"
+                    value={appointmentData.notes}
+                    onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
+                    placeholder="Any additional notes..."
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowNewAppointmentModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateAppointment}
+                className="bg-lavender hover:bg-lavender-600 text-white"
+                disabled={!selectedClient && clientSelectionType !== 'new'}
+              >
+                Create Appointment
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

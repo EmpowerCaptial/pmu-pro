@@ -81,7 +81,10 @@ export function BookingCalendar() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="px-3 py-2 border border-sage/30 rounded-lg bg-white/50 focus:outline-none focus:ring-2 focus:ring-sage/50"
           />
-          <Button className="bg-gradient-to-r from-sage to-sage-600 hover:from-sage-600 hover:to-sage text-white">
+          <Button 
+            onClick={() => alert('Please use the main booking calendar at /booking to create new appointments')}
+            className="bg-gradient-to-r from-sage to-sage-600 hover:from-sage-600 hover:to-sage text-white"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Appointment
           </Button>

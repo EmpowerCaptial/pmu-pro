@@ -24,7 +24,8 @@ const navItems = [
     name: 'POS',
     href: '/pos',
     icon: CreditCard,
-    color: 'text-green-600'
+    color: 'text-green-600',
+    comingSoon: true
   },
   {
     name: 'Calendar',
@@ -89,21 +90,27 @@ export default function MobileNav() {
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
+          const isComingSoon = item.comingSoon
           
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 relative ${
                 isActive 
                   ? 'bg-lavender/10 text-lavender' 
-                  : 'text-gray-600 hover:text-lavender hover:bg-lavender/5'
+                  : isComingSoon
+                    ? 'text-gray-400 cursor-not-allowed opacity-60'
+                    : 'text-gray-600 hover:text-lavender hover:bg-lavender/5'
               }`}
             >
               <Icon 
-                className={`w-6 h-6 mb-1 ${isActive ? item.color : ''}`} 
+                className={`w-6 h-6 mb-1 ${isActive ? item.color : isComingSoon ? 'text-gray-400' : ''}`} 
               />
               <span className="text-xs font-medium">{item.name}</span>
+              {isComingSoon && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
+              )}
             </Link>
           )
         })}
