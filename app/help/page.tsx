@@ -33,7 +33,23 @@ import {
   Award,
   Rocket,
   Smartphone,
-  Monitor
+  Monitor,
+  CreditCard,
+  Facebook,
+  Instagram,
+  Link as LinkIcon,
+  DollarSign,
+  Clock,
+  Image as ImageIcon,
+  Plus,
+  Edit,
+  Trash2,
+  ExternalLink,
+  Sync,
+  CalendarDays,
+  Receipt,
+  QrCode,
+  Wallet
 } from 'lucide-react'
 import Link from 'next/link'
 import InstallationGuide from '@/components/pwa/installation-guide'
@@ -423,6 +439,673 @@ export default function HelpPage() {
         }
       ]
     },
+    booking: {
+      title: "Booking Calendar System 📅",
+      description: "Complete appointment scheduling with client management and deposit payments",
+      icon: <CalendarDays className="h-8 w-8 text-blue-500" />,
+      sections: [
+        {
+          title: "Creating New Appointments",
+          content: "The booking calendar allows you to schedule appointments with both new and existing clients, complete with service details and payment options.",
+          steps: [
+            "1. Navigate to the Booking page from your dashboard",
+            "2. Click 'New Appointment' button",
+            "3. Choose 'New Client' or 'Existing Client'",
+            "4. Fill in appointment details (service, time, duration, price)",
+            "5. Select payment method (Online Deposit or Pay in Person)",
+            "6. Add notes and click 'Create Appointment'"
+          ],
+          tips: [
+            "New clients are automatically added to your client database",
+            "Service images appear on the calendar for easy identification",
+            "Deposit links are automatically sent to clients for online payments",
+            "All appointments are saved and visible on the calendar"
+          ]
+        },
+        {
+          title: "Client Selection Process",
+          content: "When creating appointments, you can choose between adding a new client or selecting from your existing client database.",
+          features: [
+            "New Client: Complete form with contact information",
+            "Existing Client: Search and select from your client list",
+            "Automatic client database integration",
+            "Client information pre-populated for existing clients"
+          ]
+        },
+        {
+          title: "Service Management Integration",
+          content: "The booking system integrates with your services management to provide accurate service information and pricing.",
+          features: [
+            "Service list populated from your services database",
+            "Default duration and pricing from service settings",
+            "Service images displayed on calendar appointments",
+            "Custom services support with image uploads"
+          ]
+        },
+        {
+          title: "Deposit Payment System",
+          content: "Automated deposit collection system that sends payment links to clients for secure online payments.",
+          features: [
+            "30% deposit automatically calculated",
+            "Secure Stripe payment processing",
+            "Professional email notifications to clients",
+            "Payment links expire after 7 days",
+            "Integration with client portal for payment tracking"
+          ],
+          steps: [
+            "1. Select 'Online Deposit' as payment method",
+            "2. System calculates 30% deposit amount",
+            "3. Unique payment link generated",
+            "4. Professional email sent to client",
+            "5. Client clicks link to complete payment",
+            "6. Payment processed securely via Stripe"
+          ]
+        },
+        {
+          title: "Calendar View and Management",
+          content: "View all your appointments in an organized calendar format with service details and client information.",
+          features: [
+            "Monthly calendar view with appointment blocks",
+            "Service images displayed under 'Scheduled' text",
+            "Click on dates to view appointment details",
+            "Color-coded appointment blocks",
+            "Easy navigation between months"
+          ]
+        }
+      ]
+    },
+    services: {
+      title: "Services Management 🎨",
+      description: "Manage your PMU services with images, pricing, and custom options",
+      icon: <ImageIcon className="h-8 w-8 text-purple-500" />,
+      sections: [
+        {
+          title: "Service Management Overview",
+          content: "The services management system allows you to create, edit, and organize all your PMU services with custom images and pricing.",
+          features: [
+            "Add, edit, and delete services",
+            "Upload custom service images",
+            "Set default pricing and duration",
+            "Toggle service active/inactive status",
+            "Organize services by category"
+          ]
+        },
+        {
+          title: "Adding New Services",
+          content: "Create new services with complete details including images, pricing, and descriptions.",
+          steps: [
+            "1. Go to Services page from Features menu",
+            "2. Click 'Add New Service' button",
+            "3. Enter service name and description",
+            "4. Set default duration and price",
+            "5. Choose service category (PMU, Custom, etc.)",
+            "6. Upload service image or use default",
+            "7. Click 'Create Service' to save"
+          ],
+          tips: [
+            "PMU services come with pre-generated AI images",
+            "Custom services allow you to upload your own images",
+            "Set realistic pricing based on your market",
+            "Use descriptive names for easy identification"
+          ]
+        },
+        {
+          title: "Service Images and Icons",
+          content: "Each service can have a custom image that appears on the booking calendar and throughout the system.",
+          features: [
+            "AI-generated images for standard PMU services",
+            "Custom image upload for non-PMU services",
+            "Images displayed on booking calendar",
+            "Consistent image sizing and optimization",
+            "Support for various image formats"
+          ],
+          applications: [
+            "Visual service identification on calendar",
+            "Professional service presentation",
+            "Client recognition of services",
+            "Brand consistency across platform"
+          ]
+        },
+        {
+          title: "Managing Existing Services",
+          content: "Edit, update, and organize your existing services to keep your service menu current and professional.",
+          steps: [
+            "1. View all services on the Services page",
+            "2. Click 'Edit' on any service",
+            "3. Update service details as needed",
+            "4. Change pricing or duration",
+            "5. Upload new service image",
+            "6. Toggle active/inactive status",
+            "7. Save changes"
+          ],
+          tips: [
+            "Regularly update pricing to reflect market changes",
+            "Keep service descriptions current and accurate",
+            "Use high-quality images for professional appearance",
+            "Archive inactive services instead of deleting"
+          ]
+        },
+        {
+          title: "Service Categories and Organization",
+          content: "Organize your services by category to make them easier to find and manage.",
+          categories: [
+            "PMU Services - Standard permanent makeup procedures",
+            "Custom Services - Non-PMU services you offer",
+            "Add-on Services - Additional treatments",
+            "Package Deals - Combined service offerings"
+          ],
+          benefits: [
+            "Easy service discovery for clients",
+            "Organized booking calendar display",
+            "Streamlined service management",
+            "Professional service presentation"
+          ]
+        }
+      ]
+    },
+    metaIntegration: {
+      title: "Meta Integration 🤖",
+      description: "Connect Facebook and Instagram for AI-powered DM responses",
+      icon: <Facebook className="h-8 w-8 text-blue-600" />,
+      sections: [
+        {
+          title: "What is Meta Integration?",
+          content: "Meta Integration allows you to connect your Facebook Page and Instagram Business account to PMU Pro for AI-powered customer service and automated DM responses.",
+          benefits: [
+            "24/7 automated customer service",
+            "AI-generated responses to Instagram DMs",
+            "Seamless Facebook OAuth connection",
+            "Professional customer interaction",
+            "Reduced manual response time"
+          ]
+        },
+        {
+          title: "Setting Up Meta Integration",
+          content: "Connect your Facebook Page and Instagram Business account in just a few simple steps.",
+          steps: [
+            "1. Go to Features page and click 'Meta Integration'",
+            "2. Click 'Connect Facebook' button",
+            "3. Log in with your Facebook account",
+            "4. Grant permissions for Page access",
+            "5. Select your Facebook Page",
+            "6. System automatically links Instagram Business account",
+            "7. Integration complete and ready to use"
+          ],
+          tips: [
+            "Your Instagram must be a Business account linked to Facebook Page",
+            "Grant all requested permissions for full functionality",
+            "Only one Facebook Page can be connected per account",
+            "Connection is secure and encrypted"
+          ]
+        },
+        {
+          title: "AI DM Response System",
+          content: "The AI system automatically generates professional responses to Instagram direct messages.",
+          features: [
+            "Intelligent response generation using OpenAI",
+            "Professional PMU industry knowledge",
+            "Contextual understanding of client questions",
+            "Brand-appropriate tone and style",
+            "Automatic follow-up question suggestions"
+          ],
+          applications: [
+            "Answering service inquiries",
+            "Providing pricing information",
+            "Scheduling appointment requests",
+            "General PMU questions",
+            "Aftercare instructions"
+          ]
+        },
+        {
+          title: "Managing Your Integration",
+          content: "Monitor and manage your Meta integration from the dashboard and AI settings.",
+          features: [
+            "View connection status on dashboard",
+            "See connected Facebook Page details",
+            "Monitor Instagram Business account",
+            "Disconnect and reconnect as needed",
+            "Update integration settings"
+          ],
+          tips: [
+            "Check connection status regularly",
+            "Update permissions if Facebook changes requirements",
+            "Test AI responses before going live",
+            "Monitor response quality and adjust as needed"
+          ]
+        },
+        {
+          title: "Privacy and Security",
+          content: "Your Meta integration is secure and complies with Facebook's privacy requirements.",
+          features: [
+            "Secure OAuth authentication",
+            "Encrypted token storage",
+            "Compliance with Facebook App Review",
+            "Privacy Policy and Terms of Service available",
+            "Data deletion request system"
+          ],
+          contact: "For privacy questions, visit our Privacy Policy page or contact admin@thepmuguide.com"
+        }
+      ]
+    },
+    calendarIntegration: {
+      title: "Calendar Integration 📅",
+      description: "Sync with external booking platforms like Calendly, Acuity, and more",
+      icon: <Sync className="h-8 w-8 text-green-500" />,
+      sections: [
+        {
+          title: "External Calendar Integration",
+          content: "Connect your existing booking platforms to PMU Pro for seamless appointment management and synchronization.",
+          benefits: [
+            "Sync with existing booking systems",
+            "Unified appointment management",
+            "Automatic calendar updates",
+            "Reduced double-booking risk",
+            "Streamlined workflow"
+          ]
+        },
+        {
+          title: "Supported Platforms",
+          content: "PMU Pro integrates with popular booking and calendar platforms used by PMU artists.",
+          platforms: [
+            "Calendly - Popular scheduling platform",
+            "Acuity Scheduling - Advanced booking system",
+            "Google Calendar - Universal calendar access",
+            "Outlook Calendar - Microsoft integration",
+            "Bookly - Beauty industry specific",
+            "SimplyBook.me - Multi-service booking"
+          ],
+          features: [
+            "Bidirectional sync (import and export)",
+            "Real-time appointment updates",
+            "Webhook integration for instant sync",
+            "API key authentication",
+            "Custom sync frequency settings"
+          ]
+        },
+        {
+          title: "Setting Up Calendar Integration",
+          content: "Configure your external calendar integration with your existing booking platform.",
+          steps: [
+            "1. Go to Features page and click 'Calendar Integration'",
+            "2. Select your booking platform",
+            "3. Enter your API key or webhook URL",
+            "4. Choose sync direction (Import, Export, or Bidirectional)",
+            "5. Set sync frequency (Real-time, Hourly, Daily)",
+            "6. Test the connection",
+            "7. Enable integration"
+          ],
+          tips: [
+            "Get API keys from your booking platform's settings",
+            "Test connection before enabling full sync",
+            "Start with import-only to avoid conflicts",
+            "Monitor sync status regularly"
+          ]
+        },
+        {
+          title: "Sync Directions and Options",
+          content: "Choose how your calendars sync to match your workflow preferences.",
+          options: [
+            "Import Only - Bring external appointments into PMU Pro",
+            "Export Only - Send PMU Pro appointments to external calendar",
+            "Bidirectional - Full two-way synchronization"
+          ],
+          considerations: [
+            "Start with Import Only for safety",
+            "Use Bidirectional for complete integration",
+            "Set appropriate sync frequency",
+            "Monitor for sync conflicts"
+          ]
+        },
+        {
+          title: "Managing Integrations",
+          content: "Monitor and manage your calendar integrations from the integration dashboard.",
+          features: [
+            "View all active integrations",
+            "Monitor sync status and last sync time",
+            "Test connections manually",
+            "Update API keys and settings",
+            "Disable or remove integrations",
+            "View sync logs and errors"
+          ],
+          tips: [
+            "Check sync status daily",
+            "Update API keys before they expire",
+            "Review sync logs for any issues",
+            "Test integrations after platform updates"
+          ]
+        }
+      ]
+    },
+    depositPayments: {
+      title: "Deposit Payment System 💳",
+      description: "Automated client deposit collection with secure payment processing",
+      icon: <CreditCard className="h-8 w-8 text-green-500" />,
+      sections: [
+        {
+          title: "Deposit Payment Overview",
+          content: "The deposit payment system automatically generates secure payment links for clients to pay deposits online, reducing no-shows and securing appointments.",
+          benefits: [
+            "Automatic 30% deposit calculation",
+            "Secure Stripe payment processing",
+            "Professional email notifications",
+            "Payment link expiration (7 days)",
+            "Integration with client portal"
+          ]
+        },
+        {
+          title: "How Deposit Payments Work",
+          content: "When creating appointments with online payment, the system automatically generates deposit payment links and sends them to clients.",
+          steps: [
+            "1. Create appointment with 'Online Deposit' payment method",
+            "2. System calculates 30% deposit amount",
+            "3. Unique payment link generated",
+            "4. Professional email sent to client",
+            "5. Client clicks link to complete payment",
+            "6. Payment processed securely via Stripe",
+            "7. Confirmation sent to both client and artist"
+          ],
+          features: [
+            "Automatic deposit calculation",
+            "Unique, secure payment links",
+            "Professional email templates",
+            "Mobile-optimized payment pages",
+            "Payment confirmation emails"
+          ]
+        },
+        {
+          title: "Client Payment Experience",
+          content: "Clients receive a professional payment experience with clear information about their deposit and remaining balance.",
+          features: [
+            "Professional branded payment page",
+            "Clear payment breakdown (deposit, total, remaining)",
+            "Secure Stripe checkout process",
+            "Mobile-optimized design",
+            "Payment confirmation and receipt"
+          ],
+          clientBenefits: [
+            "Secure online payment processing",
+            "Clear payment information",
+            "Email receipts for all payments",
+            "Easy payment completion",
+            "Professional service experience"
+          ]
+        },
+        {
+          title: "Payment Management",
+          content: "Track and manage all deposit payments from your dashboard and client portal.",
+          features: [
+            "View all pending and completed payments",
+            "Track payment status and history",
+            "Send payment reminders if needed",
+            "Process refunds if necessary",
+            "Generate payment reports"
+          ],
+          applications: [
+            "Monitor payment completion rates",
+            "Follow up on unpaid deposits",
+            "Generate financial reports",
+            "Track client payment history",
+            "Manage refund requests"
+          ]
+        },
+        {
+          title: "Integration with Client Portal",
+          content: "Deposit payments integrate seamlessly with the client portal for complete payment tracking.",
+          features: [
+            "Payment status visible in client portal",
+            "Payment history tracking",
+            "Remaining balance display",
+            "Payment confirmation notifications",
+            "Receipt storage and access"
+          ],
+          benefits: [
+            "Complete payment transparency",
+            "Client self-service payment tracking",
+            "Reduced payment-related inquiries",
+            "Professional client experience",
+            "Automated payment management"
+          ]
+        },
+        {
+          title: "Security and Compliance",
+          content: "All payment processing is secure and compliant with industry standards.",
+          features: [
+            "PCI DSS compliant Stripe processing",
+            "Encrypted payment data transmission",
+            "Secure payment link generation",
+            "Payment link expiration for security",
+            "Comprehensive payment logging"
+          ],
+          security: [
+            "No sensitive payment data stored locally",
+            "All payments processed by Stripe",
+            "Secure HTTPS connections",
+            "Payment link expiration",
+            "Audit trail for all transactions"
+          ]
+        }
+      ]
+    },
+    billing: {
+      title: "Payment Processing 💰",
+      description: "Accept client payments through multiple platforms and methods",
+      icon: <DollarSign className="h-8 w-8 text-green-500" />,
+      sections: [
+        {
+          title: "Payment Methods Overview",
+          content: "PMU Pro supports multiple payment methods to help you accept payments from clients in the way that works best for your business.",
+          paymentMethods: [
+            "Venmo - Popular peer-to-peer payment app",
+            "PayPal - Universal online payment platform",
+            "CashApp - Mobile payment solution",
+            "Zelle - Bank-to-bank transfers",
+            "Stripe - Professional payment processing",
+            "Cash - Traditional in-person payments"
+          ]
+        },
+        {
+          title: "Setting Up Payment Methods",
+          content: "Configure your preferred payment methods to start accepting client payments.",
+          steps: [
+            "1. Go to Features page and click 'Billing'",
+            "2. Review available payment methods",
+            "3. Set up accounts for each method you want to use",
+            "4. Configure payment links and QR codes",
+            "5. Test payment methods with small amounts",
+            "6. Enable methods for client use"
+          ],
+          tips: [
+            "Start with methods your clients prefer",
+            "Set up multiple options for flexibility",
+            "Keep payment information updated",
+            "Test all methods before going live"
+          ]
+        },
+        {
+          title: "Payment Links and QR Codes",
+          content: "Generate payment links and QR codes for easy client payment processing.",
+          features: [
+            "Custom payment links for each service",
+            "QR codes for in-person payments",
+            "Mobile-optimized payment pages",
+            "Automatic payment amount calculation",
+            "Payment confirmation notifications"
+          ],
+          applications: [
+            "Send payment links via text or email",
+            "Display QR codes at your studio",
+            "Include payment links in invoices",
+            "Use QR codes for walk-in payments"
+          ]
+        },
+        {
+          title: "Stripe Integration",
+          content: "Professional payment processing through Stripe for secure online payments.",
+          features: [
+            "Secure online payment processing",
+            "Credit and debit card acceptance",
+            "Automatic payment confirmation",
+            "Professional payment receipts",
+            "Integration with deposit payment system"
+          ],
+          benefits: [
+            "Professional payment experience",
+            "Secure payment processing",
+            "Automatic receipt generation",
+            "Payment tracking and reporting",
+            "Integration with booking system"
+          ]
+        },
+        {
+          title: "Payment Tracking and Reporting",
+          content: "Monitor all payments and generate reports for your business accounting.",
+          features: [
+            "Real-time payment status tracking",
+            "Payment history and reports",
+            "Revenue analytics and insights",
+            "Tax reporting assistance",
+            "Payment method performance analysis"
+          ],
+          applications: [
+            "Daily payment reconciliation",
+            "Monthly revenue reporting",
+            "Tax preparation assistance",
+            "Business performance analysis",
+            "Client payment history tracking"
+          ]
+        },
+        {
+          title: "Fees and Costs",
+          content: "Understand the fees associated with different payment methods to make informed decisions.",
+          feeStructure: [
+            "Venmo: Free for personal accounts, business fees apply",
+            "PayPal: 2.9% + $0.30 per transaction",
+            "CashApp: Free for personal, business fees apply",
+            "Zelle: Free (bank-dependent)",
+            "Stripe: 2.9% + $0.30 per transaction",
+            "Cash: No fees"
+          ],
+          tips: [
+            "Consider fees when setting prices",
+            "Offer multiple payment options",
+            "Factor fees into service pricing",
+            "Use cash for larger payments to avoid fees"
+          ]
+        }
+      ]
+    },
+    settings: {
+      title: "Settings & Account Management ⚙️",
+      description: "Manage your account settings, subscription, and profile information",
+      icon: <Settings className="h-8 w-8 text-gray-500" />,
+      sections: [
+        {
+          title: "Account Settings Overview",
+          content: "The Settings page allows you to manage your account information, subscription, and platform preferences.",
+          features: [
+            "Profile information management",
+            "Subscription plan management",
+            "Password and security settings",
+            "Notification preferences",
+            "Platform customization options"
+          ]
+        },
+        {
+          title: "Profile Management",
+          content: "Update your personal and business information to keep your profile current.",
+          steps: [
+            "1. Go to Settings page from dashboard",
+            "2. Update personal information (name, email, phone)",
+            "3. Edit business information (business name, address)",
+            "4. Upload or change profile photo",
+            "5. Update contact information",
+            "6. Save changes"
+          ],
+          tips: [
+            "Keep contact information current",
+            "Use professional business name",
+            "Upload high-quality profile photo",
+            "Verify email address for notifications"
+          ]
+        },
+        {
+          title: "Subscription Management",
+          content: "View and manage your PMU Pro subscription plan and billing information.",
+          features: [
+            "Current plan display and details",
+            "Plan comparison and upgrade options",
+            "Billing history and invoices",
+            "Payment method management",
+            "Subscription cancellation options"
+          ],
+          plans: [
+            "Basic Plan - Essential PMU tools",
+            "Professional Plan - Advanced features",
+            "Enterprise Plan - Full platform access"
+          ],
+          benefits: [
+            "Flexible plan options",
+            "Easy plan upgrades",
+            "Transparent billing",
+            "Cancel anytime policy"
+          ]
+        },
+        {
+          title: "Security Settings",
+          content: "Manage your account security and password settings.",
+          features: [
+            "Change password",
+            "Two-factor authentication setup",
+            "Login session management",
+            "Account security monitoring",
+            "Privacy settings"
+          ],
+          securityTips: [
+            "Use strong, unique passwords",
+            "Enable two-factor authentication",
+            "Regularly review login sessions",
+            "Keep security information updated",
+            "Log out from shared devices"
+          ]
+        },
+        {
+          title: "Notification Preferences",
+          content: "Customize how and when you receive notifications from PMU Pro.",
+          notificationTypes: [
+            "Email notifications for appointments",
+            "SMS notifications for urgent updates",
+            "Push notifications for mobile app",
+            "Marketing and feature updates",
+            "Payment and billing notifications"
+          ],
+          customization: [
+            "Choose notification frequency",
+            "Select notification methods",
+            "Set quiet hours",
+            "Customize notification content",
+            "Manage subscription preferences"
+          ]
+        },
+        {
+          title: "Platform Customization",
+          content: "Customize your PMU Pro experience to match your preferences and workflow.",
+          options: [
+            "Dashboard layout preferences",
+            "Default service settings",
+            "Calendar view options",
+            "Theme and appearance settings",
+            "Language and region settings"
+          ],
+          benefits: [
+            "Personalized user experience",
+            "Optimized workflow",
+            "Improved productivity",
+            "Reduced setup time",
+            "Consistent preferences across devices"
+          ]
+        }
+      ]
+    },
     pwa: {
       title: "PWA Installation Guide 📱",
       description: "Learn how to install PMU Pro as a Progressive Web App (PWA) for a seamless mobile experience.",
@@ -624,7 +1307,7 @@ export default function HelpPage() {
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Desktop Tab List */}
-          <TabsList className="hidden lg:grid w-full grid-cols-9 bg-white/90 backdrop-blur-sm border border-lavender/20 p-1 rounded-lg">
+          <TabsList className="hidden lg:grid w-full grid-cols-12 bg-white/90 backdrop-blur-sm border border-lavender/20 p-1 rounded-lg">
             <TabsTrigger 
               value="overview" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-lavender/10 transition-all duration-200"
@@ -644,8 +1327,20 @@ export default function HelpPage() {
               Clients
             </TabsTrigger>
             <TabsTrigger 
-              value="skinAnalysis"
+              value="booking"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-blue-50 transition-all duration-200"
+            >
+              Booking
+            </TabsTrigger>
+            <TabsTrigger 
+              value="services"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-purple-50 transition-all duration-200"
+            >
+              Services
+            </TabsTrigger>
+            <TabsTrigger 
+              value="skinAnalysis"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-purple-50 transition-all duration-200"
             >
               Skin Analysis
             </TabsTrigger>
@@ -656,28 +1351,34 @@ export default function HelpPage() {
               Pigments
             </TabsTrigger>
             <TabsTrigger 
-              value="resources"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-50 transition-all duration-200"
+              value="metaIntegration"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-700 data-[state=active]:to-blue-800 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-blue-50 transition-all duration-200"
             >
-              Resources
+              Meta AI
             </TabsTrigger>
             <TabsTrigger 
-              value="colorCorrection"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-yellow-50 transition-all duration-200"
+              value="calendarIntegration"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-green-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-green-50 transition-all duration-200"
             >
-              Correction
+              Calendar
             </TabsTrigger>
             <TabsTrigger 
-              value="aiAssistant"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-purple-50 transition-all duration-200"
+              value="depositPayments"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-700 data-[state=active]:to-green-800 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-green-50 transition-all duration-200"
             >
-              AI Assistant
+              Payments
             </TabsTrigger>
             <TabsTrigger 
-              value="pwa"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-teal-50 transition-all duration-200"
+              value="billing"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-800 data-[state=active]:to-green-900 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-green-50 transition-all duration-200"
             >
-              PWA
+              Billing
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-gray-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-50 transition-all duration-200"
+            >
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -687,12 +1388,15 @@ export default function HelpPage() {
               { key: 'overview', title: 'Overview', icon: <Rocket className="h-7 w-7" />, color: 'from-lavender to-purple-500', description: 'Get Started' },
               { key: 'dashboard', title: 'Dashboard', icon: <Target className="h-7 w-7" />, color: 'from-blue-500 to-blue-600', description: 'Main Hub' },
               { key: 'clients', title: 'Clients', icon: <Users className="h-7 w-7" />, color: 'from-green-500 to-green-600', description: 'Management' },
-              { key: 'skinAnalysis', title: 'Skin Analysis', icon: <Eye className="h-7 w-7" />, color: 'from-purple-500 to-purple-600', description: 'AI Tools' },
+              { key: 'booking', title: 'Booking', icon: <CalendarDays className="h-7 w-7" />, color: 'from-blue-600 to-blue-700', description: 'Calendar' },
+              { key: 'services', title: 'Services', icon: <ImageIcon className="h-7 w-7" />, color: 'from-purple-500 to-purple-600', description: 'Management' },
+              { key: 'skinAnalysis', title: 'Skin Analysis', icon: <Eye className="h-7 w-7" />, color: 'from-purple-600 to-purple-700', description: 'AI Tools' },
               { key: 'pigmentLibrary', title: 'Pigments', icon: <Palette className="h-7 w-7" />, color: 'from-orange-500 to-orange-600', description: 'Color Guide' },
-              { key: 'resources', title: 'Resources', icon: <FileText className="h-7 w-7" />, color: 'from-red-500 to-red-600', description: 'Documents' },
-              { key: 'colorCorrection', title: 'Correction', icon: <Zap className="h-7 w-7" />, color: 'from-yellow-500 to-yellow-600', description: 'Fix Issues' },
-              { key: 'aiAssistant', title: 'AI Assistant', icon: <MessageSquare className="h-7 w-7" />, color: 'from-purple-600 to-pink-500', description: 'Smart Help' },
-              { key: 'pwa', title: 'PWA Guide', icon: <Smartphone className="h-7 w-7" />, color: 'from-teal-500 to-teal-600', description: 'Mobile App' }
+              { key: 'metaIntegration', title: 'Meta AI', icon: <Facebook className="h-7 w-7" />, color: 'from-blue-700 to-blue-800', description: 'DM Responses' },
+              { key: 'calendarIntegration', title: 'Calendar', icon: <Sync className="h-7 w-7" />, color: 'from-green-600 to-green-700', description: 'Sync' },
+              { key: 'depositPayments', title: 'Payments', icon: <CreditCard className="h-7 w-7" />, color: 'from-green-700 to-green-800', description: 'Deposits' },
+              { key: 'billing', title: 'Billing', icon: <DollarSign className="h-7 w-7" />, color: 'from-green-800 to-green-900', description: 'Payment Methods' },
+              { key: 'settings', title: 'Settings', icon: <Settings className="h-7 w-7" />, color: 'from-gray-500 to-gray-600', description: 'Account' }
             ].map((tab) => (
               <Card 
                 key={tab.key}
