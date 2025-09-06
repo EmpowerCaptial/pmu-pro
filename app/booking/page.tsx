@@ -20,7 +20,7 @@ import {
   Search,
   UserPlus
 } from 'lucide-react'
-import { getClients, Client } from '@/lib/client-storage'
+import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 
 interface Appointment {
   id: string
@@ -100,11 +100,29 @@ export default function BookingCalendar() {
     notes: ''
   })
 
-  // Load clients on component mount
+  // Load clients and appointments on component mount
   useEffect(() => {
     const loadedClients = getClients()
     setClients(loadedClients)
+    
+    // Load appointments from localStorage
+    const savedAppointments = localStorage.getItem('pmu_appointments')
+    if (savedAppointments) {
+      try {
+        const parsedAppointments = JSON.parse(savedAppointments)
+        setAppointments(parsedAppointments)
+      } catch (error) {
+        console.error('Error loading appointments:', error)
+      }
+    }
   }, [])
+
+  // Save appointments to localStorage whenever appointments change
+  useEffect(() => {
+    if (appointments.length > 0) {
+      localStorage.setItem('pmu_appointments', JSON.stringify(appointments))
+    }
+  }, [appointments])
 
   // Filter clients based on search term
   const filteredClients = clients.filter(client =>
@@ -131,11 +149,36 @@ export default function BookingCalendar() {
       return
     }
 
-    const client = clientSelectionType === 'existing' ? selectedClient : {
-      id: Date.now().toString(),
-      name: newClientData.name,
-      email: newClientData.email,
-      phone: newClientData.phone
+    let client: Client | null = null
+
+    if (clientSelectionType === 'existing') {
+      client = selectedClient
+    } else {
+      // Create new client and save to database
+      if (!newClientData.name) {
+        alert('Please enter client name')
+        return
+      }
+
+      client = addClient({
+        name: newClientData.name,
+        email: newClientData.email,
+        phone: newClientData.phone,
+        notes: `Created from booking calendar - ${appointmentData.service}`,
+        totalAnalyses: 0,
+        medicalConditions: [],
+        medications: [],
+        allergies: [],
+        skinConditions: [],
+        previousPMU: false,
+        photoConsent: false,
+        medicalRelease: false,
+        liabilityWaiver: false,
+        aftercareAgreement: false
+      })
+
+      // Refresh clients list
+      setClients(getClients())
     }
 
     if (!client || !client.name) {
@@ -148,6 +191,7 @@ export default function BookingCalendar() {
       return
     }
 
+    // Create appointment
     const newAppointment: Appointment = {
       id: Date.now().toString(),
       clientName: client.name,
@@ -162,9 +206,27 @@ export default function BookingCalendar() {
       notes: appointmentData.notes
     }
 
+    // Add procedure to client record
+    addClientProcedure(client.id, {
+      type: appointmentData.service,
+      description: `${appointmentData.service} appointment`,
+      cost: appointmentData.price,
+      status: 'scheduled',
+      notes: appointmentData.notes
+    })
+
+    // Save appointment to state
     setAppointments([...appointments, newAppointment])
+    
+    // Reset form
     setShowNewAppointmentModal(false)
-    alert('Appointment created successfully!')
+    setClientSelectionType(null)
+    setSelectedClient(null)
+    setClientSearchTerm('')
+    setNewClientData({ name: '', email: '', phone: '' })
+    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '' })
+    
+    alert(`Appointment created successfully! ${clientSelectionType === 'new' ? 'New client added to database.' : ''}`)
   }
 
   const getDaysInMonth = (date: Date) => {
