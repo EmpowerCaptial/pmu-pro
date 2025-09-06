@@ -45,7 +45,7 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  Sync,
+  RefreshCw,
   CalendarDays,
   Receipt,
   QrCode,
@@ -690,7 +690,7 @@ export default function HelpPage() {
     calendarIntegration: {
       title: "Calendar Integration 📅",
       description: "Sync with external booking platforms like Calendly, Acuity, and more",
-      icon: <Sync className="h-8 w-8 text-green-500" />,
+      icon: <RefreshCw className="h-8 w-8 text-green-500" />,
       sections: [
         {
           title: "External Calendar Integration",
@@ -1393,7 +1393,7 @@ export default function HelpPage() {
               { key: 'skinAnalysis', title: 'Skin Analysis', icon: <Eye className="h-7 w-7" />, color: 'from-purple-600 to-purple-700', description: 'AI Tools' },
               { key: 'pigmentLibrary', title: 'Pigments', icon: <Palette className="h-7 w-7" />, color: 'from-orange-500 to-orange-600', description: 'Color Guide' },
               { key: 'metaIntegration', title: 'Meta AI', icon: <Facebook className="h-7 w-7" />, color: 'from-blue-700 to-blue-800', description: 'DM Responses' },
-              { key: 'calendarIntegration', title: 'Calendar', icon: <Sync className="h-7 w-7" />, color: 'from-green-600 to-green-700', description: 'Sync' },
+              { key: 'calendarIntegration', title: 'Calendar', icon: <RefreshCw className="h-7 w-7" />, color: 'from-green-600 to-green-700', description: 'Sync' },
               { key: 'depositPayments', title: 'Payments', icon: <CreditCard className="h-7 w-7" />, color: 'from-green-700 to-green-800', description: 'Deposits' },
               { key: 'billing', title: 'Billing', icon: <DollarSign className="h-7 w-7" />, color: 'from-green-800 to-green-900', description: 'Payment Methods' },
               { key: 'settings', title: 'Settings', icon: <Settings className="h-7 w-7" />, color: 'from-gray-500 to-gray-600', description: 'Account' }
