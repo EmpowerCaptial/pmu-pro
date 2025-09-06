@@ -410,13 +410,13 @@ export default function BookingCalendar() {
 
       {/* New Appointment Modal */}
       <Dialog open={showNewAppointmentModal} onOpenChange={setShowNewAppointmentModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200 shadow-2xl">
+          <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-6 -m-6 mb-6 border-b border-gray-100">
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <Calendar className="h-5 w-5 text-lavender" />
               New Appointment
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600 mt-2">
               Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
             </DialogDescription>
           </DialogHeader>
@@ -424,12 +424,12 @@ export default function BookingCalendar() {
           <div className="space-y-6">
             {/* Client Selection Type */}
             {!clientSelectionType && (
-              <div className="space-y-4">
-                <Label className="text-lg font-semibold">Select Client Type</Label>
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <Label className="text-lg font-semibold text-gray-900">Select Client Type</Label>
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     onClick={() => handleClientSelection('existing')}
-                    className="h-20 bg-blue-500 hover:bg-blue-600 text-white"
+                    className="h-20 bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <div className="flex flex-col items-center gap-2">
                       <User className="h-6 w-6" />
@@ -438,7 +438,7 @@ export default function BookingCalendar() {
                   </Button>
                   <Button
                     onClick={() => handleClientSelection('new')}
-                    className="h-20 bg-green-500 hover:bg-green-600 text-white"
+                    className="h-20 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <div className="flex flex-col items-center gap-2">
                       <UserPlus className="h-6 w-6" />
@@ -451,13 +451,14 @@ export default function BookingCalendar() {
 
             {/* Existing Client Selection */}
             {clientSelectionType === 'existing' && (
-              <div className="space-y-4">
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <Label className="text-lg font-semibold">Select Existing Client</Label>
+                  <Label className="text-lg font-semibold text-gray-900">Select Existing Client</Label>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
+                    className="bg-white hover:bg-gray-50 border-gray-300"
                   >
                     Back
                   </Button>
@@ -469,11 +470,11 @@ export default function BookingCalendar() {
                     placeholder="Search clients..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                   />
                 </div>
 
-                <div className="max-h-60 overflow-y-auto space-y-2">
+                <div className="max-h-60 overflow-y-auto space-y-2 bg-white rounded-lg p-2 border border-gray-200">
                   {filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
                       <div
@@ -481,8 +482,8 @@ export default function BookingCalendar() {
                         onClick={() => setSelectedClient(client)}
                         className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                           selectedClient?.id === client.id
-                            ? 'bg-lavender text-white border-lavender'
-                            : 'hover:bg-gray-50 border-gray-200'
+                            ? 'bg-lavender text-white border-lavender shadow-md'
+                            : 'hover:bg-gray-50 border-gray-200 bg-white'
                         }`}
                       >
                         <div className="font-semibold">{client.name}</div>
@@ -492,7 +493,7 @@ export default function BookingCalendar() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 bg-white rounded-lg">
                       <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No clients found</p>
                       <p className="text-sm">Try adjusting your search or add a new client</p>
@@ -504,13 +505,14 @@ export default function BookingCalendar() {
 
             {/* New Client Form */}
             {clientSelectionType === 'new' && (
-              <div className="space-y-4">
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <Label className="text-lg font-semibold">New Client Information</Label>
+                  <Label className="text-lg font-semibold text-gray-900">New Client Information</Label>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
+                    className="bg-white hover:bg-gray-50 border-gray-300"
                   >
                     Back
                   </Button>
@@ -518,31 +520,34 @@ export default function BookingCalendar() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="clientName">Client Name *</Label>
+                    <Label htmlFor="clientName" className="text-gray-700 font-medium">Client Name *</Label>
                     <Input
                       id="clientName"
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
                       placeholder="Enter client name"
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="clientEmail">Email</Label>
+                    <Label htmlFor="clientEmail" className="text-gray-700 font-medium">Email</Label>
                     <Input
                       id="clientEmail"
                       type="email"
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
                       placeholder="Enter email address"
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="clientPhone">Phone</Label>
+                    <Label htmlFor="clientPhone" className="text-gray-700 font-medium">Phone</Label>
                     <Input
                       id="clientPhone"
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
                       placeholder="Enter phone number"
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                 </div>
@@ -551,17 +556,17 @@ export default function BookingCalendar() {
 
             {/* Appointment Details */}
             {(selectedClient || clientSelectionType === 'new') && (
-              <div className="space-y-4">
-                <Label className="text-lg font-semibold">Appointment Details</Label>
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <Label className="text-lg font-semibold text-gray-900">Appointment Details</Label>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="service">Service *</Label>
+                    <Label htmlFor="service" className="text-gray-700 font-medium">Service *</Label>
                     <Select value={appointmentData.service} onValueChange={(value) => setAppointmentData({...appointmentData, service: value})}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg">
                         <SelectItem value="microblading">Microblading</SelectItem>
                         <SelectItem value="lip-blush">Lip Blush</SelectItem>
                         <SelectItem value="eyeliner">Eyeliner</SelectItem>
@@ -573,59 +578,64 @@ export default function BookingCalendar() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="time">Time *</Label>
+                    <Label htmlFor="time" className="text-gray-700 font-medium">Time *</Label>
                     <Input
                       id="time"
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="duration">Duration (minutes)</Label>
+                    <Label htmlFor="duration" className="text-gray-700 font-medium">Duration (minutes)</Label>
                     <Input
                       id="duration"
                       type="number"
                       value={appointmentData.duration}
                       onChange={(e) => setAppointmentData({...appointmentData, duration: parseInt(e.target.value) || 60})}
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="price">Price ($)</Label>
+                    <Label htmlFor="price" className="text-gray-700 font-medium">Price ($)</Label>
                     <Input
                       id="price"
                       type="number"
                       value={appointmentData.price}
                       onChange={(e) => setAppointmentData({...appointmentData, price: parseFloat(e.target.value) || 0})}
+                      className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="notes">Notes</Label>
+                  <Label htmlFor="notes" className="text-gray-700 font-medium">Notes</Label>
                   <Input
                     id="notes"
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
                     placeholder="Any additional notes..."
+                    className="bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
                   />
                 </div>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 p-4 -m-6 mt-6 rounded-b-lg">
               <Button
                 variant="outline"
                 onClick={() => setShowNewAppointmentModal(false)}
+                className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateAppointment}
-                className="bg-lavender hover:bg-lavender-600 text-white"
+                className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 disabled={!selectedClient && clientSelectionType !== 'new'}
               >
                 Create Appointment

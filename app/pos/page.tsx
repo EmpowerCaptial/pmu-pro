@@ -266,8 +266,8 @@ export default function POSPage() {
       {/* Coming Soon Overlay */}
       {isComingSoon && (
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Card className="w-full max-w-md mx-4 border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
-            <CardHeader className="text-center border-b border-gray-100">
+          <Card className="w-full max-w-md mx-4 border border-gray-200 shadow-2xl bg-white">
+            <CardHeader className="text-center border-b border-gray-200 bg-gradient-to-r from-lavender/10 to-purple/10">
               <div className="w-16 h-16 bg-gradient-to-br from-lavender to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CreditCard className="h-8 w-8 text-white" />
               </div>
@@ -276,7 +276,7 @@ export default function POSPage() {
                 Coming Soon!
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 text-center space-y-4">
+            <CardContent className="p-6 text-center space-y-4 bg-white">
               <div className="space-y-2">
                 <p className="text-gray-700">
                   We're working hard to bring you a comprehensive Point of Sale system that will include:
