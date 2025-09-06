@@ -424,25 +424,35 @@ export default function BookingCalendar() {
           <div className="space-y-6">
             {/* Client Selection Type */}
             {!clientSelectionType && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <Label className="text-lg font-semibold text-gray-900">Select Client Type</Label>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-6 p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
+                <div className="text-center mb-6">
+                  <Label className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg inline-block">
+                    Choose Client Type
+                  </Label>
+                  <p className="text-gray-700 mt-4 text-lg font-medium bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Button
                     onClick={() => handleClientSelection('existing')}
-                    className="h-20 bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="h-24 bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-blue-600"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <User className="h-6 w-6" />
-                      <span className="font-semibold">Existing Client</span>
+                    <div className="flex flex-col items-center gap-3">
+                      <User className="h-8 w-8" />
+                      <span className="font-bold text-lg">Existing Client</span>
+                      <span className="text-blue-100 text-sm">Select from your client database</span>
                     </div>
                   </Button>
                   <Button
                     onClick={() => handleClientSelection('new')}
-                    className="h-20 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="h-24 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-green-600"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <UserPlus className="h-6 w-6" />
-                      <span className="font-semibold">New Client</span>
+                    <div className="flex flex-col items-center gap-3">
+                      <UserPlus className="h-8 w-8" />
+                      <span className="font-bold text-lg">New Client</span>
+                      <span className="text-green-100 text-sm">Add a new client to your database</span>
                     </div>
                   </Button>
                 </div>
