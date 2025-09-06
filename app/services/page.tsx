@@ -17,7 +17,9 @@ import {
   Clock,
   DollarSign,
   Tag,
-  Search
+  Search,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react'
 import { 
   PMU_SERVICES, 
@@ -142,7 +144,27 @@ export default function ServicesPage() {
             <Card key={service.id} className={`${!service.isActive ? 'opacity-60' : ''}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{service.name}</CardTitle>
+                  <div className="flex items-center gap-3">
+                    {service.imageUrl && (
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={service.imageUrl} 
+                          alt={service.name}
+                          className="w-8 h-8 object-contain"
+                          onError={(e) => {
+                            // Fallback to a default icon if image fails to load
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <CardTitle className="text-lg">{service.name}</CardTitle>
+                      {service.description && (
+                        <p className="text-sm text-gray-600">{service.description}</p>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Badge className={getCategoryColor(service.category)}>
                       {service.category}
@@ -153,9 +175,6 @@ export default function ServicesPage() {
                     />
                   </div>
                 </div>
-                {service.description && (
-                  <p className="text-sm text-gray-600">{service.description}</p>
-                )}
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
@@ -227,6 +246,49 @@ export default function ServicesPage() {
                     placeholder="Service description"
                     className="force-white-bg force-gray-border force-dark-text"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="image">Service Icon/Image</Label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
+                      {(isAddingNew ? newService.imageUrl : editingService?.imageUrl) ? (
+                        <img 
+                          src={isAddingNew ? newService.imageUrl : editingService?.imageUrl} 
+                          alt="Service icon"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                              const imageUrl = event.target?.result as string
+                              if (isAddingNew) {
+                                setNewService({...newService, imageUrl, isCustomImage: true})
+                              } else if (editingService) {
+                                setEditingService({...editingService, imageUrl, isCustomImage: true})
+                              }
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                        className="force-white-bg force-gray-border force-dark-text"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Upload custom image for non-PMU services
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">

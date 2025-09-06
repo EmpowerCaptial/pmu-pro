@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Microblading Icon - Eyebrow shape with hair strokes -->
+  <path d="M12 24C12 24 16 20 20 22C24 24 28 20 32 22C36 24 40 20 44 22C48 24 52 20 52 20" stroke="#8B5CF6" stroke-width="2" fill="none"/>
+  <path d="M14 26C14 26 18 22 22 24C26 26 30 22 34 24C38 26 42 22 46 24C50 26 50 26" stroke="#8B5CF6" stroke-width="1.5" fill="none"/>
+  <path d="M16 28C16 28 20 24 24 26C28 28 32 24 36 26C40 28 44 24 48 26C48 26" stroke="#8B5CF6" stroke-width="1" fill="none"/>
+  <!-- Eye shape -->
+  <ellipse cx="32" cy="32" rx="20" ry="12" fill="#F3E8FF" stroke="#8B5CF6" stroke-width="2"/>
+  <circle cx="32" cy="32" r="4" fill="#8B5CF6"/>
+</svg>

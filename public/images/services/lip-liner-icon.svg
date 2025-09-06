@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Lip Liner Icon - Lips with defined outline -->
+  <path d="M20 36C20 36 24 32 28 34C32 36 36 34 40 36C44 34 48 36 48 36" stroke="#EC4899" stroke-width="3" fill="#FCE7F3"/>
+  <!-- Liner outline -->
+  <path d="M18 34C18 34 22 30 26 32C30 34 34 32 38 34C42 32 46 34 50 34" stroke="#EC4899" stroke-width="2" fill="none"/>
+  <path d="M18 38C18 38 22 34 26 36C30 38 34 36 38 38C42 36 46 38 50 38" stroke="#EC4899" stroke-width="2" fill="none"/>
+  <!-- Lip highlight -->
+  <ellipse cx="32" cy="34" rx="12" ry="4" fill="#FDF2F8" opacity="0.6"/>
+</svg>

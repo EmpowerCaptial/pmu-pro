@@ -9,6 +9,8 @@ export interface Service {
   defaultPrice: number
   category: 'eyebrows' | 'lips' | 'eyeliner' | 'consultation' | 'touch-up' | 'other'
   isActive: boolean
+  imageUrl?: string // URL for service icon/image
+  isCustomImage?: boolean // Whether image was uploaded by user
 }
 
 export const PMU_SERVICES: Service[] = [
@@ -19,7 +21,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 120,
     defaultPrice: 350,
     category: 'eyebrows',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/microblading-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'lip-blush',
@@ -28,7 +32,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 90,
     defaultPrice: 400,
     category: 'lips',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/lip-blush-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'eyeliner',
@@ -37,7 +43,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 60,
     defaultPrice: 300,
     category: 'eyeliner',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/eyeliner-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'eyebrow-mapping',
@@ -46,7 +54,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 30,
     defaultPrice: 75,
     category: 'consultation',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/eyebrow-mapping-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'consultation',
@@ -55,7 +65,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 45,
     defaultPrice: 50,
     category: 'consultation',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/consultation-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'touch-up',
@@ -64,7 +76,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 60,
     defaultPrice: 150,
     category: 'touch-up',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/touch-up-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'eyebrow-shading',
@@ -73,7 +87,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 90,
     defaultPrice: 300,
     category: 'eyebrows',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/eyebrow-shading-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'lip-liner',
@@ -82,7 +98,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 45,
     defaultPrice: 200,
     category: 'lips',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/lip-liner-icon.svg',
+    isCustomImage: false
   },
   {
     id: 'lash-enhancement',
@@ -91,7 +109,9 @@ export const PMU_SERVICES: Service[] = [
     defaultDuration: 60,
     defaultPrice: 250,
     category: 'eyeliner',
-    isActive: true
+    isActive: true,
+    imageUrl: '/images/services/lash-enhancement-icon.svg',
+    isCustomImage: false
   }
 ]
 

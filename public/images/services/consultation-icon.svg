@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Consultation Icon - Clipboard with checkmark -->
+  <rect x="20" y="16" width="24" height="32" rx="2" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="2"/>
+  <rect x="24" y="12" width="16" height="8" rx="1" fill="#0EA5E9"/>
+  <!-- Checkmarks -->
+  <path d="M26 24L28 26L30 24" stroke="#10B981" stroke-width="2" fill="none"/>
+  <path d="M26 30L28 32L30 30" stroke="#10B981" stroke-width="2" fill="none"/>
+  <path d="M26 36L28 38L30 36" stroke="#10B981" stroke-width="2" fill="none"/>
+  <!-- Stethoscope -->
+  <circle cx="48" cy="20" r="6" fill="none" stroke="#0EA5E9" stroke-width="2"/>
+  <path d="M54 20C54 20 56 22 56 24C56 26 54 28 52 28" stroke="#0EA5E9" stroke-width="2" fill="none"/>
+</svg>

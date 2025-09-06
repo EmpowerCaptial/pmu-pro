@@ -382,14 +382,27 @@ export default function BookingCalendar() {
                         <div className="text-sm font-medium mb-1">{day}</div>
                         {dayAppointments.length > 0 && (
                           <div className="space-y-1">
-                            {dayAppointments.slice(0, 2).map(apt => (
-                              <div
-                                key={apt.id}
-                                className="text-xs bg-white/80 text-gray-800 px-1 py-0.5 rounded truncate"
-                              >
-                                {apt.time} - {apt.clientName.split(' ')[0]}
-                              </div>
-                            ))}
+                            {dayAppointments.slice(0, 2).map(apt => {
+                              const service = getServiceById(apt.service)
+                              return (
+                                <div
+                                  key={apt.id}
+                                  className="text-xs bg-white/80 text-gray-800 px-1 py-0.5 rounded flex items-center gap-1"
+                                >
+                                  {service?.imageUrl && (
+                                    <img 
+                                      src={service.imageUrl} 
+                                      alt={service.name}
+                                      className="w-3 h-3 object-contain"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none'
+                                      }}
+                                    />
+                                  )}
+                                  <span className="truncate">{apt.time} - {apt.clientName.split(' ')[0]}</span>
+                                </div>
+                              )
+                            })}
                             {dayAppointments.length > 2 && (
                               <div className="text-xs text-gray-600">
                                 +{dayAppointments.length - 2} more
