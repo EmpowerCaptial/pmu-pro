@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Settings, ExternalLink, Facebook, Instagram } from "lucide-react"
+import { MessageCircle, Settings, ExternalLink, Facebook, Instagram, CheckCircle, AlertCircle } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useMetaConnections } from "@/hooks/use-meta-connections"
 
 interface Message {
   id: string
@@ -27,7 +25,7 @@ interface Message {
 }
 
 export function MetaMessengerBox() {
-  const [isConnected, setIsConnected] = useState(false)
+  const { connections, isLoading, isConnected, refreshConnections } = useMetaConnections();
   const [messages, setMessages] = useState<Message[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isSetupOpen, setIsSetupOpen] = useState(false)
@@ -67,10 +65,21 @@ export function MetaMessengerBox() {
   }, [isConnected])
 
   const handleConnect = () => {
-    // In a real implementation, this would initiate OAuth flow with Meta
-    setIsConnected(true)
-    setIsSetupOpen(false)
-  }
+    // Redirect to the seamless Meta integration page
+    window.location.href = '/integrations/meta';
+  };
+
+  // Refresh connections when returning from integration page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshConnections();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshConnections]);
 
   const handleMessageClick = (messageId: string) => {
     setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, unread: false } : msg)))
@@ -100,56 +109,44 @@ export function MetaMessengerBox() {
               <DialogHeader>
                 <DialogTitle>Connect Meta Messenger</DialogTitle>
                 <DialogDescription>
-                  Connect your Facebook and Instagram business accounts to manage messages directly from your dashboard.
+                  Connect your Facebook and Instagram business accounts seamlessly with one-click OAuth integration.
                 </DialogDescription>
               </DialogHeader>
-              <Tabs defaultValue="facebook" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="facebook" className="flex items-center gap-2">
-                    <Facebook className="h-4 w-4" />
-                    Facebook
-                  </TabsTrigger>
-                  <TabsTrigger value="instagram" className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4" />
-                    Instagram
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="facebook" className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="facebook-page">Facebook Page ID</Label>
-                    <Input id="facebook-page" placeholder="Enter your Facebook Page ID" />
+              <div className="space-y-4">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                    <Facebook className="h-8 w-8 text-blue-600" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="facebook-token">Access Token</Label>
-                    <Input id="facebook-token" type="password" placeholder="Enter your access token" />
+                  <div>
+                    <h3 className="font-semibold mb-2">Seamless Facebook & Instagram Connection</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      One-click connection to your Facebook page and Instagram business account. 
+                      No technical knowledge required!
+                    </p>
                   </div>
-                </TabsContent>
-                <TabsContent value="instagram" className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram-account">Instagram Business Account ID</Label>
-                    <Input id="instagram-account" placeholder="Enter your Instagram Business Account ID" />
+                  <Button 
+                    onClick={handleConnect}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Facebook className="h-4 w-4 mr-2" />
+                    Connect with Facebook
+                  </Button>
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <p className="text-xs text-green-800">
+                      <strong>Seamless Experience:</strong> You'll be redirected to Facebook, 
+                      log in with your account, and return automatically with your pages ready to connect.
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram-token">Access Token</Label>
-                    <Input id="instagram-token" type="password" placeholder="Enter your access token" />
-                  </div>
-                </TabsContent>
-              </Tabs>
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setIsSetupOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleConnect} className="bg-lavender hover:bg-lavender-600 text-white">
-                  Connect Account
-                </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
         </div>
         <CardDescription>
           {isConnected
-            ? "Manage Facebook and Instagram messages from your dashboard"
-            : "Connect your Meta accounts to manage messages"}
+            ? `Connected to ${connections.length} Facebook page${connections.length > 1 ? 's' : ''} with Instagram integration`
+            : "Connect your Meta accounts to manage messages"
+          }
         </CardDescription>
       </CardHeader>
       <CardContent>

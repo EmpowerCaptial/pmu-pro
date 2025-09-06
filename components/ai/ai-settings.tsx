@@ -93,8 +93,8 @@ export function AISettings() {
   }
 
   const connectMetaBusiness = async () => {
-    // This would integrate with Meta Business API
-    alert('Meta Business integration coming soon! This will connect your Facebook page to enable AI responses.')
+    // Redirect to the seamless Meta integration page
+    window.location.href = '/integrations/meta';
   }
 
   const getModeDescription = (mode: string) => {
@@ -333,9 +333,18 @@ export function AISettings() {
               </div>
               
               {!settings.metaIntegration.isConnected ? (
-                <Button onClick={connectMetaBusiness} className="w-full">
-                  Connect Facebook Page
-                </Button>
+                <div className="space-y-3">
+                  <Button onClick={connectMetaBusiness} className="w-full bg-blue-600 hover:bg-blue-700">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Connect Facebook Page
+                  </Button>
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-xs text-blue-800">
+                      <strong>Seamless Connection:</strong> One-click Facebook OAuth integration. 
+                      No technical knowledge required!
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-2">
                   <div>
