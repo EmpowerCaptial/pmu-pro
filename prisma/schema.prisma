@@ -31,6 +31,7 @@ model User {
   updatedAt             DateTime @updatedAt
   clients               Client[]
   magicLinkTokens       MagicLinkToken[]
+  metaConnections       MetaConnection[]
 
   @@map("users")
 }
@@ -187,4 +188,22 @@ enum DocumentType {
   ANALYSIS_REPORT
   PHOTO
   OTHER
+}
+
+model MetaConnection {
+  id                 String   @id @default(cuid())
+  userId             String
+  pageId             String
+  pageName           String
+  pageAccessToken    String
+  pageTokenExpiresAt DateTime?
+  igUserId           String?
+  igUsername         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pageId])
+  @@index([userId])
+  @@map("meta_connections")
 }

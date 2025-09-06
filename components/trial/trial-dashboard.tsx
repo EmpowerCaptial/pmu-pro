@@ -205,3 +205,4 @@ export function TrialDashboard({ onUpgrade }: TrialDashboardProps) {
   )
 }
 
+

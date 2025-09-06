@@ -422,3 +422,4 @@ export async function generateSampleTreatmentPlan(): Promise<Uint8Array> {
   return await pdfDoc.save()
 }
 
+

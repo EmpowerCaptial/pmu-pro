@@ -32,3 +32,4 @@ export function createNotification(artistId: string, notification: any) {
   notificationsStorage.set(artistId, existingNotifications)
 }
 
+

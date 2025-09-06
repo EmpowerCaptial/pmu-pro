@@ -216,6 +216,16 @@ const marketingFeatures = [
     color: 'bg-lime-500',
     status: 'coming-soon',
     category: 'marketing'
+  },
+  {
+    id: 'meta-integration',
+    title: 'Meta Integration',
+    description: 'AI-powered Instagram DM responses',
+    icon: MessageSquare,
+    href: '/integrations/meta',
+    color: 'bg-pink-500',
+    status: 'active',
+    category: 'marketing'
   }
 ]
 

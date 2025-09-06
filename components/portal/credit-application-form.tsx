@@ -718,3 +718,4 @@ export function CreditApplicationForm({ clientId, onApplicationUpdate }: CreditA
   )
 }
 
+
