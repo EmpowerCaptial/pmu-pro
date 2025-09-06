@@ -288,3 +288,26 @@ enum DepositStatus {
   REFUNDED    // Deposit refunded
   CANCELLED   // Deposit cancelled
 }
+
+model DataDeletionRequest {
+  id          String   @id @default(cuid())
+  email       String
+  reason      String?
+  status      DeletionStatus @default(PENDING)
+  requestedAt DateTime @default(now())
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("data_deletion_requests")
+}
+
+enum DeletionStatus {
+  PENDING     // Request submitted, awaiting processing
+  PROCESSING  // Request is being processed
+  COMPLETED   // Data deletion completed
+  FAILED      // Deletion failed, manual review required
+}
