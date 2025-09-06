@@ -336,7 +336,18 @@ export default function POSPage() {
                             {appointment.avatar}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-bold text-gray-900 text-xl">{appointment.clientName}</h3>
+                            <div className="flex items-center gap-3 mb-1">
+                              <h3 className="font-bold text-gray-900 text-xl">{appointment.clientName}</h3>
+                              <Button 
+                                size="sm"
+                                onClick={() => handleCheckout(appointment)}
+                                disabled={appointment.status === 'completed' || appointment.status === 'cancelled'}
+                                className="bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1 text-sm font-semibold h-8"
+                              >
+                                <CreditCard className="h-3 w-3 mr-1" />
+                                Checkout
+                              </Button>
+                            </div>
                             <p className="text-lg text-gray-700 font-semibold mt-1">{appointment.service}</p>
                             <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
                               <div className="flex items-center gap-1">
@@ -357,17 +368,8 @@ export default function POSPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end space-y-3">
+                        <div className="flex items-center">
                           {getStatusBadge(appointment.status)}
-                          <Button 
-                            size="lg"
-                            onClick={() => handleCheckout(appointment)}
-                            disabled={appointment.status === 'completed' || appointment.status === 'cancelled'}
-                            className="bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 text-base font-semibold"
-                          >
-                            <CreditCard className="h-5 w-5 mr-2" />
-                            Checkout
-                          </Button>
                         </div>
                       </div>
                     </div>
