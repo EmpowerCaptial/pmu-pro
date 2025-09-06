@@ -83,8 +83,8 @@ const paymentMethods = [
 
 export default function POSPage() {
   const [appointments, setAppointments] = useState(sampleAppointments)
-  const [selectedAppointment, setSelectedAppointment] = useState(null)
-  const [cart, setCart] = useState([])
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
+  const [cart, setCart] = useState<any[]>([])
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
   const [tipAmount, setTipAmount] = useState(0)
   const [customTip, setCustomTip] = useState('')
