@@ -32,6 +32,7 @@ model User {
   clients               Client[]
   magicLinkTokens       MagicLinkToken[]
   metaConnections       MetaConnection[]
+  calendarIntegrations  CalendarIntegration[]
 
   @@map("users")
 }
@@ -206,4 +207,42 @@ model MetaConnection {
   @@unique([userId, pageId])
   @@index([userId])
   @@map("meta_connections")
+}
+
+model CalendarIntegration {
+  id                    String   @id @default(cuid())
+  userId                String
+  provider              CalendarProvider
+  providerName          String   // e.g., "Calendly", "Acuity Scheduling"
+  apiKey                String?  // API key or access token
+  webhookUrl            String?  // Webhook URL for real-time sync
+  calendarId            String?  // External calendar ID
+  calendarName          String?  // External calendar name
+  isActive              Boolean  @default(true)
+  syncDirection         SyncDirection @default(BIDIRECTIONAL)
+  lastSyncAt            DateTime?
+  syncFrequency         Int      @default(15) // Minutes between syncs
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider, calendarId])
+  @@index([userId])
+  @@map("calendar_integrations")
+}
+
+enum CalendarProvider {
+  CALENDLY
+  ACUITY_SCHEDULING
+  GOOGLE_CALENDAR
+  OUTLOOK_CALENDAR
+  BOOKLY
+  SIMPLYBOOK_ME
+  CUSTOM
+}
+
+enum SyncDirection {
+  IMPORT_ONLY    // Only import from external calendar
+  EXPORT_ONLY    // Only export to external calendar
+  BIDIRECTIONAL  // Two-way sync
 }

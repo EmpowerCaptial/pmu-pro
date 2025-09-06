@@ -226,6 +226,16 @@ const marketingFeatures = [
     color: 'bg-pink-500',
     status: 'active',
     category: 'marketing'
+  },
+  {
+    id: 'calendar-integration',
+    title: 'Calendar Integration',
+    description: 'Sync with Calendly, Acuity, Google Calendar',
+    icon: Calendar,
+    href: '/integrations/calendar',
+    color: 'bg-blue-500',
+    status: 'active',
+    category: 'marketing'
   }
 ]
 
