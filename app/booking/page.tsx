@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 import { getActiveServices, getServiceById } from '@/lib/services-config'
+import { AuthService } from '@/lib/auth'
 
 interface Appointment {
   id: string
@@ -162,6 +163,7 @@ export default function BookingCalendar() {
         return
       }
 
+      // First save to localStorage (existing system)
       client = addClient({
         name: newClientData.name,
         email: newClientData.email,
@@ -178,6 +180,41 @@ export default function BookingCalendar() {
         liabilityWaiver: false,
         aftercareAgreement: false
       })
+
+      // Also save to database for deposit payments
+      try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          const user = await AuthService.verifyToken(token);
+          if (user) {
+            // Save client to database
+            const response = await fetch('/api/clients', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name: newClientData.name,
+                email: newClientData.email,
+                phone: newClientData.phone,
+                notes: `Created from booking calendar - ${appointmentData.service}`
+              })
+            });
+            
+            if (response.ok) {
+              const dbClient = await response.json();
+              console.log('✅ Client saved to database:', dbClient.id);
+              // Update the client ID to match database
+              client.id = dbClient.id;
+            } else {
+              console.error('Failed to save client to database');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error saving client to database:', error);
+      }
 
       // Refresh clients list
       setClients(getClients())
