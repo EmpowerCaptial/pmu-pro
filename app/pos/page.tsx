@@ -342,9 +342,9 @@ export default function POSPage() {
                                 size="sm"
                                 onClick={() => handleCheckout(appointment)}
                                 disabled={appointment.status === 'completed' || appointment.status === 'cancelled'}
-                                className="bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1 text-sm font-semibold h-8"
+                                className="bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-sm hover:shadow-md transition-all duration-200 px-2 py-0.5 text-xs font-medium h-6"
                               >
-                                <CreditCard className="h-3 w-3 mr-1" />
+                                <CreditCard className="h-2.5 w-2.5 mr-1" />
                                 Checkout
                               </Button>
                             </div>
