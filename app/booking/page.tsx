@@ -536,7 +536,7 @@ export default function BookingCalendar() {
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
                       placeholder="Enter client name"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
                     />
                   </div>
                   <div className="space-y-3">
@@ -547,7 +547,7 @@ export default function BookingCalendar() {
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
                       placeholder="Enter email address"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
                     />
                   </div>
                   <div className="space-y-3 md:col-span-2">
@@ -557,7 +557,7 @@ export default function BookingCalendar() {
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
                       placeholder="Enter phone number"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
                     />
                   </div>
                 </div>
@@ -573,7 +573,7 @@ export default function BookingCalendar() {
                   <div className="space-y-3">
                     <Label htmlFor="service" className="text-gray-800 font-bold text-lg">Service *</Label>
                     <Select value={appointmentData.service} onValueChange={(value) => setAppointmentData({...appointmentData, service: value})}>
-                      <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900">
+                      <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 force-white-bg force-gray-border force-dark-text">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
