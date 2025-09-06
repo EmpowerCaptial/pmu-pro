@@ -31,6 +31,11 @@ export default function SettingsPage() {
 
   const [currentPlan, setCurrentPlan] = useState('starter') // Default to starter plan
 
+  const handleSave = () => {
+    // Save settings logic here
+    console.log("Settings saved:", settings)
+  }
+
   const handleUpgradePlan = (plan: 'starter' | 'professional' | 'studio') => {
     // Redirect to billing page for plan upgrade
     window.location.href = '/billing'
