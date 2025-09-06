@@ -98,7 +98,8 @@ export default function BookingCalendar() {
     time: '',
     duration: 60,
     price: 0,
-    notes: ''
+    notes: '',
+    paymentMethod: 'online' // 'online' or 'in-person'
   })
 
   // Load clients and appointments on component mount
@@ -223,6 +224,40 @@ export default function BookingCalendar() {
 
     // Save appointment to state
     setAppointments([...appointments, newAppointment])
+    
+    // Generate deposit payment link if payment is not in person
+    if (appointmentData.paymentMethod !== 'in-person' && finalPrice > 0) {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
+          
+          const depositResponse = await fetch('/api/deposit-payments', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              clientId: client.id,
+              amount: depositAmount,
+              totalAmount: finalPrice,
+              currency: 'USD',
+              notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
+            })
+          });
+
+          if (depositResponse.ok) {
+            const depositData = await depositResponse.json();
+            alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
+          } else {
+            console.error('Failed to create deposit payment');
+          }
+        }
+      } catch (error) {
+        console.error('Error creating deposit payment:', error);
+      }
+    }
     
     // Reset form
     setShowNewAppointmentModal(false)
@@ -707,6 +742,22 @@ export default function BookingCalendar() {
                       className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900"
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="paymentMethod" className="text-gray-800 font-bold text-lg">Payment Method</Label>
+                  <Select
+                    value={appointmentData.paymentMethod}
+                    onValueChange={(value) => setAppointmentData({...appointmentData, paymentMethod: value})}
+                  >
+                    <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">Online Deposit (Link sent to client)</SelectItem>
+                      <SelectItem value="in-person">Pay in Person (No deposit required)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="space-y-3">

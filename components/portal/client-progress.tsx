@@ -13,7 +13,9 @@ import {
   Target,
   CheckCircle,
   Clock,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  AlertCircle
 } from 'lucide-react'
 
 interface ProgressMilestone {
@@ -34,6 +36,11 @@ interface ClientProgressProps {
   completedServices: string[]
   upcomingAppointments: any[]
   milestones: ProgressMilestone[]
+  depositPayments?: {
+    pending: number
+    paid: number
+    total: number
+  }
 }
 
 export function ClientProgress({ 
@@ -43,7 +50,8 @@ export function ClientProgress({
   nextLevelPoints, 
   completedServices,
   upcomingAppointments,
-  milestones 
+  milestones,
+  depositPayments
 }: ClientProgressProps) {
   const progressToNextLevel = ((totalPoints % 100) / 100) * 100
 
@@ -204,6 +212,65 @@ export function ClientProgress({
           </div>
         </CardContent>
       </Card>
+
+      {/* Deposit Payment Status */}
+      {depositPayments && depositPayments.total > 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-blue-600" />
+              Payment Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {depositPayments.pending > 0 && (
+                <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="p-2 bg-yellow-100 rounded-full">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-yellow-800">Pending Deposit Payment</h4>
+                    <p className="text-sm text-yellow-700">
+                      You have {depositPayments.pending} deposit payment(s) pending. Please complete payment to secure your appointment.
+                    </p>
+                  </div>
+                  <Badge className="bg-yellow-500 text-white">
+                    {depositPayments.pending} Pending
+                  </Badge>
+                </div>
+              )}
+              
+              {depositPayments.paid > 0 && (
+                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-green-800">Deposit Payments Confirmed</h4>
+                    <p className="text-sm text-green-700">
+                      {depositPayments.paid} deposit payment(s) completed successfully.
+                    </p>
+                  </div>
+                  <Badge className="bg-green-500 text-white">
+                    {depositPayments.paid} Paid
+                  </Badge>
+                </div>
+              )}
+              
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <h5 className="font-semibold text-blue-900 mb-2">Payment Information</h5>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Deposit payments secure your appointment time</li>
+                  <li>• Remaining balance is due on the day of your procedure</li>
+                  <li>• All payments are processed securely through Stripe</li>
+                  <li>• You'll receive email receipts for all payments</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Next Steps */}
       <Card className="bg-gradient-to-r from-lavender/5 to-purple-500/5 border-lavender/30">

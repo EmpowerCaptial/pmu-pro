@@ -33,6 +33,7 @@ model User {
   magicLinkTokens       MagicLinkToken[]
   metaConnections       MetaConnection[]
   calendarIntegrations  CalendarIntegration[]
+  depositPayments       DepositPayment[]
 
   @@map("users")
 }
@@ -58,6 +59,7 @@ model Client {
   photos     Photo[]
   documents  Document[]
   procedures Procedure[]
+  depositPayments DepositPayment[]
 
   @@map("clients")
 }
@@ -245,4 +247,44 @@ enum SyncDirection {
   IMPORT_ONLY    // Only import from external calendar
   EXPORT_ONLY    // Only export to external calendar
   BIDIRECTIONAL  // Two-way sync
+}
+
+model DepositPayment {
+  id                    String   @id @default(cuid())
+  clientId             String
+  appointmentId        String?  // Optional - can be created before appointment
+  userId               String   // PMU Pro user (artist)
+  amount               Decimal  // Deposit amount
+  totalAmount          Decimal  // Total procedure cost
+  remainingAmount      Decimal  // Amount due on procedure day
+  currency             String   @default("USD")
+  status               DepositStatus @default(PENDING)
+  paymentMethod        String?  // Stripe payment method ID
+  stripePaymentIntentId String? // Stripe payment intent ID
+  stripeSessionId      String?  // Stripe checkout session ID
+  depositLink          String   @unique // Unique link for client to pay
+  depositLinkExpiresAt DateTime // Link expiration
+  paidAt               DateTime?
+  refundedAt           DateTime?
+  refundAmount         Decimal?
+  refundReason         String?
+  notes                String?  // Additional notes
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  client               Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([userId])
+  @@index([depositLink])
+  @@index([status])
+  @@map("deposit_payments")
+}
+
+enum DepositStatus {
+  PENDING     // Deposit link created, awaiting payment
+  PAID        // Deposit paid successfully
+  EXPIRED     // Deposit link expired
+  REFUNDED    // Deposit refunded
+  CANCELLED   // Deposit cancelled
 }
