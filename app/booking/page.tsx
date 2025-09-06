@@ -145,7 +145,7 @@ export default function BookingCalendar() {
     setClientSelectionType(type)
   }
 
-  const handleCreateAppointment = () => {
+  const handleCreateAppointment = async () => {
     if (!selectedDate) {
       alert('Please select a date first')
       return
