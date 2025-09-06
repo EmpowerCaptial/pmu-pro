@@ -10,7 +10,7 @@ export interface EmailOptions {
 }
 
 export class EmailService {
-  private static isDevelopment = process.env.NODE_ENV !== 'production'
+  private static isDevelopment = process.env.NODE_ENV === 'development'
 
   /**
    * Send an email (development mode logs to console, production sends real email)
