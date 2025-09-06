@@ -27,7 +27,14 @@ import {
   CheckCircle,
   AlertCircle,
   Zap,
-  Sparkles
+  Sparkles,
+  Camera,
+  Edit,
+  Ban,
+  RefreshCw,
+  FileText,
+  MoreHorizontal,
+  ChevronDown
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -100,6 +107,10 @@ export default function POSPage() {
   const [customTip, setCustomTip] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showActionMenu, setShowActionMenu] = useState(false)
+  const [actionMenuAppointment, setActionMenuAppointment] = useState<any>(null)
+  const [showNotesModal, setShowNotesModal] = useState(false)
+  const [notes, setNotes] = useState('')
 
   const filteredAppointments = appointments.filter(apt =>
     apt.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,6 +155,84 @@ export default function POSPage() {
     }
   }
 
+  const handleCheckout = (appointment: any) => {
+    setActionMenuAppointment(appointment)
+    setShowActionMenu(true)
+  }
+
+  const handleAction = (action: string, appointment: any) => {
+    switch (action) {
+      case 'checkout':
+        addToCart(appointment)
+        setShowActionMenu(false)
+        break
+      case 'markPaid':
+        setAppointments(appointments.map(apt => 
+          apt.id === appointment.id 
+            ? { ...apt, status: 'completed' }
+            : apt
+        ))
+        alert(`${appointment.clientName} marked as paid!`)
+        setShowActionMenu(false)
+        break
+      case 'delete':
+        if (confirm(`Are you sure you want to delete ${appointment.clientName}'s appointment?`)) {
+          setAppointments(appointments.filter(apt => apt.id !== appointment.id))
+          alert('Appointment deleted!')
+        }
+        setShowActionMenu(false)
+        break
+      case 'reschedule':
+        alert('Reschedule functionality coming soon!')
+        setShowActionMenu(false)
+        break
+      case 'takePicture':
+        alert('Camera functionality coming soon!')
+        setShowActionMenu(false)
+        break
+      case 'leaveNotes':
+        setNotes(appointment.notes || '')
+        setShowNotesModal(true)
+        setShowActionMenu(false)
+        break
+      case 'cancel':
+        if (confirm(`Are you sure you want to cancel ${appointment.clientName}'s appointment?`)) {
+          setAppointments(appointments.map(apt => 
+            apt.id === appointment.id 
+              ? { ...apt, status: 'cancelled' }
+              : apt
+          ))
+          alert('Appointment cancelled!')
+        }
+        setShowActionMenu(false)
+        break
+      case 'noShow':
+        if (confirm(`Mark ${appointment.clientName} as no-show?`)) {
+          setAppointments(appointments.map(apt => 
+            apt.id === appointment.id 
+              ? { ...apt, status: 'no-show' }
+              : apt
+          ))
+          alert('Marked as no-show!')
+        }
+        setShowActionMenu(false)
+        break
+    }
+  }
+
+  const saveNotes = () => {
+    if (actionMenuAppointment) {
+      setAppointments(appointments.map(apt => 
+        apt.id === actionMenuAppointment.id 
+          ? { ...apt, notes: notes }
+          : apt
+      ))
+      alert('Notes saved!')
+      setShowNotesModal(false)
+      setNotes('')
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'arrived':
@@ -154,6 +243,10 @@ export default function POSPage() {
         return <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-3 py-1"><Zap className="h-3 w-3 mr-1" />In Progress</Badge>
       case 'completed':
         return <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-3 py-1"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>
+      case 'cancelled':
+        return <Badge className="bg-red-100 text-red-800 border-red-200 px-3 py-1"><X className="h-3 w-3 mr-1" />Cancelled</Badge>
+      case 'no-show':
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-200 px-3 py-1"><AlertCircle className="h-3 w-3 mr-1" />No Show</Badge>
       default:
         return null
     }
@@ -231,51 +324,49 @@ export default function POSPage() {
                   {filteredAppointments.map((appointment) => (
                     <div 
                       key={appointment.id}
-                      className={`p-6 hover:bg-gray-50/50 transition-all duration-200 cursor-pointer group ${
+                      className={`p-6 hover:bg-gray-50/50 transition-all duration-200 group ${
                         selectedAppointment?.id === appointment.id 
                           ? 'bg-lavender/5 border-l-4 border-lavender' 
                           : ''
                       }`}
-                      onClick={() => setSelectedAppointment(appointment)}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className={`w-12 h-12 rounded-xl ${getAvatarColor(appointment.avatar)} flex items-center justify-center text-white font-semibold text-sm shadow-lg`}>
+                        <div className="flex items-center space-x-4 flex-1">
+                          <div className={`w-14 h-14 rounded-xl ${getAvatarColor(appointment.avatar)} flex items-center justify-center text-white font-semibold text-lg shadow-lg`}>
                             {appointment.avatar}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 text-lg">{appointment.clientName}</h3>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4 text-gray-400" />
-                                <span>{appointment.scheduledTime}</span>
-                              </div>
+                            <h3 className="font-bold text-gray-900 text-xl">{appointment.clientName}</h3>
+                            <p className="text-lg text-gray-700 font-semibold mt-1">{appointment.service}</p>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-4 w-4 text-gray-400" />
-                                <span>{appointment.date}</span>
+                                <span className="font-medium">{appointment.date}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4 text-gray-400" />
+                                <span className="font-medium">{appointment.scheduledTime}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <DollarSign className="h-4 w-4 text-gray-400" />
-                                <span className="font-semibold text-gray-900">${appointment.price}</span>
+                                <span className="font-bold text-gray-900">${appointment.price}</span>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1 font-medium">{appointment.service}</p>
-                            <p className="text-xs text-gray-500 mt-1">{appointment.notes}</p>
+                            {appointment.notes && (
+                              <p className="text-xs text-gray-500 mt-2 italic">"{appointment.notes}"</p>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex flex-col items-end space-y-3">
                           {getStatusBadge(appointment.status)}
                           <Button 
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              addToCart(appointment)
-                            }}
-                            disabled={appointment.status === 'completed'}
-                            className="bg-lavender hover:bg-lavender-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                            size="lg"
+                            onClick={() => handleCheckout(appointment)}
+                            disabled={appointment.status === 'completed' || appointment.status === 'cancelled'}
+                            className="bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 text-base font-semibold"
                           >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add to Cart
+                            <CreditCard className="h-5 w-5 mr-2" />
+                            Checkout
                           </Button>
                         </div>
                       </div>
@@ -492,6 +583,168 @@ export default function POSPage() {
                   variant="outline" 
                   className="flex-1 border-gray-200 hover:border-red-300 hover:bg-red-50"
                   onClick={() => setShowPaymentModal(false)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Action Menu Modal */}
+      {showActionMenu && actionMenuAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <MoreHorizontal className="h-5 w-5 text-lavender" />
+                Appointment Actions
+              </CardTitle>
+              <CardDescription>
+                {actionMenuAppointment.clientName} - {actionMenuAppointment.service}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Button 
+                  className="h-16 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('checkout', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <CreditCard className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Checkout</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('markPaid', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Mark as Paid</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('reschedule', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <RefreshCw className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Reschedule</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('takePicture', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <Camera className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Take Picture</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('leaveNotes', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <FileText className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Leave Notes</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('delete', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <Trash2 className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Delete</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('cancel', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <X className="h-5 w-5" />
+                    <span className="text-sm font-semibold">Cancel</span>
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="h-16 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => handleAction('noShow', actionMenuAppointment)}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <Ban className="h-5 w-5" />
+                    <span className="text-sm font-semibold">No Show</span>
+                  </div>
+                </Button>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-200 hover:border-gray-300"
+                  onClick={() => setShowActionMenu(false)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Notes Modal */}
+      {showNotesModal && actionMenuAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-lavender" />
+                Appointment Notes
+              </CardTitle>
+              <CardDescription>
+                Add notes for {actionMenuAppointment.clientName}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="notes" className="text-sm font-semibold text-gray-900">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this appointment..."
+                  className="mt-2 border-gray-200 focus:border-lavender focus:ring-lavender/20"
+                  rows={4}
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-lavender to-purple-600 hover:from-lavender-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={saveNotes}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  Save Notes
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-gray-200 hover:border-gray-300"
+                  onClick={() => {
+                    setShowNotesModal(false)
+                    setNotes('')
+                  }}
                 >
                   <X className="h-4 w-4 mr-2" />
                   Cancel
