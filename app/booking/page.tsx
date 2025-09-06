@@ -138,7 +138,7 @@ export default function BookingCalendar() {
     setSelectedClient(null)
     setClientSearchTerm('')
     setNewClientData({ name: '', email: '', phone: '' })
-    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '' })
+    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '', paymentMethod: 'online' })
   }
 
   const handleClientSelection = (type: 'new' | 'existing') => {
@@ -265,7 +265,7 @@ export default function BookingCalendar() {
     setSelectedClient(null)
     setClientSearchTerm('')
     setNewClientData({ name: '', email: '', phone: '' })
-    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '' })
+    setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '', paymentMethod: 'online' })
     
     alert(`Appointment created successfully! ${clientSelectionType === 'new' ? 'New client added to database.' : ''}`)
   }
