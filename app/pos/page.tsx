@@ -100,7 +100,7 @@ export default function POSPage() {
   const tax = subtotal * 0.08 // 8% tax
   const total = subtotal + tax + tipAmount
 
-  const addToCart = (appointment) => {
+  const addToCart = (appointment: any) => {
     const cartItem = {
       id: appointment.id,
       name: appointment.service,
@@ -111,7 +111,7 @@ export default function POSPage() {
     setSelectedAppointment(appointment)
   }
 
-  const removeFromCart = (itemId) => {
+  const removeFromCart = (itemId: number) => {
     setCart(cart.filter(item => item.id !== itemId))
   }
 
@@ -133,7 +133,7 @@ export default function POSPage() {
     }
   }
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'arrived':
         return <Badge className="bg-green-100 text-green-800 border-green-200">Arrived</Badge>
