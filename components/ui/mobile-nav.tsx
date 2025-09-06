@@ -21,8 +21,8 @@ const navItems = [
     color: 'text-blue-600'
   },
   {
-    name: 'Checkout',
-    href: '/billing',
+    name: 'POS',
+    href: '/pos',
     icon: CreditCard,
     color: 'text-green-600'
   },
