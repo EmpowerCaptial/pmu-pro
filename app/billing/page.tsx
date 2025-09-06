@@ -1,235 +1,349 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Home, Check, Star } from "lucide-react"
-import Link from "next/link"
-import { BILLING_PLANS, getPriceId } from "@/lib/billing-config"
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import { 
+  CreditCard, 
+  Smartphone, 
+  DollarSign, 
+  CheckCircle, 
+  Settings,
+  ExternalLink,
+  Copy,
+  QrCode,
+  Shield,
+  Zap
+} from 'lucide-react'
+
+interface PaymentMethod {
+  id: string
+  name: string
+  type: 'digital' | 'card' | 'bank'
+  description: string
+  icon: string
+  isEnabled: boolean
+  setupRequired: boolean
+  fees: string
+  processingTime: string
+}
+
+const PAYMENT_METHODS: PaymentMethod[] = [
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    type: 'card',
+    description: 'Accept credit cards, debit cards, and digital wallets',
+    icon: '💳',
+    isEnabled: false,
+    setupRequired: true,
+    fees: '2.9% + 30¢ per transaction',
+    processingTime: '2-7 business days'
+  },
+  {
+    id: 'venmo',
+    name: 'Venmo',
+    type: 'digital',
+    description: 'Accept payments through Venmo app',
+    icon: '📱',
+    isEnabled: false,
+    setupRequired: false,
+    fees: 'Free for personal accounts',
+    processingTime: 'Instant'
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    type: 'digital',
+    description: 'Accept PayPal payments and credit cards',
+    icon: '🅿️',
+    isEnabled: false,
+    setupRequired: true,
+    fees: '2.9% + fixed fee',
+    processingTime: 'Instant to 1 day'
+  },
+  {
+    id: 'cashapp',
+    name: 'Cash App',
+    type: 'digital',
+    description: 'Accept payments through Cash App',
+    icon: '💰',
+    isEnabled: false,
+    setupRequired: false,
+    fees: 'Free for personal accounts',
+    processingTime: 'Instant'
+  },
+  {
+    id: 'zelle',
+    name: 'Zelle',
+    type: 'bank',
+    description: 'Bank-to-bank transfers',
+    icon: '🏦',
+    isEnabled: false,
+    setupRequired: false,
+    fees: 'Free',
+    processingTime: 'Instant'
+  },
+  {
+    id: 'cash',
+    name: 'Cash',
+    type: 'digital',
+    description: 'Accept cash payments',
+    icon: '💵',
+    isEnabled: false,
+    setupRequired: false,
+    fees: 'No fees',
+    processingTime: 'Instant'
+  }
+]
 
 export default function BillingPage() {
-  const handleCheckout = async (plan: 'starter' | 'professional' | 'studio') => {
-    try {
-      const priceId = getPriceId(plan)
-      
-      // Get user email from localStorage or prompt for it
-      let customerEmail = 'demo@pmupro.com' // Default demo email
-      
-      // Try to get email from localStorage
-      if (typeof window !== 'undefined') {
-        const savedUser = localStorage.getItem('demoUser')
-        if (savedUser) {
-          try {
-            const user = JSON.parse(savedUser)
-            customerEmail = user.email || customerEmail
-          } catch (error) {
-            console.error('Error parsing saved user:', error)
-          }
-        }
-        
-        // If no email found, prompt user
-        if (!customerEmail || customerEmail === 'demo@pmupro.com') {
-          const email = prompt('Please enter your email address for billing:')
-          if (email && email.includes('@')) {
-            customerEmail = email
-          } else {
-            alert('Please enter a valid email address')
-            return
-          }
-        }
-      }
-      
-      const response = await fetch("/api/stripe/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priceId: priceId,
-          customerEmail: customerEmail,
-          successUrl: `${window.location.origin}/billing/success`,
-          cancelUrl: `${window.location.origin}/billing`,
-        }),
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create checkout session')
-      }
-      
-      const { url } = await response.json()
-      if (url) {
-        // Use redirect page to handle HTTPS redirect properly
-        window.location.href = `/checkout-redirect?url=${encodeURIComponent(url)}`
-      } else {
-        throw new Error('No checkout URL received')
-      }
-    } catch (error) {
-      console.error("Checkout error:", error)
-      alert(`Failed to start checkout: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(PAYMENT_METHODS)
+  const [stripeConfig, setStripeConfig] = useState({
+    publishableKey: '',
+    webhookSecret: '',
+    isConnected: false
+  })
+
+  const handleTogglePaymentMethod = (id: string) => {
+    setPaymentMethods(prev => 
+      prev.map(method => 
+        method.id === id 
+          ? { ...method, isEnabled: !method.isEnabled }
+          : method
+      )
+    )
+  }
+
+  const handleStripeSetup = () => {
+    // This would typically redirect to Stripe Connect setup
+    alert('Redirecting to Stripe Connect setup...')
+  }
+
+  const handlePayPalSetup = () => {
+    // This would typically redirect to PayPal setup
+    alert('Redirecting to PayPal setup...')
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    alert('Copied to clipboard!')
+  }
+
+  const getStatusBadge = (method: PaymentMethod) => {
+    if (method.isEnabled) {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>
+    } else if (method.setupRequired) {
+      return <Badge className="bg-yellow-100 text-yellow-800">Setup Required</Badge>
+    } else {
+      return <Badge className="bg-gray-100 text-gray-800">Available</Badge>
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory pb-20">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <img
-          src="/images/pmu-guide-logo.png"
-          alt="PMU Guide Logo"
-          className="w-[60%] max-w-2xl h-auto opacity-10 object-contain"
-        />
-      </div>
-
-      {/* Floating elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-lavender/10 rounded-full blur-xl"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-beige/20 rounded-full blur-lg"></div>
-        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-lavender/5 rounded-full blur-2xl"></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-12">
-        {/* Mobile Header */}
-        <div className="md:hidden mb-6">
-          <div className="text-center mb-4">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 object-contain" />
-              <h1 className="text-2xl font-serif font-bold text-ink">Subscription Plans</h1>
-            </div>
-            <Link href="/dashboard">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 hover:bg-lavender/10 hover:border-lavender bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold w-full"
-              >
-                <Home className="h-4 w-4" />
-                Dashboard
-              </Button>
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-ink mb-2">Payment Processing</h1>
+            <p className="text-muted">Set up payment methods to accept payments from your clients</p>
           </div>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = '/settings'}
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
         </div>
 
-        {/* Desktop Header */}
-        <div className="hidden md:flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-12 h-12 object-contain" />
-            <div>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-ink">Subscription Plans</h1>
-            </div>
-          </div>
-          <Link href="/dashboard">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 hover:bg-lavender/10 hover:border-lavender bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold"
-            >
-              <Home className="h-4 w-4" />
-              Dashboard
-            </Button>
-          </Link>
-        </div>
-
-        <div className="text-center mb-12">
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Choose the perfect plan for your PMU practice. All plans include our comprehensive analysis tools and client
-            management system.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-          {/* Starter Plan */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-lavender/20 hover:shadow-xl transition-all duration-300">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-serif font-bold text-ink mb-2">{BILLING_PLANS.starter.name}</h3>
-              <div className="text-4xl font-bold text-lavender mb-2">${BILLING_PLANS.starter.price}</div>
-              <div className="text-muted">per month</div>
-              <p className="text-sm text-muted mt-2">{BILLING_PLANS.starter.description}</p>
-            </div>
-
-            <ul className="space-y-4 mb-8">
-              {BILLING_PLANS.starter.features.map((feature, index) => (
-                <li key={index} className="flex items-center">
-                  <Check className="w-5 h-5 text-lavender mr-3" />
-                  <span className="text-ink">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => handleCheckout('starter')}
-              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Get Started
-            </button>
-          </div>
-
-          {/* Professional Plan */}
-          <div className="bg-gradient-to-br from-lavender/10 to-beige/20 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl border-2 border-lavender/30 relative overflow-hidden">
-            {/* Popular badge */}
-            {BILLING_PLANS.professional.popular && (
-              <div className="absolute top-4 right-4 bg-lavender text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                <Star className="w-3 h-3" />
-                Most Popular
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {paymentMethods.filter(m => m.isEnabled).length}
               </div>
-            )}
-
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-serif font-bold text-ink mb-2">{BILLING_PLANS.professional.name}</h3>
-              <div className="text-4xl font-bold text-lavender mb-2">${BILLING_PLANS.professional.price}</div>
-              <div className="text-muted">per month</div>
-              <p className="text-sm text-muted mt-2">{BILLING_PLANS.professional.description}</p>
-            </div>
-
-            <ul className="space-y-4 mb-8">
-              {BILLING_PLANS.professional.features.map((feature, index) => (
-                <li key={index} className="flex items-center">
-                  <Check className="w-5 h-5 text-lavender mr-3" />
-                  <span className="text-muted">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => handleCheckout('professional')}
-              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Get Started
-            </button>
-          </div>
-
-          {/* Studio Plan */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-lavender/20 hover:shadow-xl transition-all duration-300">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-serif font-bold text-ink mb-2">{BILLING_PLANS.studio.name}</h3>
-              <div className="text-4xl font-bold text-lavender mb-2">${BILLING_PLANS.studio.price}</div>
-              <div className="text-muted">per month</div>
-              <p className="text-sm text-muted mt-2">{BILLING_PLANS.studio.description}</p>
-            </div>
-
-            <ul className="space-y-4 mb-8">
-              {BILLING_PLANS.studio.features.map((feature, index) => (
-                <li key={index} className="flex items-center">
-                  <Check className="w-5 h-5 text-lavender mr-3" />
-                  <span className="text-ink">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => handleCheckout('studio')}
-              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Get Started
-            </button>
-          </div>
+              <div className="text-sm text-gray-600">Active Payment Methods</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {paymentMethods.filter(m => m.type === 'digital').length}
+              </div>
+              <div className="text-sm text-gray-600">Digital Payment Options</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">
+                {paymentMethods.filter(m => m.fees.includes('Free')).length}
+              </div>
+              <div className="text-sm text-gray-600">Free Payment Methods</div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Additional Info */}
-        <div className="text-center mt-12 max-w-3xl mx-auto">
-          <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-lavender/20">
-            <h4 className="text-lg font-semibold text-ink mb-3">Local Artist Listing Requirements</h4>
-            <p className="text-muted text-sm leading-relaxed">
-              To be featured in our local artist directory, you must provide valid PMU licensing documentation and
-              complete our verification process. This ensures clients are connected only with qualified, licensed
-              professionals. Approval typically takes 2-3 business days.
-            </p>
-          </div>
+        {/* Payment Methods Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {paymentMethods.map((method) => (
+            <Card key={method.id} className={`${method.isEnabled ? 'ring-2 ring-green-200' : ''}`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{method.icon}</div>
+                    <div>
+                      <CardTitle className="text-lg">{method.name}</CardTitle>
+                      <p className="text-sm text-gray-600">{method.description}</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={method.isEnabled}
+                    onCheckedChange={() => handleTogglePaymentMethod(method.id)}
+                  />
+                </div>
+                <div className="flex justify-between items-center">
+                  {getStatusBadge(method)}
+                  <span className="text-xs text-gray-500">{method.type}</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <DollarSign className="w-4 h-4 text-gray-500" />
+                  <span>{method.fees}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Zap className="w-4 h-4 text-gray-500" />
+                  <span>{method.processingTime}</span>
+                </div>
+                
+                {method.setupRequired && !method.isEnabled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (method.id === 'stripe') handleStripeSetup()
+                      else if (method.id === 'paypal') handlePayPalSetup()
+                    }}
+                    className="w-full"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Setup Required
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
+
+        {/* Payment Links Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              Payment Links & QR Codes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="venmo-link">Venmo Link</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="venmo-link"
+                    placeholder="@your-venmo-username"
+                    className="force-white-bg force-gray-border force-dark-text"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard('@your-venmo-username')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cashapp-link">Cash App Link</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cashapp-link"
+                    placeholder="$your-cashapp-username"
+                    className="force-white-bg force-gray-border force-dark-text"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard('$your-cashapp-username')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-blue-900 mb-1">Payment Security</h4>
+                  <p className="text-sm text-blue-800">
+                    All payment methods are secure and encrypted. We recommend using multiple payment options 
+                    to give your clients flexibility and convenience.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Integration Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Integration Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Stripe Connect</div>
+                    <div className="text-sm text-gray-600">Credit card processing</div>
+                  </div>
+                </div>
+                <Badge className="bg-yellow-100 text-yellow-800">Setup Required</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Digital Payments</div>
+                    <div className="text-sm text-gray-600">Venmo, Cash App, Zelle</div>
+                  </div>
+                </div>
+                <Badge className="bg-green-100 text-green-800">Ready to Use</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

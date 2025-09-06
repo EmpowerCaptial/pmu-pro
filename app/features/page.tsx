@@ -82,7 +82,7 @@ const coreFeatures = [
   {
     id: 'billing',
     title: 'Billing',
-    description: 'Payment processing',
+    description: 'Accept client payments',
     icon: CreditCard,
     href: '/billing',
     color: 'bg-indigo-500',

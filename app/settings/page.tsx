@@ -8,7 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Bell, Shield, Palette } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Bell, Shield, Palette, CreditCard, Star, Check } from "lucide-react"
+import { BILLING_PLANS } from "@/lib/billing-config"
 
 export default function SettingsPage() {
   const { currentUser, isAuthenticated } = useDemoAuth()
@@ -27,9 +29,11 @@ export default function SettingsPage() {
     showEmail: true,
   })
 
-  const handleSave = () => {
-    // Save settings logic here
-    console.log("Settings saved:", settings)
+  const [currentPlan, setCurrentPlan] = useState('starter') // Default to starter plan
+
+  const handleUpgradePlan = (plan: 'starter' | 'professional' | 'studio') => {
+    // Redirect to billing page for plan upgrade
+    window.location.href = '/billing'
   }
 
   return (
@@ -214,6 +218,97 @@ export default function SettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription Management */}
+          <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <CreditCard className="h-5 w-5 text-lavender" />
+                <span>Subscription Management</span>
+              </CardTitle>
+              <CardDescription>Manage your PMU Pro subscription plan</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Current Plan */}
+              <div className="bg-gradient-to-r from-lavender/10 to-purple/10 p-4 rounded-lg border border-lavender/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">Current Plan: {BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].name}</h3>
+                    <p className="text-sm text-gray-600">${BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].price}/month</p>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                </div>
+              </div>
+
+              {/* Plan Comparison */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Available Plans</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(BILLING_PLANS).map(([key, plan]) => (
+                    <div key={key} className={`p-4 rounded-lg border ${
+                      currentPlan === key 
+                        ? 'border-lavender bg-lavender/10' 
+                        : 'border-gray-200 bg-white'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="font-semibold">{plan.name}</h5>
+                        {plan.popular && <Star className="w-4 h-4 text-yellow-500" />}
+                      </div>
+                      <div className="text-2xl font-bold text-lavender mb-2">${plan.price}</div>
+                      <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                      
+                      <ul className="space-y-1 mb-4">
+                        {plan.features.slice(0, 3).map((feature, index) => (
+                          <li key={index} className="flex items-center text-sm">
+                            <Check className="w-3 h-3 text-green-500 mr-2" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      {currentPlan !== key && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUpgradePlan(key as 'starter' | 'professional' | 'studio')}
+                          className="w-full"
+                        >
+                          {currentPlan === 'starter' && key === 'professional' ? 'Upgrade' : 
+                           currentPlan === 'professional' && key === 'studio' ? 'Upgrade' : 
+                           'Change Plan'}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Billing Actions */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.href = '/billing'}
+                  className="flex-1"
+                >
+                  View All Plans
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => alert('Billing history coming soon!')}
+                  className="flex-1"
+                >
+                  Billing History
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => alert('Cancel subscription coming soon!')}
+                  className="flex-1"
+                >
+                  Cancel Subscription
+                </Button>
               </div>
             </CardContent>
           </Card>
