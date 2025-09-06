@@ -21,6 +21,7 @@ import {
   UserPlus
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
+import { getActiveServices, getServiceById } from '@/lib/services-config'
 
 interface Appointment {
   id: string
@@ -191,6 +192,11 @@ export default function BookingCalendar() {
       return
     }
 
+    // Get service details for default values
+    const selectedService = getServiceById(appointmentData.service)
+    const finalDuration = appointmentData.duration || selectedService?.defaultDuration || 60
+    const finalPrice = appointmentData.price || selectedService?.defaultPrice || 0
+
     // Create appointment
     const newAppointment: Appointment = {
       id: Date.now().toString(),
@@ -200,8 +206,8 @@ export default function BookingCalendar() {
       service: appointmentData.service,
       date: selectedDate,
       time: appointmentData.time,
-      duration: appointmentData.duration,
-      price: appointmentData.price,
+      duration: finalDuration,
+      price: finalPrice,
       status: 'scheduled',
       notes: appointmentData.notes
     }
@@ -634,17 +640,24 @@ export default function BookingCalendar() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <Label htmlFor="service" className="text-gray-800 font-bold text-lg">Service *</Label>
-                    <Select value={appointmentData.service} onValueChange={(value) => setAppointmentData({...appointmentData, service: value})}>
+                    <Select value={appointmentData.service} onValueChange={(value) => {
+                      const service = getServiceById(value)
+                      setAppointmentData({
+                        ...appointmentData, 
+                        service: value,
+                        duration: service?.defaultDuration || 60,
+                        price: service?.defaultPrice || 0
+                      })
+                    }}>
                       <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 force-white-bg force-gray-border force-dark-text">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                        <SelectItem value="microblading">Microblading</SelectItem>
-                        <SelectItem value="lip-blush">Lip Blush</SelectItem>
-                        <SelectItem value="eyeliner">Eyeliner</SelectItem>
-                        <SelectItem value="eyebrow-mapping">Eyebrow Mapping</SelectItem>
-                        <SelectItem value="consultation">Consultation</SelectItem>
-                        <SelectItem value="touch-up">Touch-up</SelectItem>
+                        {getActiveServices().map((service) => (
+                          <SelectItem key={service.id} value={service.id}>
+                            {service.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
