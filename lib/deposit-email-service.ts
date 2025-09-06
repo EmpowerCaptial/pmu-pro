@@ -2,6 +2,7 @@
 // Sends deposit payment links to clients
 
 import { DepositPayment } from "./deposit-payment-service";
+import { EmailService } from "./email-service";
 
 export interface EmailTemplate {
   subject: string;
@@ -179,21 +180,16 @@ export class DepositEmailService {
         depositLink
       );
 
-      // Use existing email service or create new one
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          to,
-          subject: template.subject,
-          html: template.html,
-          text: template.text
-        })
+      // Use existing EmailService
+      await EmailService.sendEmail({
+        to,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com',
+        subject: template.subject,
+        html: template.html,
+        text: template.text
       });
 
-      return response.ok;
+      return true;
     } catch (error) {
       console.error('Failed to send deposit email:', error);
       return false;
@@ -311,20 +307,16 @@ export class DepositEmailService {
         Powered by PMU Pro • Secure payment processing by Stripe
       `;
 
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          to,
-          subject,
-          html,
-          text
-        })
+      // Use existing EmailService
+      await EmailService.sendEmail({
+        to,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com',
+        subject,
+        html,
+        text
       });
 
-      return response.ok;
+      return true;
     } catch (error) {
       console.error('Failed to send payment confirmation email:', error);
       return false;
