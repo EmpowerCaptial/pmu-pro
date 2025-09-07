@@ -961,6 +961,15 @@ export default function StaffAdminDashboardPage() {
                       <Database className="h-4 w-4 mr-2" />
                       User Accounts
                     </Button>
+                    <Button 
+                      size="sm" 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => window.open('/admin', '_blank')}
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Full Admin Dashboard
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
