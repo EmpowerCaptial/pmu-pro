@@ -257,14 +257,11 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     <Target className="mr-2 h-4 w-4" />
                     <span>Brow Mapping Tool</span>
                   </Link>
-                  <Link
-                    href="/enhanced-clients"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-                  >
+                  <div className="flex items-center space-x-3 text-sm font-medium p-2 rounded-md text-gray-400 cursor-not-allowed opacity-60">
                     <BarChart3 className="mr-2 h-4 w-4" />
                     <span>Enhanced CRM</span>
-                  </Link>
+                    <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full ml-auto">Coming Soon</span>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
