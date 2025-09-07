@@ -630,10 +630,13 @@ export default function BookingCalendar() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
+                    id="clientSearch"
+                    name="clientSearch"
                     placeholder="Search clients..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
                     className="pl-10 bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                    aria-label="Search clients"
                   />
                 </div>
 
@@ -686,6 +689,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="clientName" className="text-gray-800 font-bold text-lg">Client Name *</Label>
                     <Input
                       id="clientName"
+                      name="clientName"
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
                       placeholder="Enter client name"
@@ -696,6 +700,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="clientEmail" className="text-gray-800 font-bold text-lg">Email</Label>
                     <Input
                       id="clientEmail"
+                      name="clientEmail"
                       type="email"
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
@@ -707,6 +712,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="clientPhone" className="text-gray-800 font-bold text-lg">Phone</Label>
                     <Input
                       id="clientPhone"
+                      name="clientPhone"
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
                       placeholder="Enter phone number"
@@ -751,6 +757,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="time" className="text-gray-800 font-bold text-lg">Time *</Label>
                     <Input
                       id="time"
+                      name="time"
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
@@ -762,6 +769,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="duration" className="text-gray-800 font-bold text-lg">Duration (minutes)</Label>
                     <Input
                       id="duration"
+                      name="duration"
                       type="number"
                       value={appointmentData.duration}
                       onChange={(e) => setAppointmentData({...appointmentData, duration: parseInt(e.target.value) || 60})}
@@ -773,6 +781,7 @@ export default function BookingCalendar() {
                     <Label htmlFor="price" className="text-gray-800 font-bold text-lg">Price ($)</Label>
                     <Input
                       id="price"
+                      name="price"
                       type="number"
                       value={appointmentData.price}
                       onChange={(e) => setAppointmentData({...appointmentData, price: parseFloat(e.target.value) || 0})}
@@ -801,6 +810,7 @@ export default function BookingCalendar() {
                   <Label htmlFor="notes" className="text-gray-800 font-bold text-lg">Notes</Label>
                   <Input
                     id="notes"
+                    name="notes"
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
                     placeholder="Any additional notes..."
