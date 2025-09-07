@@ -18,24 +18,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { priceId = 'price_selfserve_123', customerId } = await req.json()
+    const { priceId = 'price_1S4p1m2NnsVhahaHGvMtyPTr', customerId } = await req.json()
     const origin = new URL(req.url).origin
 
     console.log('Creating Stripe session with priceId:', priceId)
 
-    // For now, create a one-time payment instead of subscription
-    // This avoids the need for a pre-configured price ID
+    // Use the actual Stripe product and price
     const params: Stripe.Checkout.SessionCreateParams = {
-      mode: 'payment', // Changed from 'subscription' to 'payment'
+      mode: 'subscription', // Back to subscription mode with real price
       line_items: [{ 
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'PMU Guide Marketing - Self-Serve Plan',
-            description: 'Monthly access to PMU Guide Marketing platform with Meta & Google Ads integration'
-          },
-          unit_amount: 9700 // $97.00 in cents
-        },
+        price: priceId, // Use the actual price ID from Stripe
         quantity: 1 
       }],
       success_url: `${origin}/marketing?subscribe=success`,
@@ -52,9 +44,8 @@ export async function POST(req: NextRequest) {
     if (customerId) {
       params.customer = customerId
       params.customer_update = { address: 'auto' }
-    } else {
-      params.customer_creation = 'always'
     }
+    // For subscriptions, customer creation is handled automatically
 
     const session = await stripe.checkout.sessions.create(params)
     
