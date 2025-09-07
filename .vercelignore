@@ -1,0 +1,10 @@
+# Exclude test files from Vercel deployment
+tests/
+playwright.config.ts
+vitest.config.ts
+.github/
+scripts/run-lhci.mjs
+lighthouserc.json
+QA-REPORT.md
+lib/env.ts
+components/ui/Link.tsx
