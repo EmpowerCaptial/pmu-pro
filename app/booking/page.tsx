@@ -267,21 +267,53 @@ export default function BookingCalendar() {
           try {
             console.log('🔍 Attempting to create deposit payment...');
             
-            // Check for demo user authentication
+            // Check for both demo user and real user authentication
             const demoUser = localStorage.getItem('demoUser');
-            console.log('🔑 Demo user found:', demoUser ? 'Yes' : 'No');
+            const authToken = localStorage.getItem('authToken');
             
-            if (demoUser) {
+            console.log('🔑 Demo user found:', demoUser ? 'Yes' : 'No');
+            console.log('🔑 Auth token found:', authToken ? 'Yes' : 'No');
+            
+            const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
+            console.log('💰 Deposit amount:', depositAmount, 'Total amount:', finalPrice);
+            console.log('👤 Client ID:', client.id, 'Client email:', client.email);
+
+            if (authToken) {
+              // Real user with JWT token - use the full deposit payment API
+              console.log('👤 Real user detected - using full deposit payment API...');
+              
+              const depositResponse = await fetch('/api/deposit-payments', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${authToken}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  clientId: client.id,
+                  amount: depositAmount,
+                  totalAmount: finalPrice,
+                  currency: 'USD',
+                  notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
+                })
+              });
+
+              console.log('📡 Deposit API response status:', depositResponse.status);
+              
+              if (depositResponse.ok) {
+                const depositData = await depositResponse.json();
+                console.log('✅ Deposit payment created successfully:', depositData);
+                alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
+              } else {
+                const errorData = await depositResponse.json();
+                console.error('❌ Failed to create deposit payment:', errorData);
+                alert(`Appointment created, but deposit email failed: ${errorData.error || 'Unknown error'}`);
+              }
+            } else if (demoUser) {
+              // Demo user - send email directly
+              console.log('👤 Demo user detected - sending email directly...');
+              
               const user = JSON.parse(demoUser);
               console.log('👤 User:', user.email, 'Type:', localStorage.getItem('userType'));
-              
-              const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
-              console.log('💰 Deposit amount:', depositAmount, 'Total amount:', finalPrice);
-              console.log('👤 Client ID:', client.id, 'Client email:', client.email);
-
-              // For demo users, we'll create a mock deposit payment and send email directly
-              // without going through the database API
-              console.log('📧 Sending deposit email directly for demo user...');
               
               // Create a mock deposit payment object
               const mockDepositPayment = {
@@ -322,7 +354,7 @@ export default function BookingCalendar() {
                 alert('Appointment created, but deposit email failed to send.');
               }
             } else {
-              console.error('❌ No demo user found');
+              console.error('❌ No authentication found');
               alert('Appointment created, but deposit email failed: Please log in first.');
             }
           } catch (error) {
