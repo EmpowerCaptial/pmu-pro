@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
             total: depositMetrics[0],
             paid: depositMetrics[1],
             newThisPeriod: depositMetrics[2],
-            totalRevenue: depositMetrics[3]._sum.amount || 0
+            totalRevenue: Number(depositMetrics[3]._sum.amount || 0)
           },
           activity: activityMetrics,
           systemHealth
@@ -110,9 +110,9 @@ export async function GET(request: NextRequest) {
       // Mock additional revenue data
       const revenueBreakdown = {
         subscriptions: 12500,
-        deposits: revenueData._sum.amount || 0,
+        deposits: Number(revenueData._sum.amount || 0),
         commissions: 2500,
-        total: (12500 + (revenueData._sum.amount || 0) + 2500)
+        total: (12500 + Number(revenueData._sum.amount || 0) + 2500)
       }
 
       return NextResponse.json({
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
           period: `${period} days`,
           totalRevenue: revenueBreakdown.total,
           breakdown: revenueBreakdown,
-          averageTransaction: revenueData._avg.amount || 0,
+          averageTransaction: Number(revenueData._avg.amount || 0),
           transactionCount: revenueData._count.id
         }
       })
