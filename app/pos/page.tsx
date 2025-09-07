@@ -182,10 +182,134 @@ export default function POSPage() {
       ) : (
         /* Desktop View */
         <div className="min-h-screen bg-gray-50 p-8">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Point of Sale - Desktop View</h1>
-            <p className="text-gray-600">Desktop interface coming soon...</p>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* Left Column - Client & Services */}
+              <div className="lg:col-span-2 space-y-6">
+                
+                {/* Client Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Client Information</span>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowClientSelection(true)}
+                        className="text-sm"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Select Client
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedAppointment ? (
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-semibold text-gray-900">{selectedAppointment.clientName}</h3>
+                        <p className="text-gray-600">{selectedAppointment.email}</p>
+                        <p className="text-gray-600">{selectedAppointment.phone}</p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">No client selected</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Service Selection */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Select Services</CardTitle>
+                    <CardDescription>Click on services to add them to the cart</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      {services.map((service) => {
+                        const isSelected = isServiceInCart(service.id)
+                        return (
+                          <button
+                            key={service.id}
+                            className={`p-4 rounded-lg border-2 transition-colors text-left ${
+                              isSelected 
+                                ? 'bg-lavender border-lavender text-white' 
+                                : 'bg-white border-gray-200 hover:border-lavender'
+                            }`}
+                            onClick={() => toggleServiceInCart(service)}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <img 
+                                src={service.image} 
+                                alt={service.name}
+                                className="w-12 h-12 rounded object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = `data:image/svg+xml;base64,${btoa(`
+                                    <svg width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+                                      <rect width="48" height="48" fill="#f3f4f6"/>
+                                      <text x="24" y="24" text-anchor="middle" dy=".3em" font-family="Arial" font-size="8" fill="#6b7280">${service.name}</text>
+                                    </svg>
+                                  `)}`
+                                }}
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-medium text-sm">{service.name}</h4>
+                                <p className="text-xs opacity-75">${service.price}</p>
+                              </div>
+                              {isSelected && (
+                                <div className="text-white text-lg">✓</div>
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+
+              {/* Right Column - Cart & Checkout */}
+              <div className="space-y-6">
+                
+                {/* Cart Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Order Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {cart.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">No services selected</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {cart.map((item) => (
+                          <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div>
+                              <p className="font-medium text-sm">{item.name}</p>
+                            </div>
+                            <p className="font-semibold">${item.price}</p>
+                          </div>
+                        ))}
+                        <div className="pt-3 border-t border-gray-200">
+                          <div className="flex justify-between items-center">
+                            <span className="text-lg font-semibold">Total:</span>
+                            <span className="text-xl font-bold text-lavender">${getCartTotal().toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Checkout Button */}
+                <Button 
+                  className="w-full bg-lavender hover:bg-lavender-600 text-white py-4 text-lg font-semibold"
+                  onClick={handleCheckout}
+                  disabled={cart.length === 0}
+                >
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  Process Payment - ${getCartTotal().toFixed(2)}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
