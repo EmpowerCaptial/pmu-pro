@@ -306,7 +306,7 @@ export default function BookingCalendar() {
             }
           } catch (error) {
             console.error('❌ Error creating deposit payment:', error);
-            alert(`Appointment created, but deposit email failed: ${error.message}`);
+            alert(`Appointment created, but deposit email failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
     
