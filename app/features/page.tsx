@@ -88,6 +88,16 @@ const coreFeatures = [
     color: 'bg-indigo-500',
     status: 'active',
     category: 'core'
+  },
+  {
+    id: 'pos',
+    title: 'POS',
+    description: 'Point of Sale system',
+    icon: Receipt,
+    href: '/pos',
+    color: 'bg-green-600',
+    status: 'active',
+    category: 'core'
   }
 ]
 
