@@ -3,15 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "next dev",
     "build": "node scripts/update-pwa-version.js && prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "coverage": "vitest --run --coverage",
+    "test:e2e": "playwright test",
+    "test:all": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e",
+    "lighthouse:ci": "node scripts/run-lhci.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio",
-    "dev": "next dev",
-    "lint": "next lint",
-    "start": "next start"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@ai-sdk/groq": "latest",
@@ -56,23 +63,36 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "undici": "^7.14.0",
-    "ws": "latest",
-    "zod": "latest"
+    "ws": "latest"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@lhci/cli": "^0.15.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.0.2",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
+    "jsdom": "^26.1.0",
+    "msw": "^2.11.1",
+    "playwright": "^1.55.0",
     "postcss": "^8.5",
     "prisma": "^6.14.0",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4",
+    "zod": "latest"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=18.18.0"
   }
 }

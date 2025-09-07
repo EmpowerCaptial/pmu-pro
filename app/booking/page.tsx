@@ -449,6 +449,7 @@ export default function BookingCalendar() {
             <p className="text-muted">Manage your appointments and schedule</p>
           </div>
           <Button 
+            data-testid="booking-new-appointment"
             onClick={handleNewAppointmentClick}
             className="bg-lavender hover:bg-lavender-600 text-white"
           >

@@ -1,0 +1,26 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:3000/",
+        "http://localhost:3000/dashboard",
+        "http://localhost:3000/analyze/upload",
+        "http://localhost:3000/booking",
+        "http://localhost:3000/admin"
+      ],
+      "numberOfRuns": 1
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", ">=0.9"],
+        "categories:accessibility": ["error", ">=0.9"],
+        "categories:seo": ["warn", ">=0.9"],
+        "categories:best-practices": ["warn", ">=0.9"]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": "./reports/lighthouse"
+    }
+  }
+}

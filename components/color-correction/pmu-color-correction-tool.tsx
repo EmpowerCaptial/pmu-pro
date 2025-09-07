@@ -864,7 +864,11 @@ function PMUColorCorrectionTool() {
             {(aiResult?.brands?.length || correctorHeuristic) && (
               <div className={`grid ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-3`}>
                 {(aiResult?.brands?.length
-                  ? Object.groupBy(aiResult.brands, (b: any) => b.brand)
+                  ? aiResult.brands.reduce((acc: any, b: any) => {
+                      if (!acc[b.brand]) acc[b.brand] = [];
+                      acc[b.brand].push(b);
+                      return acc;
+                    }, {})
                   : Object.fromEntries(
                       brandOrder.map((b) => [
                         b,
@@ -877,7 +881,11 @@ function PMUColorCorrectionTool() {
                     )) &&
                   Object.entries(
                     aiResult?.brands?.length
-                      ? Object.groupBy(aiResult.brands, (b: any) => b.brand)
+                      ? aiResult.brands.reduce((acc: any, b: any) => {
+                          if (!acc[b.brand]) acc[b.brand] = [];
+                          acc[b.brand].push(b);
+                          return acc;
+                        }, {})
                       : Object.fromEntries(
                           brandOrder.map((b) => [
                             b,
@@ -892,7 +900,7 @@ function PMUColorCorrectionTool() {
                     <BrandCard
                       key={brand}
                       brand={brand}
-                      items={list.map((x: any) => x.name)}
+                      items={(list as any[]).map((x: any) => x.name)}
                       inventory={inventory}
                       onQuickOrder={(sku) => console.log("Order", sku)}
                     />

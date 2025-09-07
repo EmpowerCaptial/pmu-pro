@@ -487,15 +487,16 @@ export default function AdminDashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   {/* Search and Filters */}
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Search users by name, email, or business..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full"
-                      />
-                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <Input
+                          data-testid="admin-user-search"
+                          placeholder="Search users by name, email, or business..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full"
+                        />
+                      </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Filter by status" />

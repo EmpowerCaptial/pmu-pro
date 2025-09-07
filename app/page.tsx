@@ -57,6 +57,7 @@ export default function HomePage() {
                 </Link>
 
                 <Button
+                  data-testid="landing-cta-get-started"
                   className="bg-lavender hover:bg-lavender-600 text-white px-6 py-2"
                   onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
                 >

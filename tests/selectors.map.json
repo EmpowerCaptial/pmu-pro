@@ -1,0 +1,59 @@
+{
+  "/": {
+    "cta": "#landing-cta-get-started,[data-testid='landing-cta-get-started']",
+    "pricing": "[data-testid='landing-cta-pricing']",
+    "betaEmail": "[data-testid='beta-email-input']",
+    "betaSubmit": "[data-testid='beta-email-submit']"
+  },
+  "/auth/login": {
+    "email": "[data-testid='auth-email-input']",
+    "password": "[data-testid='auth-password-input']",
+    "submit": "[data-testid='auth-login-submit']",
+    "oauthMeta": "[data-testid='auth-oauth-meta']"
+  },
+  "/dashboard": {
+    "header": "[data-testid='dashboard-header']",
+    "navClients": "[data-testid='dashboard-nav-clients']",
+    "navAnalyze": "[data-testid='dashboard-nav-analyze']"
+  },
+  "/clients": {
+    "new": "[data-testid='clients-new-btn']",
+    "row": "[data-testid^='clients-row-']"
+  },
+  "/clients/new": {
+    "name": "[data-testid='client-name-input']",
+    "save": "[data-testid='client-save-submit']"
+  },
+  "/analyze/upload": {
+    "file": "[data-testid='analyze-upload-input']",
+    "submit": "[data-testid='analyze-upload-submit']"
+  },
+  "/analyze/results/": {
+    "score": "[data-testid='analyze-result-score']",
+    "save": "[data-testid='analyze-save-to-portfolio']"
+  },
+  "/settings/connections": {
+    "connect": "[data-testid='meta-connect-btn']",
+    "disconnect": "[data-testid='meta-disconnect-btn']"
+  },
+  "/pricing": {
+    "plan": "[data-testid^='pricing-plan-']",
+    "select": "[data-testid^='pricing-select-']"
+  },
+  "/subscriptions": {
+    "current": "[data-testid='subscription-current-plan']",
+    "change": "[data-testid^='subscription-change-plan']"
+  },
+  "/booking": {
+    "newAppointment": "[data-testid='booking-new-appointment']",
+    "clientSearch": "[data-testid='booking-client-search']",
+    "serviceSelect": "[data-testid='booking-service-select']",
+    "saveAppointment": "[data-testid='booking-save-appointment']"
+  },
+  "/admin": {
+    "userSearch": "[data-testid='admin-user-search']",
+    "approveUser": "[data-testid='admin-approve-user']",
+    "rejectUser": "[data-testid='admin-reject-user']",
+    "suspendUser": "[data-testid='admin-suspend-user']"
+  }
+}
