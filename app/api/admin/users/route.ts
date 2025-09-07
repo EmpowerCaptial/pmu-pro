@@ -186,12 +186,13 @@ export async function DELETE(request: NextRequest) {
       })
     } else if (action === 'delete') {
       // Soft delete - mark as deleted but keep data for compliance
+      const user = await prisma.user.findUnique({ where: { id: userId } })
       const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
           subscriptionStatus: 'deleted',
           hasActiveSubscription: false,
-          email: `deleted_${Date.now()}_${updatedUser.email}`
+          email: `deleted_${Date.now()}_${user?.email || 'unknown'}`
         }
       })
 
