@@ -14,6 +14,9 @@ export default function POSPage() {
   const [cart, setCart] = useState<any[]>([])
   const [serviceQuantities, setServiceQuantities] = useState<{[key: number]: number}>({})
   
+  // POS is now active - no longer coming soon
+  const isComingSoon = false
+  
   // Sample appointments
   const appointments = [
     {
