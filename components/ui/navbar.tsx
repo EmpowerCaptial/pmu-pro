@@ -214,7 +214,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="w-80 bg-gradient-to-b from-lavender to-lavender-600 border-lavender-600"
+                className="w-80 bg-white border-lavender-600"
               >
                 <div className="flex flex-col space-y-4 mt-8">
                   {navItems.map((item) => (
@@ -225,8 +225,8 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       className={cn(
                         "flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md",
                         currentPath === item.href
-                          ? "text-gray-900 bg-white/90 font-semibold"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-white/20",
+                          ? "text-gray-900 bg-lavender/20 font-semibold"
+                          : "text-gray-800 hover:text-gray-900 hover:bg-gray-100",
                       )}
                     >
                       {item.icon}
@@ -236,7 +236,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/standard-documents"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     <span>Standard Documents</span>
@@ -244,7 +244,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/ai-settings"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                   >
                     <Bot className="mr-2 h-4 w-4" />
                     <span>AI Assistant</span>
@@ -252,7 +252,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/brow-mapping"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                   >
                     <Target className="mr-2 h-4 w-4" />
                     <span>Brow Mapping Tool</span>
@@ -260,7 +260,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/enhanced-clients"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-800 hover:text-gray-900 hover:bg-gray-100"
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
                     <span>Enhanced CRM</span>
