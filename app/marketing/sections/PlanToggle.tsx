@@ -15,10 +15,25 @@ export function PlanToggle() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId: 'price_selfserve_123' })
       })
-      const { url } = await res.json()
-      if (url) window.location.href = url
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error('Subscription API error:', errorData)
+        alert(`Subscription setup failed: ${errorData.message || 'Unknown error'}`)
+        return
+      }
+      
+      const data = await res.json()
+      
+      if (data.success && data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('No checkout URL received:', data)
+        alert('Subscription setup failed: No checkout URL received')
+      }
     } catch (error) {
       console.error('Subscription error:', error)
+      alert('Subscription setup failed: Network error. Please try again.')
     }
   }
 
