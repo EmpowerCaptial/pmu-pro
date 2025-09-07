@@ -579,9 +579,9 @@ export default function BookingCalendar() {
             {!clientSelectionType && (
               <div className="space-y-6 p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
                 <div className="text-center mb-6">
-                  <Label className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg inline-block">
+                  <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg inline-block">
                     Choose Client Type
-                  </Label>
+                  </h3>
                   <p className="text-gray-700 mt-4 text-lg font-medium bg-gray-50 p-4 rounded-lg border border-gray-200">
                     Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
                   </p>
@@ -616,7 +616,7 @@ export default function BookingCalendar() {
             {clientSelectionType === 'existing' && (
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <Label className="text-lg font-semibold text-gray-900">Select Existing Client</Label>
+                  <h3 className="text-lg font-semibold text-gray-900">Select Existing Client</h3>
                   <Button
                     variant="outline"
                     size="sm"
@@ -673,7 +673,7 @@ export default function BookingCalendar() {
             {clientSelectionType === 'new' && (
               <div className="space-y-6 p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
-                  <Label className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">New Client Information</Label>
+                  <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">New Client Information</h3>
                   <Button
                     variant="outline"
                     size="sm"
@@ -726,7 +726,7 @@ export default function BookingCalendar() {
             {/* Appointment Details */}
             {(selectedClient || clientSelectionType === 'new') && (
               <div className="space-y-6 p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
-                <Label className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">Appointment Details</Label>
+                <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">Appointment Details</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
