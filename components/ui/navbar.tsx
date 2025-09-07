@@ -48,12 +48,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <Home className="h-4 w-4" /> },
   { href: "/clients", label: "Clients", icon: <Users className="h-4 w-4" /> },
-  { href: "/analyze", label: "Analyze", icon: <Camera className="h-4 w-4" /> },
   { href: "/booking", label: "Booking", icon: <Calendar className="h-4 w-4" /> },
   { href: "/aftercare", label: "Aftercare", icon: <Heart className="h-4 w-4" /> },
   { href: "/pos", label: "POS", icon: <CreditCard className="h-4 w-4" /> },
   { href: "/features", label: "Features", icon: <Crown className="h-4 w-4" /> },
-  { href: "/billing", label: "Billing", icon: <CreditCard className="h-4 w-4" /> },
 ]
 
 interface NavBarProps {

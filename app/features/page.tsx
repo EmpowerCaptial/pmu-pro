@@ -209,7 +209,7 @@ const marketingFeatures = [
   },
   {
     id: 'social',
-    title: 'Social Media',
+    title: 'Marketing',
     description: 'Content management',
     icon: Share,
     href: '/social',
