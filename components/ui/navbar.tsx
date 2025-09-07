@@ -51,7 +51,7 @@ const navItems: NavItem[] = [
   { href: "/analyze", label: "Analyze", icon: <Camera className="h-4 w-4" /> },
   { href: "/booking", label: "Booking", icon: <Calendar className="h-4 w-4" /> },
   { href: "/aftercare", label: "Aftercare", icon: <Heart className="h-4 w-4" /> },
-  { href: "/library", label: "Pigment Library", icon: <Palette className="h-4 w-4" /> },
+  { href: "/features", label: "Features", icon: <Crown className="h-4 w-4" /> },
   { href: "/billing", label: "Billing", icon: <CreditCard className="h-4 w-4" /> },
 ]
 
@@ -98,7 +98,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                 className="object-contain"
               />
             </div>
-            <span className="text-xl font-bold font-serif text-white hidden sm:block">PMU Pro</span>
+            <span className="text-xl font-bold font-serif text-gray-900 hidden sm:block">PMU Pro</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -108,8 +108,8 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center space-x-2 text-sm font-medium transition-colors hover:text-white/90",
-                  currentPath === item.href ? "text-white" : "text-white/70",
+                  "flex items-center space-x-2 text-sm font-medium transition-colors hover:text-gray-900",
+                  currentPath === item.href ? "text-gray-900 font-semibold" : "text-gray-700",
                 )}
               >
                 {item.icon}
@@ -225,8 +225,8 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       className={cn(
                         "flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md",
                         currentPath === item.href
-                          ? "text-white bg-white/20"
-                          : "text-white/70 hover:text-white hover:bg-white/10",
+                          ? "text-gray-900 bg-white/90 font-semibold"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-white/20",
                       )}
                     >
                       {item.icon}
@@ -236,7 +236,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/standard-documents"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     <span>Standard Documents</span>
@@ -244,7 +244,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/ai-settings"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
                   >
                     <Bot className="mr-2 h-4 w-4" />
                     <span>AI Assistant</span>
@@ -252,7 +252,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/brow-mapping"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
                   >
                     <Target className="mr-2 h-4 w-4" />
                     <span>Brow Mapping Tool</span>
@@ -260,7 +260,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <Link
                     href="/enhanced-clients"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md hover:text-white hover:bg-white/10"
+                    className="flex items-center space-x-3 text-sm font-medium transition-colors p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-white/20"
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
                     <span>Enhanced CRM</span>
