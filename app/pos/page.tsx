@@ -12,21 +12,20 @@ export default function POSPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
   const [showClientSelection, setShowClientSelection] = useState(false)
   const [cart, setCart] = useState<any[]>([])
-  const [serviceQuantities, setServiceQuantities] = useState<{[key: number]: number}>({})
   
   // POS is now active - no longer coming soon
   const isComingSoon = false
   
   // Sample appointments
   const appointments = [
-    {
-      id: 1,
-      clientName: 'Sarah Johnson',
-      phone: '(555) 123-4567',
-      email: 'sarah.j@email.com',
-      service: 'Eyebrow Microblading',
-      duration: '2 hours',
-      price: 350.00,
+  {
+    id: 1,
+    clientName: 'Sarah Johnson',
+    phone: '(555) 123-4567',
+    email: 'sarah.j@email.com',
+    service: 'Eyebrow Microblading',
+    duration: '2 hours',
+    price: 350.00,
     }
   ]
 
@@ -53,27 +52,27 @@ export default function POSPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const addServiceToCart = (service: any) => {
-    const quantity = serviceQuantities[service.id] || 1
-    const cartItem = {
-      id: `service-${service.id}`,
-      name: service.name,
-      price: service.price * quantity,
-      quantity: quantity,
-      serviceId: service.id
+  const toggleServiceInCart = (service: any) => {
+    const existingItemIndex = cart.findIndex(item => item.serviceId === service.id)
+    
+    if (existingItemIndex >= 0) {
+      // Remove service from cart
+      setCart(cart.filter((_, index) => index !== existingItemIndex))
+    } else {
+      // Add service to cart
+      const cartItem = {
+        id: `service-${service.id}`,
+        name: service.name,
+        price: service.price,
+        quantity: 1,
+        serviceId: service.id
+      }
+      setCart([...cart, cartItem])
     }
-    setCart([...cart, cartItem])
   }
 
-  const updateServiceQuantity = (serviceId: number, quantity: number) => {
-    setServiceQuantities(prev => ({
-      ...prev,
-      [serviceId]: Math.max(0, quantity)
-    }))
-  }
-
-  const getServiceQuantity = (serviceId: number) => {
-    return serviceQuantities[serviceId] || 0
+  const isServiceInCart = (serviceId: number) => {
+    return cart.some(item => item.serviceId === serviceId)
   }
 
   const getCartTotal = () => {
@@ -94,61 +93,63 @@ export default function POSPage() {
       {isMobileView ? (
         <div className="min-h-screen bg-gray-50">
           {/* Client Information Section */}
-          <div 
-            className="bg-white p-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={() => setShowClientSelection(true)}
-          >
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {selectedAppointment ? selectedAppointment.clientName : 'Select Client'}
-            </h1>
-            {selectedAppointment && (
-              <>
-                <p className="text-gray-600 mb-1">{selectedAppointment.email}</p>
-                <p className="text-gray-600 mb-4">{selectedAppointment.phone}</p>
-                
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-gray-900 mb-2">Service</h2>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
-                    <li>{selectedAppointment.service}</li>
-                    <li>Duration: {selectedAppointment.duration}</li>
-                    <li>Price: ${selectedAppointment.price}</li>
-                  </ul>
-                </div>
-              </>
-            )}
-            {!selectedAppointment && (
-              <p className="text-gray-500 text-sm">Tap to select a client</p>
+          <div className="bg-white p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div 
+                className="flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                onClick={() => setShowClientSelection(true)}
+              >
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {selectedAppointment ? selectedAppointment.clientName : 'Select Client'}
+                </h1>
+                {selectedAppointment && (
+                  <>
+                    <p className="text-gray-600 mb-1">{selectedAppointment.email}</p>
+                    <p className="text-gray-600">{selectedAppointment.phone}</p>
+                  </>
+                )}
+                {!selectedAppointment && (
+                  <p className="text-gray-500 text-sm">Tap to select a client</p>
+                )}
+              </div>
+              
+              {/* Checkout Button */}
+              <Button 
+                className="bg-lavender hover:bg-lavender-600 text-white px-6 py-3 text-lg font-semibold"
+                onClick={handleCheckout}
+                disabled={cart.length === 0}
+              >
+                Checkout - ${getCartTotal().toFixed(2)}
+              </Button>
+            </div>
+            
+            {/* Selected Services */}
+            {cart.length > 0 && (
+              <div className="mt-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-2">Service</h2>
+                <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  {cart.map((item) => (
+                    <li key={item.id}>{item.name}</li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 
           {/* Service Selection Grid */}
           <div className="p-4">
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-4">
               {services.map((service) => {
-                const quantity = getServiceQuantity(service.id)
+                const isSelected = isServiceInCart(service.id)
                 return (
                   <div key={service.id} className="relative">
                     <button
-                      className="w-full aspect-square bg-white rounded-lg border-2 border-gray-200 hover:border-lavender transition-colors relative overflow-hidden"
-                      onClick={() => {
-                        if (quantity === 0) {
-                          updateServiceQuantity(service.id, 1)
-                        } else {
-                          addServiceToCart(service)
-                        }
-                      }}
-                      onTouchStart={(e) => {
-                        if (quantity > 0) {
-                          e.preventDefault()
-                          // Simple quantity adjustment for mobile
-                          if (quantity > 1) {
-                            updateServiceQuantity(service.id, quantity - 1)
-                          } else {
-                            updateServiceQuantity(service.id, 0)
-                            setCart(cart.filter(item => item.serviceId !== service.id))
-                          }
-                        }
-                      }}
+                      className={`w-full aspect-square rounded-lg border-2 transition-colors relative overflow-hidden ${
+                        isSelected 
+                          ? 'bg-lavender border-lavender' 
+                          : 'bg-white border-gray-200 hover:border-lavender'
+                      }`}
+                      onClick={() => toggleServiceInCart(service)}
                     >
                       <img 
                         src={service.image} 
@@ -163,9 +164,9 @@ export default function POSPage() {
                           `)}`
                         }}
                       />
-                      {quantity > 0 && (
-                        <div className="absolute top-2 right-2 bg-lavender text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                          {quantity}
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 bg-white text-lavender rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                          ✓
                         </div>
                       )}
                     </button>
@@ -176,15 +177,6 @@ export default function POSPage() {
                 )
               })}
             </div>
-
-            {/* Checkout Button */}
-            <Button 
-              className="w-full bg-lavender hover:bg-lavender-600 text-white py-4 text-lg font-semibold"
-              onClick={handleCheckout}
-              disabled={cart.length === 0}
-            >
-              Checkout - ${getCartTotal().toFixed(2)}
-            </Button>
           </div>
         </div>
       ) : (
@@ -193,7 +185,7 @@ export default function POSPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Point of Sale - Desktop View</h1>
             <p className="text-gray-600">Desktop interface coming soon...</p>
-          </div>
+              </div>
         </div>
       )}
 
@@ -225,7 +217,7 @@ export default function POSPage() {
                       <h3 className="font-semibold text-gray-900">{appointment.clientName}</h3>
                       <p className="text-sm text-gray-600">{appointment.email}</p>
                       <p className="text-sm text-gray-600">{appointment.phone}</p>
-                    </div>
+                  </div>
                   </button>
                 ))}
               </div>
