@@ -734,7 +734,7 @@ export default function BookingCalendar() {
                         price: service?.defaultPrice || 0
                       })
                     }}>
-                      <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 force-white-bg force-gray-border force-dark-text">
+                      <SelectTrigger id="service" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 force-white-bg force-gray-border force-dark-text">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
@@ -787,7 +787,7 @@ export default function BookingCalendar() {
                     value={appointmentData.paymentMethod}
                     onValueChange={(value) => setAppointmentData({...appointmentData, paymentMethod: value})}
                   >
-                    <SelectTrigger className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900">
+                    <SelectTrigger id="paymentMethod" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900">
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
                     <SelectContent>
