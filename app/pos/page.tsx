@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CreditCard, User, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { clientPortalContentService, PortalService } from '@/lib/client-portal-content-service'
 
 export default function POSPage() {
   const router = useRouter()
@@ -29,18 +30,14 @@ export default function POSPage() {
     }
   ]
 
-  // Sample services
-  const services = [
-    { id: 1, name: 'Eyebrow Microblading', price: 350, image: '/api/placeholder/200/200' },
-    { id: 2, name: 'Lip Blush', price: 280, image: '/api/placeholder/200/200' },
-    { id: 3, name: 'Eyeliner', price: 200, image: '/api/placeholder/200/200' },
-    { id: 4, name: 'Eyebrow Powder', price: 300, image: '/api/placeholder/200/200' },
-    { id: 5, name: 'Lip Liner', price: 250, image: '/api/placeholder/200/200' },
-    { id: 6, name: 'Touch Up', price: 150, image: '/api/placeholder/200/200' },
-    { id: 7, name: 'Consultation', price: 50, image: '/api/placeholder/200/200' },
-    { id: 8, name: 'Color Correction', price: 200, image: '/api/placeholder/200/200' },
-    { id: 9, name: 'Removal', price: 300, image: '/api/placeholder/200/200' }
-  ]
+  // Get services from service management system
+  const [services, setServices] = useState<PortalService[]>([])
+  
+  useEffect(() => {
+    // Load services from service management system
+    const portalServices = clientPortalContentService.getServices()
+    setServices(portalServices)
+  }, [])
 
   // Check if mobile view
   useEffect(() => {
@@ -52,7 +49,7 @@ export default function POSPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const toggleServiceInCart = (service: any) => {
+  const toggleServiceInCart = (service: PortalService) => {
     const existingItemIndex = cart.findIndex(item => item.serviceId === service.id)
     
     if (existingItemIndex >= 0) {
@@ -71,7 +68,7 @@ export default function POSPage() {
     }
   }
 
-  const isServiceInCart = (serviceId: number) => {
+  const isServiceInCart = (serviceId: string) => {
     return cart.some(item => item.serviceId === serviceId)
   }
 
@@ -151,19 +148,17 @@ export default function POSPage() {
                       }`}
                       onClick={() => toggleServiceInCart(service)}
                     >
-                      <img 
-                        src={service.image} 
-                        alt={service.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = `data:image/svg+xml;base64,${btoa(`
-                            <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-                              <rect width="200" height="200" fill="#f3f4f6"/>
-                              <text x="100" y="100" text-anchor="middle" dy=".3em" font-family="Arial" font-size="12" fill="#6b7280">${service.name}</text>
-                            </svg>
-                          `)}`
-                        }}
-                      />
+                      {service.image && service.image.startsWith('data:image') ? (
+                        <img 
+                          src={service.image} 
+                          alt={service.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs text-center px-2">{service.name}</span>
+                        </div>
+                      )}
                       {isSelected && (
                         <div className="absolute top-2 right-2 bg-white text-lavender rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                           ✓
@@ -237,19 +232,17 @@ export default function POSPage() {
                             onClick={() => toggleServiceInCart(service)}
                           >
                             <div className="flex items-center space-x-3">
-                              <img 
-                                src={service.image} 
-                                alt={service.name}
-                                className="w-12 h-12 rounded object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.src = `data:image/svg+xml;base64,${btoa(`
-                                    <svg width="48" height="48" xmlns="http://www.w3.org/2000/svg">
-                                      <rect width="48" height="48" fill="#f3f4f6"/>
-                                      <text x="24" y="24" text-anchor="middle" dy=".3em" font-family="Arial" font-size="8" fill="#6b7280">${service.name}</text>
-                                    </svg>
-                                  `)}`
-                                }}
-                              />
+                              {service.image && service.image.startsWith('data:image') ? (
+                                <img 
+                                  src={service.image} 
+                                  alt={service.name}
+                                  className="w-12 h-12 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs text-center">{service.name.charAt(0)}</span>
+                                </div>
+                              )}
                               <div className="flex-1">
                                 <h4 className="font-medium text-sm">{service.name}</h4>
                                 <p className="text-xs opacity-75">${service.price}</p>

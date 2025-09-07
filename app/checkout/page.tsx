@@ -33,6 +33,14 @@ function CheckoutContent() {
   const [customTip, setCustomTip] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  
+  // Discount and split payment states
+  const [discountType, setDiscountType] = useState<'percentage' | 'dollar'>('percentage')
+  const [discountValue, setDiscountValue] = useState('')
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [splitPaymentEnabled, setSplitPaymentEnabled] = useState(false)
+  const [splitAmount, setSplitAmount] = useState('')
+  const [splitMethod, setSplitMethod] = useState('')
 
   // Sample client data (in real app, this would come from the selected client)
   const client = {
@@ -51,7 +59,7 @@ function CheckoutContent() {
 
   const subtotal = cart.reduce((sum: number, item: any) => sum + (item.price || 0), 0)
   const tax = subtotal * 0.08 // 8% tax
-  const total = subtotal + tax + tipAmount
+  const total = subtotal + tax + tipAmount - discountAmount
 
   const processPayment = async () => {
     setIsProcessing(true)
@@ -78,6 +86,20 @@ function CheckoutContent() {
   const handleCustomTip = () => {
     const custom = parseFloat(customTip) || 0
     setTipAmount(custom)
+  }
+
+  const handleDiscountChange = () => {
+    const value = parseFloat(discountValue) || 0
+    if (discountType === 'percentage') {
+      setDiscountAmount(subtotal * (value / 100))
+    } else {
+      setDiscountAmount(Math.min(value, subtotal)) // Can't discount more than subtotal
+    }
+  }
+
+  const clearDiscount = () => {
+    setDiscountValue('')
+    setDiscountAmount(0)
   }
 
   if (paymentSuccess) {
@@ -225,6 +247,12 @@ function CheckoutContent() {
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount:</span>
+                      <span className="font-semibold">-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax (8%):</span>
                     <span className="font-semibold text-gray-900">${tax.toFixed(2)}</span>
@@ -286,6 +314,83 @@ function CheckoutContent() {
               </CardContent>
             </Card>
 
+            {/* Discount Section */}
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader className="border-b border-gray-100">
+                <CardTitle className="text-lg font-semibold text-gray-900">Apply Discount</CardTitle>
+                <CardDescription>Add a percentage or dollar amount discount</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Discount Type Selection */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant={discountType === 'percentage' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDiscountType('percentage')}
+                      className={discountType === 'percentage' ? 'bg-lavender hover:bg-lavender-600 text-white' : 'border-gray-200 hover:border-lavender'}
+                    >
+                      Percentage
+                    </Button>
+                    <Button
+                      variant={discountType === 'dollar' ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDiscountType('dollar')}
+                      className={discountType === 'dollar' ? 'bg-lavender hover:bg-lavender-600 text-white' : 'border-gray-200 hover:border-lavender'}
+                    >
+                      Dollar Amount
+                    </Button>
+                  </div>
+                  
+                  {/* Discount Input */}
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        placeholder={discountType === 'percentage' ? 'Enter percentage (e.g., 10)' : 'Enter dollar amount (e.g., 25)'}
+                        value={discountValue}
+                        onChange={(e) => setDiscountValue(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:border-lavender focus:ring-lavender/20"
+                        min="0"
+                        max={discountType === 'percentage' ? 100 : subtotal}
+                        step={discountType === 'percentage' ? 1 : 0.01}
+                      />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleDiscountChange}
+                      className="border-gray-200 hover:border-lavender hover:bg-lavender/5"
+                    >
+                      Apply
+                    </Button>
+                    {discountAmount > 0 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={clearDiscount}
+                        className="border-red-200 hover:border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Discount Preview */}
+                  {discountAmount > 0 && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                      <p className="text-sm text-green-700">
+                        <strong>Discount Applied:</strong> -${discountAmount.toFixed(2)}
+                        {discountType === 'percentage' && (
+                          <span> ({discountValue}% of subtotal)</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Payment Method */}
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="border-b border-gray-100">
@@ -314,35 +419,111 @@ function CheckoutContent() {
               </CardContent>
             </Card>
 
-            {/* Process Payment */}
+            {/* Split Payment Section */}
             <Card className="border-0 shadow-lg bg-white">
-              <CardContent className="p-6">
-                <Button 
-                  size="lg" 
-                  className="w-full bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-14 text-lg font-semibold"
-                  onClick={processPayment}
-                  disabled={!selectedPaymentMethod || isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing Payment...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      Process Payment - ${total.toFixed(2)}
-                    </>
-                  )}
-                </Button>
-                
-                {selectedPaymentMethod && (
-                  <p className="text-sm text-gray-600 text-center mt-3">
-                    Payment will be processed via {paymentMethods.find(m => m.id === selectedPaymentMethod)?.name}
-                  </p>
-                )}
-              </CardContent>
+              <CardHeader className="border-b border-gray-100">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  <span>Split Payment</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSplitPaymentEnabled(!splitPaymentEnabled)}
+                    className={splitPaymentEnabled ? 'bg-lavender hover:bg-lavender-600 text-white border-lavender' : 'border-gray-200 hover:border-lavender'}
+                  >
+                    {splitPaymentEnabled ? 'Enabled' : 'Enable'}
+                  </Button>
+                </CardTitle>
+                <CardDescription>Allow client to split payment between multiple methods</CardDescription>
+              </CardHeader>
+              {splitPaymentEnabled && (
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Split Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Enter split amount"
+                          value={splitAmount}
+                          onChange={(e) => setSplitAmount(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-md focus:border-lavender focus:ring-lavender/20"
+                          min="0.01"
+                          max={total}
+                          step="0.01"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Split Method
+                        </label>
+                        <select
+                          value={splitMethod}
+                          onChange={(e) => setSplitMethod(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-md focus:border-lavender focus:ring-lavender/20"
+                        >
+                          <option value="">Select method</option>
+                          {paymentMethods.map((method) => (
+                            <option key={method.id} value={method.id}>
+                              {method.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    
+                    {splitAmount && splitMethod && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-700">
+                          <strong>Split Payment:</strong> ${parseFloat(splitAmount).toFixed(2)} via {paymentMethods.find(m => m.id === splitMethod)?.name}
+                        </p>
+                        <p className="text-sm text-blue-700 mt-1">
+                          <strong>Remaining:</strong> ${(total - parseFloat(splitAmount)).toFixed(2)} via {paymentMethods.find(m => m.id === selectedPaymentMethod)?.name}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              )}
             </Card>
+
+            {/* Process Payment - Sticky Button */}
+            <div className="sticky bottom-4 z-10">
+              <Card className="border-0 shadow-xl bg-white">
+                <CardContent className="p-6">
+                  <Button 
+                    size="lg" 
+                    className="w-full bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-16 text-xl font-bold"
+                    onClick={processPayment}
+                    disabled={!selectedPaymentMethod || isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                        Processing Payment...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="h-6 w-6 mr-3" />
+                        Process Payment - ${total.toFixed(2)}
+                      </>
+                    )}
+                  </Button>
+                  
+                  {selectedPaymentMethod && (
+                    <p className="text-sm text-gray-600 text-center mt-3">
+                      Payment will be processed via {paymentMethods.find(m => m.id === selectedPaymentMethod)?.name}
+                      {splitPaymentEnabled && splitAmount && splitMethod && (
+                        <span className="block mt-1">
+                          Split: ${parseFloat(splitAmount).toFixed(2)} via {paymentMethods.find(m => m.id === splitMethod)?.name}
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
