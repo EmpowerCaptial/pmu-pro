@@ -210,11 +210,11 @@ const marketingFeatures = [
   {
     id: 'social',
     title: 'Marketing',
-    description: 'Content management',
+    description: 'Meta & Google ads automation',
     icon: Share,
-    href: '/social',
+    href: '/marketing',
     color: 'bg-sky-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'marketing'
   },
   {
