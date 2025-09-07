@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CreditCard, User, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { clientPortalContentService, PortalService } from '@/lib/client-portal-content-service'
+import { PMU_SERVICES, Service } from '@/lib/services-config'
 
 export default function POSPage() {
   const router = useRouter()
@@ -30,13 +30,12 @@ export default function POSPage() {
     }
   ]
 
-  // Get services from service management system
-  const [services, setServices] = useState<PortalService[]>([])
+  // Get services from the artist-accessible service management system
+  const [services, setServices] = useState<Service[]>(PMU_SERVICES)
   
   useEffect(() => {
-    // Load services from service management system
-    const portalServices = clientPortalContentService.getServices()
-    setServices(portalServices)
+    // Load services from the artist-accessible service management system
+    setServices(PMU_SERVICES)
   }, [])
 
   // Check if mobile view
@@ -49,7 +48,7 @@ export default function POSPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const toggleServiceInCart = (service: PortalService) => {
+  const toggleServiceInCart = (service: Service) => {
     const existingItemIndex = cart.findIndex(item => item.serviceId === service.id)
     
     if (existingItemIndex >= 0) {
@@ -60,7 +59,7 @@ export default function POSPage() {
       const cartItem = {
         id: `service-${service.id}`,
         name: service.name,
-        price: service.price,
+        price: service.defaultPrice,
         quantity: 1,
         serviceId: service.id
       }
@@ -131,7 +130,7 @@ export default function POSPage() {
                 </ul>
               </div>
             )}
-          </div>
+      </div>
 
           {/* Service Selection Grid */}
           <div className="p-4">
@@ -148,9 +147,9 @@ export default function POSPage() {
                       }`}
                       onClick={() => toggleServiceInCart(service)}
                     >
-                      {service.image && service.image.startsWith('data:image') ? (
+                      {service.imageUrl && service.isCustomImage ? (
                         <img 
-                          src={service.image} 
+                          src={service.imageUrl} 
                           alt={service.name}
                           className="w-full h-full object-cover"
                         />
@@ -168,13 +167,13 @@ export default function POSPage() {
                     <p className="text-xs text-center mt-2 font-medium text-gray-700">
                       {service.name}
                     </p>
-                  </div>
+                      </div>
                 )
               })}
-            </div>
+                </div>
           </div>
-        </div>
-      ) : (
+                    </div>
+                  ) : (
         /* Desktop View */
         <div className="min-h-screen bg-gray-50 p-8">
           <div className="max-w-6xl mx-auto">
@@ -204,7 +203,7 @@ export default function POSPage() {
                         <h3 className="text-xl font-semibold text-gray-900">{selectedAppointment.clientName}</h3>
                         <p className="text-gray-600">{selectedAppointment.email}</p>
                         <p className="text-gray-600">{selectedAppointment.phone}</p>
-                      </div>
+                    </div>
                     ) : (
                       <p className="text-gray-500">No client selected</p>
                     )}
@@ -232,9 +231,9 @@ export default function POSPage() {
                             onClick={() => toggleServiceInCart(service)}
                           >
                             <div className="flex items-center space-x-3">
-                              {service.image && service.image.startsWith('data:image') ? (
+                              {service.imageUrl && service.isCustomImage ? (
                                 <img 
-                                  src={service.image} 
+                                  src={service.imageUrl} 
                                   alt={service.name}
                                   className="w-12 h-12 rounded object-cover"
                                 />
@@ -245,7 +244,7 @@ export default function POSPage() {
                               )}
                               <div className="flex-1">
                                 <h4 className="font-medium text-sm">{service.name}</h4>
-                                <p className="text-xs opacity-75">${service.price}</p>
+                                <p className="text-xs opacity-75">${service.defaultPrice}</p>
                               </div>
                               {isSelected && (
                                 <div className="text-white text-lg">✓</div>
@@ -255,9 +254,9 @@ export default function POSPage() {
                         )
                       })}
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
               {/* Right Column - Cart & Checkout */}
               <div className="space-y-6">
@@ -266,27 +265,27 @@ export default function POSPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Order Summary</CardTitle>
-                  </CardHeader>
+            </CardHeader>
                   <CardContent>
                     {cart.length === 0 ? (
                       <p className="text-gray-500 text-center py-8">No services selected</p>
                     ) : (
-                      <div className="space-y-3">
+              <div className="space-y-3">
                         {cart.map((item) => (
                           <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                             <div>
                               <p className="font-medium text-sm">{item.name}</p>
-                            </div>
+                </div>
                             <p className="font-semibold">${item.price}</p>
-                          </div>
+                </div>
                         ))}
                         <div className="pt-3 border-t border-gray-200">
                           <div className="flex justify-between items-center">
                             <span className="text-lg font-semibold">Total:</span>
                             <span className="text-xl font-bold text-lavender">${getCartTotal().toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
+                </div>
+                </div>
+              </div>
                     )}
                   </CardContent>
                 </Card>
