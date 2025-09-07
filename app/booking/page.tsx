@@ -262,39 +262,53 @@ export default function BookingCalendar() {
     // Save appointment to state
     setAppointments([...appointments, newAppointment])
     
-    // Generate deposit payment link if payment is not in person
-    if (appointmentData.paymentMethod !== 'in-person' && finalPrice > 0) {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
-          
-          const depositResponse = await fetch('/api/deposit-payments', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              clientId: client.id,
-              amount: depositAmount,
-              totalAmount: finalPrice,
-              currency: 'USD',
-              notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
-            })
-          });
+        // Generate deposit payment link if payment is not in person
+        if (appointmentData.paymentMethod !== 'in-person' && finalPrice > 0) {
+          try {
+            console.log('🔍 Attempting to create deposit payment...');
+            const token = localStorage.getItem('authToken');
+            console.log('🔑 Auth token found:', token ? 'Yes' : 'No');
+            
+            if (token) {
+              const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
+              console.log('💰 Deposit amount:', depositAmount, 'Total amount:', finalPrice);
+              console.log('👤 Client ID:', client.id, 'Client email:', client.email);
 
-          if (depositResponse.ok) {
-            const depositData = await depositResponse.json();
-            alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
-          } else {
-            console.error('Failed to create deposit payment');
+              const depositResponse = await fetch('/api/deposit-payments', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  clientId: client.id,
+                  amount: depositAmount,
+                  totalAmount: finalPrice,
+                  currency: 'USD',
+                  notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
+                })
+              });
+
+              console.log('📡 Deposit API response status:', depositResponse.status);
+              
+              if (depositResponse.ok) {
+                const depositData = await depositResponse.json();
+                console.log('✅ Deposit payment created successfully:', depositData);
+                alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
+              } else {
+                const errorData = await depositResponse.json();
+                console.error('❌ Failed to create deposit payment:', errorData);
+                alert(`Appointment created, but deposit email failed: ${errorData.error || 'Unknown error'}`);
+              }
+            } else {
+              console.error('❌ No auth token found');
+              alert('Appointment created, but deposit email failed: No authentication token');
+            }
+          } catch (error) {
+            console.error('❌ Error creating deposit payment:', error);
+            alert(`Appointment created, but deposit email failed: ${error.message}`);
           }
         }
-      } catch (error) {
-        console.error('Error creating deposit payment:', error);
-      }
-    }
     
     // Reset form
     setShowNewAppointmentModal(false)
