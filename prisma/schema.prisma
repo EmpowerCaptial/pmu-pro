@@ -311,3 +311,33 @@ enum DeletionStatus {
   COMPLETED   // Data deletion completed
   FAILED      // Deletion failed, manual review required
 }
+
+model MarketingConnection {
+  id            String   @id @default(cuid())
+  userId        String
+  platform      String   // 'google' | 'meta'
+  accountId     String?  // e.g. Google customer ID or Meta ad account ID
+  accountName   String?
+  accessToken   String   // encrypted
+  refreshToken  String?  // encrypted
+  tokenMetaJson String?  // encrypted JSON (expiry, scopes)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@map("marketing_connections")
+}
+
+model MarketingLead {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  phone     String?
+  company   String?
+  plan      String   // 'self_serve' | 'optimized'
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@map("marketing_leads")
+}
