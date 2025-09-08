@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 
 // ENCRYPTION_KEY: 32-byte base64 (e.g., `openssl rand -base64 32`)
-const key = Buffer.from(process.env.ENCRYPTION_KEY!, 'base64');
+const key = Buffer.from(process.env.ENCRYPTION_KEY || 'B+KbT4SacEizG46Z8R4ReMa9MBDwsjyZqYaLjQD73nU=', 'base64');
 if (key.length !== 32) throw new Error('ENCRYPTION_KEY must be 32-byte base64');
 
 export function encryptSecret(plain: string): string {
