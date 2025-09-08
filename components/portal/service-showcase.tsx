@@ -32,11 +32,34 @@ export function ServiceShowcase({ onServiceSelect, clientProgress }: ServiceShow
   const [selectedService, setSelectedService] = useState<PortalService | null>(null)
   const [services, setServices] = useState<PortalService[]>([])
 
+  const refreshServices = () => {
+    const portalServices = clientPortalContentService.getServices()
+    console.log('ServiceShowcase: Manually refreshed services:', portalServices)
+    setServices(portalServices)
+  }
+
   useEffect(() => {
     // Load services from the portal content service
-    const portalServices = clientPortalContentService.getServices()
-    console.log('ServiceShowcase: Loaded services:', portalServices)
-    setServices(portalServices)
+    refreshServices()
+  }, [])
+
+  // Add a refresh mechanism to reload services when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('ServiceShowcase: Storage change detected, refreshing services')
+      refreshServices()
+    }
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Also listen for custom events that might indicate service updates
+    window.addEventListener('servicesUpdated', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('servicesUpdated', handleStorageChange)
+    }
   }, [])
 
   // Only show services if they exist from admin portal

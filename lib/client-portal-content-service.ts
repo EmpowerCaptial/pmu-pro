@@ -102,6 +102,12 @@ class ClientPortalContentService {
       localStorage.setItem('pmu_portal_facilities', JSON.stringify(this.facilities))
       localStorage.setItem('pmu_portal_specials', JSON.stringify(this.specialOffers))
       console.log('ContentService: Successfully saved to localStorage')
+      
+      // Dispatch custom event to notify components of updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('servicesUpdated'))
+        console.log('ContentService: Dispatched servicesUpdated event')
+      }
     } catch (error) {
       console.error('Error saving portal content:', error)
     }

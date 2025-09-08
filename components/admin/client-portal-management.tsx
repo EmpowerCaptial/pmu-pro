@@ -562,12 +562,14 @@ function ServiceForm({ service, onSave, onImageUpload }: {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      onImageUpload(file)
       // Convert file to base64 for persistence
       const reader = new FileReader()
       reader.onload = (e) => {
         const imageUrl = e.target?.result as string
+        console.log('ServiceForm: Image uploaded, updating form data with:', imageUrl)
         setFormData({ ...formData, image: imageUrl })
+        // Also call the parent's image upload handler
+        onImageUpload(file)
       }
       reader.readAsDataURL(file)
     }
