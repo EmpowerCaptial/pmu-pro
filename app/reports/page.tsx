@@ -18,33 +18,33 @@ import { Badge } from '@/components/ui/badge'
 const stats = [
   {
     title: 'Total Revenue',
-    value: '$12,450',
-    change: '+12.5%',
-    trend: 'up',
+    value: 'Loading...',
+    change: '--',
+    trend: 'neutral',
     icon: DollarSign,
     color: 'text-green-600'
   },
   {
     title: 'Active Clients',
-    value: '156',
-    change: '+8.2%',
-    trend: 'up',
+    value: 'Loading...',
+    change: '--',
+    trend: 'neutral',
     icon: Users,
     color: 'text-blue-600'
   },
   {
     title: 'Appointments',
-    value: '89',
-    change: '+15.3%',
-    trend: 'up',
+    value: 'Loading...',
+    change: '--',
+    trend: 'neutral',
     icon: Calendar,
     color: 'text-purple-600'
   },
   {
     title: 'Services Completed',
-    value: '234',
-    change: '+5.7%',
-    trend: 'up',
+    value: 'Loading...',
+    change: '--',
+    trend: 'neutral',
     icon: BarChart3,
     color: 'text-orange-600'
   }
@@ -54,28 +54,28 @@ const recentReports = [
   {
     id: 1,
     title: 'Monthly Revenue Report',
-    date: '2024-01-15',
+    date: new Date().toISOString().split('T')[0],
     type: 'Revenue',
     status: 'completed'
   },
   {
     id: 2,
     title: 'Client Retention Analysis',
-    date: '2024-01-14',
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
     type: 'Analytics',
     status: 'completed'
   },
   {
     id: 3,
     title: 'Service Performance Report',
-    date: '2024-01-13',
+    date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
     type: 'Performance',
     status: 'completed'
   },
   {
     id: 4,
     title: 'Staff Productivity Report',
-    date: '2024-01-12',
+    date: new Date(Date.now() - 259200000).toISOString().split('T')[0],
     type: 'Staff',
     status: 'completed'
   }
@@ -133,8 +133,12 @@ export default function ReportsPage() {
                     <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
                     <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                     <div className="flex items-center mt-2">
-                      <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">{stat.change}</span>
+                      {stat.trend === 'up' && <TrendingUp className="h-4 w-4 text-green-500 mr-1" />}
+                      {stat.trend === 'down' && <TrendingUp className="h-4 w-4 text-red-500 mr-1 rotate-180" />}
+                      {stat.trend === 'neutral' && <div className="h-4 w-4 mr-1" />}
+                      <span className={`text-sm ${stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-gray-600'}`}>
+                        {stat.change}
+                      </span>
                     </div>
                   </div>
                   <div className={`p-3 rounded-full bg-gray-100`}>
