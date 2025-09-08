@@ -98,7 +98,24 @@ class ClientPortalContentService {
     try {
       console.log('ContentService: Saving to localStorage')
       console.log('ContentService: Services to save:', this.services)
-      localStorage.setItem('pmu_portal_services', JSON.stringify(this.services))
+      
+      // Check if any service has a large image
+      this.services.forEach((service, index) => {
+        if (service.image && service.image.length > 100000) { // 100KB threshold
+          console.warn(`ContentService: Service ${index} (${service.name}) has large image: ${service.image.length} characters`)
+        }
+      })
+      
+      const servicesJson = JSON.stringify(this.services)
+      console.log('ContentService: Services JSON size:', servicesJson.length, 'characters')
+      
+      // Check localStorage quota
+      const quota = navigator.storage?.estimate?.()
+      if (quota) {
+        console.log('ContentService: Storage quota:', quota)
+      }
+      
+      localStorage.setItem('pmu_portal_services', servicesJson)
       localStorage.setItem('pmu_portal_facilities', JSON.stringify(this.facilities))
       localStorage.setItem('pmu_portal_specials', JSON.stringify(this.specialOffers))
       console.log('ContentService: Successfully saved to localStorage')
@@ -110,6 +127,20 @@ class ClientPortalContentService {
       }
     } catch (error) {
       console.error('Error saving portal content:', error)
+      console.error('Error details:', error.message)
+      
+      // If it's a quota exceeded error, try to compress images
+      if (error.name === 'QuotaExceededError') {
+        console.warn('ContentService: localStorage quota exceeded, attempting to compress images')
+        this.compressServiceImages()
+        // Try saving again
+        try {
+          localStorage.setItem('pmu_portal_services', JSON.stringify(this.services))
+          console.log('ContentService: Successfully saved compressed images')
+        } catch (retryError) {
+          console.error('ContentService: Still failed to save after compression:', retryError)
+        }
+      }
     }
   }
 
@@ -246,6 +277,88 @@ class ClientPortalContentService {
     this.specialOffers = this.specialOffers.filter(s => s.id !== specialId)
     this.saveToStorage()
     return this.specialOffers.length < initialLength
+  }
+
+  // Debug method to check localStorage
+  debugStorage() {
+    console.log('=== ContentService Debug ===')
+    console.log('localStorage pmu_portal_facilities:', localStorage.getItem('pmu_portal_facilities'))
+    console.log('this.facilities:', this.facilities)
+    console.log('Active facilities:', this.getFacilities())
+    console.log('==========================')
+  }
+
+  // Image compression method
+  private compressServiceImages() {
+    this.services.forEach((service, index) => {
+      if (service.image && service.image.startsWith('data:image')) {
+        try {
+          // Create a canvas to compress the image
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          const img = new Image()
+          
+          img.onload = () => {
+            // Set canvas size to max 300x300 for compression
+            const maxSize = 300
+            let { width, height } = img
+            
+            if (width > height) {
+              if (width > maxSize) {
+                height = (height * maxSize) / width
+                width = maxSize
+              }
+            } else {
+              if (height > maxSize) {
+                width = (width * maxSize) / height
+                height = maxSize
+              }
+            }
+            
+            canvas.width = width
+            canvas.height = height
+            
+            // Draw and compress
+            ctx?.drawImage(img, 0, 0, width, height)
+            const compressedImage = canvas.toDataURL('image/jpeg', 0.7) // 70% quality
+            
+            console.log(`ContentService: Compressed service ${index} image from ${service.image.length} to ${compressedImage.length} characters`)
+            service.image = compressedImage
+          }
+          
+          img.src = service.image
+        } catch (error) {
+          console.error(`ContentService: Failed to compress image for service ${index}:`, error)
+          // Fallback to hardcoded image
+          service.image = this.getDefaultServiceImage(service.name)
+        }
+      }
+    })
+  }
+
+  // Get default hardcoded image for service
+  private getDefaultServiceImage(serviceName: string): string {
+    const defaultImages: Record<string, string> = {
+      'microblading': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'eyebrow': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'eyeliner': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'lip': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'touchup': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'consultation': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      'lash': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'brow': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }
+    
+    // Try to match service name to default image
+    const lowerName = serviceName.toLowerCase()
+    for (const [key, gradient] of Object.entries(defaultImages)) {
+      if (lowerName.includes(key)) {
+        return gradient
+      }
+    }
+    
+    // Default gradient if no match
+    return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   }
 }
 

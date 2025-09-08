@@ -562,17 +562,65 @@ function ServiceForm({ service, onSave, onImageUpload }: {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Check file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Image file is too large. Please choose an image smaller than 2MB.')
+        return
+      }
+      
       // Convert file to base64 for persistence
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const imageUrl = e.target?.result as string
         console.log('ServiceForm: Image uploaded, updating form data with:', imageUrl)
-        setFormData({ ...formData, image: imageUrl })
+        
+        // Compress the image before storing
+        const compressedImage = await compressImage(imageUrl)
+        setFormData({ ...formData, image: compressedImage })
         // Also call the parent's image upload handler
         onImageUpload(file)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  // Image compression function
+  const compressImage = (imageUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      
+      img.onload = () => {
+        // Set canvas size to max 400x400 for compression
+        const maxSize = 400
+        let { width, height } = img
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width
+            width = maxSize
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height
+            height = maxSize
+          }
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height)
+        const compressedImage = canvas.toDataURL('image/jpeg', 0.8) // 80% quality
+        
+        console.log(`ServiceForm: Compressed image from ${imageUrl.length} to ${compressedImage.length} characters`)
+        resolve(compressedImage)
+      }
+      
+      img.src = imageUrl
+    })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
