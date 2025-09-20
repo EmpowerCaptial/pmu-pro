@@ -204,12 +204,12 @@ export function DashboardCards() {
               
               <Link href="/clients/new" className="w-full">
                 <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-3 px-2 text-center">
                     <span className="text-white font-bold text-sm text-shadow-lg shadow-black/50">
                       👤 Quick Add
                     </span>
-                    <p className="text-blue-100 text-xs mt-1">
+                    <p className="text-lavender-100 text-xs mt-1">
                       Basic Info
                     </p>
                   </div>
@@ -220,7 +220,7 @@ export function DashboardCards() {
             <div className="mt-3">
               <Button 
                 onClick={() => setShowConsentFormModal(true)}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white"
               >
                 📋 Send Consent Form
               </Button>
@@ -261,12 +261,12 @@ export function DashboardCards() {
               
               <Link href="/clients/new" className="flex-1">
                 <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-4 px-6 text-center">
                     <span className="text-white font-bold text-lg text-shadow-lg shadow-black/50">
                       👤 Quick Add
                     </span>
-                    <p className="text-blue-100 text-sm mt-1">
+                    <p className="text-lavender-100 text-sm mt-1">
                       Basic Info
                     </p>
                   </div>
@@ -276,7 +276,7 @@ export function DashboardCards() {
             
             <Button 
               onClick={() => setShowConsentFormModal(true)}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+              className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white"
             >
               📋 Send Consent Form
             </Button>
@@ -423,7 +423,7 @@ export function DashboardCards() {
 
       {/* Help and Support */}
       <div className="grid md:grid-cols-1 gap-6">
-        <Card className="border-border bg-gradient-to-r from-lavender/10 to-blue-500/10 backdrop-blur-sm border-lavender/30">
+        <Card className="border-border bg-gradient-to-r from-lavender/10 to-teal-500/10 backdrop-blur-sm border-lavender/30">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 font-bold text-lavender-700">
               <HelpCircle className="h-6 w-6" />
@@ -505,7 +505,7 @@ export function DashboardCards() {
                 <p className="text-sm font-medium">Sarah Johnson - Contraindication Screen</p>
                 <p className="text-xs text-muted-foreground">2 hours ago</p>
               </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-800 w-fit">
+              <Badge variant="secondary" className="bg-teal-100 text-teal-800 w-fit">
                 Safe
               </Badge>
             </div>
@@ -530,17 +530,13 @@ export function DashboardCards() {
                 <p className="text-sm font-medium">Analysis link sent to Jessica Chen</p>
                 <p className="text-xs text-muted-foreground">3 hours ago</p>
               </div>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 w-fit">
+              <Badge variant="outline" className="bg-lavender-100 text-lavender-800 w-fit">
                 Pending
               </Badge>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Consent Form Notifications */}
-      <ConsentNotifications />
-
 
       {/* Consent Form Modal */}
       <ConsentFormModal 
