@@ -99,16 +99,15 @@ export async function POST(req: Request) {
         selectedPlan: userWithoutPassword.selectedPlan,
         hasActiveSubscription: userWithoutPassword.hasActiveSubscription,
         subscriptionStatus: userWithoutPassword.subscriptionStatus,
-        platformRole: userWithoutPassword.platformRole,
-        twofaEnabled: userWithoutPassword.twofaEnabled,
+        role: userWithoutPassword.role,
         createdAt: userWithoutPassword.createdAt,
-            studios: [{
-              id: 'default-studio',
-              name: userWithoutPassword.businessName || userWithoutPassword.name || 'Default Studio',
-              slug: 'default-studio',
-              role: 'owner',
-              status: 'active'
-            }]
+        studios: [{
+          id: 'default-studio',
+          name: userWithoutPassword.businessName || userWithoutPassword.name || 'Default Studio',
+          slug: 'default-studio',
+          role: 'owner',
+          status: 'active'
+        }]
       }
     });
 
