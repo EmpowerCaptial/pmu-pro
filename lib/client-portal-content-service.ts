@@ -125,12 +125,12 @@ class ClientPortalContentService {
         window.dispatchEvent(new CustomEvent('servicesUpdated'))
         console.log('ContentService: Dispatched servicesUpdated event')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving portal content:', error)
-      console.error('Error details:', error.message)
+      error?.message
       
       // If it's a quota exceeded error, try to compress images
-      if (error.name === 'QuotaExceededError') {
+      error?.name
         console.warn('ContentService: localStorage quota exceeded, attempting to compress images')
         this.compressServiceImages()
         // Try saving again
