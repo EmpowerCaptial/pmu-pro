@@ -19,7 +19,10 @@ import {
   Tag,
   Search,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ChevronLeft,
+  List,
+  Menu
 } from 'lucide-react'
 import { 
   PMU_SERVICES, 
@@ -46,6 +49,28 @@ export default function ServicesPage() {
   })
 
   const categories: Service['category'][] = ['eyebrows', 'lips', 'eyeliner', 'consultation', 'touch-up', 'other']
+
+  // Format duration for display
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = minutes % 60
+      return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+    }
+    return `${minutes}m`
+  }
+
+  // Get accent color for service category
+  const getAccentColor = (category: Service['category']) => {
+    switch (category) {
+      case 'eyebrows': return '#8b5cf6'
+      case 'lips': return '#ec4899'
+      case 'eyeliner': return '#3b82f6'
+      case 'consultation': return '#10b981'
+      case 'touch-up': return '#f59e0b'
+      default: return '#6b7280'
+    }
+  }
 
   // Filter services based on search term
   const filteredServices = services.filter(service =>
@@ -110,95 +135,100 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">Services Management</h1>
-            <p className="text-muted">Manage your PMU services, pricing, and procedures</p>
-          </div>
+    <div className="min-h-screen bg-neutral-800 text-white">
+      {/* Header (App Bar) */}
+      <div className="flex items-center justify-between h-14 px-4 bg-neutral-900 border-b border-white/10">
+        {/* Left: Back button */}
+        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        
+        {/* Center: Title */}
+        <h1 className="text-lg font-semibold text-white">Services</h1>
+        
+        {/* Right: Two square icon buttons */}
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/10">
+            <List className="h-4 w-4" />
+          </Button>
           <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0 text-white hover:bg-white/10"
             onClick={() => setIsAddingNew(true)}
-            className="bg-lavender hover:bg-lavender-600 text-white"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Service
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative mb-6">
+      <div className="p-4">
+        {/* Search Bar */}
+        <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search services..."
+            placeholder="Search Services & Categories"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 force-white-bg force-gray-border force-dark-text"
+            className="pl-10 h-11 rounded-full bg-neutral-700 border-neutral-600 text-white placeholder:text-gray-400"
           />
         </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
-            <Card key={service.id} className={`${!service.isActive ? 'opacity-60' : ''}`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {service.imageUrl && (
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                        <img 
-                          src={service.imageUrl} 
-                          alt={service.name}
-                          className="w-8 h-8 object-contain"
-                          onError={(e) => {
-                            // Fallback to a default icon if image fails to load
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
-                      {service.description && (
-                        <p className="text-sm text-gray-600">{service.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getCategoryColor(service.category)}>
-                      {service.category}
-                    </Badge>
-                    <Switch
-                      checked={service.isActive}
-                      onCheckedChange={() => handleToggleStatus(service.id)}
+        {/* Info Note */}
+        <p className="text-sm text-gray-400 mb-6 px-2">
+          Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
+        </p>
+
+        {/* Scrollable Services List */}
+        <div className="space-y-4">
+          {filteredServices.map((service) => {
+            const meta = [
+              formatDuration(service.defaultDuration),
+              `$${service.defaultPrice}`,
+              service.category
+            ].filter(Boolean).join(' · ')
+
+            return (
+              <div 
+                key={service.id}
+                onClick={() => setEditingService(service)}
+                className="relative flex items-center rounded-xl bg-neutral-900/60 border border-white/5 p-4 gap-3 cursor-pointer hover:bg-neutral-900/80 transition-colors"
+              >
+                {/* Left accent bar */}
+                <span 
+                  className="absolute left-0 top-0 h-full w-1 rounded-l-xl" 
+                  style={{ backgroundColor: getAccentColor(service.category) }}
+                />
+                
+                {/* Thumbnail */}
+                <div className="h-20 w-20 rounded-md bg-neutral-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {service.imageUrl ? (
+                    <img 
+                      src={service.imageUrl} 
+                      alt={service.name}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
                     />
-                  </div>
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                  )}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  <span>{service.defaultDuration} minutes</span>
+
+                {/* Main content */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-semibold text-white truncate">{service.name}</div>
+                  <div className="mt-1 text-sm text-neutral-400 truncate">{meta}</div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-gray-500" />
-                  <span>${service.defaultPrice}</span>
+
+                {/* Drag handle */}
+                <div className="ml-2 text-neutral-400 opacity-80">
+                  <Menu className="h-5 w-5" />
                 </div>
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingService(service)}
-                    className="flex-1"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            )
+          })}
         </div>
 
         {/* Add/Edit Service Modal */}
@@ -378,8 +408,8 @@ export default function ServicesPage() {
         {filteredServices.length === 0 && (
           <div className="text-center py-12">
             <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No services found</h3>
-            <p className="text-gray-500">Try adjusting your search or add a new service.</p>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">No services found</h3>
+            <p className="text-gray-400">Try adjusting your search or add a new service.</p>
           </div>
         )}
       </div>
