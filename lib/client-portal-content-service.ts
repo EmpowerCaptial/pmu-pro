@@ -127,10 +127,10 @@ class ClientPortalContentService {
       }
     } catch (error: any) {
       console.error('Error saving portal content:', error)
-      error?.message
+      console.error('Error details:', error?.message)
       
       // If it's a quota exceeded error, try to compress images
-      error?.name
+      if (error?.name === 'QuotaExceededError') {
         console.warn('ContentService: localStorage quota exceeded, attempting to compress images')
         this.compressServiceImages()
         // Try saving again
