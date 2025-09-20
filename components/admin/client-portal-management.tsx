@@ -589,8 +589,7 @@ function ServiceForm({ service, onSave, onImageUpload }: {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
-      const img = new Image()
-      
+const img = new window.Image()      
       img.onload = () => {
         // Set canvas size to max 400x400 for compression
         const maxSize = 400
