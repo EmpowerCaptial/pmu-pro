@@ -126,11 +126,11 @@ const businessFeatures = [
   {
     id: 'time-clock',
     title: 'Time Clock',
-    description: 'Track work hours',
+    description: 'Track work hours (Enterprise)',
     icon: Clock,
-    href: '/time-clock',
+    href: '/time-tracking',
     color: 'bg-red-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'business'
   },
   {
