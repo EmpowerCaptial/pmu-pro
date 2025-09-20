@@ -485,7 +485,7 @@ export default function HomePage() {
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl font-bold text-gray-900">Starter</CardTitle>
                   <div className="space-y-2">
-                    <div className="text-4xl font-bold text-gray-900">$29</div>
+                    <div className="text-4xl font-bold text-gray-900">$10</div>
                     <div className="text-gray-600">per month</div>
                   </div>
                   <CardDescription className="text-gray-600 mt-4">Perfect for new PMU artists</CardDescription>
@@ -614,9 +614,9 @@ export default function HomePage() {
               {/* Studio Plan */}
               <Card className="relative border-gray-200 hover:border-lavender/50 transition-all duration-300">
                 <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-2xl font-bold text-gray-900">Studio</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Studio Enterprise</CardTitle>
                   <div className="space-y-2">
-                    <div className="text-4xl font-bold text-gray-900">$79</div>
+                    <div className="text-4xl font-bold text-gray-900">$99</div>
                     <div className="text-gray-600">per month</div>
                   </div>
                   <CardDescription className="text-gray-600 mt-4">For multi-artist studios</CardDescription>

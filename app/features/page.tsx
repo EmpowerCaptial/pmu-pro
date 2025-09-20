@@ -319,7 +319,7 @@ const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures,
 export default function FeaturesPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedCategory] = useState('all') // Always show all features
 
   const categories = [
     { id: 'all', name: 'All Features', count: allFeatures.length },
@@ -378,20 +378,6 @@ export default function FeaturesPage() {
           </Button>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category.id)}
-              className="text-xs"
-            >
-              {category.name} ({category.count})
-            </Button>
-          ))}
-        </div>
 
         {/* Search */}
         <div className="relative mb-6">
