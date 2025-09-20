@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,8 +15,8 @@ import {
   Trash2, 
   Save, 
   X,
-  Clock,
-  DollarSign,
+  Clock, 
+  DollarSign, 
   Tag,
   Search,
   Upload,
@@ -35,6 +36,7 @@ import {
 } from '@/lib/services-config'
 
 export default function ServicesPage() {
+  const router = useRouter()
   const [services, setServices] = useState<Service[]>(PMU_SERVICES)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
@@ -93,9 +95,9 @@ export default function ServicesPage() {
         addService(newService as Omit<Service, 'id'>)
         setServices([...PMU_SERVICES])
         setIsAddingNew(false)
-        setNewService({
-          name: '',
-          description: '',
+    setNewService({
+      name: '',
+      description: '',
           defaultDuration: 60,
           defaultPrice: 0,
           category: 'other',
@@ -135,32 +137,37 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
       {/* Header (App Bar) */}
-      <div className="flex items-center justify-between h-14 px-4 bg-neutral-900 border-b border-white/10">
+      <div className="flex items-center justify-between h-14 px-4 bg-white border-b border-gray-200 shadow-sm">
         {/* Left: Back button */}
-        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-gray-700 hover:bg-gray-100"
+          onClick={() => router.back()}
+        >
           <ChevronLeft className="h-5 w-5" />
         </Button>
         
         {/* Center: Title */}
-        <h1 className="text-lg font-semibold text-white">Services</h1>
+        <h1 className="text-lg font-semibold text-gray-900">Services</h1>
         
         {/* Right: Two square icon buttons */}
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-white/10">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-700 hover:bg-gray-100">
             <List className="h-4 w-4" />
           </Button>
-          <Button 
+          <Button
             variant="ghost" 
             size="sm" 
-            className="h-8 w-8 p-0 text-white hover:bg-white/10"
+            className="h-8 w-8 p-0 text-gray-700 hover:bg-gray-100"
             onClick={() => setIsAddingNew(true)}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+        </div>
 
       <div className="p-4">
         {/* Search Bar */}
@@ -170,12 +177,12 @@ export default function ServicesPage() {
             placeholder="Search Services & Categories"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11 rounded-full bg-neutral-700 border-neutral-600 text-white placeholder:text-gray-400"
+            className="pl-10 h-11 rounded-full bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 shadow-sm"
           />
         </div>
 
         {/* Info Note */}
-        <p className="text-sm text-gray-400 mb-6 px-2">
+        <p className="text-sm text-gray-600 mb-6 px-2">
           Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
         </p>
 
@@ -192,7 +199,7 @@ export default function ServicesPage() {
               <div 
                 key={service.id}
                 onClick={() => setEditingService(service)}
-                className="relative flex items-center rounded-xl bg-neutral-900/60 border border-white/5 p-4 gap-3 cursor-pointer hover:bg-neutral-900/80 transition-colors"
+                className="relative flex items-center rounded-xl bg-white border border-gray-200 p-4 gap-3 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
               >
                 {/* Left accent bar */}
                 <span 
@@ -201,7 +208,7 @@ export default function ServicesPage() {
                 />
                 
                 {/* Thumbnail */}
-                <div className="h-20 w-20 rounded-md bg-neutral-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="h-20 w-20 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {service.imageUrl ? (
                     <img 
                       src={service.imageUrl} 
@@ -218,18 +225,18 @@ export default function ServicesPage() {
 
                 {/* Main content */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-lg font-semibold text-white truncate">{service.name}</div>
-                  <div className="mt-1 text-sm text-neutral-400 truncate">{meta}</div>
+                  <div className="text-lg font-semibold text-gray-900 truncate">{service.name}</div>
+                  <div className="mt-1 text-sm text-gray-600 truncate">{meta}</div>
                 </div>
 
                 {/* Drag handle */}
-                <div className="ml-2 text-neutral-400 opacity-80">
+                <div className="ml-2 text-gray-400 opacity-80">
                   <Menu className="h-5 w-5" />
                 </div>
               </div>
             )
           })}
-        </div>
+              </div>
 
         {/* Add/Edit Service Modal */}
         {(isAddingNew || editingService) && (
@@ -291,7 +298,7 @@ export default function ServicesPage() {
                       ) : (
                         <ImageIcon className="w-6 h-6 text-gray-400" />
                       )}
-                    </div>
+              </div>
                     <div className="flex-1">
                       <Input
                         id="image"
@@ -317,10 +324,10 @@ export default function ServicesPage() {
                       <p className="text-xs text-gray-500 mt-1">
                         Upload custom image for non-PMU services
                       </p>
-                    </div>
+                  </div>
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
                   <Select
@@ -385,8 +392,8 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button
-                    variant="outline"
+                <Button
+                  variant="outline"
                     onClick={handleCancel}
                     className="flex-1"
                   >
@@ -398,18 +405,18 @@ export default function ServicesPage() {
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save
-                  </Button>
+                </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
+        </div>
         )}
 
         {filteredServices.length === 0 && (
           <div className="text-center py-12">
             <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-300 mb-2">No services found</h3>
-            <p className="text-gray-400">Try adjusting your search or add a new service.</p>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">No services found</h3>
+            <p className="text-gray-500">Try adjusting your search or add a new service.</p>
           </div>
         )}
       </div>
