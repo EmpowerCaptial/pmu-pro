@@ -158,16 +158,19 @@ export default function ServicesPage() {
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-700 hover:bg-gray-100">
             <List className="h-4 w-4" />
           </Button>
-          <Button
+          <Button 
             variant="ghost" 
             size="sm" 
             className="h-8 w-8 p-0 text-gray-700 hover:bg-gray-100"
-            onClick={() => setIsAddingNew(true)}
+            onClick={() => {
+              console.log('Plus button clicked - opening add service modal')
+              setIsAddingNew(true)
+            }}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        </div>
+      </div>
 
       <div className="p-4">
         {/* Search Bar */}
@@ -241,7 +244,7 @@ export default function ServicesPage() {
         {/* Add/Edit Service Modal */}
         {(isAddingNew || editingService) && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-md bg-white">
+            <Card className="w-full max-w-md bg-white shadow-2xl border-2 border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   {isAddingNew ? 'Add New Service' : 'Edit Service'}
