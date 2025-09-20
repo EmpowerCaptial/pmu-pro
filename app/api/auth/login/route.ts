@@ -23,7 +23,7 @@ export async function POST(req: Request) {
           selectedPlan: 'enterprise',
           hasActiveSubscription: true,
           subscriptionStatus: 'active',
-          platformRole: 'admin',
+          platformRole: 'ADMIN',
           studios: [{
             id: 'admin_pmu_001',
             name: 'PMU Pro Admin',
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
           selectedPlan: 'enterprise',
           hasActiveSubscription: true,
           subscriptionStatus: 'active',
-          platformRole: 'admin',
+          platformRole: 'ADMIN',
           studios: [{
             id: 'ubsa_owner_001',
             name: 'UBSA Team',
@@ -66,9 +66,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Get user's studio memberships (simplified for now)
-    const studioMemberships = [];
-
     // Check if user has a temporary password
     if (user.password === 'temp-password') {
       return NextResponse.json({ 
@@ -84,7 +81,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Return user data (without password)
+    // Return user data (without password) - VERIFIED FIELDS ONLY
     const { password: _, ...userWithoutPassword } = user;
     
     return NextResponse.json({
@@ -100,6 +97,8 @@ export async function POST(req: Request) {
         hasActiveSubscription: userWithoutPassword.hasActiveSubscription,
         subscriptionStatus: userWithoutPassword.subscriptionStatus,
         role: userWithoutPassword.role,
+        platformRole: userWithoutPassword.platformRole,
+        twofaEnabled: userWithoutPassword.twofaEnabled,
         createdAt: userWithoutPassword.createdAt,
         studios: [{
           id: 'default-studio',
