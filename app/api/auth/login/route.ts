@@ -23,7 +23,6 @@ export async function POST(req: Request) {
           selectedPlan: 'enterprise',
           hasActiveSubscription: true,
           subscriptionStatus: 'active',
-          platformRole: 'ADMIN',
           studios: [{
             id: 'admin_pmu_001',
             name: 'PMU Pro Admin',
@@ -45,7 +44,6 @@ export async function POST(req: Request) {
           selectedPlan: 'enterprise',
           hasActiveSubscription: true,
           subscriptionStatus: 'active',
-          platformRole: 'ADMIN',
           studios: [{
             id: 'ubsa_owner_001',
             name: 'UBSA Team',
@@ -81,7 +79,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Return user data (without password) - VERIFIED FIELDS ONLY
+    // Return user data (without password) - ONLY CONFIRMED EXISTING FIELDS
     const { password: _, ...userWithoutPassword } = user;
     
     return NextResponse.json({
@@ -97,8 +95,6 @@ export async function POST(req: Request) {
         hasActiveSubscription: userWithoutPassword.hasActiveSubscription,
         subscriptionStatus: userWithoutPassword.subscriptionStatus,
         role: userWithoutPassword.role,
-        platformRole: userWithoutPassword.platformRole,
-        twofaEnabled: userWithoutPassword.twofaEnabled,
         createdAt: userWithoutPassword.createdAt,
         studios: [{
           id: 'default-studio',
