@@ -46,6 +46,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import FeaturesGrid from '@/components/FeaturesGrid'
 
 // Core Business Features
 const coreFeatures = [
@@ -358,6 +359,12 @@ export default function FeaturesPage() {
     }
   }
 
+  // Prepare features for the new grid component
+  const gridFeatures = filteredFeatures.map(feature => ({
+    ...feature,
+    onClick: () => handleFeatureClick(feature)
+  }))
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
       <div className="max-w-7xl mx-auto">
@@ -404,29 +411,8 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - Compact GlossGenius Style */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {filteredFeatures.map((feature) => (
-            <Card 
-              key={feature.id}
-              className={`cursor-pointer hover:shadow-md transition-all duration-200 border-gray-200 h-24 ${
-                feature.status === 'active' ? 'hover:border-lavender/50' : 'opacity-75'
-              }`}
-              onClick={() => handleFeatureClick(feature)}
-            >
-              <CardContent className="p-3 h-full flex flex-col items-center justify-center text-center">
-                <div className={`w-8 h-8 rounded-lg ${feature.color} flex items-center justify-center mb-2`}>
-                  <feature.icon className="h-4 w-4 text-white" />
-                </div>
-                <h3 className="font-semibold text-xs text-gray-900 mb-1 leading-tight">{feature.title}</h3>
-                <p className="text-xs text-gray-600 leading-tight">{feature.description}</p>
-                <div className="mt-1">
-                  {getStatusBadge(feature.status)}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Features Grid - Apple-Style Square Tiles */}
+        <FeaturesGrid features={gridFeatures} />
 
         {/* Quick Stats */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
