@@ -46,7 +46,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import FeaturesGrid from '@/components/FeaturesGrid'
 
 // Core Business Features
 const coreFeatures = [
@@ -359,12 +358,6 @@ export default function FeaturesPage() {
     }
   }
 
-  // Prepare features for the new grid component
-  const gridFeatures = filteredFeatures.map(feature => ({
-    ...feature,
-    onClick: () => handleFeatureClick(feature)
-  }))
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
       <div className="max-w-7xl mx-auto">
@@ -412,7 +405,43 @@ export default function FeaturesPage() {
         </div>
 
         {/* Features Grid - Apple-Style Square Tiles */}
-        <FeaturesGrid features={gridFeatures} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 p-4">
+          {filteredFeatures.map((feature) => (
+            <div
+              key={feature.id}
+              className={`
+                group relative flex flex-col items-center justify-center
+                aspect-square rounded-2xl border border-gray-200 bg-white
+                p-4 sm:p-6 shadow-sm transition-all duration-200
+                ${feature.status === 'active' 
+                  ? 'hover:shadow-lg hover:border-lavender/50 cursor-pointer hover:scale-105' 
+                  : 'opacity-75 cursor-default'
+                }
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lavender/50
+              `}
+              onClick={() => handleFeatureClick(feature)}
+              role="button"
+              tabIndex={feature.status === 'active' ? 0 : -1}
+            >
+              {/* Icon container - Apple style */}
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 ${feature.color}`}>
+                <feature.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+              </div>
+
+              {/* Label underneath - Apple style */}
+              <div className="text-center">
+                <h3 className="font-medium text-sm sm:text-base text-gray-900 leading-tight whitespace-normal break-words">
+                  {feature.title}
+                </h3>
+              </div>
+
+              {/* Status indicator */}
+              <div className="mt-1">
+                {getStatusBadge(feature.status)}
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Quick Stats */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
