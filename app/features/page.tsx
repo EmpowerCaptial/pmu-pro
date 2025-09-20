@@ -404,17 +404,17 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - Apple-Style Square Tiles */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 p-4">
+        {/* Features Grid - 4 per row, normal sized buttons */}
+        <div className="grid grid-cols-4 gap-3">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
               className={`
-                group relative flex flex-col items-center justify-center
-                aspect-square rounded-2xl border border-gray-200 bg-white
-                p-4 sm:p-6 shadow-sm transition-all duration-200
+                flex flex-col items-center justify-center
+                aspect-square rounded-lg border border-gray-200 bg-white
+                p-3 shadow-sm transition-all duration-200
                 ${feature.status === 'active' 
-                  ? 'hover:shadow-lg hover:border-lavender/50 cursor-pointer hover:scale-105' 
+                  ? 'hover:shadow-md hover:border-lavender/50 cursor-pointer' 
                   : 'opacity-75 cursor-default'
                 }
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lavender/50
@@ -423,14 +423,14 @@ export default function FeaturesPage() {
               role="button"
               tabIndex={feature.status === 'active' ? 0 : -1}
             >
-              {/* Icon container - Apple style */}
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 ${feature.color}`}>
-                <feature.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+              {/* Icon in middle */}
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${feature.color}`}>
+                <feature.icon className="h-4 w-4 text-white" />
               </div>
 
-              {/* Label underneath - Apple style */}
+              {/* Words under icon */}
               <div className="text-center">
-                <h3 className="font-medium text-sm sm:text-base text-gray-900 leading-tight whitespace-normal break-words">
+                <h3 className="font-medium text-xs text-gray-900 leading-tight whitespace-normal break-words">
                   {feature.title}
                 </h3>
               </div>
