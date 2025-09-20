@@ -18,6 +18,24 @@ const PRODUCTION_USERS = {
     isRealAccount: true,
     subscription: 'premium',
     features: ['all']
+  },
+  'admin@thepmuguide.com': {
+    id: 'admin_pmu_001',
+    name: 'PMU Pro Admin',
+    email: 'admin@thepmuguide.com',
+    role: 'owner',
+    isRealAccount: true,
+    subscription: 'enterprise',
+    features: ['all', 'admin']
+  },
+  'ubsateam@thepmuguide.com': {
+    id: 'ubsa_owner_001',
+    name: 'UBSA Team',
+    email: 'ubsateam@thepmuguide.com',
+    role: 'owner',
+    isRealAccount: true,
+    subscription: 'enterprise',
+    features: ['all', 'admin', 'production']
   }
 }
 
