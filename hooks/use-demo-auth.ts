@@ -88,7 +88,33 @@ export function useDemoAuth() {
       }
       
       return user
-    } 
+        } 
+    // Check admin@thepmuguide.com
+    else if (email === 'admin@thepmuguide.com' && password === 'ubsa2024!') {
+      const user = PRODUCTION_USERS[email]
+      setCurrentUser(user)
+      localStorage.setItem('demoUser', JSON.stringify(user))
+      localStorage.setItem('userType', 'production')
+      
+      if (!TrialService.getTrialUser()) {
+        TrialService.startTrial(email)
+      }
+      
+      return user
+    }
+    // Check ubsateam@thepmuguide.com  
+    else if (email === 'ubsateam@thepmuguide.com' && password === 'ubsa2024!') {
+      const user = PRODUCTION_USERS[email]
+      setCurrentUser(user)
+      localStorage.setItem('demoUser', JSON.stringify(user))
+      localStorage.setItem('userType', 'production')
+      
+      if (!TrialService.getTrialUser()) {
+        TrialService.startTrial(email)
+      }
+      
+      return user
+    }
     // Check DEMO accounts (test accounts)
     else if (email === 'demo@pmupro.com' && password === 'demopmu') {
       const user = DEMO_USERS[email]
