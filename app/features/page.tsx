@@ -359,7 +359,7 @@ export default function FeaturesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10 p-4 pb-20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -404,15 +404,15 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - 4 per row, normal sized buttons */}
-        <div className="grid grid-cols-4 gap-3">
+        {/* Features Grid - 4 per row, compact buttons */}
+        <div className="grid grid-cols-4 gap-2">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
               className={`
                 flex flex-col items-center justify-center
                 aspect-square rounded-lg border border-gray-200 bg-white
-                p-3 shadow-sm transition-all duration-200
+                p-2 shadow-sm transition-all duration-200
                 ${feature.status === 'active' 
                   ? 'hover:shadow-md hover:border-lavender/50 cursor-pointer' 
                   : 'opacity-75 cursor-default'
@@ -424,8 +424,8 @@ export default function FeaturesPage() {
               tabIndex={feature.status === 'active' ? 0 : -1}
             >
               {/* Icon in middle */}
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${feature.color}`}>
-                <feature.icon className="h-4 w-4 text-white" />
+              <div className={`w-6 h-6 rounded flex items-center justify-center mb-1 ${feature.color}`}>
+                <feature.icon className="h-3 w-3 text-white" />
               </div>
 
               {/* Words under icon */}

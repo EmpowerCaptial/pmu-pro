@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { CreditCard, User, X } from 'lucide-react'
+import { CreditCard, User, X, Plus } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PMU_SERVICES, Service } from '@/lib/services-config'
@@ -319,6 +319,18 @@ export default function POSPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
+              {/* Add New Client Button */}
+              <Button 
+                className="w-full mb-4 bg-lavender hover:bg-lavender-600 text-white"
+                onClick={() => {
+                  setShowClientSelection(false)
+                  router.push('/clients/new')
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Client
+              </Button>
+              
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {appointments.map((appointment) => (
                   <button
