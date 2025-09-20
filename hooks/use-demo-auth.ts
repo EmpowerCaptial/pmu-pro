@@ -88,7 +88,7 @@ export function useDemoAuth() {
       }
       
       return user
-        } 
+    } 
     // Check admin@thepmuguide.com
     else if (email === 'admin@thepmuguide.com' && password === 'ubsa2024!') {
       const user = PRODUCTION_USERS[email]
