@@ -279,14 +279,7 @@ class ClientPortalContentService {
     return this.specialOffers.length < initialLength
   }
 
-  // Debug method to check localStorage
-  debugStorage() {
-    console.log('=== ContentService Debug ===')
-    console.log('localStorage pmu_portal_facilities:', localStorage.getItem('pmu_portal_facilities'))
-    console.log('this.facilities:', this.facilities)
-    console.log('Active facilities:', this.getFacilities())
-    console.log('==========================')
-  }
+ 
 
   // Image compression method
   private compressServiceImages() {
