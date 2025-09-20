@@ -8,7 +8,7 @@ type FeatureTileProps = {
   icon?: LucideIcon | React.ReactNode;
   label: string;
   description?: string;
-  status?: 'active' | 'coming-soon' | 'beta';
+  status?: 'active' | 'coming-soon' | 'beta' | string;
   color?: string;
   className?: string;
 };

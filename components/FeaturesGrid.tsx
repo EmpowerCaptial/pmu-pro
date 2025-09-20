@@ -8,7 +8,7 @@ type Feature = {
   icon: LucideIcon;
   href?: string;
   onClick?: () => void;
-  status?: 'active' | 'coming-soon' | 'beta';
+  status?: 'active' | 'coming-soon' | 'beta' | string;
   color?: string;
   category?: string;
 };
