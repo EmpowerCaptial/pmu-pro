@@ -10,7 +10,8 @@ import {
   BookOpen, 
   Users, 
   Settings,
-  Plus
+  Plus,
+  Link as LinkIcon
 } from 'lucide-react'
 
 const navItems = [
@@ -115,15 +116,15 @@ export default function MobileNav() {
           )
         })}
         
-        {/* Add Service Button */}
+        {/* Book URL Button */}
         <Link
-          href="/services/new"
+          href="/book/tierra"
           className="flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 text-gray-600 hover:text-lavender hover:bg-lavender/5"
         >
           <div className="w-6 h-6 mb-1 rounded-full bg-lavender/20 flex items-center justify-center">
-            <Plus className="w-4 h-4 text-lavender" />
+            <LinkIcon className="w-4 h-4 text-lavender" />
           </div>
-          <span className="text-xs font-medium">Add</span>
+          <span className="text-xs font-medium">Book URL</span>
         </Link>
       </div>
     </div>
