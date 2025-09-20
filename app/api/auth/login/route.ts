@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     // Get user's studio memberships
-          const studioMemberships = await prisma.StudioMember.findMany({
+          const studioMemberships = await prisma.studioMember.findMany({
       where: { userId: user.id },
       include: {
         studio: {
