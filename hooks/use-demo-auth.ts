@@ -7,6 +7,10 @@ interface DemoUser {
   email: string
   role: string
   isRealAccount?: boolean
+  subscription?: string
+  features?: string[]
+  platformRole?: string
+  isOwner?: boolean
 }
 
 const PRODUCTION_USERS = {
