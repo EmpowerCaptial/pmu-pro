@@ -13,6 +13,14 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
+  			// PMU Pro custom colors
+  			lavender: '#b19cd9',
+  			'lavender-600': '#9b7bc8',
+  			beige: '#eee7dd',
+  			ivory: '#faf8f4',
+  			ink: '#1e2328',
+  			'muted-text': '#6b7280',
+  			// Shadcn/ui colors
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
