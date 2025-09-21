@@ -49,7 +49,7 @@ interface ClientListProps {
   onAddClient?: () => void;
   onEditClient?: (client: Client) => void;
   onDeleteClient?: (client: Client) => void;
-  onSendMessage?: (client: Client) => void;
+  onSendMessage?: (client: Client, messageType?: string, message?: string) => void;
   onBookAppointment?: (client: Client) => void;
 }
 
