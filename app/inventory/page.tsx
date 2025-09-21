@@ -211,8 +211,8 @@ export default function InventoryPage() {
       unitCost: newItem.unitCost,
       totalValue: newItem.currentStock * newItem.unitCost,
       lastUpdated: new Date().toISOString().split('T')[0],
-      status: newItem.currentStock === 0 ? 'out_of_stock' : 
-              newItem.currentStock <= newItem.minStock ? 'low_stock' : 'in_stock',
+      status: (newItem.currentStock === 0 ? 'out_of_stock' : 
+              newItem.currentStock <= newItem.minStock ? 'low_stock' : 'in_stock') as InventoryItem['status'],
       description: newItem.description,
       location: newItem.location,
       supplier: newItem.supplier
@@ -238,13 +238,13 @@ export default function InventoryPage() {
   const handleUpdateStock = (id: string, newStock: number) => {
     setInventory(inventory.map(item => {
       if (item.id === id) {
-        const updatedItem = {
+        const updatedItem: InventoryItem = {
           ...item,
           currentStock: newStock,
           totalValue: newStock * item.unitCost,
           lastUpdated: new Date().toISOString().split('T')[0],
-          status: newStock === 0 ? 'out_of_stock' : 
-                  newStock <= item.minStock ? 'low_stock' : 'in_stock'
+          status: (newStock === 0 ? 'out_of_stock' : 
+                  newStock <= item.minStock ? 'low_stock' : 'in_stock') as InventoryItem['status']
         }
         return updatedItem
       }
