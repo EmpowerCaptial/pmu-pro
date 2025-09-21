@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ai-sdk/groq": "latest",
+    "@auth/prisma-adapter": "^2.10.0",
     "@emotion/is-prop-valid": "latest",
     "@neondatabase/serverless": "latest",
     "@prisma/client": "latest",
