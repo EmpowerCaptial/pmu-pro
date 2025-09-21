@@ -496,6 +496,137 @@ export default function EmailMarketingPage() {
           </TabsContent>
         </Tabs>
 
+        {/* Email Campaigns Section */}
+        <Card className="mt-6 sm:mt-8 border-beige bg-white shadow-sm">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-lavender flex items-center text-lg sm:text-xl">
+              <Megaphone className="mr-2 text-lavender w-5 h-5 sm:w-6 sm:h-6" />
+              Email Campaigns
+            </CardTitle>
+            <p className="text-muted-text text-sm sm:text-base">Manage your existing email campaigns and templates</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* January Newsletter Campaign */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-lavender/5 to-teal-500/5 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-ink text-sm sm:text-base">January Newsletter</h3>
+                    <p className="text-muted-text text-xs sm:text-sm">Monthly update for clients</p>
+                    <p className="text-muted-text text-xs">Sent to 150 clients • Last sent: Jan 15, 2024</p>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-lavender/20"
+                    >
+                      <MoreVertical className="h-4 w-4 text-lavender" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 bg-white border-lavender/20 shadow-lg">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <ViewIcon className="mr-2 h-4 w-4 text-lavender" />
+                      <span className="text-ink">View</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                      <span className="text-ink">Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Valentine's Day Promotions Campaign */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center">
+                    <Heart className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-ink text-sm sm:text-base">Valentine's Day Promotions</h3>
+                    <p className="text-muted-text text-xs sm:text-sm">Special romantic beauty offers</p>
+                    <p className="text-muted-text text-xs">Scheduled for Feb 14 • 89 opens last campaign</p>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-lavender/20"
+                    >
+                      <MoreVertical className="h-4 w-4 text-lavender" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 bg-white border-lavender/20 shadow-lg">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <ViewIcon className="mr-2 h-4 w-4 text-lavender" />
+                      <span className="text-ink">View</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                      <span className="text-ink">Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Appointment Reminders Campaign */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-ink text-sm sm:text-base">Appointment Reminders</h3>
+                    <p className="text-muted-text text-xs sm:text-sm">Automated booking confirmations</p>
+                    <p className="text-muted-text text-xs">Active campaign • 95% open rate</p>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-lavender/20"
+                    >
+                      <MoreVertical className="h-4 w-4 text-lavender" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 bg-white border-lavender/20 shadow-lg">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <ViewIcon className="mr-2 h-4 w-4 text-lavender" />
+                      <span className="text-ink">View</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10">
+                      <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                      <span className="text-ink">Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Email Preview */}
         {showPreview && emailContent && (
           <Card className="mt-6 sm:mt-8 border-beige bg-white shadow-sm">
