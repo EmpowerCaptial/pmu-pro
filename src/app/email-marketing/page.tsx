@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Head from 'next/head'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -164,8 +165,14 @@ export default function EmailMarketingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+    <>
+      <Head>
+        <title>Email Marketing - AI-Powered Templates | PMU Pro</title>
+        <meta name="description" content="Create professional PMU business emails with AI-powered templates. Choose from 8 premade templates or generate custom content for your clients." />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+      </Head>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
@@ -389,7 +396,8 @@ export default function EmailMarketingPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
