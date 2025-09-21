@@ -114,14 +114,15 @@ const businessFeatures = [
     category: 'business'
   },
   {
-    id: 'staff',
-    title: 'Staff',
-    description: 'Team management',
-    icon: UserCheck,
-    href: '/staff',
+    id: 'enterprise-staff',
+    title: 'Enterprise Staff Control',
+    description: 'Manage team roles & permissions (Studio Enterprise)',
+    icon: Shield,
+    href: '/enterprise/staff',
     color: 'bg-orange-500',
     status: 'active',
-    category: 'business'
+    category: 'business',
+    enterprise: true
   },
   {
     id: 'time-clock',
