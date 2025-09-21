@@ -398,13 +398,13 @@ export default function FeaturesPage() {
               key={feature.id}
               className={`
                 flex flex-col items-center justify-center
-                aspect-square rounded-lg border border-gray-200 bg-white
+                aspect-square rounded-lg border border-blue-100 bg-gradient-to-br from-blue-50 to-teal-50
                 p-2 shadow-sm transition-all duration-200
                 ${feature.status === 'active' 
-                  ? 'hover:shadow-md hover:border-lavender/50 cursor-pointer' 
+                  ? 'hover:shadow-lg hover:border-blue-200 hover:from-blue-100 hover:to-teal-100 cursor-pointer' 
                   : 'opacity-75 cursor-default'
                 }
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lavender/50
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300
               `}
               onClick={() => handleFeatureClick(feature)}
               role="button"
@@ -432,56 +432,56 @@ export default function FeaturesPage() {
 
         {/* Quick Stats */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="border-gray-200">
+          <Card className="border-blue-100 bg-gradient-to-br from-green-50 to-emerald-50">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-600 mb-1">
                 {allFeatures.filter(f => f.status === 'active').length}
               </div>
-              <div className="text-sm text-gray-600">Active Features</div>
+              <div className="text-sm text-gray-700">Active Features</div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-blue-100 bg-gradient-to-br from-amber-50 to-yellow-50">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600 mb-1">
+              <div className="text-2xl font-bold text-amber-600 mb-1">
                 {allFeatures.filter(f => f.status === 'coming-soon').length}
               </div>
-              <div className="text-sm text-gray-600">Coming Soon</div>
+              <div className="text-sm text-gray-700">Coming Soon</div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-600 mb-1">
                 {allFeatures.length}
               </div>
-              <div className="text-sm text-gray-600">Total Features</div>
+              <div className="text-sm text-gray-700">Total Features</div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-blue-100 bg-gradient-to-br from-purple-50 to-violet-50">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-purple-600 mb-1">
                 4
               </div>
-              <div className="text-sm text-gray-600">Categories</div>
+              <div className="text-sm text-gray-700">Categories</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Coming Soon Section */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-lavender/10 to-purple/10 rounded-lg border border-lavender/20">
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50/50 to-teal-50/50 rounded-lg border border-blue-200">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">More Features Coming Soon</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-700 mb-4">
               We're constantly adding new features to help you manage your PMU business better.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Advanced Analytics</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Inventory Management</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Client Portal</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Automated Reminders</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Social Media Integration</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">GPS Time Tracking</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Expense Tracking</Badge>
-              <Badge variant="outline" className="border-lavender/30 text-lavender">Email Marketing</Badge>
+              <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">Advanced Analytics</Badge>
+              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Inventory Management</Badge>
+              <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">Client Portal</Badge>
+              <Badge variant="outline" className="border-cyan-200 bg-cyan-50 text-cyan-700">Automated Reminders</Badge>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Social Media Integration</Badge>
+              <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">GPS Time Tracking</Badge>
+              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Expense Tracking</Badge>
+              <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">Email Marketing</Badge>
             </div>
           </div>
         </div>
