@@ -16,6 +16,7 @@ export interface TimeBlock {
 }
 
 export interface TimeBlockRequest {
+  userId?: string
   date: string
   startTime: string
   endTime: string
