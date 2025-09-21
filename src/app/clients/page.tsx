@@ -180,7 +180,7 @@ export default function ClientsPage() {
   };
 
   // Handle sending message to client
-  const handleSendMessage = async (client: Client, messageType: string, message: string) => {
+  const handleSendMessage = async (client: Client, messageType?: string, message?: string) => {
     try {
       const response = await fetch('/api/messages/send', {
         method: 'POST',
@@ -189,8 +189,8 @@ export default function ClientsPage() {
         },
         body: JSON.stringify({
           clientId: client.id,
-          messageType,
-          message
+          messageType: messageType || 'custom',
+          message: message || ''
         }),
       });
 
