@@ -320,26 +320,32 @@ export default function EmailMarketingPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-lavender/20"
                           >
-                            <MoreVertical className="h-3 w-3" />
+                            <MoreVertical className="h-4 w-4 text-lavender" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleTemplateAction('view', template)}>
-                            <ViewIcon className="mr-2 h-4 w-4" />
-                            View
+                        <DropdownMenuContent align="end" className="w-40 bg-white border-lavender/20 shadow-lg">
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('view', template)}
+                            className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10"
+                          >
+                            <ViewIcon className="mr-2 h-4 w-4 text-lavender" />
+                            <span className="text-ink">View</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleTemplateAction('edit', template)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('edit', template)}
+                            className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10"
+                          >
+                            <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                            <span className="text-ink">Edit</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleTemplateAction('delete', template)}
-                            className="text-red-600 focus:text-red-600"
+                            className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            <span>Delete</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -386,26 +392,32 @@ export default function EmailMarketingPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-lavender/20"
                           >
-                            <MoreVertical className="h-3 w-3" />
+                            <MoreVertical className="h-4 w-4 text-lavender" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleTemplateAction('view', template)}>
-                            <ViewIcon className="mr-2 h-4 w-4" />
-                            View
+                        <DropdownMenuContent align="end" className="w-40 bg-white border-lavender/20 shadow-lg">
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('view', template)}
+                            className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10"
+                          >
+                            <ViewIcon className="mr-2 h-4 w-4 text-lavender" />
+                            <span className="text-ink">View</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleTemplateAction('edit', template)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('edit', template)}
+                            className="cursor-pointer hover:bg-lavender/10 focus:bg-lavender/10"
+                          >
+                            <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                            <span className="text-ink">Edit</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleTemplateAction('delete', template)}
-                            className="text-red-600 focus:text-red-600"
+                            className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            <span>Delete</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -432,7 +444,7 @@ export default function EmailMarketingPage() {
                       <Button 
                         onClick={generateEmailWithAI}
                         disabled={isGenerating || !clientDetails.keyPoints}
-                        className="bg-lavender hover:bg-lavender-600 w-full sm:w-auto text-sm sm:text-base"
+                        className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white w-full sm:w-auto text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-300"
                       >
                         <Sparkles className="mr-2 h-4 w-4" />
                         {isGenerating ? 'Generating...' : 'Generate Email'}
@@ -441,7 +453,7 @@ export default function EmailMarketingPage() {
                         <Button 
                           onClick={saveTemplate}
                           variant="outline"
-                          className="border-lavender text-lavender hover:bg-lavender/10 w-full sm:w-auto text-sm sm:text-base"
+                          className="border-2 border-gradient-to-r from-lavender to-teal-500 bg-gradient-to-r from-lavender/10 to-teal-500/10 text-lavender hover:from-lavender/20 hover:to-teal-500/20 w-full sm:w-auto text-sm sm:text-base shadow-sm hover:shadow-md transition-all duration-300"
                         >
                           Save Template
                         </Button>
@@ -474,7 +486,7 @@ export default function EmailMarketingPage() {
                 <Button 
                   onClick={generateEmailWithAI}
                   disabled={isGenerating || !customPrompt}
-                  className="w-full bg-lavender hover:bg-lavender-600 text-sm sm:text-base"
+                  className="w-full bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   {isGenerating ? 'Generating Custom Email...' : 'Generate Custom Email'}
@@ -493,7 +505,7 @@ export default function EmailMarketingPage() {
                   <Eye className="mr-2 text-lavender w-5 h-5 sm:w-6 sm:h-6" />
                   <span className="text-lg sm:text-xl">Email Preview</span>
                 </div>
-                <Button onClick={sendEmail} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-sm sm:text-base">
+                <Button onClick={sendEmail} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:w-auto text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-300">
                   <Send className="mr-2 h-4 w-4" />
                   Send Email
                 </Button>
