@@ -508,7 +508,7 @@ export default function EmailMarketingPage() {
           <CardContent>
             <div className="space-y-4">
               {/* January Newsletter Campaign */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-lavender/5 to-teal-500/5 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-teal-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
                     <Mail className="h-5 w-5 text-white" />
@@ -547,7 +547,7 @@ export default function EmailMarketingPage() {
               </div>
 
               {/* Valentine's Day Promotions Campaign */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-gray-200 hover:border-pink-300 transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center">
                     <Heart className="h-5 w-5 text-white" />
@@ -586,7 +586,7 @@ export default function EmailMarketingPage() {
               </div>
 
               {/* Appointment Reminders Campaign */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-beige hover:border-lavender/30 transition-all duration-200">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all duration-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
                     <Calendar className="h-5 w-5 text-white" />
