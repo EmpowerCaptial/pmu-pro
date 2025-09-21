@@ -171,11 +171,11 @@ const marketingFeatures = [
   {
     id: 'email-marketing',
     title: 'Email Marketing',
-    description: 'Newsletters & campaigns',
+    description: 'AI-powered email templates',
     icon: Mail,
     href: '/email-marketing',
     color: 'bg-rose-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'marketing'
   },
   {
