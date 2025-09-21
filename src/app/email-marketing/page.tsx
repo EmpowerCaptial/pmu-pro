@@ -93,8 +93,17 @@ const SPECIAL_PRICING_TEMPLATES = [
   }
 ]
 
+interface Template {
+  id: string
+  title: string
+  description: string
+  icon: any
+  color: string
+  category: string
+}
+
 export default function EmailMarketingPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [customPrompt, setCustomPrompt] = useState('')
   const [emailContent, setEmailContent] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -106,7 +115,7 @@ export default function EmailMarketingPage() {
     keyPoints: ''
   })
 
-  const handleTemplateSelect = (template) => {
+  const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template)
     setShowPreview(false)
     setEmailContent('')
