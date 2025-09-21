@@ -20,8 +20,18 @@ import {
   Star,
   Megaphone,
   PartyPopper,
-  Target
+  Target,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Eye as ViewIcon
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 // Template categories
 const SPECIAL_EVENT_TEMPLATES = [
@@ -109,6 +119,7 @@ export default function EmailMarketingPage() {
   const [emailContent, setEmailContent] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [savedTemplates, setSavedTemplates] = useState<Template[]>([])
   const [clientDetails, setClientDetails] = useState({
     businessName: '',
     artistName: '',
@@ -164,6 +175,37 @@ export default function EmailMarketingPage() {
     alert('Email sending functionality will be implemented next!')
   }
 
+  const handleTemplateAction = (action: string, template: Template) => {
+    switch (action) {
+      case 'view':
+        setSelectedTemplate(template)
+        setShowPreview(true)
+        break
+      case 'edit':
+        setSelectedTemplate(template)
+        setShowPreview(false)
+        break
+      case 'delete':
+        setSavedTemplates(savedTemplates.filter(t => t.id !== template.id))
+        break
+      default:
+        break
+    }
+  }
+
+  const saveTemplate = () => {
+    if (selectedTemplate && emailContent) {
+      const newTemplate = {
+        ...selectedTemplate,
+        id: `${selectedTemplate.id}-${Date.now()}`,
+        title: `${selectedTemplate.title} (Custom)`,
+        description: 'Custom generated template'
+      }
+      setSavedTemplates([...savedTemplates, newTemplate])
+      alert('Template saved successfully!')
+    }
+  }
+
   return (
     <>
       <Head>
@@ -171,15 +213,15 @@ export default function EmailMarketingPage() {
         <meta name="description" content="Create professional PMU business emails with AI-powered templates. Choose from 8 premade templates or generate custom content for your clients." />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </Head>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+      <div className="min-h-screen bg-gradient-to-br from-ivory to-beige">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-            <Mail className="inline-block mr-2 sm:mr-3 text-blue-600 w-6 h-6 sm:w-8 sm:h-8" />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink mb-3 sm:mb-4">
+            <Mail className="inline-block mr-2 sm:mr-3 text-lavender w-6 h-6 sm:w-8 sm:h-8" />
             Email Marketing
           </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto px-2">
+          <p className="text-sm sm:text-base lg:text-lg text-muted-text max-w-2xl mx-auto px-2">
             Create professional emails for your clients with AI-powered templates. 
             Choose from premade templates or generate custom content.
           </p>
@@ -193,9 +235,9 @@ export default function EmailMarketingPage() {
 
           <TabsContent value="templates" className="space-y-4 sm:space-y-6">
             {/* Business Details Form */}
-            <Card className="border-blue-100 bg-white">
+            <Card className="border-beige bg-white shadow-sm">
               <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="text-blue-900 text-lg sm:text-xl">Business Information</CardTitle>
+                <CardTitle className="text-lavender text-lg sm:text-xl">Business Information</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
@@ -242,13 +284,13 @@ export default function EmailMarketingPage() {
             </Card>
 
             {/* Special Events Templates */}
-            <Card className="border-blue-100 bg-white">
+            <Card className="border-beige bg-white shadow-sm">
               <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="text-blue-900 flex items-center text-lg sm:text-xl">
-                  <Calendar className="mr-2 text-blue-600 w-5 h-5 sm:w-6 sm:h-6" />
+                <CardTitle className="text-lavender flex items-center text-lg sm:text-xl">
+                  <Calendar className="mr-2 text-lavender w-5 h-5 sm:w-6 sm:h-6" />
                   Special Event Templates
                 </CardTitle>
-                <p className="text-gray-600 text-sm sm:text-base">Perfect for holidays, anniversaries, and special occasions</p>
+                <p className="text-muted-text text-sm sm:text-base">Perfect for holidays, anniversaries, and special occasions</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -256,10 +298,10 @@ export default function EmailMarketingPage() {
                     <div
                       key={template.id}
                       className={`
-                        p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+                        p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 relative group
                         ${selectedTemplate?.id === template.id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-25'
+                          ? 'border-lavender bg-lavender/10' 
+                          : 'border-beige bg-white hover:border-lavender/50 hover:bg-lavender/5'
                         }
                       `}
                       onClick={() => handleTemplateSelect(template)}
@@ -268,9 +310,39 @@ export default function EmailMarketingPage() {
                         <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${template.color} flex items-center justify-center mb-2 sm:mb-3`}>
                           <template.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-1 text-xs sm:text-sm lg:text-base leading-tight">{template.title}</h3>
-                        <p className="text-xs sm:text-sm text-gray-600 leading-tight">{template.description}</p>
+                        <h3 className="font-semibold text-ink mb-1 text-xs sm:text-sm lg:text-base leading-tight">{template.title}</h3>
+                        <p className="text-xs sm:text-sm text-muted-text leading-tight">{template.description}</p>
                       </div>
+                      
+                      {/* Dropdown Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          >
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTemplateAction('view', template)}>
+                            <ViewIcon className="mr-2 h-4 w-4" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTemplateAction('edit', template)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('delete', template)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   ))}
                 </div>
@@ -278,13 +350,13 @@ export default function EmailMarketingPage() {
             </Card>
 
             {/* Special Pricing Templates */}
-            <Card className="border-blue-100 bg-white">
+            <Card className="border-beige bg-white shadow-sm">
               <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="text-blue-900 flex items-center text-lg sm:text-xl">
-                  <DollarSign className="mr-2 text-blue-600 w-5 h-5 sm:w-6 sm:h-6" />
+                <CardTitle className="text-lavender flex items-center text-lg sm:text-xl">
+                  <DollarSign className="mr-2 text-lavender w-5 h-5 sm:w-6 sm:h-6" />
                   Special Pricing Templates
                 </CardTitle>
-                <p className="text-gray-600 text-sm sm:text-base">Drive sales with compelling offers and promotions</p>
+                <p className="text-muted-text text-sm sm:text-base">Drive sales with compelling offers and promotions</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -292,10 +364,10 @@ export default function EmailMarketingPage() {
                     <div
                       key={template.id}
                       className={`
-                        p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+                        p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 relative group
                         ${selectedTemplate?.id === template.id 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-25'
+                          ? 'border-lavender bg-lavender/10' 
+                          : 'border-beige bg-white hover:border-lavender/50 hover:bg-lavender/5'
                         }
                       `}
                       onClick={() => handleTemplateSelect(template)}
@@ -304,9 +376,39 @@ export default function EmailMarketingPage() {
                         <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${template.color} flex items-center justify-center mb-2 sm:mb-3`}>
                           <template.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-1 text-xs sm:text-sm lg:text-base leading-tight">{template.title}</h3>
-                        <p className="text-xs sm:text-sm text-gray-600 leading-tight">{template.description}</p>
+                        <h3 className="font-semibold text-ink mb-1 text-xs sm:text-sm lg:text-base leading-tight">{template.title}</h3>
+                        <p className="text-xs sm:text-sm text-muted-text leading-tight">{template.description}</p>
                       </div>
+                      
+                      {/* Dropdown Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          >
+                            <MoreVertical className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTemplateAction('view', template)}>
+                            <ViewIcon className="mr-2 h-4 w-4" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTemplateAction('edit', template)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleTemplateAction('delete', template)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   ))}
                 </div>
@@ -315,25 +417,36 @@ export default function EmailMarketingPage() {
 
             {/* Generate Email Button */}
             {selectedTemplate && (
-              <Card className="border-blue-100 bg-gradient-to-r from-blue-50 to-teal-50">
+              <Card className="border-lavender/20 bg-gradient-to-r from-lavender/10 to-lavender/5">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-ink mb-1">
                         Generate Email with AI
                       </h3>
-                      <p className="text-gray-600 text-sm sm:text-base">
-                        Selected: <Badge variant="outline" className="ml-1 text-xs sm:text-sm">{selectedTemplate.title}</Badge>
+                      <p className="text-muted-text text-sm sm:text-base">
+                        Selected: <Badge variant="outline" className="ml-1 text-xs sm:text-sm border-lavender text-lavender">{selectedTemplate.title}</Badge>
                       </p>
                     </div>
-                    <Button 
-                      onClick={generateEmailWithAI}
-                      disabled={isGenerating || !clientDetails.keyPoints}
-                      className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm sm:text-base"
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {isGenerating ? 'Generating...' : 'Generate Email'}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <Button 
+                        onClick={generateEmailWithAI}
+                        disabled={isGenerating || !clientDetails.keyPoints}
+                        className="bg-lavender hover:bg-lavender-600 w-full sm:w-auto text-sm sm:text-base"
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        {isGenerating ? 'Generating...' : 'Generate Email'}
+                      </Button>
+                      {emailContent && (
+                        <Button 
+                          onClick={saveTemplate}
+                          variant="outline"
+                          className="border-lavender text-lavender hover:bg-lavender/10 w-full sm:w-auto text-sm sm:text-base"
+                        >
+                          Save Template
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -341,17 +454,17 @@ export default function EmailMarketingPage() {
           </TabsContent>
 
           <TabsContent value="custom" className="space-y-4 sm:space-y-6">
-            <Card className="border-blue-100 bg-white">
+            <Card className="border-beige bg-white shadow-sm">
               <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="text-blue-900 text-lg sm:text-xl">Custom Email Generator</CardTitle>
-                <p className="text-gray-600 text-sm sm:text-base">Describe what you want to communicate and let AI create the perfect email</p>
+                <CardTitle className="text-lavender text-lg sm:text-xl">Custom Email Generator</CardTitle>
+                <p className="text-muted-text text-sm sm:text-base">Describe what you want to communicate and let AI create the perfect email</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="customPrompt" className="text-sm sm:text-base">Describe your email content</Label>
                   <textarea
                     id="customPrompt"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    className="w-full p-3 border border-beige rounded-lg focus:ring-2 focus:ring-lavender focus:border-transparent text-sm sm:text-base"
                     rows={4}
                     placeholder="e.g., I want to announce a new microblading technique, offer 15% off for the first 10 clients, and mention that I'm now certified in advanced shading techniques..."
                     value={customPrompt}
@@ -361,7 +474,7 @@ export default function EmailMarketingPage() {
                 <Button 
                   onClick={generateEmailWithAI}
                   disabled={isGenerating || !customPrompt}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                  className="w-full bg-lavender hover:bg-lavender-600 text-sm sm:text-base"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   {isGenerating ? 'Generating Custom Email...' : 'Generate Custom Email'}
@@ -373,11 +486,11 @@ export default function EmailMarketingPage() {
 
         {/* Email Preview */}
         {showPreview && emailContent && (
-          <Card className="mt-6 sm:mt-8 border-blue-100 bg-white">
+          <Card className="mt-6 sm:mt-8 border-beige bg-white shadow-sm">
             <CardHeader className="pb-3 sm:pb-6">
-              <CardTitle className="text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle className="text-lavender flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center">
-                  <Eye className="mr-2 text-blue-600 w-5 h-5 sm:w-6 sm:h-6" />
+                  <Eye className="mr-2 text-lavender w-5 h-5 sm:w-6 sm:h-6" />
                   <span className="text-lg sm:text-xl">Email Preview</span>
                 </div>
                 <Button onClick={sendEmail} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-sm sm:text-base">
@@ -387,9 +500,9 @@ export default function EmailMarketingPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border">
+              <div className="bg-beige/30 p-4 sm:p-6 rounded-lg border border-beige">
                 <div 
-                  className="prose prose-sm sm:prose max-w-none"
+                  className="prose prose-sm sm:prose max-w-none text-ink"
                   dangerouslySetInnerHTML={{ __html: emailContent }}
                 />
               </div>
