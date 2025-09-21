@@ -6,7 +6,7 @@ const openai = new OpenAI({
 })
 
 // Template prompts for different email types
-const TEMPLATE_PROMPTS = {
+const TEMPLATE_PROMPTS: Record<string, { system: string; template: string }> = {
   'holiday-promotion': {
     system: "You are a professional PMU artist writing holiday promotional emails. Create engaging, festive content that builds excitement while maintaining professionalism.",
     template: "Write a holiday promotional email for a PMU business. Include festive language, special offers, and call-to-action."
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         - Uses appropriate PMU industry terminology
         - Builds trust and credibility
       `
-    } else if (template && template.id) {
+    } else if (template && template.id && template.id in TEMPLATE_PROMPTS) {
       // Template-based generation
       const templateConfig = TEMPLATE_PROMPTS[template.id]
       if (templateConfig) {
