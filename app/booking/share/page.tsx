@@ -17,15 +17,27 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useDemoAuth } from '@/hooks/use-demo-auth';
+import { generateUserHandle } from '@/lib/booking';
 
 export default function ShareBookingPage() {
   const router = useRouter();
+  const { user, isAuthenticated } = useDemoAuth();
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
 
-  const bookingLink = 'https://thepmuguide.com/book/sarah-pmu';
+  // Generate user handle from email (fallback to demo handle)
+  const getUserHandle = () => {
+    if (user?.email) {
+      return generateUserHandle(user.email);
+    }
+    return 'demo-artist'; // fallback
+  };
+
+  const userHandle = getUserHandle();
+  const bookingLink = `https://thepmuguide.com/book/${userHandle}`;
   const embedCode = `<iframe 
-  src="https://thepmuguide.com/book/sarah-pmu/embed" 
+  src="https://thepmuguide.com/book/${userHandle}/embed" 
   width="100%" 
   height="680" 
   frameborder="0">
@@ -103,10 +115,10 @@ export default function ShareBookingPage() {
             <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-lavender rounded-xl flex items-center justify-center text-white font-bold">
-                  SP
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
                 </div>
                 <div>
-                  <h3 className="font-semibold">Sarah PMU</h3>
+                  <h3 className="font-semibold">{user?.name || 'Your Name'}</h3>
                   <p className="text-sm text-gray-600">Professional PMU Artist</p>
                 </div>
               </div>
