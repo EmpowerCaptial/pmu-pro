@@ -233,27 +233,18 @@ export default function ClientsPage() {
   // Handle sending message to client
   const handleSendMessage = async (client: Client, messageType?: string, message?: string) => {
     try {
-      const response = await fetch('/api/messages/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          clientId: client.id,
-          messageType: messageType || 'custom',
-          message: message || ''
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      const result = await response.json();
-      alert(`Message sent successfully to ${client.name}!`);
-      setIsMessageDialogOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      // Clean the phone number (remove non-digits)
+      const cleanPhone = client.phone.replace(/\D/g, '');
+      
+      // Create SMS link
+      const smsLink = `sms:${cleanPhone}`;
+      
+      // Open SMS app
+      window.location.href = smsLink;
+      
+    } catch (error) {
+      console.error('Error opening SMS app:', error);
+      alert('Unable to open SMS app. Please check if the client has a valid phone number.');
     }
   };
 
