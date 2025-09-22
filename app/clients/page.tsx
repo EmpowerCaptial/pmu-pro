@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useDemoAuth } from '@/hooks/use-demo-auth';
 import ClientList, { Client } from '../../src/components/client/ClientList';
 import MessageForm from '../../src/components/client/MessageForm';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ import {
 
 export default function ClientsPage() {
   const router = useRouter();
-  const session = useSession();
+  const { currentUser, isLoading: authLoading, isAuthenticated } = useDemoAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,15 +72,23 @@ export default function ClientsPage() {
   };
 
   useEffect(() => {
-    // Only run if session is loaded
-    if (session && session.status) {
-      if (session.status === 'authenticated') {
+    console.log('Auth loading:', authLoading);
+    console.log('Is authenticated:', isAuthenticated);
+    console.log('Current user:', currentUser);
+    
+    // Only run if auth is loaded
+    if (!authLoading) {
+      if (isAuthenticated) {
+        console.log('User is authenticated, fetching clients');
         fetchClients();
-      } else if (session.status === 'unauthenticated') {
+      } else {
+        console.log('User is not authenticated, redirecting to login');
         router.push('/auth/login');
       }
+    } else {
+      console.log('Auth not loaded yet');
     }
-  }, [session?.status, router]);
+  }, [authLoading, isAuthenticated, router]);
 
   // Handle form submission for adding client
   const handleAddClient = async () => {
@@ -221,7 +229,7 @@ export default function ClientsPage() {
     setIsClientDetailOpen(true);
   };
 
-      if (!session || session.status === 'loading' || loading) {
+      if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
         <div className="text-center">
