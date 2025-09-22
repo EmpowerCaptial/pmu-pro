@@ -5,14 +5,18 @@ import { useRouter } from 'next/navigation'
 import { CreditCard, User, X, Plus } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PMU_SERVICES, Service } from '@/lib/services-config'
+import { Service, getServices } from '@/lib/services-api'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 export default function POSPage() {
   const router = useRouter()
+  const { currentUser, isAuthenticated } = useDemoAuth()
   const [isMobileView, setIsMobileView] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
   const [showClientSelection, setShowClientSelection] = useState(false)
   const [cart, setCart] = useState<any[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
   
   // POS is now active - no longer coming soon
   const isComingSoon = false
@@ -29,14 +33,29 @@ export default function POSPage() {
     price: 350.00,
     }
   ]
-
-  // Get services from the artist-accessible service management system
-  const [services, setServices] = useState<Service[]>(PMU_SERVICES)
   
+  // Load services from API
   useEffect(() => {
-    // Load services from the artist-accessible service management system
-    setServices(PMU_SERVICES)
-  }, [])
+    if (isAuthenticated && currentUser?.email) {
+      loadServices()
+    }
+  }, [isAuthenticated, currentUser])
+
+  const loadServices = async () => {
+    if (!currentUser?.email) return
+    
+    setLoading(true)
+    try {
+      const userServices = await getServices(currentUser.email)
+      // Filter only active services for POS
+      setServices(userServices.filter(service => service.isActive))
+    } catch (error) {
+      console.error('Error loading services:', error)
+      setServices([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Check if mobile view
   useEffect(() => {
@@ -81,6 +100,29 @@ export default function POSPage() {
     // Encode cart data for URL
     const cartData = encodeURIComponent(JSON.stringify(cart))
     router.push(`/checkout?cart=${cartData}`)
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading services...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show not authenticated state
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Please log in to access the POS system.</p>
+        </div>
+      </div>
+    )
   }
 
   return (

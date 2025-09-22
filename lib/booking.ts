@@ -1,4 +1,4 @@
-import { getActiveServices } from './services-config';
+import { getServices } from './services-api';
 
 export type PublicBookingConfig = {
   handle: string;        // unique username/slug
@@ -32,25 +32,40 @@ export function generateUserHandle(email: string): string {
 
 // Get booking config for a user handle
 export async function getPublicBookingConfig(handle: string): Promise<PublicBookingConfig | null> {
-  // Get active services from the services system
-  const activeServices = getActiveServices();
-  
-  // Convert services to booking format
-  const bookingServices = activeServices.map(service => ({
-    id: service.id,
-    name: service.name,
-    price: service.defaultPrice,
-    durationMinutes: service.defaultDuration,
-    imageUrl: service.imageUrl
-  }));
+  try {
+    // Try to find user by handle (convert handle back to email format)
+    // For demo purposes, we'll use a demo email
+    const demoEmail = 'universalbeautystudioacademy@gmail.com';
+    
+    // Get services from API
+    const allServices = await getServices(demoEmail);
+    const activeServices = allServices.filter(service => service.isActive);
+    
+    // Convert services to booking format
+    const bookingServices = activeServices.map(service => ({
+      id: service.id,
+      name: service.name,
+      price: service.defaultPrice,
+      durationMinutes: service.defaultDuration,
+      imageUrl: service.imageUrl
+    }));
 
-  // For demo purposes, create config for any handle
-  // In production, this would fetch from database
-  return {
-    handle,
-    displayName: handle.charAt(0).toUpperCase() + handle.slice(1).replace(/-/g, ' '),
-    avatarUrl: undefined,
-    brandColor: "#8b5cf6", // lavender
-    services: bookingServices
-  };
+    return {
+      handle,
+      displayName: handle.charAt(0).toUpperCase() + handle.slice(1).replace(/-/g, ' '),
+      avatarUrl: undefined,
+      brandColor: "#8b5cf6", // lavender
+      services: bookingServices
+    };
+  } catch (error) {
+    console.error('Error loading booking config:', error);
+    // Fallback to demo config
+    return {
+      handle,
+      displayName: handle.charAt(0).toUpperCase() + handle.slice(1).replace(/-/g, ' '),
+      avatarUrl: undefined,
+      brandColor: "#8b5cf6", // lavender
+      services: []
+    };
+  }
 }

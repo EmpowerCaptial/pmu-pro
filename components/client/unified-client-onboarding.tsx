@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getServices } from '@/lib/services-api'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -92,10 +94,7 @@ const SKIN_CONDITIONS = [
   'Acne-Prone', 'Scarring', 'Hyperpigmentation', 'None'
 ]
 
-const PMU_SERVICES = [
-  'Microblading', 'Powder Brows', 'Lip Liner', 'Eyeliner',
-  'Lash Enhancement', 'Beauty Mark', 'Scar Camouflage', 'Areola Restoration'
-]
+// PMU services will be loaded from API
 
 const SUN_EXPOSURE_OPTIONS = [
   'Minimal (Indoor mostly)', 'Moderate (Some outdoor activities)',
@@ -104,7 +103,9 @@ const SUN_EXPOSURE_OPTIONS = [
 
 export default function UnifiedClientOnboarding() {
   const router = useRouter()
+  const { currentUser, isAuthenticated } = useDemoAuth()
   const [currentStep, setCurrentStep] = useState(1)
+  const [availableServices, setAvailableServices] = useState<string[]>([])
   const [formData, setFormData] = useState<ClientOnboardingData>({
     firstName: '',
     lastName: '',
@@ -134,6 +135,27 @@ export default function UnifiedClientOnboarding() {
         notes: '',
         concerns: ''
   })
+
+  // Load services from API
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.email) {
+      loadServices()
+    }
+  }, [isAuthenticated, currentUser])
+
+  const loadServices = async () => {
+    if (!currentUser?.email) return
+    
+    try {
+      const userServices = await getServices(currentUser.email)
+      const activeServices = userServices.filter(service => service.isActive)
+      setAvailableServices(activeServices.map(service => service.name))
+    } catch (error) {
+      console.error('Error loading services:', error)
+      // Fallback to default services
+      setAvailableServices(['Microblading', 'Powder Brows', 'Lip Liner', 'Eyeliner', 'Lash Enhancement', 'Beauty Mark', 'Scar Camouflage', 'Areola Restoration'])
+    }
+  }
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
@@ -816,7 +838,7 @@ Time: ${new Date().toLocaleTimeString()}
                       <SelectValue placeholder="Select desired service" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                      {PMU_SERVICES.map((service) => (
+                      {availableServices.map((service) => (
                         <SelectItem key={service} value={service}>{service}</SelectItem>
                       ))}
                     </SelectContent>
