@@ -492,6 +492,107 @@ export default function BookingCalendar() {
           </div>
         </div>
 
+        {/* Share Booking Link Section */}
+        {isArtistView && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-lavender" />
+                Share Your Booking Link
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                Share this link with clients so they can book your services directly
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Booking Link */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Your Public Booking Link</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={`https://thepmuguide.com/book/sarah-pmu`}
+                      readOnly
+                      className="bg-gray-50"
+                    />
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText('https://thepmuguide.com/book/sarah-pmu');
+                        alert('Booking link copied to clipboard!');
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Copy Link
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Embed Widget */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Embed Widget Code</Label>
+                  <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                    {`<iframe 
+  src="https://thepmuguide.com/book/sarah-pmu/embed" 
+  width="100%" 
+  height="680" 
+  frameborder="0">
+</iframe>`}
+                  </div>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`<iframe 
+  src="https://thepmuguide.com/book/sarah-pmu/embed" 
+  width="100%" 
+  height="680" 
+  frameborder="0">
+</iframe>`);
+                      alert('Embed code copied to clipboard!');
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Copy Embed Code
+                  </Button>
+                </div>
+
+                {/* QR Code */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">QR Code for Easy Sharing</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span className="text-xs text-gray-500">QR Code</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p>Scan this QR code to access your booking page</p>
+                      <p className="text-xs text-gray-500 mt-1">Perfect for business cards and social media</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Social Media Sharing */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Share on Social Media</Label>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <span className="mr-2">📱</span>
+                      Instagram
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <span className="mr-2">📘</span>
+                      Facebook
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <span className="mr-2">🐦</span>
+                      Twitter
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Conditional Content Based on Active Tab */}
         {isArtistView ? (
           // Artist View - Show the existing booking calendar
