@@ -87,23 +87,28 @@ export default function ClientsPage() {
   };
 
   useEffect(() => {
+    console.log('=== AUTH DEBUG ===');
     console.log('Auth loading:', authLoading);
     console.log('Is authenticated:', isAuthenticated);
     console.log('Current user:', currentUser);
+    console.log('Current user email:', currentUser?.email);
+    console.log('LocalStorage demoUser:', localStorage.getItem('demoUser'));
+    console.log('LocalStorage userType:', localStorage.getItem('userType'));
+    console.log('==================');
     
     // Only run if auth is loaded
     if (!authLoading) {
-      if (isAuthenticated) {
-        console.log('User is authenticated, fetching clients');
+      if (isAuthenticated && currentUser?.email) {
+        console.log('User is authenticated with email, fetching clients');
         fetchClients();
       } else {
-        console.log('User is not authenticated, redirecting to login');
+        console.log('User is not authenticated or missing email, redirecting to login');
         router.push('/auth/login');
       }
     } else {
       console.log('Auth not loaded yet');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, currentUser, router]);
 
   // Handle form submission for adding client
   const handleAddClient = async () => {
