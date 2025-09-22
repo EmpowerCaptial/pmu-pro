@@ -22,6 +22,9 @@ import {
   DollarSign
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import ProcedureForm from '@/src/components/forms/ProcedureForm'
+import AppointmentForm from '@/src/components/forms/AppointmentForm'
 
 interface Client {
   id: string
@@ -47,6 +50,10 @@ export default function ClientProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [showProcedureForm, setShowProcedureForm] = useState(false)
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false)
+  const [procedures, setProcedures] = useState<any[]>([])
+  const [appointments, setAppointments] = useState<any[]>([])
 
   const clientId = params.id as string
 
@@ -127,6 +134,62 @@ export default function ClientProfilePage() {
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  const handleSaveProcedure = async (procedureData: any) => {
+    if (!currentUser?.email) return
+
+    try {
+      const response = await fetch('/api/procedures', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(procedureData)
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setProcedures(prev => [result.procedure, ...prev])
+        setShowProcedureForm(false)
+        // Show success message
+        alert('Procedure saved successfully!')
+      } else {
+        throw new Error('Failed to save procedure')
+      }
+    } catch (error) {
+      console.error('Error saving procedure:', error)
+      alert('Failed to save procedure. Please try again.')
+    }
+  }
+
+  const handleSaveAppointment = async (appointmentData: any) => {
+    if (!currentUser?.email) return
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(appointmentData)
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setAppointments(prev => [result.appointment, ...prev])
+        setShowAppointmentForm(false)
+        // Show success message
+        alert('Appointment scheduled successfully!')
+      } else {
+        throw new Error('Failed to save appointment')
+      }
+    } catch (error) {
+      console.error('Error saving appointment:', error)
+      alert('Failed to save appointment. Please try again.')
+    }
   }
 
   if (loading) {
@@ -323,7 +386,10 @@ export default function ClientProfilePage() {
                 <p className="text-gray-600 mb-6">
                   Start tracking procedures, pigment colors, needle configurations, and notes.
                 </p>
-                <Button className="bg-lavender hover:bg-lavender-600 text-white">
+                <Button 
+                  className="bg-lavender hover:bg-lavender-600 text-white"
+                  onClick={() => setShowProcedureForm(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add First Procedure
                 </Button>
@@ -340,7 +406,10 @@ export default function ClientProfilePage() {
                 <p className="text-gray-600 mb-6">
                   Schedule appointments and track the client's treatment journey.
                 </p>
-                <Button className="bg-lavender hover:bg-lavender-600 text-white">
+                <Button 
+                  className="bg-lavender hover:bg-lavender-600 text-white"
+                  onClick={() => setShowAppointmentForm(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Schedule Appointment
                 </Button>
@@ -349,6 +418,40 @@ export default function ClientProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Procedure Form Dialog */}
+      <Dialog open={showProcedureForm} onOpenChange={setShowProcedureForm}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Procedure</DialogTitle>
+          </DialogHeader>
+          {client && (
+            <ProcedureForm
+              clientId={client.id}
+              clientName={client.name}
+              onSave={handleSaveProcedure}
+              onCancel={() => setShowProcedureForm(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Appointment Form Dialog */}
+      <Dialog open={showAppointmentForm} onOpenChange={setShowAppointmentForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Schedule New Appointment</DialogTitle>
+          </DialogHeader>
+          {client && (
+            <AppointmentForm
+              clientId={client.id}
+              clientName={client.name}
+              onSave={handleSaveAppointment}
+              onCancel={() => setShowAppointmentForm(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
