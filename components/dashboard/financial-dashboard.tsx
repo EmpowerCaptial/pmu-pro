@@ -47,19 +47,39 @@ export function WeeklyBalanceCard() {
     setError(null)
     
     try {
-      // In a real implementation, this would call your API
-      // For now, we'll simulate the data
+      const response = await fetch('/api/financial/weekly', {
+        headers: {
+          'x-user-email': currentUser.email,
+          'Accept': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch weekly data: ${response.statusText}`)
+      }
+
+      const apiData = await response.json()
+      
+      const weeklyData: WeeklyBalanceData = {
+        totalRevenue: apiData.totalRevenue || 0,
+        serviceCount: apiData.serviceCount || 0,
+        topService: apiData.topService || 'No services',
+        growthPercentage: apiData.growthPercentage || 0
+      }
+      
+      setData(weeklyData)
+    } catch (err) {
+      console.error('Error loading weekly data:', err)
+      setError('Failed to load weekly data')
+      
+      // Fallback to mock data
       const mockData: WeeklyBalanceData = {
         totalRevenue: 2450.00,
         serviceCount: 12,
         topService: "Microblading",
         growthPercentage: 15.3
       }
-      
       setData(mockData)
-    } catch (err) {
-      console.error('Error loading weekly data:', err)
-      setError('Failed to load weekly data')
     } finally {
       setLoading(false)
     }
@@ -170,8 +190,33 @@ export function DailyBalanceCard() {
     setError(null)
     
     try {
-      // In a real implementation, this would call your Stripe API
-      // For now, we'll simulate the data
+      const response = await fetch('/api/financial/daily', {
+        headers: {
+          'x-user-email': currentUser.email,
+          'Accept': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch daily data: ${response.statusText}`)
+      }
+
+      const apiData = await response.json()
+      
+      const dailyData: DailyBalanceData = {
+        todaysRevenue: apiData.todaysRevenue || 0,
+        stripeBalance: apiData.stripeBalance || 0,
+        systemBalance: apiData.systemBalance || 0,
+        transactionCount: apiData.transactionCount || 0,
+        canPayout: apiData.canPayout || false
+      }
+      
+      setData(dailyData)
+    } catch (err) {
+      console.error('Error loading daily data:', err)
+      setError('Failed to load daily data')
+      
+      // Fallback to mock data
       const mockData: DailyBalanceData = {
         todaysRevenue: 650.00,
         stripeBalance: 425.00,
@@ -179,31 +224,39 @@ export function DailyBalanceCard() {
         transactionCount: 3,
         canPayout: true
       }
-      
       setData(mockData)
-    } catch (err) {
-      console.error('Error loading daily data:', err)
-      setError('Failed to load daily data')
     } finally {
       setLoading(false)
     }
   }
 
   const handleImmediatePayout = async () => {
-    if (!data?.canPayout) return
+    if (!data?.canPayout || !currentUser?.email) return
     
     setPayoutLoading(true)
     try {
-      // In a real implementation, this would call your payout API
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
+      const response = await fetch('/api/financial/daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to process payout')
+      }
+
+      const result = await response.json()
       
-      alert(`Successfully initiated payout of $${data.stripeBalance.toFixed(2)} to your bank account.`)
+      alert(`Successfully initiated payout of $${result.amount.toFixed(2)} to your bank account. Payout ID: ${result.payoutId}`)
       
       // Reload data after payout
       await loadDailyData()
     } catch (err) {
       console.error('Error processing payout:', err)
-      alert('Failed to process payout. Please try again.')
+      alert(`Failed to process payout: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setPayoutLoading(false)
     }
