@@ -85,6 +85,7 @@ export default function BookingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
+  const [isArtistView, setIsArtistView] = useState(false)
   
   // New Appointment Modal States
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false)
@@ -465,39 +466,96 @@ export default function BookingCalendar() {
           </Button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-          <Button
-            variant={activeTab === 'calendar' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('calendar')}
-            className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Calendar
-          </Button>
-          <Button
-            variant={activeTab === 'blocks' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('blocks')}
-            className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            Time Blocks
-          </Button>
-          <Button
-            variant={activeTab === 'mobile' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('mobile')}
-            className={activeTab === 'mobile' ? 'bg-lavender text-white' : ''}
-          >
-            <Smartphone className="w-4 h-4 mr-2" />
-            Mobile View
-          </Button>
+        {/* Artist View Toggle */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="bg-white rounded-lg p-4 shadow-sm border">
+            <div className="flex items-center space-x-4">
+              <span className={`text-sm font-medium ${!isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                Public Booking
+              </span>
+              <button
+                onClick={() => setIsArtistView(!isArtistView)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isArtistView ? 'bg-lavender' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isArtistView ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                Artist View
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Conditional Content Based on Active Tab */}
-        {activeTab === 'calendar' && (
+        {isArtistView ? (
+          // Artist View - Show the existing booking calendar
+          <>
+            <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+              <Button
+                variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('calendar')}
+                className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Calendar
+              </Button>
+              <Button
+                variant={activeTab === 'blocks' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('blocks')}
+                className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Time Blocks
+              </Button>
+              <Button
+                variant={activeTab === 'mobile' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('mobile')}
+                className={activeTab === 'mobile' ? 'bg-lavender text-white' : ''}
+              >
+                <Smartphone className="w-4 h-4 mr-2" />
+                Mobile View
+              </Button>
+            </div>
+        </>
+        ) : (
+          // Public Booking View - Show booking form for clients
+          <div className="max-w-4xl mx-auto">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-center text-2xl font-bold text-lavender">
+                  Book Your Appointment
+                </CardTitle>
+                <p className="text-center text-gray-600">
+                  Select a service and choose your preferred date and time
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Calendar className="h-16 w-16 text-lavender mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Public Booking System</h3>
+                  <p className="text-gray-600 mb-4">
+                    This is the public booking view where clients can schedule appointments.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Toggle to "Artist View" to see the full calendar management system.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        
+        {/* Artist View Content */}
+        {isArtistView && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Calendar */}
           <div className="lg:col-span-2">
@@ -1044,6 +1102,7 @@ export default function BookingCalendar() {
           </div>
         </DialogContent>
       </Dialog>
+        )}
     </div>
   )
 }
