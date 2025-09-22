@@ -59,13 +59,15 @@ export async function GET(request: NextRequest) {
           {
             id: 'mock-appt-1',
             clientId: 'mock-client-1',
-            service: 'Microblading Session',
+            title: 'Microblading Session',
+            serviceType: 'Microblading',
+            duration: 120,
             startTime: '2023-02-20T10:00:00Z',
             endTime: '2023-02-20T12:00:00Z',
             status: 'completed',
             notes: 'Initial microblading session completed successfully',
             price: 450,
-            depositPaid: 100,
+            deposit: 100,
             client: {
               id: 'mock-client-1',
               name: 'Tierra Johnson',
@@ -95,13 +97,15 @@ export async function GET(request: NextRequest) {
         {
           id: 'mock-appt-1',
           clientId: 'mock-client-1',
-          service: 'Microblading Session',
+          title: 'Microblading Session',
+          serviceType: 'Microblading',
+          duration: 120,
           startTime: '2023-02-20T10:00:00Z',
           endTime: '2023-02-20T12:00:00Z',
           status: 'completed',
           notes: 'Initial microblading session completed successfully',
           price: 450,
-          depositPaid: 100,
+          deposit: 100,
           client: {
             id: 'mock-client-1',
             name: 'Tierra Johnson',
@@ -135,19 +139,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       clientId,
-      service,
+      serviceType,
+      title,
+      duration,
       startTime,
       endTime,
       status,
       notes,
       price,
-      depositPaid
+      deposit
     } = body
 
     // Validate required fields
-    if (!clientId || !service || !startTime || !endTime) {
+    if (!clientId || !serviceType || !title || !duration || !startTime || !endTime) {
       return NextResponse.json(
-        { error: 'Client ID, service, start time, and end time are required' },
+        { error: 'Client ID, service type, title, duration, start time, and end time are required' },
         { status: 400 }
       )
     }
@@ -180,13 +186,15 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           clientId,
-          service,
+          title,
+          serviceType,
+          duration,
           startTime: new Date(startTime),
           endTime: new Date(endTime),
           status: status || 'scheduled',
           notes: notes || null,
           price: price || 0,
-          depositPaid: depositPaid || 0
+          deposit: deposit || 0
         },
         include: {
           client: {
@@ -216,13 +224,15 @@ export async function POST(request: NextRequest) {
       const mockAppointment = {
         id: 'mock-appt-' + Date.now(),
         clientId,
-        service,
+        title,
+        serviceType,
+        duration,
         startTime,
         endTime,
         status: status || 'scheduled',
         notes,
         price: price || 0,
-        depositPaid: depositPaid || 0,
+        deposit: deposit || 0,
         client: {
           id: clientId,
           name: 'Tierra Johnson',
