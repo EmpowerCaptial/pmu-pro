@@ -536,6 +536,32 @@ export default function BookingCalendar() {
         ) : (
           // Public Booking View - Show booking form for clients
           <div className="max-w-4xl mx-auto">
+            {/* Toggle for Public Booking View */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-white rounded-lg p-3 shadow-sm border">
+                <div className="flex items-center space-x-3">
+                  <span className={`text-sm font-medium ${!isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                    Public Booking
+                  </span>
+                  <button
+                    onClick={() => setIsArtistView(!isArtistView)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isArtistView ? 'bg-lavender' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isArtistView ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-medium ${isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                    Artist View
+                  </span>
+                </div>
+              </div>
+            </div>
+            
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="text-center text-2xl font-bold text-lavender">
