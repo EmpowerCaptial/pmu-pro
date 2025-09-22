@@ -31,6 +31,7 @@ model User {
   updatedAt             DateTime @updatedAt
   clients               Client[]
   appointments          Appointment[]
+  services              Service[]
   magicLinkTokens       MagicLinkToken[]
   metaConnections       MetaConnection[]
   calendarIntegrations  CalendarIntegration[]
@@ -372,4 +373,26 @@ model Appointment {
   @@index([startTime])
   @@index([status])
   @@map("appointments")
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  description     String?
+  defaultDuration Int      // in minutes
+  defaultPrice    Float
+  category        String   // eyebrows, lips, eyeliner, consultation, touch-up, other
+  isActive        Boolean  @default(true)
+  imageUrl        String?  // URL for service icon/image
+  isCustomImage   Boolean  @default(false) // Whether image was uploaded by user
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
+  @@map("services")
 }

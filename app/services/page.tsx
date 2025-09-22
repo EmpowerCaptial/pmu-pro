@@ -26,21 +26,26 @@ import {
   Menu
 } from 'lucide-react'
 import { 
-  PMU_SERVICES, 
-  Service, 
-  getActiveServices, 
-  getServiceById, 
-  addService, 
-  updateService, 
-  toggleServiceStatus 
-} from '@/lib/services-config'
+  Service,
+  getServices,
+  createService,
+  updateService,
+  deleteService,
+  getActiveServices,
+  getServiceById,
+  getServiceCategories,
+  DEFAULT_PMU_SERVICES
+} from '@/lib/services-api'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 export default function ServicesPage() {
   const router = useRouter()
-  const [services, setServices] = useState<Service[]>(PMU_SERVICES)
+  const { currentUser, isAuthenticated } = useDemoAuth()
+  const [services, setServices] = useState<Service[]>([])
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(true)
   const [newService, setNewService] = useState<Partial<Service>>({
     name: '',
     description: '',
@@ -50,7 +55,28 @@ export default function ServicesPage() {
     isActive: true
   })
 
-  const categories: Service['category'][] = ['eyebrows', 'lips', 'eyeliner', 'consultation', 'touch-up', 'other']
+  const categories = getServiceCategories()
+
+  // Load services on component mount
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.email) {
+      loadServices()
+    }
+  }, [isAuthenticated, currentUser])
+
+  const loadServices = async () => {
+    if (!currentUser?.email) return
+    
+    setLoading(true)
+    try {
+      const userServices = await getServices(currentUser.email)
+      setServices(userServices)
+    } catch (error) {
+      console.error('Error loading services:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Format duration for display
   const formatDuration = (minutes: number) => {
@@ -81,28 +107,32 @@ export default function ServicesPage() {
     service.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleSaveService = () => {
+  const handleSaveService = async () => {
+    if (!currentUser?.email) return
+
     if (editingService) {
       // Update existing service
-      const updated = updateService(editingService.id, editingService)
+      const updated = await updateService(currentUser.email, editingService.id, editingService)
       if (updated) {
-        setServices([...PMU_SERVICES])
+        await loadServices() // Reload services from API
         setEditingService(null)
       }
     } else if (isAddingNew) {
       // Add new service
       if (newService.name) {
-        addService(newService as Omit<Service, 'id'>)
-        setServices([...PMU_SERVICES])
-        setIsAddingNew(false)
-    setNewService({
-      name: '',
-      description: '',
-          defaultDuration: 60,
-          defaultPrice: 0,
-          category: 'other',
-          isActive: true
-        })
+        const created = await createService(currentUser.email, newService as Omit<Service, 'id'>)
+        if (created) {
+          await loadServices() // Reload services from API
+          setIsAddingNew(false)
+          setNewService({
+            name: '',
+            description: '',
+            defaultDuration: 60,
+            defaultPrice: 0,
+            category: 'other',
+            isActive: true
+          })
+        }
       }
     }
   }
@@ -120,9 +150,16 @@ export default function ServicesPage() {
     })
   }
 
-  const handleToggleStatus = (serviceId: string) => {
-    toggleServiceStatus(serviceId)
-    setServices([...PMU_SERVICES])
+  const handleToggleStatus = async (serviceId: string) => {
+    if (!currentUser?.email) return
+
+    const service = services.find(s => s.id === serviceId)
+    if (!service) return
+
+    const updated = await updateService(currentUser.email, serviceId, { isActive: !service.isActive })
+    if (updated) {
+      await loadServices() // Reload services from API
+    }
   }
 
   const getCategoryColor = (category: Service['category']) => {
@@ -173,73 +210,93 @@ export default function ServicesPage() {
       </div>
 
       <div className="p-4">
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search Services & Categories"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11 rounded-full bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 shadow-sm"
-          />
-        </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto"></div>
+            <p className="text-gray-600 mt-2">Loading services...</p>
+          </div>
+        )}
 
-        {/* Info Note */}
-        <p className="text-sm text-gray-600 mb-6 px-2">
-          Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
-        </p>
+        {/* Not Authenticated */}
+        {!isAuthenticated && !loading && (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Please log in to manage your services.</p>
+          </div>
+        )}
 
-        {/* Scrollable Services List */}
-        <div className="space-y-4">
-          {filteredServices.map((service) => {
-            const meta = [
-              formatDuration(service.defaultDuration),
-              `$${service.defaultPrice}`,
-              service.category
-            ].filter(Boolean).join(' · ')
+        {/* Authenticated Content */}
+        {isAuthenticated && !loading && (
+          <>
+            {/* Search Bar */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search Services & Categories"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 rounded-full bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 shadow-sm"
+              />
+            </div>
 
-            return (
-              <div 
-                key={service.id}
-                onClick={() => setEditingService(service)}
-                className="relative flex items-center rounded-xl bg-white border border-gray-200 p-4 gap-3 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                {/* Left accent bar */}
-                <span 
-                  className="absolute left-0 top-0 h-full w-1 rounded-l-xl" 
-                  style={{ backgroundColor: getAccentColor(service.category) }}
-                />
-                
-                {/* Thumbnail */}
-                <div className="h-20 w-20 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {service.imageUrl ? (
-                    <img 
-                      src={service.imageUrl} 
-                      alt={service.name}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
+            {/* Info Note */}
+            <p className="text-sm text-gray-600 mb-6 px-2">
+              Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
+            </p>
+
+            {/* Scrollable Services List */}
+            <div className="space-y-4">
+              {filteredServices.map((service) => {
+                const meta = [
+                  formatDuration(service.defaultDuration),
+                  `$${service.defaultPrice}`,
+                  service.category
+                ].filter(Boolean).join(' · ')
+
+                return (
+                  <div 
+                    key={service.id}
+                    onClick={() => setEditingService(service)}
+                    className="relative flex items-center rounded-xl bg-white border border-gray-200 p-4 gap-3 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    {/* Left accent bar */}
+                    <span 
+                      className="absolute left-0 top-0 h-full w-1 rounded-l-xl" 
+                      style={{ backgroundColor: getAccentColor(service.category) }}
                     />
-                  ) : (
-                    <ImageIcon className="h-8 w-8 text-gray-400" />
-                  )}
-                </div>
+                    
+                    {/* Thumbnail */}
+                    <div className="h-20 w-20 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {service.imageUrl ? (
+                        <img 
+                          src={service.imageUrl} 
+                          alt={service.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
 
-                {/* Main content */}
-                <div className="flex-1 min-w-0">
-                  <div className="text-lg font-semibold text-gray-900 truncate">{service.name}</div>
-                  <div className="mt-1 text-sm text-gray-600 truncate">{meta}</div>
-                </div>
+                    {/* Main content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-lg font-semibold text-gray-900 truncate">{service.name}</div>
+                      <div className="mt-1 text-sm text-gray-600 truncate">{meta}</div>
+                    </div>
 
-                {/* Drag handle */}
-                <div className="ml-2 text-gray-400 opacity-80">
-                  <Menu className="h-5 w-5" />
-                </div>
-              </div>
-            )
-          })}
-              </div>
+                    {/* Drag handle */}
+                    <div className="ml-2 text-gray-400 opacity-80">
+                      <Menu className="h-5 w-5" />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
 
         {/* Add/Edit Service Modal */}
         {(isAddingNew || editingService) && (
