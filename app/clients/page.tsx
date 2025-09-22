@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ClientList, { Client } from '../../src/components/client/ClientList';
@@ -15,10 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Plus, 
-  Loader2, 
-  AlertCircle, 
+import {
+  Plus,
+  Loader2,
+  AlertCircle,
   CheckCircle,
   Calendar,
   MessageSquare,
@@ -34,7 +31,7 @@ import {
 
 export default function ClientsPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const session = useSession();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,13 +71,13 @@ export default function ClientsPage() {
     }
   };
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchClients();
-    } else if (status === 'unauthenticated') {
-      router.push('/auth/login');
-    }
-  }, [status, router]);
+      useEffect(() => {
+        if (session.status === 'authenticated') {
+          fetchClients();
+        } else if (session.status === 'unauthenticated') {
+          router.push('/auth/login');
+        }
+      }, [session.status, router]);
 
   // Handle form submission for adding client
   const handleAddClient = async () => {
@@ -221,7 +218,7 @@ export default function ClientsPage() {
     setIsClientDetailOpen(true);
   };
 
-  if (status === 'loading' || loading) {
+      if (session.status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
         <div className="text-center">
