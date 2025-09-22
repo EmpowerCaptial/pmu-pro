@@ -1102,7 +1102,6 @@ export default function BookingCalendar() {
           </div>
         </DialogContent>
       </Dialog>
-        )}
     </div>
   )
 }
