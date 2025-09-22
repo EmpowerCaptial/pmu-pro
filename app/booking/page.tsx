@@ -460,78 +460,77 @@ export default function BookingCalendar() {
             <h1 className="text-3xl font-bold text-ink mb-2">Booking Calendar</h1>
             <p className="text-muted">Manage your appointments and schedule</p>
           </div>
-          <Button 
-            data-testid="booking-new-appointment"
-            onClick={handleNewAppointmentClick}
-            className="bg-lavender hover:bg-lavender-600 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Appointment
-          </Button>
-        </div>
-
-        {/* Artist View Toggle */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="flex items-center space-x-4">
-              <span className={`text-sm font-medium ${!isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
-                Public Booking
-              </span>
-              <button
-                onClick={() => setIsArtistView(!isArtistView)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  isArtistView ? 'bg-lavender' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isArtistView ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-              <span className={`text-sm font-medium ${isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
-                Artist View
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Share Button - Only show in Artist View */}
-        {isArtistView && (
-          <div className="flex justify-center mb-6">
-            <Button
-              onClick={() => router.push('/booking/share')}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          <div className="flex flex-col gap-3">
+            <Button 
+              data-testid="booking-new-appointment"
+              onClick={handleNewAppointmentClick}
+              className="bg-lavender hover:bg-lavender-600 text-white"
             >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share Your Booking Link
+              <Plus className="w-4 h-4 mr-2" />
+              New Appointment
             </Button>
+            {/* Share Button - Only show in Artist View */}
+            {isArtistView && (
+              <Button
+                onClick={() => router.push('/booking/share')}
+                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share Your Booking Link
+              </Button>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Conditional Content Based on Active Tab */}
         {isArtistView ? (
           // Artist View - Show the existing booking calendar
           <>
-                <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-                  <Button
-                    variant={activeTab === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab('calendar')}
-                    className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Calendar
-                  </Button>
-                  <Button
-                    variant={activeTab === 'blocks' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setActiveTab('blocks')}
-                    className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
-                  >
-                    <Clock className="w-4 h-4 mr-2" />
-                    Time Blocks
-                  </Button>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <Button
+                      variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setActiveTab('calendar')}
+                      className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Calendar
+                    </Button>
+                    <Button
+                      variant={activeTab === 'blocks' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setActiveTab('blocks')}
+                      className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Time Blocks
+                    </Button>
+                  </div>
+                  
+                  {/* Artist View Toggle */}
+                  <div className="bg-white rounded-lg p-3 shadow-sm border">
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-sm font-medium ${!isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                        Public Booking
+                      </span>
+                      <button
+                        onClick={() => setIsArtistView(!isArtistView)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          isArtistView ? 'bg-lavender' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            isArtistView ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                      <span className={`text-sm font-medium ${isArtistView ? 'text-lavender' : 'text-gray-500'}`}>
+                        Artist View
+                      </span>
+                    </div>
+                  </div>
                 </div>
         </>
         ) : (
