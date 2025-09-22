@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
-import ClientList, { Client } from '../../components/client/ClientList';
-import MessageForm from '../../components/client/MessageForm';
+import ClientList, { Client } from '../../src/components/client/ClientList';
+import MessageForm from '../../src/components/client/MessageForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
