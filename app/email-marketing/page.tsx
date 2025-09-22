@@ -270,7 +270,7 @@ export default function EmailMarketingPage() {
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button className="bg-lavender hover:bg-lavender-600 text-white">
+            <Button className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200">
               <Plus className="h-4 w-4 mr-2" />
               New Campaign
             </Button>
@@ -344,7 +344,7 @@ export default function EmailMarketingPage() {
                   <CardTitle>Email Campaigns</CardTitle>
                   <Button 
                     onClick={() => setNewCampaign({ name: '', subject: '', template: '', recipients: 0 })}
-                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Campaign
@@ -383,7 +383,7 @@ export default function EmailMarketingPage() {
                             <Button 
                               size="sm" 
                               onClick={() => handleSendCampaign(campaign.id)}
-                              className="bg-lavender hover:bg-lavender-600 text-white"
+                              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                             >
                               <Send className="h-4 w-4 mr-1" />
                               Send
@@ -417,7 +417,7 @@ export default function EmailMarketingPage() {
                   <CardTitle>Email Templates</CardTitle>
                   <Button 
                     onClick={() => setNewTemplate({ name: '', subject: '', content: '', category: 'newsletter' })}
-                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Template
