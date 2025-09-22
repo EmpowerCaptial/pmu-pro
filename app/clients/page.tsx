@@ -71,13 +71,16 @@ export default function ClientsPage() {
     }
   };
 
-      useEffect(() => {
-        if (session.status === 'authenticated') {
-          fetchClients();
-        } else if (session.status === 'unauthenticated') {
-          router.push('/auth/login');
-        }
-      }, [session.status, router]);
+  useEffect(() => {
+    // Only run if session is loaded
+    if (session && session.status) {
+      if (session.status === 'authenticated') {
+        fetchClients();
+      } else if (session.status === 'unauthenticated') {
+        router.push('/auth/login');
+      }
+    }
+  }, [session?.status, router]);
 
   // Handle form submission for adding client
   const handleAddClient = async () => {
@@ -218,7 +221,7 @@ export default function ClientsPage() {
     setIsClientDetailOpen(true);
   };
 
-      if (session.status === 'loading' || loading) {
+      if (!session || session.status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
         <div className="text-center">
