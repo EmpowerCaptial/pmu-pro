@@ -21,7 +21,8 @@ import {
   Search,
   UserPlus,
   Smartphone,
-  Share2
+  Share2,
+  DollarSign
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 import { getActiveServices, getServiceById } from '@/lib/services-config'
@@ -512,35 +513,26 @@ export default function BookingCalendar() {
         {isArtistView ? (
           // Artist View - Show the existing booking calendar
           <>
-            <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-              <Button
-                variant={activeTab === 'calendar' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveTab('calendar')}
-                className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Calendar
-              </Button>
-              <Button
-                variant={activeTab === 'blocks' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveTab('blocks')}
-                className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                Time Blocks
-              </Button>
-              <Button
-                variant={activeTab === 'mobile' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveTab('mobile')}
-                className={activeTab === 'mobile' ? 'bg-lavender text-white' : ''}
-              >
-                <Smartphone className="w-4 h-4 mr-2" />
-                Mobile View
-              </Button>
-            </div>
+                <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+                  <Button
+                    variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveTab('calendar')}
+                    className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Calendar
+                  </Button>
+                  <Button
+                    variant={activeTab === 'blocks' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveTab('blocks')}
+                    className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Time Blocks
+                  </Button>
+                </div>
         </>
         ) : (
           // Public Booking View - Show booking form for clients
@@ -686,42 +678,39 @@ export default function BookingCalendar() {
               <CardContent>
                 {selectedDate ? (
                   selectedAppointments.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {selectedAppointments.map(appointment => (
-                        <div key={appointment.id} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h4 className="font-semibold">{appointment.clientName}</h4>
-                              <p className="text-sm text-gray-600">{appointment.service}</p>
-                            </div>
-                            <Badge className={getStatusColor(appointment.status)}>
-                              {appointment.status}
-                            </Badge>
+                        <div key={appointment.id} className="flex items-center gap-3 p-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 rounded-lg">
+                          {/* Avatar */}
+                          <div className="h-10 w-10 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
+                            <span className="text-xs font-semibold text-white">
+                              {appointment.clientName.charAt(0).toUpperCase()}
+                            </span>
                           </div>
-                          
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-gray-500" />
-                              <span>{appointment.time} ({appointment.duration} min)</span>
+
+                          {/* Appointment Info */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium text-ink truncate">{appointment.clientName}</p>
+                              <Badge className={`text-xs px-2 py-1 ${getStatusColor(appointment.status)}`}>
+                                {appointment.status}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-gray-500" />
-                              <span>{appointment.clientPhone}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-gray-500" />
-                              <span>{appointment.clientEmail}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-green-600">${appointment.price}</span>
+                            <div className="flex items-center gap-3 text-xs text-muted-text">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {appointment.time} ({appointment.duration}min)
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {appointment.service}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                ${appointment.price}
+                              </span>
                             </div>
                           </div>
-                          
-                          {appointment.notes && (
-                            <div className="mt-3 pt-3 border-t">
-                              <p className="text-sm text-gray-600">{appointment.notes}</p>
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -754,89 +743,6 @@ export default function BookingCalendar() {
           </div>
         )}
 
-        {/* Mobile View Tab */}
-        {activeTab === 'mobile' && (
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Smartphone className="h-5 w-5" />
-                  <span>Mobile Calendar View</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Current Bookings */}
-                <div>
-                  <h3 className="font-semibold mb-3">Today's Appointments</h3>
-                  {selectedAppointments.length > 0 ? (
-                    <div className="space-y-3">
-                      {selectedAppointments.map((appointment) => (
-                        <div key={appointment.id} className="p-3 bg-white border rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-medium">{appointment.clientName}</h4>
-                              <p className="text-sm text-gray-600">{appointment.service}</p>
-                            </div>
-                            <Badge className={getStatusColor(appointment.status)}>
-                              {appointment.status}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span>{appointment.time} ({appointment.duration} min)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-green-600">${appointment.price}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No appointments for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Time Blocks */}
-                <div>
-                  <h3 className="font-semibold mb-3">Blocked Times</h3>
-                  {timeBlocks.length > 0 ? (
-                    <div className="space-y-3">
-                      {timeBlocks.map((block) => (
-                        <div key={block.id} className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex justify-between items-start mb-1">
-                            <h4 className="font-medium text-red-800">{block.title}</h4>
-                            <Badge variant="destructive" className="text-xs">
-                              {block.type}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-red-700 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span>{block.startTime} - {block.endTime}</span>
-                            </div>
-                            {block.notes && (
-                              <p className="text-xs">{block.notes}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No blocked times for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
 
       {/* New Appointment Modal */}
