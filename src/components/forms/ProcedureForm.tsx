@@ -392,7 +392,7 @@ export default function ProcedureForm({
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={formData.followUpDate}
+                    selected={formData.followUpDate || undefined}
                     onSelect={(date) => {
                       if (date) {
                         handleInputChange('followUpDate', date);
@@ -423,7 +423,7 @@ export default function ProcedureForm({
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={formData.touchUpDate}
+                    selected={formData.touchUpDate || undefined}
                     onSelect={(date) => {
                       if (date) {
                         handleInputChange('touchUpDate', date);
