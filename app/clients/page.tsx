@@ -265,9 +265,8 @@ export default function ClientsPage() {
 
   // Handle viewing client details
   const handleViewClientDetails = (client: Client) => {
-    setSelectedClient(client);
-    setIsClientDetailOpen(true);
-  };
+    router.push(`/clients/${client.id}`)
+  }
 
       if (authLoading || loading) {
     return (

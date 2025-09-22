@@ -32,6 +32,8 @@ model User {
   clients               Client[]
   appointments          Appointment[]
   services              Service[]
+  procedures            Procedure[]
+  consentForms          ConsentForm[]
   magicLinkTokens       MagicLinkToken[]
   metaConnections       MetaConnection[]
   calendarIntegrations  CalendarIntegration[]
@@ -62,6 +64,7 @@ model Client {
   documents  Document[]
   procedures Procedure[]
   appointments Appointment[]
+  consentForms ConsentForm[]
   depositPayments DepositPayment[]
 
   @@map("clients")
@@ -164,24 +167,41 @@ model Document {
 
 model Procedure {
   id                  String   @id @default(cuid())
+  userId              String
   clientId            String
+  serviceId           String?
+  appointmentId       String?
   procedureType       String   // Type of procedure (e.g., "Microblading", "Powder Brows", "Eyeliner")
-  voltage             Float    // Voltage used during procedure
+  voltage             Float?   // Voltage used during procedure
   needleConfiguration String   // Needle configuration details
+  needleSize          String?  // Needle size used
   pigmentBrand        String   // Brand of pigment used
   pigmentColor        String   // Color of pigment used
-  lotNumber           String   // Lot number of the pigment
+  lotNumber           String?  // Lot number of the pigment
   depth               String?  // Depth of pigment placement
+  technique           String?  // Technique used
   duration            Int?     // Duration of procedure in minutes
   areaTreated         String?  // Specific area treated
   notes               String?  // Additional notes about the procedure
-  procedureDate       DateTime // When the procedure was performed
+  beforePhotos        String[] // Array of before photo URLs
+  afterPhotos         String[] // Array of after photo URLs
+  healingProgress     String?  // Healing progress notes
+  procedureDate       DateTime @default(now()) // When the procedure was performed
   followUpDate        DateTime? // Scheduled follow-up date
+  touchUpScheduled    Boolean  @default(false) // Whether touch-up is scheduled
+  touchUpDate         DateTime? // Touch-up appointment date
   isCompleted         Boolean  @default(false) // Whether procedure is completed
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service             Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  appointment         Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
+  @@index([userId])
+  @@index([clientId])
+  @@index([procedureType])
+  @@index([procedureDate])
   @@map("procedures")
 }
 
@@ -367,6 +387,7 @@ model Appointment {
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  procedures Procedure[]
 
   @@index([userId])
   @@index([clientId])
@@ -390,9 +411,44 @@ model Service {
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  procedures Procedure[]
 
   @@index([userId])
   @@index([category])
   @@index([isActive])
   @@map("services")
+}
+
+
+model ConsentForm {
+  id                    String   @id @default(cuid())
+  userId                String
+  clientId              String
+  procedureType         String   // Type of procedure
+  clientSignature       String   // Base64 signature data
+  clientSignatureDate   DateTime @default(now())
+  artistSignature       String   // Artist signature
+  artistSignatureDate   DateTime @default(now())
+  medicalHistory        String?  // Medical history disclosed
+  allergies             String?  // Allergies disclosed
+  medications           String?  // Current medications
+  skinConditions        String?  // Skin conditions
+  previousProcedures    String?  // Previous PMU procedures
+  consentGiven          Boolean  @default(true)
+  photographyConsent    Boolean  @default(false)
+  marketingConsent      Boolean  @default(false)
+  emergencyContact      String?  // Emergency contact info
+  additionalNotes       String?  // Any additional notes
+  formVersion           String   @default("1.0")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([procedureType])
+  @@index([createdAt])
+  @@map("consent_forms")
 }
