@@ -25,29 +25,8 @@ export async function GET(request: NextRequest) {
         where: { email: userEmail }
       })
     } catch (dbError) {
-      console.log('API: Database error, returning mock data:', dbError)
-      // Return mock data when database fails
-      return NextResponse.json({ 
-        clients: [
-          {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            emergencyContact: 'John Johnson - (555) 987-6543',
-            medicalHistory: 'No known medical conditions',
-            allergies: 'None',
-            skinType: 'Fitzpatrick Type III',
-            notes: 'Prefers morning appointments',
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            procedures: [],
-            analyses: []
-          }
-        ]
-      })
+      console.log('API: Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
     if (!user) {
@@ -98,29 +77,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('API: Unexpected error in clients endpoint:', error)
-    
-    // Return mock data as fallback
-    return NextResponse.json({ 
-      clients: [
-        {
-          id: 'mock-client-1',
-          name: 'Tierra Johnson',
-          email: 'tierra@email.com',
-          phone: '(555) 123-4567',
-          dateOfBirth: '1990-05-15',
-          emergencyContact: 'John Johnson - (555) 987-6543',
-          medicalHistory: 'No known medical conditions',
-          allergies: 'None',
-          skinType: 'Fitzpatrick Type III',
-          notes: 'Prefers morning appointments',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          procedures: [],
-          analyses: []
-        }
-      ]
-    })
+    return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 })
   }
 }
 

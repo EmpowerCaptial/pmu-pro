@@ -60,86 +60,12 @@ export async function GET(
       return NextResponse.json({ appointment })
 
     } catch (dbError) {
-      console.log('Database error, returning mock appointment:', dbError)
-      
-      // Return mock data for specific appointment
-      if (params.id === 'mock-appt-1') {
-        return NextResponse.json({
-          appointment: {
-            id: 'mock-appt-1',
-            clientId: 'mock-client-1',
-            title: 'Microblading Session',
-            serviceType: 'Microblading',
-            duration: 120,
-            startTime: '2023-02-20T10:00:00Z',
-            endTime: '2023-02-20T12:00:00Z',
-            status: 'completed',
-            notes: 'Initial microblading session completed successfully. Client was very happy with the results.',
-            price: 450,
-            deposit: 100,
-            client: {
-              id: 'mock-client-1',
-              name: 'Tierra Johnson',
-              email: 'tierra@email.com',
-              phone: '(555) 123-4567'
-            },
-            procedures: [
-              {
-                id: 'mock-proc-1',
-                procedureType: 'Microblading',
-                isCompleted: true,
-                procedureDate: '2023-02-20T10:00:00Z',
-                notes: 'Initial session. Client tolerated well. Good retention expected.'
-              }
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        })
-      }
-      
-      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+      console.log('Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {
     console.error('Error fetching appointment:', error)
-    
-    // Return mock data as fallback
-    if (params.id === 'mock-appt-1') {
-      return NextResponse.json({
-        appointment: {
-          id: 'mock-appt-1',
-          clientId: 'mock-client-1',
-          title: 'Microblading Session',
-          serviceType: 'Microblading',
-          duration: 120,
-          startTime: '2023-02-20T10:00:00Z',
-          endTime: '2023-02-20T12:00:00Z',
-          status: 'completed',
-          notes: 'Initial microblading session completed successfully. Client was very happy with the results.',
-          price: 450,
-          deposit: 100,
-          client: {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567'
-          },
-          procedures: [
-            {
-              id: 'mock-proc-1',
-              procedureType: 'Microblading',
-              isCompleted: true,
-              procedureDate: '2023-02-20T10:00:00Z',
-              notes: 'Initial session. Client tolerated well. Good retention expected.'
-            }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      })
-    }
-    
     return NextResponse.json(
       { error: 'Failed to fetch appointment' },
       { status: 500 }

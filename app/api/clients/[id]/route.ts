@@ -149,77 +149,13 @@ export async function GET(
 
       return NextResponse.json({ client })
 
-    } catch (dbError) {
-      console.log('API: Database error, returning mock client data:', dbError)
-      
-      // Return mock data for Tierra Johnson when database fails
-      if (params.id === 'mock-client-1') {
-        return NextResponse.json({
-          client: {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            emergencyContact: 'John Johnson - (555) 987-6543',
-            medicalHistory: 'No known medical conditions',
-            allergies: 'None',
-            skinType: 'Fitzpatrick Type III',
-            notes: 'Prefers morning appointments',
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            procedures: [
-              {
-                id: 'proc-1',
-                procedureType: 'Microblading',
-                pigmentColor: 'Warm Brown',
-                needleConfiguration: '18U Microblade',
-                notes: 'Initial session. Client tolerated well. Good retention expected.',
-                procedureDate: '2023-02-20T10:00:00Z',
-                isCompleted: true,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              }
-            ],
-            analyses: [],
-            intakes: [],
-            photos: []
-          }
-        })
+      } catch (dbError) {
+        console.log('API: Database error:', dbError)
+        return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
       }
-      
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
-    }
 
   } catch (error) {
     console.error('Error fetching client:', error)
-    
-    // Return mock data as fallback
-    if (params.id === 'mock-client-1') {
-      return NextResponse.json({
-        client: {
-          id: 'mock-client-1',
-          name: 'Tierra Johnson',
-          email: 'tierra@email.com',
-          phone: '(555) 123-4567',
-          dateOfBirth: '1990-05-15',
-          emergencyContact: 'John Johnson - (555) 987-6543',
-          medicalHistory: 'No known medical conditions',
-          allergies: 'None',
-          skinType: 'Fitzpatrick Type III',
-          notes: 'Prefers morning appointments',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          procedures: [],
-          analyses: [],
-          intakes: [],
-          photos: []
-        }
-      })
-    }
-    
     return NextResponse.json(
       { error: 'Failed to fetch client' },
       { status: 500 }

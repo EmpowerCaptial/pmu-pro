@@ -81,50 +81,12 @@ export default function ClientProfilePage() {
       if (clientResponse.ok) {
         const clientData = await clientResponse.json()
         setClient(clientData.client)
-      } else {
-        // If API fails, use mock data for Tierra Johnson
-        if (clientId === 'mock-client-1') {
-          setClient({
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            emergencyContact: 'John Johnson - (555) 987-6543',
-            medicalHistory: 'No known medical conditions',
-            allergies: 'None',
-            skinType: 'Fitzpatrick Type III',
-            notes: 'Prefers morning appointments',
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          })
         } else {
           setError('Client not found or you do not have access to view this client.')
         }
-      }
     } catch (error) {
       console.error('Error loading client data:', error)
-      // Use mock data as fallback
-      if (clientId === 'mock-client-1') {
-        setClient({
-          id: 'mock-client-1',
-          name: 'Tierra Johnson',
-          email: 'tierra@email.com',
-          phone: '(555) 123-4567',
-          dateOfBirth: '1990-05-15',
-          emergencyContact: 'John Johnson - (555) 987-6543',
-          medicalHistory: 'No known medical conditions',
-          allergies: 'None',
-          skinType: 'Fitzpatrick Type III',
-          notes: 'Prefers morning appointments',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        })
-      } else {
-        setError('Client not found or you do not have access to view this client.')
-      }
+      setError('Failed to load client data. Please try again.')
     } finally {
       setLoading(false)
     }

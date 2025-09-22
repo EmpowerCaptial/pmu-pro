@@ -51,79 +51,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ appointments })
 
     } catch (dbError) {
-      console.log('Database error, returning mock appointments:', dbError)
-      
-      // Return mock data when database fails
-      return NextResponse.json({
-        appointments: [
-          {
-            id: 'mock-appt-1',
-            clientId: 'mock-client-1',
-            title: 'Microblading Session',
-            serviceType: 'Microblading',
-            duration: 120,
-            startTime: '2023-02-20T10:00:00Z',
-            endTime: '2023-02-20T12:00:00Z',
-            status: 'completed',
-            notes: 'Initial microblading session completed successfully',
-            price: 450,
-            deposit: 100,
-            client: {
-              id: 'mock-client-1',
-              name: 'Tierra Johnson',
-              email: 'tierra@email.com',
-              phone: '(555) 123-4567'
-            },
-            procedures: [
-              {
-                id: 'mock-proc-1',
-                procedureType: 'Microblading',
-                isCompleted: true
-              }
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        ]
-      })
+      console.log('Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {
     console.error('Error fetching appointments:', error)
-    
-    // Return mock data as fallback
-    return NextResponse.json({
-      appointments: [
-        {
-          id: 'mock-appt-1',
-          clientId: 'mock-client-1',
-          title: 'Microblading Session',
-          serviceType: 'Microblading',
-          duration: 120,
-          startTime: '2023-02-20T10:00:00Z',
-          endTime: '2023-02-20T12:00:00Z',
-          status: 'completed',
-          notes: 'Initial microblading session completed successfully',
-          price: 450,
-          deposit: 100,
-          client: {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567'
-          },
-          procedures: [
-            {
-              id: 'mock-proc-1',
-              procedureType: 'Microblading',
-              isCompleted: true
-            }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]
-    })
+    return NextResponse.json({ error: 'Failed to fetch appointments' }, { status: 500 })
   }
 }
 
@@ -219,32 +153,7 @@ export async function POST(request: NextRequest) {
 
     } catch (dbError) {
       console.log('Database error creating appointment:', dbError)
-      
-      // Return mock success response when database fails
-      const mockAppointment = {
-        id: 'mock-appt-' + Date.now(),
-        clientId,
-        title,
-        serviceType,
-        duration,
-        startTime,
-        endTime,
-        status: status || 'scheduled',
-        notes,
-        price: price || 0,
-        deposit: deposit || 0,
-        client: {
-          id: clientId,
-          name: 'Tierra Johnson',
-          email: 'tierra@email.com',
-          phone: '(555) 123-4567'
-        },
-        procedures: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-
-      return NextResponse.json({ appointment: mockAppointment }, { status: 201 })
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {

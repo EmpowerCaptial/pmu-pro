@@ -64,92 +64,12 @@ export async function GET(
       return NextResponse.json({ procedure })
 
     } catch (dbError) {
-      console.log('Database error, returning mock procedure:', dbError)
-      
-      // Return mock data for specific procedure
-      if (params.id === 'mock-proc-1') {
-        return NextResponse.json({
-          procedure: {
-            id: 'mock-proc-1',
-            procedureType: 'Microblading',
-            voltage: 7.5,
-            needleConfiguration: '18U Microblade',
-            needleSize: '0.18mm',
-            pigmentBrand: 'Permablend',
-            pigmentColor: 'Warm Brown',
-            lotNumber: 'MB-2024-001',
-            depth: '0.2-0.3mm',
-            technique: 'Hair stroke technique',
-            duration: 120,
-            areaTreated: 'Eyebrows',
-            notes: 'Initial session. Client tolerated well. Good retention expected.',
-            beforePhotos: [],
-            afterPhotos: [],
-            healingProgress: 'Healing well, no complications',
-            procedureDate: '2023-02-20T10:00:00Z',
-            followUpDate: '2023-03-20T10:00:00Z',
-            touchUpScheduled: true,
-            touchUpDate: '2023-03-20T10:00:00Z',
-            isCompleted: true,
-            client: {
-              id: 'mock-client-1',
-              name: 'Tierra Johnson',
-              email: 'tierra@email.com',
-              phone: '(555) 123-4567'
-            },
-            service: null,
-            appointment: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        })
-      }
-      
-      return NextResponse.json({ error: 'Procedure not found' }, { status: 404 })
+      console.log('Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {
     console.error('Error fetching procedure:', error)
-    
-    // Return mock data as fallback
-    if (params.id === 'mock-proc-1') {
-      return NextResponse.json({
-        procedure: {
-          id: 'mock-proc-1',
-          procedureType: 'Microblading',
-          voltage: 7.5,
-          needleConfiguration: '18U Microblade',
-          needleSize: '0.18mm',
-          pigmentBrand: 'Permablend',
-          pigmentColor: 'Warm Brown',
-          lotNumber: 'MB-2024-001',
-          depth: '0.2-0.3mm',
-          technique: 'Hair stroke technique',
-          duration: 120,
-          areaTreated: 'Eyebrows',
-          notes: 'Initial session. Client tolerated well. Good retention expected.',
-          beforePhotos: [],
-          afterPhotos: [],
-          healingProgress: 'Healing well, no complications',
-          procedureDate: '2023-02-20T10:00:00Z',
-          followUpDate: '2023-03-20T10:00:00Z',
-          touchUpScheduled: true,
-          touchUpDate: '2023-03-20T10:00:00Z',
-          isCompleted: true,
-          client: {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567'
-          },
-          service: null,
-          appointment: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      })
-    }
-    
     return NextResponse.json(
       { error: 'Failed to fetch procedure' },
       { status: 500 }

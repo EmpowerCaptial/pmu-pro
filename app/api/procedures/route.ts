@@ -57,61 +57,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ procedures })
 
     } catch (dbError) {
-      console.log('Database error, returning mock procedures:', dbError)
-      
-      // Return mock data when database fails
-      return NextResponse.json({
-        procedures: [
-          {
-            id: 'mock-proc-1',
-            procedureType: 'Microblading',
-            pigmentColor: 'Warm Brown',
-            needleConfiguration: '18U Microblade',
-            notes: 'Initial session. Client tolerated well. Good retention expected.',
-            procedureDate: '2023-02-20T10:00:00Z',
-            isCompleted: true,
-            client: {
-              id: 'mock-client-1',
-              name: 'Tierra Johnson',
-              email: 'tierra@email.com',
-              phone: '(555) 123-4567'
-            },
-            service: null,
-            appointment: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        ]
-      })
+      console.log('Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {
     console.error('Error fetching procedures:', error)
-    
-    // Return mock data as fallback
-    return NextResponse.json({
-      procedures: [
-        {
-          id: 'mock-proc-1',
-          procedureType: 'Microblading',
-          pigmentColor: 'Warm Brown',
-          needleConfiguration: '18U Microblade',
-          notes: 'Initial session. Client tolerated well. Good retention expected.',
-          procedureDate: '2023-02-20T10:00:00Z',
-          isCompleted: true,
-          client: {
-            id: 'mock-client-1',
-            name: 'Tierra Johnson',
-            email: 'tierra@email.com',
-            phone: '(555) 123-4567'
-          },
-          service: null,
-          appointment: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]
-    })
+    return NextResponse.json({ error: 'Failed to fetch procedures' }, { status: 500 })
   }
 }
 
@@ -239,46 +191,7 @@ export async function POST(request: NextRequest) {
 
     } catch (dbError) {
       console.log('Database error creating procedure:', dbError)
-      
-      // Return mock success response when database fails
-      const mockProcedure = {
-        id: 'mock-proc-' + Date.now(),
-        clientId,
-        serviceId,
-        appointmentId,
-        procedureType,
-        voltage,
-        needleConfiguration,
-        needleSize,
-        pigmentBrand,
-        pigmentColor,
-        lotNumber,
-        depth,
-        technique,
-        duration,
-        areaTreated,
-        notes,
-        beforePhotos: beforePhotos || [],
-        afterPhotos: afterPhotos || [],
-        healingProgress,
-        procedureDate: procedureDate || new Date().toISOString(),
-        followUpDate,
-        touchUpScheduled,
-        touchUpDate,
-        isCompleted,
-        client: {
-          id: clientId,
-          name: 'Tierra Johnson',
-          email: 'tierra@email.com',
-          phone: '(555) 123-4567'
-        },
-        service: null,
-        appointment: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-
-      return NextResponse.json({ procedure: mockProcedure }, { status: 201 })
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
   } catch (error) {
