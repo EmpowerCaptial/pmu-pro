@@ -45,6 +45,7 @@ export default function ClientProfilePage() {
   const { currentUser, isAuthenticated } = useDemoAuth()
   const [client, setClient] = useState<Client | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
 
   const clientId = params.id as string
