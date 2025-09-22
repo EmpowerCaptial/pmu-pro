@@ -61,7 +61,10 @@ export default function ClientsPage() {
       console.log('Fetching clients for user:', currentUser?.email);
       
       const response = await fetch('/api/clients', {
+        method: 'GET',
+        credentials: 'include',
         headers: {
+          'Accept': 'application/json',
           'x-user-email': currentUser?.email || '',
         },
       });
@@ -105,14 +108,16 @@ export default function ClientsPage() {
   // Handle form submission for adding client
   const handleAddClient = async () => {
     try {
-      const response = await fetch('/api/clients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-email': currentUser?.email || '',
-        },
-        body: JSON.stringify(formData),
-      });
+          const response = await fetch('/api/clients', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'x-user-email': currentUser?.email || '',
+            },
+            body: JSON.stringify(formData),
+          });
 
       if (!response.ok) {
         throw new Error('Failed to create client');
@@ -131,14 +136,16 @@ export default function ClientsPage() {
     if (!selectedClient) return;
 
     try {
-      const response = await fetch(`/api/clients/${selectedClient.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-email': currentUser?.email || '',
-        },
-        body: JSON.stringify(formData),
-      });
+          const response = await fetch(`/api/clients/${selectedClient.id}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'x-user-email': currentUser?.email || '',
+            },
+            body: JSON.stringify(formData),
+          });
 
       if (!response.ok) {
         throw new Error('Failed to update client');
@@ -158,12 +165,14 @@ export default function ClientsPage() {
     if (!confirm(`Are you sure you want to delete ${client.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/clients/${client.id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-user-email': currentUser?.email || '',
-        },
-      });
+          const response = await fetch(`/api/clients/${client.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json',
+              'x-user-email': currentUser?.email || '',
+            },
+          });
 
       if (!response.ok) {
         throw new Error('Failed to delete client');
