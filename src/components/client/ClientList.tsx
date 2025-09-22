@@ -17,7 +17,8 @@ import {
   Clock,
   AlertCircle,
   CheckCircle,
-  Star
+  Star,
+  MoreHorizontal
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -207,7 +208,8 @@ export default function ClientList({
                 return (
                   <li 
                     key={client.id} 
-                    className="px-4 py-4 flex items-center gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200"
+                    className="px-4 py-4 flex items-center gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
+                    onClick={() => onClientSelect?.(client)}
                   >
                     {/* Avatar */}
                     {client.avatarUrl ? (
@@ -263,31 +265,49 @@ export default function ClientList({
                     {/* Action Menu */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <div className="h-1 w-1 bg-muted-text rounded-full"></div>
-                          <div className="h-1 w-1 bg-muted-text rounded-full"></div>
-                          <div className="h-1 w-1 bg-muted-text rounded-full"></div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-600 hover:text-gray-900 bg-gray-50"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => onClientSelect?.(client)}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onClientSelect?.(client);
+                        }}>
                           <Eye className="mr-2 h-4 w-4 text-lavender" />
                           <span>View Details</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEditClient?.(client)}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onEditClient?.(client);
+                        }}>
                           <Edit className="mr-2 h-4 w-4 text-teal-500" />
                           <span>Edit Client</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onBookAppointment?.(client)}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onBookAppointment?.(client);
+                        }}>
                           <Calendar className="mr-2 h-4 w-4 text-blue-500" />
                           <span>Book Appointment</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onSendMessage?.(client)}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onSendMessage?.(client);
+                        }}>
                           <MessageSquare className="mr-2 h-4 w-4 text-purple-500" />
                           <span>Send Message</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => onDeleteClient?.(client)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteClient?.(client);
+                          }}
                           className="text-red-600 focus:text-red-600"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
