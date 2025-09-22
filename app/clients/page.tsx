@@ -58,17 +58,25 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       setLoading(true);
+      console.log('Fetching clients for user:', currentUser?.email);
+      
       const response = await fetch('/api/clients', {
         headers: {
           'x-user-email': currentUser?.email || '',
         },
       });
+      
+      console.log('API response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error:', errorText);
         throw new Error('Failed to fetch clients');
       }
       const data = await response.json();
       setClients(data.clients || []);
     } catch (err) {
+      console.error('Fetch clients error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);

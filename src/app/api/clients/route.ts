@@ -8,7 +8,11 @@ export async function GET(request: NextRequest) {
     // Get user email from headers (sent by the frontend)
     const userEmail = request.headers.get('x-user-email')
     
+    console.log('API: Received user email:', userEmail);
+    console.log('API: All headers:', Object.fromEntries(request.headers.entries()));
+    
     if (!userEmail) {
+      console.log('API: No user email provided, returning 401');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
