@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../auth/[...nextauth]/route'
 
 const prisma = new PrismaClient()
 
@@ -10,14 +8,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    // Get user email from headers (sent by the frontend)
+    const userEmail = request.headers.get('x-user-email')
     
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: userEmail }
     })
 
     if (!user) {
@@ -62,14 +61,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    // Get user email from headers (sent by the frontend)
+    const userEmail = request.headers.get('x-user-email')
     
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: userEmail }
     })
 
     if (!user) {
@@ -103,14 +103,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    // Get user email from headers (sent by the frontend)
+    const userEmail = request.headers.get('x-user-email')
     
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: userEmail }
     })
 
     if (!user) {

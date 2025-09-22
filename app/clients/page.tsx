@@ -58,7 +58,11 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/clients');
+      const response = await fetch('/api/clients', {
+        headers: {
+          'x-user-email': currentUser?.email || '',
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch clients');
       }
@@ -97,6 +101,7 @@ export default function ClientsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || '',
         },
         body: JSON.stringify(formData),
       });
@@ -122,6 +127,7 @@ export default function ClientsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || '',
         },
         body: JSON.stringify(formData),
       });
@@ -146,6 +152,9 @@ export default function ClientsPage() {
     try {
       const response = await fetch(`/api/clients/${client.id}`, {
         method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser?.email || '',
+        },
       });
 
       if (!response.ok) {
