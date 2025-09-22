@@ -1,0 +1,318 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { 
+  DollarSign, 
+  TrendingUp, 
+  Calendar, 
+  CreditCard,
+  ArrowUpRight,
+  RefreshCw,
+  AlertCircle
+} from "lucide-react"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
+
+interface WeeklyBalanceData {
+  totalRevenue: number
+  serviceCount: number
+  topService: string
+  growthPercentage: number
+}
+
+interface DailyBalanceData {
+  todaysRevenue: number
+  stripeBalance: number
+  systemBalance: number
+  transactionCount: number
+  canPayout: boolean
+}
+
+export function WeeklyBalanceCard() {
+  const { currentUser } = useDemoAuth()
+  const [data, setData] = useState<WeeklyBalanceData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadWeeklyData()
+  }, [currentUser])
+
+  const loadWeeklyData = async () => {
+    if (!currentUser?.email) return
+    
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // In a real implementation, this would call your API
+      // For now, we'll simulate the data
+      const mockData: WeeklyBalanceData = {
+        totalRevenue: 2450.00,
+        serviceCount: 12,
+        topService: "Microblading",
+        growthPercentage: 15.3
+      }
+      
+      setData(mockData)
+    } catch (err) {
+      console.error('Error loading weekly data:', err)
+      setError('Failed to load weekly data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5 text-lavender" />
+            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-lavender" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-red-600 text-sm mb-2">{error}</p>
+            <Button onClick={loadWeeklyData} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5 text-lavender" />
+            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+          </div>
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            <ArrowUpRight className="h-3 w-3 mr-1" />
+            +{data?.growthPercentage}%
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <div className="text-3xl font-bold text-gray-900">
+              ${data?.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-sm text-gray-600">Total revenue this week</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-semibold text-gray-900">{data?.serviceCount}</div>
+              <div className="text-xs text-gray-600">Services</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-sm font-semibold text-gray-900">{data?.topService}</div>
+              <div className="text-xs text-gray-600">Top Service</div>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={() => window.location.href = '/reports'}
+            className="w-full bg-lavender hover:bg-lavender-600 text-white"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            View Weekly Report
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function DailyBalanceCard() {
+  const { currentUser } = useDemoAuth()
+  const [data, setData] = useState<DailyBalanceData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [payoutLoading, setPayoutLoading] = useState(false)
+
+  useEffect(() => {
+    loadDailyData()
+  }, [currentUser])
+
+  const loadDailyData = async () => {
+    if (!currentUser?.email) return
+    
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // In a real implementation, this would call your Stripe API
+      // For now, we'll simulate the data
+      const mockData: DailyBalanceData = {
+        todaysRevenue: 650.00,
+        stripeBalance: 425.00,
+        systemBalance: 225.00,
+        transactionCount: 3,
+        canPayout: true
+      }
+      
+      setData(mockData)
+    } catch (err) {
+      console.error('Error loading daily data:', err)
+      setError('Failed to load daily data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleImmediatePayout = async () => {
+    if (!data?.canPayout) return
+    
+    setPayoutLoading(true)
+    try {
+      // In a real implementation, this would call your payout API
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
+      
+      alert(`Successfully initiated payout of $${data.stripeBalance.toFixed(2)} to your bank account.`)
+      
+      // Reload data after payout
+      await loadDailyData()
+    } catch (err) {
+      console.error('Error processing payout:', err)
+      alert('Failed to process payout. Please try again.')
+    } finally {
+      setPayoutLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="h-5 w-5 text-lavender" />
+            <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-lavender" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-red-600 text-sm mb-2">{error}</p>
+            <Button onClick={loadDailyData} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
+      <CardHeader className="pb-4">
+        <div className="flex items-center space-x-2">
+          <DollarSign className="h-5 w-5 text-lavender" />
+          <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <div className="text-3xl font-bold text-gray-900">
+              ${data?.todaysRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-sm text-gray-600">Today's revenue</p>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
+              <div>
+                <div className="text-lg font-semibold text-green-800">
+                  ${data?.stripeBalance.toFixed(2)}
+                </div>
+                <div className="text-xs text-green-600">Stripe Balance</div>
+              </div>
+              <CreditCard className="h-5 w-5 text-green-600" />
+            </div>
+            
+            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div>
+                <div className="text-lg font-semibold text-blue-800">
+                  ${data?.systemBalance.toFixed(2)}
+                </div>
+                <div className="text-xs text-blue-600">System Balance</div>
+              </div>
+              <div className="text-sm text-blue-600">{data?.transactionCount} transactions</div>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={handleImmediatePayout}
+            disabled={!data?.canPayout || payoutLoading}
+            className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+          >
+            {payoutLoading ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <ArrowUpRight className="h-4 w-4 mr-2" />
+                Immediate Payout - ${data?.stripeBalance.toFixed(2)}
+              </>
+            )}
+          </Button>
+          
+          {!data?.canPayout && (
+            <p className="text-xs text-gray-500 text-center">
+              Minimum payout threshold not met
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

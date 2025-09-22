@@ -28,6 +28,7 @@ import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 import { ConsentFormModal } from "@/components/consent/consent-form-modal"
 import { ConsentNotifications } from "@/components/consent/consent-notifications"
 import { consentReminderService } from "@/lib/services/consent-reminder-service"
+import { WeeklyBalanceCard, DailyBalanceCard } from "@/components/dashboard/financial-dashboard"
 
 export function DashboardCards() {
   const [showConsentFormModal, setShowConsentFormModal] = useState(false)
@@ -170,6 +171,12 @@ export function DashboardCards() {
             </Link>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Financial Dashboard - Mobile */}
+      <div className="lg:hidden grid grid-cols-1 gap-3 mb-6">
+        <WeeklyBalanceCard />
+        <DailyBalanceCard />
       </div>
 
       {/* Unified Client Onboarding - Mobile */}
@@ -381,6 +388,10 @@ export function DashboardCards() {
             </Link>
           </CardContent>
         </Card>
+
+        {/* Financial Dashboard Cards */}
+        <WeeklyBalanceCard />
+        <DailyBalanceCard />
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           {/* Background Image */}
