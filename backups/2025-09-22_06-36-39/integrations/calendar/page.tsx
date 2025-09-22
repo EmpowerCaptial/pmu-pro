@@ -1,0 +1,521 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Calendar, 
+  Plus, 
+  Settings, 
+  CheckCircle, 
+  AlertCircle, 
+  Loader2,
+  RefreshCw,
+  ExternalLink,
+  Clock,
+  ArrowLeftRight,
+  Download,
+  Upload
+} from "lucide-react";
+import { useDemoAuth } from "@/hooks/use-demo-auth";
+import { CALENDAR_PROVIDERS } from "@/lib/calendar-integration";
+
+interface CalendarIntegration {
+  id: string;
+  provider: string;
+  providerName: string;
+  calendarId?: string;
+  calendarName?: string;
+  isActive: boolean;
+  syncDirection: 'IMPORT_ONLY' | 'EXPORT_ONLY' | 'BIDIRECTIONAL';
+  lastSyncAt?: string;
+  syncFrequency: number;
+  createdAt: string;
+}
+
+export default function CalendarIntegrationPage() {
+  const { currentUser, isAuthenticated } = useDemoAuth();
+  const [integrations, setIntegrations] = useState<CalendarIntegration[]>([]);
+  const [availableProviders] = useState(CALENDAR_PROVIDERS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  // Integration form state
+  const [showIntegrationForm, setShowIntegrationForm] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<string>("");
+  const [apiKey, setApiKey] = useState("");
+  const [calendarId, setCalendarId] = useState("");
+  const [calendarName, setCalendarName] = useState("");
+  const [syncDirection, setSyncDirection] = useState<'IMPORT_ONLY' | 'EXPORT_ONLY' | 'BIDIRECTIONAL'>('BIDIRECTIONAL');
+  const [syncFrequency, setSyncFrequency] = useState(15);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [availableCalendars, setAvailableCalendars] = useState<any[]>([]);
+
+  // Load existing integrations on mount
+  useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      loadIntegrations();
+    }
+  }, [isAuthenticated, currentUser]);
+
+  const loadIntegrations = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch('/api/calendar-integrations', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIntegrations(data.integrations || []);
+      }
+    } catch (error) {
+      console.error("Failed to load integrations:", error);
+    }
+  };
+
+  const testConnection = async () => {
+    if (!selectedProvider || !apiKey) {
+      setError("Please select a provider and enter API key");
+      return;
+    }
+
+    setTestingConnection(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError("Authentication required");
+        return;
+      }
+
+      const response = await fetch('/api/calendar-integrations/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          provider: selectedProvider,
+          providerName: availableProviders.find(p => p.id === selectedProvider)?.name,
+          apiKey,
+          calendarId: calendarId || undefined,
+          calendarName: calendarName || undefined,
+          syncDirection,
+          syncFrequency
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Connection test failed');
+      }
+
+      const data = await response.json();
+      setAvailableCalendars(data.availableCalendars || []);
+      setSuccess(`Successfully connected to ${data.integration.providerName}!`);
+      
+      // Add to integrations list
+      setIntegrations([data.integration, ...integrations]);
+      setShowIntegrationForm(false);
+      
+      // Reset form
+      setSelectedProvider("");
+      setApiKey("");
+      setCalendarId("");
+      setCalendarName("");
+      setAvailableCalendars([]);
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Connection test failed");
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const syncIntegration = async (integrationId: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError("Authentication required");
+        return;
+      }
+
+      const response = await fetch('/api/calendar-integrations/sync', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ integrationId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Sync failed');
+      }
+
+      const data = await response.json();
+      setSuccess(`Synced ${data.eventCount} events from ${integrations.find(i => i.id === integrationId)?.providerName}`);
+      
+      // Refresh integrations to update last sync time
+      loadIntegrations();
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Sync failed");
+    }
+  };
+
+  const toggleIntegration = async (integrationId: string, isActive: boolean) => {
+    // In a real implementation, this would update the integration status
+    setIntegrations(prev => 
+      prev.map(integration => 
+        integration.id === integrationId 
+          ? { ...integration, isActive }
+          : integration
+      )
+    );
+  };
+
+  const getProviderInfo = (providerId: string) => {
+    return availableProviders.find(p => p.id === providerId);
+  };
+
+  const getSyncDirectionIcon = (direction: string) => {
+    switch (direction) {
+      case 'IMPORT_ONLY':
+        return <Download className="h-4 w-4" />;
+      case 'EXPORT_ONLY':
+        return <Upload className="h-4 w-4" />;
+      case 'BIDIRECTIONAL':
+        return <ArrowLeftRight className="h-4 w-4" />;
+      default:
+        return <ArrowLeftRight className="h-4 w-4" />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-ink mb-2">Calendar Integration</h1>
+          <p className="text-muted">Connect your existing booking systems with PMU Pro's calendar</p>
+        </div>
+
+        {/* Status Messages */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <span className="text-red-800">{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span className="text-green-800">{success}</span>
+          </div>
+        )}
+
+        {/* Add Integration Button */}
+        <div className="mb-8">
+          <Button
+            onClick={() => setShowIntegrationForm(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Calendar Integration
+          </Button>
+        </div>
+
+        {/* Integration Form */}
+        {showIntegrationForm && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Add Calendar Integration</CardTitle>
+              <CardDescription>Connect your existing booking system with PMU Pro</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="provider">Calendar Provider</Label>
+                    <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableProviders.map((provider) => (
+                          <SelectItem key={provider.id} value={provider.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{provider.logo}</span>
+                              <span>{provider.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="apiKey">API Key / Access Token</Label>
+                    <Input
+                      id="apiKey"
+                      type="password"
+                      placeholder="Enter your API key"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="force-white-bg force-gray-border force-dark-text"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="calendarId">Calendar ID (Optional)</Label>
+                    <Input
+                      id="calendarId"
+                      placeholder="Enter calendar ID if known"
+                      value={calendarId}
+                      onChange={(e) => setCalendarId(e.target.value)}
+                      className="force-white-bg force-gray-border force-dark-text"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="syncDirection">Sync Direction</Label>
+                    <Select value={syncDirection} onValueChange={(value: any) => setSyncDirection(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BIDIRECTIONAL">
+                          <div className="flex items-center gap-2">
+                            <ArrowLeftRight className="h-4 w-4" />
+                            <span>Two-way sync</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="IMPORT_ONLY">
+                          <div className="flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            <span>Import only</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="EXPORT_ONLY">
+                          <div className="flex items-center gap-2">
+                            <Upload className="h-4 w-4" />
+                            <span>Export only</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="syncFrequency">Sync Frequency (minutes)</Label>
+                    <Select value={syncFrequency.toString()} onValueChange={(value) => setSyncFrequency(parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">Every 5 minutes</SelectItem>
+                        <SelectItem value="15">Every 15 minutes</SelectItem>
+                        <SelectItem value="30">Every 30 minutes</SelectItem>
+                        <SelectItem value="60">Every hour</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedProvider && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-900 mb-2">
+                        {getProviderInfo(selectedProvider)?.name} Setup
+                      </h4>
+                      <p className="text-sm text-blue-800 mb-2">
+                        {getProviderInfo(selectedProvider)?.setupInstructions}
+                      </p>
+                      <a 
+                        href={getProviderInfo(selectedProvider)?.apiDocumentation}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        API Documentation
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={testConnection}
+                  disabled={testingConnection || !selectedProvider || !apiKey}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {testingConnection ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Testing Connection...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Test & Connect
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowIntegrationForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Existing Integrations */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold">Connected Calendars</h2>
+          
+          {integrations.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Calendar Integrations</h3>
+                <p className="text-gray-600 mb-4">
+                  Connect your existing booking system to sync appointments with PMU Pro
+                </p>
+                <Button
+                  onClick={() => setShowIntegrationForm(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Integration
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {integrations.map((integration) => (
+                <Card key={integration.id} className={`${integration.isActive ? 'ring-2 ring-green-200' : 'opacity-75'}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">
+                          {getProviderInfo(integration.provider)?.logo}
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{integration.providerName}</CardTitle>
+                          {integration.calendarName && (
+                            <p className="text-sm text-gray-600">{integration.calendarName}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={integration.isActive}
+                        onCheckedChange={(checked) => toggleIntegration(integration.id, checked)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${integration.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {integration.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        {getSyncDirectionIcon(integration.syncDirection)}
+                        <span className="text-xs">
+                          {integration.syncDirection === 'BIDIRECTIONAL' ? 'Two-way' :
+                           integration.syncDirection === 'IMPORT_ONLY' ? 'Import' : 'Export'}
+                        </span>
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span>Syncs every {integration.syncFrequency} minutes</span>
+                    </div>
+                    
+                    {integration.lastSyncAt && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Last sync: {new Date(integration.lastSyncAt).toLocaleString()}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => syncIntegration(integration.id)}
+                        className="flex-1"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Sync Now
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {/* Open settings */}}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Benefits Section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Calendar Integration Benefits
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold">Unified Booking Experience</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Sync appointments from Calendly, Acuity, Google Calendar</li>
+                  <li>• View all bookings in PMU Pro's calendar</li>
+                  <li>• Maintain existing client workflows</li>
+                  <li>• Two-way sync keeps everything updated</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-semibold">Seamless Integration</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• No disruption to existing processes</li>
+                  <li>• Automatic sync every 15 minutes</li>
+                  <li>• Real-time webhook support</li>
+                  <li>• Import/Export or bidirectional sync</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
