@@ -22,14 +22,14 @@ import { generateUserHandle } from '@/lib/booking';
 
 export default function ShareBookingPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useDemoAuth();
+  const { currentUser, isAuthenticated } = useDemoAuth();
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
 
   // Generate user handle from email (fallback to demo handle)
   const getUserHandle = () => {
-    if (user?.email) {
-      return generateUserHandle(user.email);
+    if (currentUser?.email) {
+      return generateUserHandle(currentUser.email);
     }
     return 'demo-artist'; // fallback
   };
@@ -115,10 +115,10 @@ export default function ShareBookingPage() {
             <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-lavender rounded-xl flex items-center justify-center text-white font-bold">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                  {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
                 </div>
                 <div>
-                  <h3 className="font-semibold">{user?.name || 'Your Name'}</h3>
+                  <h3 className="font-semibold">{currentUser?.name || 'Your Name'}</h3>
                   <p className="text-sm text-gray-600">Professional PMU Artist</p>
                 </div>
               </div>
