@@ -58,7 +58,16 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      console.log('Fetching clients for user:', currentUser?.email);
+      console.log('=== FETCH DEBUG ===');
+      console.log('Current user:', currentUser);
+      console.log('Current user email:', currentUser?.email);
+      console.log('Is authenticated:', isAuthenticated);
+      console.log('Auth loading:', authLoading);
+      console.log('Headers being sent:', {
+        'Accept': 'application/json',
+        'x-user-email': currentUser?.email || '',
+      });
+      console.log('==================');
       
       const response = await fetch('/api/clients', {
         method: 'GET',
