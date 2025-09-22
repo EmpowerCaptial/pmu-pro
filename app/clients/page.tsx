@@ -233,6 +233,12 @@ export default function ClientsPage() {
   // Handle sending message to client
   const handleSendMessage = async (client: Client, messageType?: string, message?: string) => {
     try {
+      // Check if client has a phone number
+      if (!client.phone) {
+        alert('No phone number available for this client.');
+        return;
+      }
+      
       // Clean the phone number (remove non-digits)
       const cleanPhone = client.phone.replace(/\D/g, '');
       
