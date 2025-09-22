@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
 import "./globals.css"
 import { LeahChat } from "@/components/chat/leah-chat"
-import { SessionProvider } from "@/components/providers/SessionProvider"
+import { SessionProvider } from "../src/components/providers/SessionProvider"
 import dynamic from 'next/dynamic'
 
 // Use dynamic imports with ssr: false for all components that access window
