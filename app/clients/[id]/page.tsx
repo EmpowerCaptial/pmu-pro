@@ -25,6 +25,7 @@ import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import ProcedureForm from '@/src/components/forms/ProcedureForm'
 import AppointmentForm from '@/src/components/forms/AppointmentForm'
+import ClientEditForm from '@/src/components/forms/ClientEditForm'
 
 interface Client {
   id: string
@@ -52,6 +53,7 @@ export default function ClientProfilePage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [showProcedureForm, setShowProcedureForm] = useState(false)
   const [showAppointmentForm, setShowAppointmentForm] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
   const [procedures, setProcedures] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
 
@@ -192,13 +194,41 @@ export default function ClientProfilePage() {
     }
   }
 
+  const handleSaveClientEdit = async (clientData: any) => {
+    if (!currentUser?.email || !clientId) return
+
+    try {
+      const response = await fetch(`/api/clients/${clientId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(clientData)
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setClient(result.client)
+        setShowEditForm(false)
+        // Show success message
+        alert('Client information updated successfully!')
+      } else {
+        throw new Error('Failed to update client')
+      }
+    } catch (error) {
+      console.error('Error updating client:', error)
+      alert('Failed to update client. Please try again.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
-        <div className="text-center">
+          <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
           <p className="text-gray-600">Loading client profile...</p>
-        </div>
+          </div>
       </div>
     )
   }
@@ -206,7 +236,7 @@ export default function ClientProfilePage() {
   if (!client) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
-        <div className="text-center">
+          <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Client Not Found</h2>
           <p className="text-gray-600 mb-4">The client you're looking for doesn't exist or you don't have access.</p>
@@ -214,7 +244,7 @@ export default function ClientProfilePage() {
             <ChevronLeft className="h-4 w-4 mr-2" />
             Go Back
           </Button>
-        </div>
+          </div>
       </div>
     )
   }
@@ -238,7 +268,7 @@ export default function ClientProfilePage() {
           variant="ghost" 
           size="sm" 
           className="text-gray-700 hover:bg-gray-100"
-          onClick={() => router.push(`/clients/${clientId}/edit`)}
+          onClick={() => setShowEditForm(true)}
         >
           <Edit className="h-5 w-5" />
         </Button>
@@ -448,6 +478,22 @@ export default function ClientProfilePage() {
               clientName={client.name}
               onSave={handleSaveAppointment}
               onCancel={() => setShowAppointmentForm(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Form Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Client Profile</DialogTitle>
+          </DialogHeader>
+          {client && (
+            <ClientEditForm
+              client={client}
+              onSave={handleSaveClientEdit}
+              onCancel={() => setShowEditForm(false)}
             />
           )}
         </DialogContent>
