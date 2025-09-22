@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ClientList, { Client } from '../../src/components/client/ClientList';
