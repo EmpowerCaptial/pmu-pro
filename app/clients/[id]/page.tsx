@@ -10,20 +10,16 @@ import {
   User, 
   Calendar, 
   FileText, 
-  Camera, 
   ChevronLeft,
   Edit,
   Phone,
   Mail,
-  MapPin,
-  Clock,
-  DollarSign,
-  Palette,
-  Syringe,
-  Stethoscope,
   AlertCircle,
   CheckCircle,
-  Eye
+  Eye,
+  Plus,
+  Clock,
+  DollarSign
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
@@ -201,33 +197,115 @@ export default function ClientProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Coming Soon Message */}
-        <Card>
-          <CardContent className="text-center py-12">
-            <Stethoscope className="h-16 w-16 text-lavender mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Full Profile Coming Soon</h3>
-            <p className="text-gray-600 mb-6">
-              We're building comprehensive client profiles with procedure details, consent forms, and appointment history.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              <div className="p-4 bg-lavender/10 rounded-lg">
-                <Syringe className="h-8 w-8 text-lavender mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900">Procedure Details</h4>
-                <p className="text-sm text-gray-600">Pigment colors, needle configs, techniques</p>
-              </div>
-              <div className="p-4 bg-lavender/10 rounded-lg">
-                <FileText className="h-8 w-8 text-lavender mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900">Consent Forms</h4>
-                <p className="text-sm text-gray-600">Digital consent with signatures</p>
-              </div>
-              <div className="p-4 bg-lavender/10 rounded-lg">
-                <Calendar className="h-8 w-8 text-lavender mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900">Appointment History</h4>
-                <p className="text-sm text-gray-600">Complete treatment timeline</p>
-              </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="procedures">Procedures</TabsTrigger>
+            <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Medical Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-lavender" />
+                    Medical Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {client.medicalHistory && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">Medical History</h4>
+                      <p className="text-sm text-gray-600">{client.medicalHistory}</p>
+                    </div>
+                  )}
+                  {client.allergies && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">Allergies</h4>
+                      <p className="text-sm text-gray-600">{client.allergies}</p>
+                    </div>
+                  )}
+                  {client.skinType && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">Skin Type</h4>
+                      <p className="text-sm text-gray-600">{client.skinType}</p>
+                    </div>
+                  )}
+                  {!client.medicalHistory && !client.allergies && !client.skinType && (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No medical information on file</p>
+                      <Button variant="outline" size="sm" className="mt-4">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Medical Info
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-lavender" />
+                    Quick Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 bg-lavender/10 rounded-lg">
+                      <div className="text-2xl font-bold text-lavender">0</div>
+                      <div className="text-sm text-gray-600">Procedures</div>
+                    </div>
+                    <div className="text-center p-4 bg-lavender/10 rounded-lg">
+                      <div className="text-2xl font-bold text-lavender">0</div>
+                      <div className="text-sm text-gray-600">Appointments</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Procedures Tab */}
+          <TabsContent value="procedures" className="mt-6">
+            <Card>
+              <CardContent className="text-center py-12">
+                <FileText className="h-16 w-16 text-lavender mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Procedures Yet</h3>
+                <p className="text-gray-600 mb-6">
+                  Start tracking procedures, pigment colors, needle configurations, and notes.
+                </p>
+                <Button className="bg-lavender hover:bg-lavender-600 text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add First Procedure
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Appointments Tab */}
+          <TabsContent value="appointments" className="mt-6">
+            <Card>
+              <CardContent className="text-center py-12">
+                <Calendar className="h-16 w-16 text-lavender mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Appointments Yet</h3>
+                <p className="text-gray-600 mb-6">
+                  Schedule appointments and track the client's treatment journey.
+                </p>
+                <Button className="bg-lavender hover:bg-lavender-600 text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Appointment
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
