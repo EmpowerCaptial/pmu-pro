@@ -48,16 +48,13 @@ export function DashboardCards() {
       <div className="lg:hidden grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
         {/* Skin Analysis */}
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="40" r="25" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M30 60l40 0M35 70l30 0M40 80l20 0" stroke="currentColor" strokeWidth="2"/>
-              <circle cx="40" cy="35" r="2" fill="currentColor"/>
-              <circle cx="60" cy="35" r="2" fill="currentColor"/>
-              <path d="M45 45q5 5 10 0" stroke="currentColor" strokeWidth="1" fill="none"/>
-              <path d="M25 25l10-10M75 25l-10-10" stroke="currentColor" strokeWidth="1"/>
-            </svg>
-          </div>
+          {/* Background Image with 50% opacity */}
+          <div 
+            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/8.jpg)' }}
+          ></div>
+          {/* White overlay for text readability */}
+          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Camera className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
@@ -80,16 +77,13 @@ export function DashboardCards() {
 
         {/* Client Management */}
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M20 20h60v60h-60z" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M30 30h40v10h-40z" fill="currentColor"/>
-              <path d="M30 45h25v5h-25z" fill="currentColor"/>
-              <path d="M30 55h35v5h-35z" fill="currentColor"/>
-              <path d="M30 65h20v5h-20z" fill="currentColor"/>
-              <circle cx="75" cy="35" r="3" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Background Image with 50% opacity */}
+          <div 
+            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/5.jpg)' }}
+          ></div>
+          {/* White overlay for text readability */}
+          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
@@ -112,15 +106,13 @@ export function DashboardCards() {
 
         {/* Color Correction */}
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M30 30l40 40M70 30l-40 40" stroke="currentColor" strokeWidth="2"/>
-              <circle cx="35" cy="35" r="8" fill="currentColor" opacity="0.7"/>
-              <circle cx="65" cy="35" r="8" fill="currentColor" opacity="0.7"/>
-              <circle cx="50" cy="65" r="8" fill="currentColor" opacity="0.7"/>
-            </svg>
-          </div>
+          {/* Background Image with 50% opacity */}
+          <div 
+            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/7.jpg)' }}
+          ></div>
+          {/* White overlay for text readability */}
+          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Brush className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
@@ -143,15 +135,13 @@ export function DashboardCards() {
 
         {/* ProCell Analysis */}
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <circle cx="50" cy="50" r="25" fill="currentColor" opacity="0.3"/>
-              <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.5"/>
-              <path d="M20 20l15 15M80 20l-15 15M20 80l15-15M80 80l-15-15" stroke="currentColor" strokeWidth="1"/>
-              <path d="M35 50h30M50 35v30" stroke="currentColor" strokeWidth="1"/>
-            </svg>
-          </div>
+          {/* Background Image with 50% opacity */}
+          <div 
+            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/6.jpg)' }}
+          ></div>
+          {/* White overlay for text readability */}
+          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Microscope className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />

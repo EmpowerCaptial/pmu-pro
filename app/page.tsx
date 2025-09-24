@@ -119,7 +119,7 @@ export default function HomePage() {
               <span className="text-lavender">Stunning Results</span>.
             </h1>
             <p className="text-lg sm:text-xl text-ink/70 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
-              Screen clients, match pigments, and showcase your artistry — all in one platform.
+              Built for PMU Artists by PMU Artists with AI Assist — Screen clients, match pigments, and showcase your artistry — all in one platform.
             </p>
             <div className="flex flex-col gap-4 sm:gap-6 justify-center px-4">
               <Link href="/auth/login" className="w-full sm:w-auto">
