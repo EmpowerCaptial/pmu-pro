@@ -33,16 +33,36 @@ export function generateUserHandle(email: string): string {
 // Get booking config for a user handle
 export async function getPublicBookingConfig(handle: string): Promise<PublicBookingConfig | null> {
   try {
-    // Try to find user by handle (convert handle back to email format)
-    // For demo purposes, we'll use a demo email
+    // For demo purposes, we'll use the demo email
+    // In production, you'd want to store handle-to-email mapping in the database
     const demoEmail = 'universalbeautystudioacademy@gmail.com';
     
-    // Get services from API
-    const allServices = await getServices(demoEmail);
-    const activeServices = allServices.filter(service => service.isActive);
+    // Fetch services from the API
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/services`, {
+      method: 'GET',
+      headers: {
+        'x-user-email': demoEmail,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch services:', response.status);
+      return {
+        handle,
+        displayName: handle.charAt(0).toUpperCase() + handle.slice(1).replace(/-/g, ' '),
+        avatarUrl: undefined,
+        brandColor: "#8b5cf6", // lavender
+        services: []
+      };
+    }
+
+    const data = await response.json();
+    const allServices = data.services || [];
+    const activeServices = allServices.filter((service: any) => service.isActive);
     
     // Convert services to booking format
-    const bookingServices = activeServices.map(service => ({
+    const bookingServices = activeServices.map((service: any) => ({
       id: service.id,
       name: service.name,
       price: service.defaultPrice,
