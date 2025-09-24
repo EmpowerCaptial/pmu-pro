@@ -17,6 +17,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 function CheckoutContent() {
   const router = useRouter()
@@ -41,6 +43,7 @@ function CheckoutContent() {
   const [splitPaymentEnabled, setSplitPaymentEnabled] = useState(false)
   const [splitAmount, setSplitAmount] = useState('')
   const [splitMethod, setSplitMethod] = useState('')
+  const [taxesEnabled, setTaxesEnabled] = useState(true)
 
   // Sample client data (in real app, this would come from the selected client)
   const client = {
@@ -58,7 +61,7 @@ function CheckoutContent() {
   ]
 
   const subtotal = cart.reduce((sum: number, item: any) => sum + (item.price || 0), 0)
-  const tax = subtotal * 0.08 // 8% tax
+  const tax = taxesEnabled ? subtotal * 0.08 : 0 // 8% tax when enabled
   const total = subtotal + tax + tipAmount - discountAmount
 
   const processPayment = async () => {
@@ -253,6 +256,20 @@ function CheckoutContent() {
                       <span className="font-semibold">-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
+                  
+                  {/* Taxes Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={taxesEnabled}
+                        onCheckedChange={setTaxesEnabled}
+                        className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
+                      />
+                      <Label className="text-sm text-gray-600">Include Taxes</Label>
+                    </div>
+                    <span className="text-xs text-gray-500">8%</span>
+                  </div>
+                  
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax (8%):</span>
                     <span className="font-semibold text-gray-900">${tax.toFixed(2)}</span>

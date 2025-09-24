@@ -239,14 +239,14 @@ export default function ReviewsPage() {
       <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-ink mb-2">Client Reviews</h1>
               <p className="text-muted">Manage client feedback and build your reputation</p>
             </div>
             <Button 
               onClick={() => setShowCreateLink(true)}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Review Link
@@ -431,18 +431,18 @@ export default function ReviewsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {reviewLinks.map((link) => (
-                    <div key={link.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
+                    <div key={link.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-4">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <Share2 className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-ink">{link.name}</h3>
-                          <p className="text-sm text-muted">{link.service}</p>
-                          <p className="text-xs text-muted">{link.url}</p>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-ink truncate">{link.name}</h3>
+                          <p className="text-sm text-muted truncate">{link.service}</p>
+                          <p className="text-xs text-muted truncate">{link.url}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-between sm:justify-end space-x-2">
                         <div className="text-right text-sm text-muted">
                           <p>Sent: {link.sentTo}</p>
                           <p>Responses: {link.responses}</p>
@@ -494,19 +494,19 @@ export default function ReviewsPage() {
                 <div className="space-y-4">
                   {reviews.map((review) => (
                     <div key={review.id} className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-semibold">
                               {review.clientName.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-ink">{review.clientName}</h3>
-                            <p className="text-sm text-muted">{review.service}</p>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-ink truncate">{review.clientName}</h3>
+                            <p className="text-sm text-muted truncate">{review.service}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star 
@@ -515,13 +515,15 @@ export default function ReviewsPage() {
                               />
                             ))}
                           </div>
-                          <Badge className={getPlatformColor(review.platform)}>
-                            {review.platform.charAt(0).toUpperCase() + review.platform.slice(1)}
-                          </Badge>
-                          <Badge className={getStatusColor(review.status)}>
-                            {getStatusIcon(review.status)}
-                            <span className="ml-1">{review.status.charAt(0).toUpperCase() + review.status.slice(1)}</span>
-                          </Badge>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={getPlatformColor(review.platform)}>
+                              {review.platform.charAt(0).toUpperCase() + review.platform.slice(1)}
+                            </Badge>
+                            <Badge className={getStatusColor(review.status)}>
+                              {getStatusIcon(review.status)}
+                              <span className="ml-1">{review.status.charAt(0).toUpperCase() + review.status.slice(1)}</span>
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                       <p className="text-sm text-muted mb-3">{review.comment}</p>
