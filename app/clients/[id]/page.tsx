@@ -81,9 +81,28 @@ export default function ClientProfilePage() {
       if (clientResponse.ok) {
         const clientData = await clientResponse.json()
         setClient(clientData.client)
+      } else {
+        // If client not found via API, try to get from the clients list
+        console.log('Client not found via API, trying to get from clients list')
+        const clientsResponse = await fetch('/api/clients', {
+          headers: {
+            'x-user-email': currentUser.email,
+            'Accept': 'application/json'
+          }
+        })
+        
+        if (clientsResponse.ok) {
+          const clientsData = await clientsResponse.json()
+          const foundClient = clientsData.clients?.find((c: any) => c.id === clientId)
+          if (foundClient) {
+            setClient(foundClient)
+          } else {
+            setError('Client not found or you do not have access to view this client.')
+          }
         } else {
           setError('Client not found or you do not have access to view this client.')
         }
+      }
     } catch (error) {
       console.error('Error loading client data:', error)
       setError('Failed to load client data. Please try again.')
