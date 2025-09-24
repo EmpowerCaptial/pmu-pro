@@ -17,60 +17,81 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // For production/demo purposes, return mock data instead of database queries
-    const mockClients = [
-      {
-        id: 'client-1',
-        name: 'Sarah Johnson',
-        phone: '+1 (555) 123-4567',
-        email: 'sarah.johnson@email.com',
-        avatarUrl: null,
-        dateOfBirth: '1990-05-15',
-        emergencyContact: 'John Johnson - (555) 987-6543',
-        medicalHistory: 'No known medical conditions',
-        allergies: 'None reported',
-        skinType: 'Fitzpatrick Type III',
-        notes: 'Prefers natural-looking brows',
-        createdAt: '2024-01-15T10:30:00Z',
-        lastProcedure: null,
-        lastAnalysis: null
-      },
-      {
-        id: 'client-2',
-        name: 'Emma Rodriguez',
-        phone: '+1 (555) 234-5678',
-        email: 'emma.rodriguez@email.com',
-        avatarUrl: null,
-        dateOfBirth: '1988-12-03',
-        emergencyContact: 'Maria Rodriguez - (555) 876-5432',
-        medicalHistory: 'Diabetes Type 2',
-        allergies: 'Latex',
-        skinType: 'Fitzpatrick Type IV',
-        notes: 'Sensitive skin, prefers gentle techniques',
-        createdAt: '2024-01-20T14:20:00Z',
-        lastProcedure: null,
-        lastAnalysis: null
-      },
-      {
-        id: 'client-3',
-        name: 'Lisa Park',
-        phone: '+1 (555) 345-6789',
-        email: 'lisa.park@email.com',
-        avatarUrl: null,
-        dateOfBirth: '1992-08-22',
-        emergencyContact: 'David Park - (555) 765-4321',
-        medicalHistory: 'No known medical conditions',
-        allergies: 'None reported',
-        skinType: 'Fitzpatrick Type II',
-        notes: 'First-time PMU client, very excited',
-        createdAt: '2024-01-25T09:15:00Z',
-        lastProcedure: null,
-        lastAnalysis: null
-      }
-    ]
+    // Try to find the user
+    console.log('API: Querying user by email:', userEmail)
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: userEmail }
+      })
+    } catch (dbError) {
+      console.log('API: Database error:', dbError)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
 
-    console.log('API: Returning', mockClients.length, 'mock clients')
-    return NextResponse.json({ clients: mockClients })
+    if (!user) {
+      console.log('API: User not found for email:', userEmail)
+      // Create a new user if they don't exist (for demo purposes)
+      try {
+        user = await prisma.user.create({
+          data: {
+            name: userEmail.split('@')[0],
+            email: userEmail,
+            password: 'demo_password', // This is just for demo
+            businessName: 'Demo Business',
+            licenseNumber: 'DEMO123',
+            licenseState: 'CA',
+            role: 'artist'
+          }
+        })
+        console.log('API: Created new user:', { id: user.id, email: user.email })
+      } catch (createError) {
+        console.log('API: Failed to create user:', createError)
+        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+      }
+    }
+    
+    console.log('API: User found/created:', { id: user.id, email: user.email })
+
+    // Fetch clients for this user
+    const clients = await prisma.client.findMany({
+      where: {
+        userId: user.id,
+        isActive: true
+      },
+      include: {
+        procedures: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        },
+        analyses: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    // Transform the data to match the ClientList component interface
+    const transformedClients = clients.map(client => ({
+      id: client.id,
+      name: client.name,
+      phone: client.phone,
+      email: client.email,
+      avatarUrl: null,
+      dateOfBirth: client.dateOfBirth,
+      emergencyContact: client.emergencyContact,
+      medicalHistory: client.medicalHistory,
+      allergies: client.allergies,
+      skinType: client.skinType,
+      notes: client.notes,
+      createdAt: client.createdAt,
+      lastProcedure: client.procedures[0] || null,
+      lastAnalysis: client.analyses[0] || null
+    }))
+
+    console.log('API: Returning', transformedClients.length, 'clients')
+    return NextResponse.json({ clients: transformedClients })
 
   } catch (error) {
     console.error('API: Unexpected error in clients endpoint:', error)
