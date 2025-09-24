@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,17 +14,20 @@ import {
   Facebook, 
   Twitter,
   ArrowLeft,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
-import { generateUserHandle } from '@/lib/booking';
+import { generateUserHandle, getPublicBookingConfig } from '@/lib/booking';
 
 export default function ShareBookingPage() {
   const router = useRouter();
   const { currentUser, isAuthenticated } = useDemoAuth();
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   // Generate user handle from email (fallback to demo handle)
   const getUserHandle = () => {
@@ -42,6 +45,26 @@ export default function ShareBookingPage() {
   height="680" 
   frameborder="0">
 </iframe>`;
+
+  // Fetch services for preview
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoadingServices(true);
+        const config = await getPublicBookingConfig(userHandle);
+        setServices(config?.services || []);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        setServices([]);
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    if (userHandle) {
+      fetchServices();
+    }
+  }, [userHandle]);
 
   const handleCopyLink = async () => {
     try {
@@ -123,24 +146,33 @@ export default function ShareBookingPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div>
-                    <p className="font-medium">Eyebrow Microblading</p>
-                    <p className="text-sm text-gray-600">3h • $600</p>
+                {loadingServices ? (
+                  <div className="flex items-center justify-center p-6">
+                    <Loader2 className="h-6 w-6 animate-spin text-lavender" />
+                    <span className="ml-2 text-gray-600">Loading services...</span>
                   </div>
-                  <Button size="sm" className="bg-lavender hover:bg-lavender-600">
-                    Book
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div>
-                    <p className="font-medium">Lip Blush</p>
-                    <p className="text-sm text-gray-600">2h • $450</p>
+                ) : services.length > 0 ? (
+                  services.map((service) => (
+                    <div key={service.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div>
+                        <p className="font-medium">{service.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {service.durationMinutes ? `${Math.round(service.durationMinutes / 60)}h` : ''}
+                          {service.durationMinutes && service.price ? ' • ' : ''}
+                          {service.price ? `$${service.price}` : ''}
+                        </p>
+                      </div>
+                      <Button size="sm" className="bg-lavender hover:bg-lavender-600">
+                        Book
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center p-6 text-gray-500">
+                    <p>No services available</p>
+                    <p className="text-sm">Add services in the Services page to see them here</p>
                   </div>
-                  <Button size="sm" className="bg-lavender hover:bg-lavender-600">
-                    Book
-                  </Button>
-                </div>
+                )}
               </div>
               <div className="mt-4 text-center">
                 <Button
