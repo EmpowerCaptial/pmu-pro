@@ -371,40 +371,52 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - 50x50px buttons with 4 per row on mobile */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6 max-w-6xl mx-auto">
+        {/* Features Grid - 100x100px buttons with names underneath */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 max-w-6xl mx-auto">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
-              className={`
-                relative flex flex-col items-center justify-center
-                rounded-lg border border-gray-200 bg-white
-                w-[50px] h-[50px] mx-auto shadow-sm transition-all duration-200
-                ${feature.status === 'active' 
-                  ? 'hover:shadow-lg hover:shadow-gray-200 hover:scale-105 cursor-pointer' 
-                  : 'opacity-60 cursor-default'
-                }
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300
-              `}
-              onClick={() => handleFeatureClick(feature)}
-              role="button"
-              tabIndex={feature.status === 'active' ? 0 : -1}
+              className="flex flex-col items-center justify-center space-y-3"
             >
-              {/* Small icon that fills the button */}
-              <div className={`
-                w-full h-full rounded-lg flex items-center justify-center
-                ${feature.color} shadow-sm
-              `}>
-                <feature.icon className="h-6 w-6 text-white" />
+              {/* Button */}
+              <div
+                className={`
+                  relative flex items-center justify-center
+                  rounded-xl border border-gray-200 bg-white
+                  w-[100px] h-[100px] shadow-sm transition-all duration-200
+                  ${feature.status === 'active' 
+                    ? 'hover:shadow-lg hover:shadow-gray-200 hover:scale-105 cursor-pointer' 
+                    : 'opacity-60 cursor-default'
+                  }
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300
+                `}
+                onClick={() => handleFeatureClick(feature)}
+                role="button"
+                tabIndex={feature.status === 'active' ? 0 : -1}
+              >
+                {/* Icon that fills the button */}
+                <div className={`
+                  w-full h-full rounded-xl flex items-center justify-center
+                  ${feature.color} shadow-sm
+                `}>
+                  <feature.icon className="h-12 w-12 text-white" />
+                </div>
+
+                {/* Status indicator */}
+                <div className="absolute top-2 right-2">
+                  {feature.status === 'active' ? (
+                    <div className="w-2 h-2 bg-green-500 rounded-full shadow-sm"></div>
+                  ) : (
+                    <div className="w-2 h-2 bg-gray-300 rounded-full shadow-sm"></div>
+                  )}
+                </div>
               </div>
 
-              {/* Status indicator */}
-              <div className="absolute top-1 right-1">
-                {feature.status === 'active' ? (
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-sm"></div>
-                ) : (
-                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full shadow-sm"></div>
-                )}
+              {/* Feature name underneath */}
+              <div className="text-center">
+                <h3 className="font-medium text-sm text-gray-900 leading-tight">
+                  {feature.title}
+                </h3>
               </div>
             </div>
           ))}
