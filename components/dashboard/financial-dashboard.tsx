@@ -161,7 +161,7 @@ export function WeeklyBalanceCard() {
           
           <Button 
             onClick={() => window.location.href = '/reports'}
-            className="w-full bg-lavender hover:bg-lavender-600 text-white"
+            className="w-full bg-lavender hover:bg-lavender-600 text-white py-2"
           >
             <Calendar className="h-4 w-4 mr-2" />
             View Weekly Report
@@ -344,7 +344,7 @@ export function DailyBalanceCard() {
           <Button 
             onClick={handleImmediatePayout}
             disabled={!data?.canPayout || payoutLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+            className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400 py-2"
           >
             {payoutLoading ? (
               <>
