@@ -495,54 +495,56 @@ export default function ReferralsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {referralPrograms.map((program) => (
-                    <div key={program.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
+                    <div key={program.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-4">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <Target className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-ink">{program.name}</h3>
-                          <p className="text-sm text-muted">{program.description}</p>
-                          <div className="flex items-center space-x-4 text-sm text-muted mt-1">
-                            <span>Referrer: ${program.referralReward}</span>
-                            <span>Referee: ${program.refereeReward}</span>
-                            <span>Min: ${program.minPurchase}</span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-ink truncate">{program.name}</h3>
+                          <p className="text-sm text-muted truncate">{program.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted mt-1">
+                            <span className="truncate">Referrer: ${program.referralReward}</span>
+                            <span className="truncate">Referee: ${program.refereeReward}</span>
+                            <span className="truncate">Min: ${program.minPurchase}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="text-right text-sm text-muted">
-                          <p>{program.totalReferrals} referrals</p>
-                          <p>${program.totalRewards.toFixed(2)} earned</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                        <div className="text-left sm:text-right text-sm text-muted">
+                          <p className="truncate">{program.totalReferrals} referrals</p>
+                          <p className="truncate">${program.totalRewards.toFixed(2)} earned</p>
                         </div>
-                        <Badge className={program.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                          {program.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
-                            >
-                              <MoreVertical className="h-4 w-4 text-gray-600" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                              <span>View Details</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Share2 className="mr-2 h-4 w-4 text-green-500" />
-                              <span>Create Link</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Download className="mr-2 h-4 w-4 text-purple-500" />
-                              <span>Export Data</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={program.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                            {program.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                              >
+                                <MoreVertical className="h-4 w-4 text-gray-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                <span>View Details</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Share2 className="mr-2 h-4 w-4 text-green-500" />
+                                <span>Create Link</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Download className="mr-2 h-4 w-4 text-purple-500" />
+                                <span>Export Data</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -562,17 +564,17 @@ export default function ReferralsPage() {
                 <div className="space-y-4">
                   {referrals.map((referral) => (
                     <div key={referral.id} className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold">
+                          <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-semibold text-sm">
                               {referral.referrerName.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-ink">{referral.referrerName}</h3>
-                            <p className="text-sm text-muted">Referred: {referral.refereeName}</p>
-                            <p className="text-sm text-muted">{referral.service}</p>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-ink truncate">{referral.referrerName}</h3>
+                            <p className="text-sm text-muted truncate">Referred: {referral.refereeName}</p>
+                            <p className="text-sm text-muted truncate">{referral.service}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -583,16 +585,16 @@ export default function ReferralsPage() {
                           </Badge>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-xs text-muted">
-                        <div className="flex items-center space-x-4">
-                          <span>{referral.referrerEmail}</span>
-                          <span>→</span>
-                          <span>{referral.refereeEmail}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-muted gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                          <span className="truncate">{referral.referrerEmail}</span>
+                          <span className="hidden sm:inline">→</span>
+                          <span className="truncate">{referral.refereeEmail}</span>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <span>Created: {new Date(referral.createdAt).toLocaleDateString()}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                          <span className="truncate">Created: {new Date(referral.createdAt).toLocaleDateString()}</span>
                           {referral.completedAt && (
-                            <span>Completed: {new Date(referral.completedAt).toLocaleDateString()}</span>
+                            <span className="truncate">Completed: {new Date(referral.completedAt).toLocaleDateString()}</span>
                           )}
                         </div>
                       </div>
