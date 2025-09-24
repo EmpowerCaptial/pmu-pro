@@ -25,8 +25,15 @@ import {
   Target,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  MoreVertical
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
@@ -213,6 +220,7 @@ export default function EmailMarketingPage() {
 
     setCampaigns([...campaigns, campaign])
     setNewCampaign({ name: '', subject: '', template: '', recipients: 0 })
+    alert('Campaign created successfully!')
   }
 
   const handleCreateTemplate = () => {
@@ -330,10 +338,25 @@ export default function EmailMarketingPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsTrigger 
+              value="campaigns" 
+              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Campaigns
+            </TabsTrigger>
+            <TabsTrigger 
+              value="templates" 
+              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Templates
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics" 
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           {/* Campaigns Tab */}
@@ -436,16 +459,32 @@ export default function EmailMarketingPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-gray-600 mb-4">{template.subject}</p>
-                        <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Target className="h-4 w-4" />
-                          </Button>
+                        <div className="flex items-center justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                              >
+                                <MoreVertical className="h-4 w-4 text-gray-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                <span>View</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Edit className="mr-2 h-4 w-4 text-green-500" />
+                                <span>Edit</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </CardContent>
                     </Card>

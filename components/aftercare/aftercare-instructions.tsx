@@ -160,14 +160,23 @@ export function AftercareInstructions() {
         </CardHeader>
         <CardContent>
           <Tabs value={selectedProcedure} onValueChange={setSelectedProcedure}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="brows" className="font-bold">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+              <TabsTrigger 
+                value="brows" 
+                className="font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              >
                 EYEBROWS
               </TabsTrigger>
-              <TabsTrigger value="lips" className="font-bold">
+              <TabsTrigger 
+                value="lips" 
+                className="font-bold data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              >
                 LIPS
               </TabsTrigger>
-              <TabsTrigger value="eyeliner" className="font-bold">
+              <TabsTrigger 
+                value="eyeliner" 
+                className="font-bold data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              >
                 EYELINER
               </TabsTrigger>
             </TabsList>
@@ -187,7 +196,7 @@ export function AftercareInstructions() {
           className="gap-2 border-lavender text-lavender hover:bg-lavender/10 bg-transparent"
         >
           <Mail className="h-4 w-4" />
-          Schedule Email Reminders
+          Schedule Email
         </Button>
       </div>
 

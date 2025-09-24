@@ -1,668 +1,665 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Receipt, 
   Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
+  Download, 
+  Upload, 
+  Calendar, 
+  DollarSign,
   TrendingUp,
   TrendingDown,
-  DollarSign,
-  Calendar,
-  Tag,
-  Upload,
-  Download,
-  PieChart,
-  BarChart3,
-  FileText
+  FileText,
+  Calculator,
+  CheckCircle,
+  AlertCircle,
+  Edit,
+  Trash2,
+  MoreVertical,
+  Filter,
+  Search,
+  BarChart3
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 interface Expense {
   id: string
   date: string
-  category: string
   description: string
+  category: string
   amount: number
   vendor: string
-  paymentMethod: string
+  paymentMethod: 'cash' | 'card' | 'check' | 'transfer'
   receipt?: string
-  isTaxDeductible: boolean
-  status: 'pending' | 'approved' | 'rejected'
-  createdAt: string
+  isDeductible: boolean
   notes?: string
+  createdAt: string
 }
+
+interface ExpenseCategory {
+  id: string
+  name: string
+  description: string
+  isDeductible: boolean
+  scheduleCLine: string
+}
+
+const scheduleCCategories: ExpenseCategory[] = [
+  { id: 'advertising', name: 'Advertising', description: 'Marketing and promotional expenses', isDeductible: true, scheduleCLine: 'Line 8' },
+  { id: 'car_truck', name: 'Car and Truck Expenses', description: 'Vehicle expenses for business use', isDeductible: true, scheduleCLine: 'Line 9' },
+  { id: 'commissions', name: 'Commissions and Fees', description: 'Professional fees and commissions', isDeductible: true, scheduleCLine: 'Line 10' },
+  { id: 'contract_labor', name: 'Contract Labor', description: 'Independent contractor payments', isDeductible: true, scheduleCLine: 'Line 11' },
+  { id: 'depletion', name: 'Depletion', description: 'Natural resource depletion', isDeductible: true, scheduleCLine: 'Line 12' },
+  { id: 'depreciation', name: 'Depreciation', description: 'Asset depreciation expenses', isDeductible: true, scheduleCLine: 'Line 13' },
+  { id: 'employee_benefits', name: 'Employee Benefit Programs', description: 'Health insurance, retirement plans', isDeductible: true, scheduleCLine: 'Line 14' },
+  { id: 'insurance', name: 'Insurance (other than health)', description: 'Business insurance premiums', isDeductible: true, scheduleCLine: 'Line 15' },
+  { id: 'interest', name: 'Interest', description: 'Business loan interest', isDeductible: true, scheduleCLine: 'Line 16' },
+  { id: 'legal_professional', name: 'Legal and Professional Services', description: 'Attorney, accountant fees', isDeductible: true, scheduleCLine: 'Line 17' },
+  { id: 'office_expenses', name: 'Office Expenses', description: 'Office supplies and equipment', isDeductible: true, scheduleCLine: 'Line 18' },
+  { id: 'pension_plans', name: 'Pension and Profit-Sharing Plans', description: 'Retirement plan contributions', isDeductible: true, scheduleCLine: 'Line 19' },
+  { id: 'rent_equipment', name: 'Rent or Lease', description: 'Equipment, vehicles, other business property', isDeductible: true, scheduleCLine: 'Line 20a' },
+  { id: 'rent_other', name: 'Rent or Lease', description: 'Other business property', isDeductible: true, scheduleCLine: 'Line 20b' },
+  { id: 'repairs_maintenance', name: 'Repairs and Maintenance', description: 'Equipment and property maintenance', isDeductible: true, scheduleCLine: 'Line 21' },
+  { id: 'supplies', name: 'Supplies', description: 'Materials and supplies', isDeductible: true, scheduleCLine: 'Line 22' },
+  { id: 'taxes_licenses', name: 'Taxes and Licenses', description: 'Business taxes and licensing fees', isDeductible: true, scheduleCLine: 'Line 23' },
+  { id: 'travel', name: 'Travel', description: 'Business travel expenses', isDeductible: true, scheduleCLine: 'Line 24a' },
+  { id: 'meals', name: 'Meals', description: 'Business meal expenses', isDeductible: true, scheduleCLine: 'Line 24b' },
+  { id: 'utilities', name: 'Utilities', description: 'Electricity, gas, water, phone', isDeductible: true, scheduleCLine: 'Line 25' },
+  { id: 'wages', name: 'Wages', description: 'Employee wages and salaries', isDeductible: true, scheduleCLine: 'Line 26' },
+  { id: 'other', name: 'Other Expenses', description: 'Other business expenses', isDeductible: true, scheduleCLine: 'Line 27a' }
+]
 
 const mockExpenses: Expense[] = [
   {
     id: '1',
     date: '2024-01-15',
-    category: 'Supplies',
-    description: 'Microblading blades and pigments',
+    description: 'PMU pigments and supplies',
+    category: 'supplies',
     amount: 245.50,
-    vendor: 'PMU Supplies Co.',
-    paymentMethod: 'Credit Card',
-    isTaxDeductible: true,
-    status: 'approved',
-    createdAt: '2024-01-15T10:30:00Z',
-    notes: 'Monthly supply order'
+    vendor: 'PMU Supply Co',
+    paymentMethod: 'card',
+    isDeductible: true,
+    notes: 'Monthly pigment order',
+    createdAt: '2024-01-15T10:30:00Z'
   },
   {
     id: '2',
-    date: '2024-01-14',
-    category: 'Equipment',
-    description: 'New microblading pen',
-    amount: 89.99,
-    vendor: 'Professional PMU Tools',
-    paymentMethod: 'PayPal',
-    isTaxDeductible: true,
-    status: 'pending',
-    createdAt: '2024-01-14T14:20:00Z',
-    notes: 'Upgrade to latest model'
+    date: '2024-01-12',
+    description: 'Office rent - January',
+    category: 'rent_other',
+    amount: 1200.00,
+    vendor: 'Downtown Office Space',
+    paymentMethod: 'transfer',
+    isDeductible: true,
+    notes: 'Monthly office rent',
+    createdAt: '2024-01-12T09:00:00Z'
   },
   {
     id: '3',
-    date: '2024-01-12',
-    category: 'Marketing',
-    description: 'Social media advertising',
-    amount: 150.00,
-    vendor: 'Facebook Ads',
-    paymentMethod: 'Credit Card',
-    isTaxDeductible: true,
-    status: 'approved',
-    createdAt: '2024-01-12T09:15:00Z'
+    date: '2024-01-10',
+    description: 'Business insurance premium',
+    category: 'insurance',
+    amount: 180.00,
+    vendor: 'Business Insurance Co',
+    paymentMethod: 'card',
+    isDeductible: true,
+    notes: 'Quarterly premium payment',
+    createdAt: '2024-01-10T14:20:00Z'
   },
   {
     id: '4',
-    date: '2024-01-10',
-    category: 'Training',
-    description: 'Advanced PMU course',
-    amount: 650.00,
-    vendor: 'PMU Academy',
-    paymentMethod: 'Bank Transfer',
-    isTaxDeductible: true,
-    status: 'approved',
-    createdAt: '2024-01-10T16:45:00Z',
-    notes: 'Continuing education for certification renewal'
+    date: '2024-01-08',
+    description: 'Marketing materials and business cards',
+    category: 'advertising',
+    amount: 85.75,
+    vendor: 'Print Shop Plus',
+    paymentMethod: 'cash',
+    isDeductible: true,
+    notes: 'New business cards and flyers',
+    createdAt: '2024-01-08T16:45:00Z'
   },
   {
     id: '5',
-    date: '2024-01-08',
-    category: 'Utilities',
-    description: 'Monthly internet bill',
-    amount: 79.99,
-    vendor: 'Comcast',
-    paymentMethod: 'Auto Pay',
-    isTaxDeductible: true,
-    status: 'approved',
-    createdAt: '2024-01-08T00:00:00Z'
+    date: '2024-01-05',
+    description: 'Professional development course',
+    category: 'other',
+    amount: 350.00,
+    vendor: 'PMU Training Institute',
+    paymentMethod: 'card',
+    isDeductible: true,
+    notes: 'Advanced microblading techniques',
+    createdAt: '2024-01-05T11:15:00Z'
   }
-]
-
-const expenseCategories = [
-  'Supplies',
-  'Equipment',
-  'Marketing',
-  'Training',
-  'Utilities',
-  'Insurance',
-  'Rent',
-  'Professional Services',
-  'Travel',
-  'Meals',
-  'Other'
-]
-
-const paymentMethods = [
-  'Credit Card',
-  'Debit Card',
-  'PayPal',
-  'Bank Transfer',
-  'Cash',
-  'Check',
-  'Auto Pay',
-  'Other'
 ]
 
 export default function ExpensesPage() {
   const { currentUser } = useDemoAuth()
   const [expenses, setExpenses] = useState<Expense[]>(mockExpenses)
-  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>(mockExpenses)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState('overview')
+  const [showAddExpense, setShowAddExpense] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedStatus, setSelectedStatus] = useState('all')
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState('list')
-  
+  const [searchTerm, setSearchTerm] = useState('')
   const [newExpense, setNewExpense] = useState({
     date: new Date().toISOString().split('T')[0],
-    category: '',
     description: '',
+    category: '',
     amount: 0,
     vendor: '',
-    paymentMethod: '',
-    isTaxDeductible: true,
+    paymentMethod: 'card' as const,
+    isDeductible: true,
     notes: ''
   })
 
-  useEffect(() => {
-    let filtered = expenses
-
-    if (searchTerm) {
-      filtered = filtered.filter(expense =>
-        expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(expense => expense.category === selectedCategory)
-    }
-
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(expense => expense.status === selectedStatus)
-    }
-
-    setFilteredExpenses(filtered)
-  }, [searchTerm, selectedCategory, selectedStatus, expenses])
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'rejected':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
+  // Fallback user if not authenticated
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
   }
 
-  const calculateTotals = () => {
-    const total = expenses.reduce((sum, expense) => sum + expense.amount, 0)
-    const taxDeductible = expenses
-      .filter(expense => expense.isTaxDeductible)
-      .reduce((sum, expense) => sum + expense.amount, 0)
-    const pending = expenses
-      .filter(expense => expense.status === 'pending')
-      .reduce((sum, expense) => sum + expense.amount, 0)
-    
-    return { total, taxDeductible, pending }
-  }
+  const filteredExpenses = expenses.filter(expense => {
+    const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory
+    const matchesSearch = searchTerm === '' || 
+      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
-  const getCategoryTotals = () => {
-    const categoryTotals = expenseCategories.reduce((acc, category) => {
-      acc[category] = expenses
-        .filter(expense => expense.category === category)
-        .reduce((sum, expense) => sum + expense.amount, 0)
-      return acc
-    }, {} as Record<string, number>)
-    
-    return Object.entries(categoryTotals)
-      .filter(([_, amount]) => amount > 0)
-      .sort((a, b) => b[1] - a[1])
-  }
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const deductibleExpenses = expenses.filter(e => e.isDeductible).reduce((sum, expense) => sum + expense.amount, 0)
+  const thisMonthExpenses = expenses.filter(e => {
+    const expenseDate = new Date(e.date)
+    const now = new Date()
+    return expenseDate.getMonth() === now.getMonth() && expenseDate.getFullYear() === now.getFullYear()
+  }).reduce((sum, expense) => sum + expense.amount, 0)
+
+  const categoryTotals = scheduleCCategories.map(category => {
+    const categoryExpenses = expenses.filter(e => e.category === category.id)
+    const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+    return {
+      ...category,
+      total,
+      count: categoryExpenses.length
+    }
+  }).filter(cat => cat.total > 0)
 
   const handleAddExpense = () => {
-    if (!newExpense.description || !newExpense.category || !newExpense.amount) {
+    if (!newExpense.description || !newExpense.category || newExpense.amount <= 0) {
       alert('Please fill in required fields')
       return
     }
 
     const expense: Expense = {
       id: Date.now().toString(),
-      date: newExpense.date,
-      category: newExpense.category,
-      description: newExpense.description,
-      amount: newExpense.amount,
-      vendor: newExpense.vendor,
-      paymentMethod: newExpense.paymentMethod,
-      isTaxDeductible: newExpense.isTaxDeductible,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      notes: newExpense.notes
+      ...newExpense,
+      createdAt: new Date().toISOString()
     }
 
     setExpenses([...expenses, expense])
     setNewExpense({
       date: new Date().toISOString().split('T')[0],
-      category: '',
       description: '',
+      category: '',
       amount: 0,
       vendor: '',
-      paymentMethod: '',
-      isTaxDeductible: true,
+      paymentMethod: 'card',
+      isDeductible: true,
       notes: ''
     })
-    setShowAddDialog(false)
+    setShowAddExpense(false)
+    alert('Expense added successfully!')
   }
 
-  const handleUpdateStatus = (id: string, status: 'approved' | 'rejected') => {
-    setExpenses(expenses.map(expense => 
-      expense.id === id ? { ...expense, status } : expense
-    ))
-  }
-
-  const handleDeleteExpense = (id: string) => {
+  const handleDeleteExpense = (expenseId: string) => {
     if (confirm('Are you sure you want to delete this expense?')) {
-      setExpenses(expenses.filter(expense => expense.id !== id))
+      setExpenses(expenses.filter(e => e.id !== expenseId))
+      alert('Expense deleted successfully')
     }
   }
 
-  const totals = calculateTotals()
-  const categoryTotals = getCategoryTotals()
+  const handleExportScheduleC = () => {
+    alert('Schedule C export functionality would open here')
+  }
+
+  const getPaymentMethodIcon = (method: string) => {
+    switch (method) {
+      case 'card':
+        return '💳'
+      case 'cash':
+        return '💵'
+      case 'check':
+        return '📝'
+      case 'transfer':
+        return '🏦'
+      default:
+        return '💳'
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
-      <NavBar currentPath="/expenses" user={currentUser || undefined} />
-      
-      <div className="container mx-auto px-4 py-8 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+      <NavBar currentPath="/expenses" user={user} />
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">Expense Tracking</h1>
-            <p className="text-muted">Track and manage your business expenses</p>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5">
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </Button>
-            <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-              <DialogTrigger asChild>
-                <Button className="bg-lavender hover:bg-lavender-600 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Expense
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Add New Expense</DialogTitle>
-                  <DialogDescription>
-                    Record a new business expense for tracking and tax purposes
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Date *</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={newExpense.date}
-                      onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={newExpense.category} onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {expenseCategories.map(category => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="description">Description *</Label>
-                    <Input
-                      id="description"
-                      value={newExpense.description}
-                      onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-                      placeholder="Brief description of the expense"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Amount ($) *</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      step="0.01"
-                      value={newExpense.amount}
-                      onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="vendor">Vendor</Label>
-                    <Input
-                      id="vendor"
-                      value={newExpense.vendor}
-                      onChange={(e) => setNewExpense({ ...newExpense, vendor: e.target.value })}
-                      placeholder="Vendor or merchant name"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="paymentMethod">Payment Method</Label>
-                    <Select value={newExpense.paymentMethod} onValueChange={(value) => setNewExpense({ ...newExpense, paymentMethod: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paymentMethods.map(method => (
-                          <SelectItem key={method} value={method}>{method}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea
-                      id="notes"
-                      value={newExpense.notes}
-                      onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
-                      placeholder="Additional notes or details"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddExpense} className="bg-lavender hover:bg-lavender-600 text-white">
-                    Add Expense
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-ink mb-2">Expense Tracking</h1>
+              <p className="text-muted">Track business expenses for Schedule C tax reporting</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline"
+                onClick={handleExportScheduleC}
+                className="border-lavender text-lavender hover:bg-lavender/10"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Schedule C
+              </Button>
+              <Button 
+                onClick={() => setShowAddExpense(true)}
+                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Expense
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted">Total Expenses</p>
-                  <p className="text-2xl font-bold">${totals.total.toFixed(2)}</p>
+                  <p className="text-sm font-medium text-muted">Total Expenses</p>
+                  <p className="text-2xl font-bold text-ink">${totalExpenses.toFixed(2)}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-lavender" />
+                <Receipt className="h-8 w-8 text-lavender" />
               </div>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardContent className="p-4">
+
+          <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted">Tax Deductible</p>
-                  <p className="text-2xl font-bold">${totals.taxDeductible.toFixed(2)}</p>
+                  <p className="text-sm font-medium text-muted">Deductible</p>
+                  <p className="text-2xl font-bold text-green-600">${deductibleExpenses.toFixed(2)}</p>
                 </div>
-                <FileText className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardContent className="p-4">
+
+          <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted">Pending</p>
-                  <p className="text-2xl font-bold">${totals.pending.toFixed(2)}</p>
+                  <p className="text-sm font-medium text-muted">This Month</p>
+                  <p className="text-2xl font-bold text-blue-600">${thisMonthExpenses.toFixed(2)}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-yellow-600" />
+                <Calendar className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardContent className="p-4">
+
+          <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted">Total Items</p>
-                  <p className="text-2xl font-bold">{expenses.length}</p>
+                  <p className="text-sm font-medium text-muted">Categories</p>
+                  <p className="text-2xl font-bold text-purple-600">{categoryTotals.length}</p>
                 </div>
-                <Receipt className="h-8 w-8 text-blue-600" />
+                <BarChart3 className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Filters */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search expenses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {scheduleCCategories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="list">Expense List</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="expenses" 
+              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Expenses
+            </TabsTrigger>
+            <TabsTrigger 
+              value="schedule-c" 
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              Schedule C
+            </TabsTrigger>
           </TabsList>
 
-          {/* Expense List Tab */}
-          <TabsContent value="list" className="space-y-6">
-            {/* Filters */}
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search expenses..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {expenseCategories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Expense Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Expenses ({filteredExpenses.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3">Date</th>
-                        <th className="text-left p-3">Description</th>
-                        <th className="text-left p-3">Category</th>
-                        <th className="text-left p-3">Amount</th>
-                        <th className="text-left p-3">Status</th>
-                        <th className="text-left p-3">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredExpenses.map((expense) => (
-                        <tr key={expense.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3">
-                            {new Date(expense.date).toLocaleDateString()}
-                          </td>
-                          <td className="p-3">
-                            <div>
-                              <p className="font-medium">{expense.description}</p>
-                              <p className="text-sm text-gray-600">{expense.vendor}</p>
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <Badge variant="outline">{expense.category}</Badge>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-semibold">${expense.amount.toFixed(2)}</span>
-                              {expense.isTaxDeductible && (
-                                <Badge variant="secondary" className="text-xs">Tax Deductible</Badge>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <Badge className={getStatusColor(expense.status)}>
-                              {expense.status}
-                            </Badge>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center space-x-2">
-                              {expense.status === 'pending' && (
-                                <>
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => handleUpdateStatus(expense.id, 'approved')}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    Approve
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => handleUpdateStatus(expense.id, 'rejected')}
-                                    className="bg-red-600 hover:bg-red-700 text-white"
-                                  >
-                                    Reject
-                                  </Button>
-                                </>
-                              )}
-                              <Button size="sm" variant="outline">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleDeleteExpense(expense.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Categories Tab */}
-          <TabsContent value="categories" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Expenses by Category</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {categoryTotals.map(([category, amount]) => (
-                    <div key={category} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Tag className="h-5 w-5 text-lavender" />
-                        <span className="font-medium">{category}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold">${amount.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">
-                          {((amount / totals.total) * 100).toFixed(1)}% of total
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Reports Tab */}
-          <TabsContent value="reports" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Expenses */}
+              <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
                 <CardHeader>
-                  <CardTitle>Monthly Summary</CardTitle>
+                  <CardTitle className="text-lavender">Recent Expenses</CardTitle>
+                  <CardDescription>Latest expense entries</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Total Expenses:</span>
-                      <span className="font-semibold">${totals.total.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tax Deductible:</span>
-                      <span className="font-semibold text-green-600">${totals.taxDeductible.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Pending Approval:</span>
-                      <span className="font-semibold text-yellow-600">${totals.pending.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total Items:</span>
-                      <span className="font-semibold">{expenses.length}</span>
-                    </div>
+                    {expenses.slice(0, 5).map((expense) => (
+                      <div key={expense.id} className="p-4 bg-white rounded-lg border border-gray-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold text-ink">{expense.description}</h3>
+                            <p className="text-sm text-muted">{expense.vendor}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold text-ink">${expense.amount.toFixed(2)}</span>
+                            <span className="text-lg">{getPaymentMethodIcon(expense.paymentMethod)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted">
+                          <span>{scheduleCCategories.find(c => c.id === expense.category)?.name}</span>
+                          <span>{new Date(expense.date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card>
+
+              {/* Category Breakdown */}
+              <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle className="text-lavender">Expense Categories</CardTitle>
+                  <CardDescription>Breakdown by Schedule C categories</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full" variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export to CSV
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Generate Tax Report
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    View Analytics
-                  </Button>
+                <CardContent>
+                  <div className="space-y-4">
+                    {categoryTotals.slice(0, 5).map((category) => (
+                      <div key={category.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                        <div>
+                          <h3 className="font-semibold text-ink">{category.name}</h3>
+                          <p className="text-sm text-muted">{category.scheduleCLine}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-ink">${category.total.toFixed(2)}</p>
+                          <p className="text-xs text-muted">{category.count} expenses</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
+
+          {/* Expenses Tab */}
+          <TabsContent value="expenses" className="space-y-6">
+            <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+              <CardHeader>
+                <CardTitle className="text-lavender">All Expenses</CardTitle>
+                <CardDescription>Complete list of business expenses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredExpenses.map((expense) => (
+                    <div key={expense.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-lg">{getPaymentMethodIcon(expense.paymentMethod)}</span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-ink">{expense.description}</h3>
+                          <p className="text-sm text-muted">{expense.vendor}</p>
+                          <p className="text-xs text-muted">
+                            {scheduleCCategories.find(c => c.id === expense.category)?.name} • {new Date(expense.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <p className="font-semibold text-ink">${expense.amount.toFixed(2)}</p>
+                          <Badge className={expense.isDeductible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                            {expense.isDeductible ? 'Deductible' : 'Non-deductible'}
+                          </Badge>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                            >
+                              <MoreVertical className="h-4 w-4 text-gray-600" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                              <Edit className="mr-2 h-4 w-4 text-blue-500" />
+                              <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                              <FileText className="mr-2 h-4 w-4 text-green-500" />
+                              <span>View Receipt</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Schedule C Tab */}
+          <TabsContent value="schedule-c" className="space-y-6">
+            <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+              <CardHeader>
+                <CardTitle className="text-lavender">Schedule C Categories</CardTitle>
+                <CardDescription>Business expenses organized by IRS Schedule C lines</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {categoryTotals.map((category) => (
+                    <div key={category.id} className="p-4 bg-white rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold text-ink">{category.name}</h3>
+                          <p className="text-sm text-muted">{category.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-ink">${category.total.toFixed(2)}</p>
+                          <p className="text-xs text-muted">{category.scheduleCLine}</p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted">
+                        {category.count} expense{category.count !== 1 ? 's' : ''} • {category.isDeductible ? 'Deductible' : 'Non-deductible'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
-      </div>
+
+        {/* Add Expense Modal */}
+        {showAddExpense && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <CardTitle>Add Expense</CardTitle>
+                <CardDescription>Record a new business expense</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={newExpense.date}
+                    onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="e.g., Office supplies"
+                    value={newExpense.description}
+                    onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={newExpense.category} onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {scheduleCCategories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name} ({category.scheduleCLine})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount ($)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={newExpense.amount}
+                    onChange={(e) => setNewExpense({ ...newExpense, amount: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vendor">Vendor</Label>
+                  <Input
+                    id="vendor"
+                    placeholder="e.g., Office Depot"
+                    value={newExpense.vendor}
+                    onChange={(e) => setNewExpense({ ...newExpense, vendor: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentMethod">Payment Method</Label>
+                  <Select value={newExpense.paymentMethod} onValueChange={(value: any) => setNewExpense({ ...newExpense, paymentMethod: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="card">Credit/Debit Card</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="check">Check</SelectItem>
+                      <SelectItem value="transfer">Bank Transfer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes (Optional)</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Additional notes..."
+                    value={newExpense.notes}
+                    onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isDeductible"
+                    checked={newExpense.isDeductible}
+                    onChange={(e) => setNewExpense({ ...newExpense, isDeductible: e.target.checked })}
+                  />
+                  <Label htmlFor="isDeductible">This expense is tax deductible</Label>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={handleAddExpense}
+                    className="flex-1 bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white"
+                  >
+                    Add Expense
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowAddExpense(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

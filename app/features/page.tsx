@@ -141,7 +141,7 @@ const businessFeatures = [
     icon: Receipt,
     href: '/expenses',
     color: 'bg-yellow-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'business'
   },
   {
@@ -151,7 +151,7 @@ const businessFeatures = [
     icon: DollarSign,
     href: '/payouts',
     color: 'bg-teal-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'business'
   },
   {
@@ -161,7 +161,7 @@ const businessFeatures = [
     icon: Package,
     href: '/inventory',
     color: 'bg-pink-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'business'
   }
 ]
@@ -205,7 +205,7 @@ const marketingFeatures = [
     icon: MessageSquare,
     href: '/reviews',
     color: 'bg-cyan-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'marketing'
   },
   {
@@ -225,7 +225,7 @@ const marketingFeatures = [
     icon: Users,
     href: '/referrals',
     color: 'bg-lime-500',
-    status: 'coming-soon',
+    status: 'active',
     category: 'marketing'
   },
   {
