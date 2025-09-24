@@ -51,7 +51,7 @@ export function DashboardCards() {
           {/* Background Image with higher opacity */}
           <div 
             className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: 'url(/images/7.jpg)' }}
+            style={{ backgroundImage: 'url(/images/8.jpg)' }}
           ></div>
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
@@ -109,7 +109,7 @@ export function DashboardCards() {
           {/* Background Image with higher opacity */}
           <div 
             className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: 'url(/images/6.jpg)' }}
+            style={{ backgroundImage: 'url(/images/7.jpg)' }}
           ></div>
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
@@ -138,7 +138,7 @@ export function DashboardCards() {
           {/* Background Image with higher opacity */}
           <div 
             className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: 'url(/images/4.jpg)' }}
+            style={{ backgroundImage: 'url(/images/6.jpg)' }}
           ></div>
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
