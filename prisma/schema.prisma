@@ -183,8 +183,8 @@ model Procedure {
   duration            Int?     // Duration of procedure in minutes
   areaTreated         String?  // Specific area treated
   notes               String?  // Additional notes about the procedure
-  beforePhotos        String[] // Array of before photo URLs
-  afterPhotos         String[] // Array of after photo URLs
+  beforePhotos        String?  // JSON string of before photo URLs
+  afterPhotos         String?  // JSON string of after photo URLs
   healingProgress     String?  // Healing progress notes
   procedureDate       DateTime @default(now()) // When the procedure was performed
   followUpDate        DateTime? // Scheduled follow-up date
