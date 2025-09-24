@@ -263,16 +263,6 @@ const professionalFeatures = [
     category: 'professional'
   },
   {
-    id: 'consent-forms',
-    title: 'Consent Forms',
-    description: 'Digital signatures',
-    icon: FileText,
-    href: '/consent-forms',
-    color: 'bg-stone-500',
-    status: 'active',
-    category: 'professional'
-  },
-  {
     id: 'aftercare',
     title: 'Aftercare',
     description: 'Client instructions',

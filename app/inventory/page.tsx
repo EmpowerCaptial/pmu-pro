@@ -279,6 +279,9 @@ export default function InventoryPage() {
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
+          </div>
+          
+          <div className="flex items-center space-x-3">
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-lavender hover:bg-lavender-600 text-white">

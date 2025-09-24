@@ -31,10 +31,27 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       console.log('API: User not found for email:', userEmail)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      // Create a new user if they don't exist (for demo purposes)
+      try {
+        user = await prisma.user.create({
+          data: {
+            name: userEmail.split('@')[0],
+            email: userEmail,
+            password: 'demo_password', // This is just for demo
+            businessName: 'Demo Business',
+            licenseNumber: 'DEMO123',
+            licenseState: 'CA',
+            role: 'artist'
+          }
+        })
+        console.log('API: Created new user:', { id: user.id, email: user.email })
+      } catch (createError) {
+        console.log('API: Failed to create user:', createError)
+        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+      }
     }
     
-    console.log('API: User found:', { id: user.id, email: user.email })
+    console.log('API: User found/created:', { id: user.id, email: user.email })
 
     // Fetch clients for this user
     const clients = await prisma.client.findMany({
@@ -73,6 +90,7 @@ export async function GET(request: NextRequest) {
       lastAnalysis: client.analyses[0] || null
     }))
 
+    console.log('API: Returning', transformedClients.length, 'clients')
     return NextResponse.json({ clients: transformedClients })
 
   } catch (error) {
