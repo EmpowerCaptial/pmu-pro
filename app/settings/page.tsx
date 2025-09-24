@@ -303,13 +303,6 @@ export default function SettingsPage() {
               <div className="flex gap-3 pt-4 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => window.location.href = '/billing'}
-                  className="flex-1"
-                >
-                  View All Plans
-                </Button>
-                <Button
-                  variant="outline"
                   onClick={() => alert('Billing history coming soon!')}
                   className="flex-1"
                 >
