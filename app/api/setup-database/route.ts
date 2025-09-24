@@ -78,16 +78,22 @@ export async function POST(request: NextRequest) {
     
     const createdClients = []
     for (const clientData of demoClients) {
-      const client = await prisma.client.upsert({
-        where: { 
-          email_userId: {
-            email: clientData.email,
-            userId: demoUser.id
-          }
-        },
-        update: {},
-        create: clientData
+      // Check if client already exists
+      const existingClient = await prisma.client.findFirst({
+        where: {
+          email: clientData.email,
+          userId: demoUser.id
+        }
       })
+      
+      let client
+      if (existingClient) {
+        client = existingClient
+      } else {
+        client = await prisma.client.create({
+          data: clientData
+        })
+      }
       createdClients.push(client)
     }
     
