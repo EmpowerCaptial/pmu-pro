@@ -47,18 +47,18 @@ export function DashboardCards() {
       {/* Mobile Quick Actions - All 4 tools visible */}
       <div className="lg:hidden grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
         {/* Skin Analysis */}
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          {/* Background Image with 50% opacity */}
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
+          {/* Background Image with higher opacity */}
           <div 
-            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: 'url(/images/8.jpg)' }}
           ></div>
-          {/* White overlay for text readability */}
-          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Camera className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
-              <CardTitle className="text-xs sm:text-sm font-bold truncate">Skin Analysis</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-bold truncate text-gray-800 drop-shadow-sm">Skin Analysis</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-0 p-3 sm:p-4">
@@ -66,7 +66,7 @@ export function DashboardCards() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/95 rounded-xl border border-lavender/50 group-hover:bg-lavender/10 transition-colors shadow-sm"></div>
                 <div className="relative z-10 py-2 px-2 sm:px-3 text-center">
-                  <span className="text-lavender font-semibold text-xs sm:text-sm">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Analysis
                   </span>
                 </div>
@@ -76,18 +76,18 @@ export function DashboardCards() {
         </Card>
 
         {/* Client Management */}
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          {/* Background Image with 50% opacity */}
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
+          {/* Background Image with higher opacity */}
           <div 
-            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: 'url(/images/5.jpg)' }}
           ></div>
-          {/* White overlay for text readability */}
-          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
-              <CardTitle className="text-xs sm:text-sm font-bold truncate">Client Management</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-bold truncate text-gray-800 drop-shadow-sm">Client Management</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-0 p-3 sm:p-4">
@@ -95,7 +95,7 @@ export function DashboardCards() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/95 rounded-xl border border-lavender/50 group-hover:bg-lavender/10 transition-colors shadow-sm"></div>
                 <div className="relative z-10 py-2 px-2 sm:px-3 text-center">
-                  <span className="text-lavender font-semibold text-xs sm:text-sm">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     View Clients
                   </span>
                 </div>
@@ -105,18 +105,18 @@ export function DashboardCards() {
         </Card>
 
         {/* Color Correction */}
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          {/* Background Image with 50% opacity */}
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
+          {/* Background Image with higher opacity */}
           <div 
-            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: 'url(/images/7.jpg)' }}
           ></div>
-          {/* White overlay for text readability */}
-          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Brush className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
-              <CardTitle className="text-xs sm:text-sm font-bold truncate">Color Correction</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-bold truncate text-gray-800 drop-shadow-sm">Color Correction</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-0 p-3 sm:p-4">
@@ -124,7 +124,7 @@ export function DashboardCards() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/95 rounded-xl border border-lavender/50 group-hover:bg-lavender/10 transition-colors shadow-sm"></div>
                 <div className="relative z-10 py-2 px-2 sm:px-3 text-center">
-                  <span className="text-lavender font-semibold text-xs sm:text-sm">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Correction
                   </span>
                 </div>
@@ -134,18 +134,18 @@ export function DashboardCards() {
         </Card>
 
         {/* ProCell Analysis */}
-        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-lavender/20 to-lavender/40 backdrop-blur-sm border-lavender/50">
-          {/* Background Image with 50% opacity */}
+        <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
+          {/* Background Image with higher opacity */}
           <div 
-            className="absolute inset-0 opacity-50 pointer-events-none bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: 'url(/images/6.jpg)' }}
           ></div>
-          {/* White overlay for text readability */}
-          <div className="absolute inset-0 bg-white/60 pointer-events-none"></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Microscope className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
-              <CardTitle className="text-xs sm:text-sm font-bold truncate">ProCell Analysis</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-bold truncate text-gray-800 drop-shadow-sm">ProCell Analysis</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-0 p-3 sm:p-4">
@@ -153,7 +153,7 @@ export function DashboardCards() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/95 rounded-xl border border-lavender/50 group-hover:bg-lavender/10 transition-colors shadow-sm"></div>
                 <div className="relative z-10 py-2 px-2 sm:px-3 text-center">
-                  <span className="text-lavender font-semibold text-xs sm:text-sm">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Analysis
                   </span>
                 </div>
