@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Database setup failed:', error)
     return NextResponse.json({ 
       success: false,
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }, { status: 500 })
   } finally {
     await prisma.$disconnect()
