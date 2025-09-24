@@ -461,15 +461,24 @@ export default function ReviewsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                              onClick={() => handleCopyLink(link.url)}
+                            >
                               <Copy className="mr-2 h-4 w-4 text-blue-500" />
                               <span>Copy Link</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                              onClick={() => handleSendLink(link.id)}
+                            >
                               <Send className="mr-2 h-4 w-4 text-green-500" />
                               <span>Send to Clients</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                              onClick={() => alert(`Viewing responses for ${link.name}`)}
+                            >
                               <Eye className="mr-2 h-4 w-4 text-purple-500" />
                               <span>View Responses</span>
                             </DropdownMenuItem>
