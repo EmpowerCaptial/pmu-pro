@@ -17,17 +17,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Connect to database
+    await prisma.$connect()
+    console.log('API: Database connected')
+
     // Try to find the user
     console.log('API: Querying user by email:', userEmail)
-    let user;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: userEmail }
-      })
-    } catch (dbError) {
-      console.log('API: Database error:', dbError)
-      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
-    }
+    let user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
 
     if (!user) {
       console.log('API: User not found for email:', userEmail)
@@ -95,7 +93,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('API: Unexpected error in clients endpoint:', error)
-    return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to fetch clients',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }
 
