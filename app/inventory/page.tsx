@@ -593,6 +593,7 @@ export default function InventoryPage() {
           </CardContent>
         </Card>
       </div>
+      </div>
     </div>
   )
 }

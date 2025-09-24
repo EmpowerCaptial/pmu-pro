@@ -473,5 +473,7 @@ export default function PigmentLibraryPage() {
             Email: <a href="mailto:admin@thepmuguide.com" className="text-lavender hover:underline">admin@thepmuguide.com</a>
           </p>
         </div>
+      </div>
+    </div>
   )
 }
