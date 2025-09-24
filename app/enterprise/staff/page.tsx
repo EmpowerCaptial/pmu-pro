@@ -43,6 +43,8 @@ interface StaffMember {
   lastActive: string
   permissions: string[]
   joinDate: string
+  department?: string
+  phone?: string
 }
 
 const mockStaffMembers: StaffMember[] = [
@@ -172,10 +174,9 @@ export default function EnterpriseStaffPage() {
       department: newStaffMember.department,
       phone: newStaffMember.phone,
       status: 'active',
-      permissions: getPermissionsForRole(newStaffMember.role),
-      lastLogin: null,
-      createdAt: new Date().toISOString(),
-      isActive: true
+      permissions: ['basic_access'], // Default permissions
+      lastActive: new Date().toISOString(),
+      joinDate: new Date().toISOString()
     }
 
     setStaffMembers([...staffMembers, staffMember])
