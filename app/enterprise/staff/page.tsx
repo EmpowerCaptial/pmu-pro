@@ -6,6 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Users, 
   UserPlus, 
@@ -88,6 +92,13 @@ export default function EnterpriseStaffPage() {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>(mockStaffMembers)
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddStaff, setShowAddStaff] = useState(false)
+  const [newStaffMember, setNewStaffMember] = useState({
+    name: '',
+    email: '',
+    role: 'staff' as StaffRole,
+    department: '',
+    phone: ''
+  })
 
   // Fallback user if not authenticated
   const user = currentUser ? {
@@ -143,7 +154,38 @@ export default function EnterpriseStaffPage() {
 
   const handleAddStaff = () => {
     setShowAddStaff(true)
-    alert('Add staff member functionality would open here')
+  }
+
+  const handleSubmitStaff = () => {
+    if (!newStaffMember.name || !newStaffMember.email) {
+      alert('Please fill in required fields')
+      return
+    }
+
+    const staffMember: StaffMember = {
+      id: `staff-${Date.now()}`,
+      name: newStaffMember.name,
+      email: newStaffMember.email,
+      role: newStaffMember.role,
+      department: newStaffMember.department,
+      phone: newStaffMember.phone,
+      status: 'active',
+      permissions: getPermissionsForRole(newStaffMember.role),
+      lastLogin: null,
+      createdAt: new Date().toISOString(),
+      isActive: true
+    }
+
+    setStaffMembers([...staffMembers, staffMember])
+    setShowAddStaff(false)
+    setNewStaffMember({
+      name: '',
+      email: '',
+      role: 'staff',
+      department: '',
+      phone: ''
+    })
+    alert('Staff member added successfully!')
   }
 
   const handleEditStaff = (staffId: string) => {
@@ -397,6 +439,82 @@ export default function EnterpriseStaffPage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Add Staff Dialog */}
+      <Dialog open={showAddStaff} onOpenChange={setShowAddStaff}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Staff Member</DialogTitle>
+            <DialogDescription>
+              Add a new team member to your enterprise account
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                value={newStaffMember.name}
+                onChange={(e) => setNewStaffMember({ ...newStaffMember, name: e.target.value })}
+                placeholder="Enter full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newStaffMember.email}
+                onChange={(e) => setNewStaffMember({ ...newStaffMember, email: e.target.value })}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select
+                value={newStaffMember.role}
+                onValueChange={(value: StaffRole) => setNewStaffMember({ ...newStaffMember, role: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="viewer">Viewer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                value={newStaffMember.department}
+                onChange={(e) => setNewStaffMember({ ...newStaffMember, department: e.target.value })}
+                placeholder="Enter department"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={newStaffMember.phone}
+                onChange={(e) => setNewStaffMember({ ...newStaffMember, phone: e.target.value })}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="outline" onClick={() => setShowAddStaff(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitStaff} className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white">
+              Add Staff Member
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

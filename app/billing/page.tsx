@@ -42,7 +42,7 @@ const PAYMENT_METHODS: PaymentMethod[] = [
     isEnabled: false,
     setupRequired: true,
     fees: '2.9% + 30¢ per transaction',
-    processingTime: '2-7 business days'
+    processingTime: 'Instant (with Stripe Connect) or 2-7 business days'
   },
   {
     id: 'venmo',
@@ -323,7 +323,7 @@ export default function BillingPage() {
                   </div>
                   <div>
                     <div className="font-semibold">Stripe Connect</div>
-                    <div className="text-sm text-gray-600">Credit card processing</div>
+                    <div className="text-sm text-gray-600">Credit card processing with instant payouts</div>
                   </div>
                 </div>
                 <Badge className="bg-yellow-100 text-yellow-800">Setup Required</Badge>
