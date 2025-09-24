@@ -227,50 +227,50 @@ export default function MetaIntegrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-ink mb-2">Facebook & Instagram Integration</h1>
-          <p className="text-muted">Connect your Facebook page and Instagram account for AI-powered DM responses</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Facebook & Instagram Integration</h1>
+          <p className="text-sm sm:text-base text-muted">Connect your Facebook page and Instagram account for AI-powered DM responses</p>
         </div>
 
         {/* Status Messages */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <span className="text-red-800">{error}</span>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+            <span className="text-red-800 text-sm sm:text-base">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-green-800">{success}</span>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+            <span className="text-green-800 text-sm sm:text-base">{success}</span>
           </div>
         )}
 
         {/* Connection Status */}
         {step === "connected" && connections.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+          <Card className="mb-6 sm:mb-8">
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 Connected Accounts
               </CardTitle>
-              <CardDescription>Your Facebook pages and Instagram accounts</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Your Facebook pages and Instagram accounts</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4">
               {connections.map((connection) => (
-                <div key={connection.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Facebook className="h-8 w-8 text-blue-600" />
+                <div key={connection.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-3 sm:gap-0">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Facebook className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                     <div>
-                      <div className="font-semibold">{connection.pageName}</div>
-                      <div className="text-sm text-gray-600">Page ID: {connection.pageId}</div>
+                      <div className="font-semibold text-sm sm:text-base">{connection.pageName}</div>
+                      <div className="text-xs sm:text-sm text-gray-600">Page ID: {connection.pageId}</div>
                       {connection.hasInstagram && connection.igUsername && (
-                        <div className="flex items-center gap-1 text-sm text-pink-600">
-                          <Instagram className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-xs sm:text-sm text-pink-600">
+                          <Instagram className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span>@{connection.igUsername}</span>
                         </div>
                       )}
@@ -278,9 +278,9 @@ export default function MetaIntegrationPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {connection.hasInstagram ? (
-                      <Badge className="bg-green-100 text-green-800">Instagram Linked</Badge>
+                      <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">Instagram Linked</Badge>
                     ) : (
-                      <Badge className="bg-yellow-100 text-yellow-800">Facebook Only</Badge>
+                      <Badge className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm">Facebook Only</Badge>
                     )}
                   </div>
                 </div>
@@ -290,25 +290,25 @@ export default function MetaIntegrationPage() {
         )}
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Connection Section */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Facebook className="h-5 w-5 text-blue-600" />
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Facebook className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 Connect Facebook & Instagram
               </CardTitle>
-              <CardDescription>Link your Facebook page and Instagram business account</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Link your Facebook page and Instagram business account</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-3 sm:p-4">
               {step === "idle" && (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                    <Facebook className="h-8 w-8 text-blue-600" />
+                <div className="text-center space-y-3 sm:space-y-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                    <Facebook className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Connect Your Facebook Page</h3>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <h3 className="font-semibold mb-2 text-sm sm:text-base">Connect Your Facebook Page</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                       One-click connection to your Facebook page and Instagram business account. 
                       No coding or technical knowledge required!
                     </p>
@@ -316,21 +316,21 @@ export default function MetaIntegrationPage() {
                   <Button 
                     onClick={connectFacebook}
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                         Redirecting to Facebook...
                       </>
                     ) : (
                       <>
-                        <Facebook className="h-4 w-4 mr-2" />
+                        <Facebook className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Connect with Facebook
                       </>
                     )}
                   </Button>
-                  <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="bg-green-50 p-2 sm:p-3 rounded-lg">
                     <p className="text-xs text-green-800">
                       <strong>Seamless Experience:</strong> You'll be redirected to Facebook, 
                       log in with your account, and return automatically with your pages ready to connect.
@@ -340,15 +340,15 @@ export default function MetaIntegrationPage() {
               )}
 
               {step === "pages" && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Choose a Facebook Page</h3>
-                  <div className="space-y-3">
+                <div className="space-y-3 sm:space-y-4">
+                  <h3 className="font-semibold text-sm sm:text-base">Choose a Facebook Page</h3>
+                  <div className="space-y-2 sm:space-y-3">
                     {pages.map((page) => (
-                      <div key={page.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Facebook className="h-6 w-6 text-blue-600" />
+                      <div key={page.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 sm:p-3 border rounded-lg gap-2 sm:gap-0">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <Facebook className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                           <div>
-                            <div className="font-medium">{page.name}</div>
+                            <div className="font-medium text-sm sm:text-base">{page.name}</div>
                             <div className="text-xs text-gray-500">Page ID: {page.id}</div>
                             {page.hasInstagram && (
                               <div className="flex items-center gap-1 text-xs text-pink-600">
@@ -362,10 +362,10 @@ export default function MetaIntegrationPage() {
                           onClick={() => selectPage(page)}
                           disabled={loading}
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm w-full sm:w-auto"
                         >
                           {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                           ) : (
                             "Connect"
                           )}
@@ -376,9 +376,9 @@ export default function MetaIntegrationPage() {
                 </div>
               )}
 
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Requirements</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">Requirements</h4>
+                <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                   <li>• Your Instagram must be a <strong>Professional</strong> account</li>
                   <li>• Instagram must be linked to your Facebook Page</li>
                   <li>• You must be an admin of the Facebook Page</li>
@@ -389,22 +389,22 @@ export default function MetaIntegrationPage() {
 
           {/* AI Testing Section */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-purple-600" />
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                 AI Reply Testing
               </CardTitle>
-              <CardDescription>Test AI-powered Instagram DM responses</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Test AI-powered Instagram DM responses</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4">
               <div className="space-y-2">
-                <Label htmlFor="test-message">Test Message</Label>
+                <Label htmlFor="test-message" className="text-sm sm:text-base">Test Message</Label>
                 <Textarea
                   id="test-message"
                   placeholder="Enter a sample DM message from a potential client..."
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
-                  className="force-white-bg force-gray-border force-dark-text"
+                  className="force-white-bg force-gray-border force-dark-text text-sm sm:text-base"
                   rows={3}
                 />
               </div>
@@ -412,16 +412,16 @@ export default function MetaIntegrationPage() {
               <Button
                 onClick={testAIReply}
                 disabled={aiLoading || !testMessage.trim()}
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-sm sm:text-base"
               >
                 {aiLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                     Generating Reply...
                   </>
                 ) : (
                   <>
-                    <MessageSquare className="h-4 w-4 mr-2" />
+                    <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                     Generate AI Reply
                   </>
                 )}
@@ -430,25 +430,26 @@ export default function MetaIntegrationPage() {
               {aiReply && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>AI Generated Reply</Label>
+                    <Label className="text-sm sm:text-base">AI Generated Reply</Label>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(aiReply)}
+                      className="text-xs sm:text-sm"
                     >
-                      <Copy className="h-4 w-4 mr-1" />
+                      <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Copy
                     </Button>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg border">
-                    <p className="text-sm whitespace-pre-wrap">{aiReply}</p>
+                  <div className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
+                    <p className="text-xs sm:text-sm whitespace-pre-wrap">{aiReply}</p>
                   </div>
                 </div>
               )}
 
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-purple-900 mb-2">AI Features</h4>
-                <ul className="text-sm text-purple-800 space-y-1">
+              <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                <h4 className="font-semibold text-purple-900 mb-2 text-sm sm:text-base">AI Features</h4>
+                <ul className="text-xs sm:text-sm text-purple-800 space-y-1">
                   <li>• Generates professional, friendly responses</li>
                   <li>• Tailored to PMU industry tone</li>
                   <li>• Includes follow-up questions</li>

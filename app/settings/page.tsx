@@ -57,17 +57,17 @@ export default function SettingsPage() {
         } : undefined} 
       />
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 relative z-10">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold font-serif text-ink">Settings</h1>
-              <p className="text-muted-foreground">Manage your account preferences</p>
+              <h1 className="text-2xl sm:text-3xl font-bold font-serif text-ink">Settings</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Manage your account preferences</p>
             </div>
             <Button
               onClick={handleSave}
-              className="bg-white/90 backdrop-blur-sm border border-lavender text-lavender hover:bg-lavender hover:text-white font-semibold"
+              className="bg-white/90 backdrop-blur-sm border border-lavender text-lavender hover:bg-lavender hover:text-white font-semibold text-sm sm:text-base w-full sm:w-auto"
             >
               Save Changes
             </Button>
@@ -75,18 +75,18 @@ export default function SettingsPage() {
 
           {/* Notifications */}
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-lavender" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
                 <span>Notifications</span>
               </CardTitle>
-              <CardDescription>Configure how you receive notifications</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Configure how you receive notifications</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                  <Label className="text-sm sm:text-base">Email Notifications</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Receive notifications via email</p>
                 </div>
                 <Switch
                   checked={settings.emailNotifications}
@@ -94,10 +94,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via text message</p>
+                  <Label className="text-sm sm:text-base">SMS Notifications</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Receive notifications via text message</p>
                 </div>
                 <Switch
                   checked={settings.smsNotifications}
@@ -105,10 +105,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Appointment Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Get reminded about upcoming appointments</p>
+                  <Label className="text-sm sm:text-base">Appointment Reminders</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Get reminded about upcoming appointments</p>
                 </div>
                 <Switch
                   checked={settings.appointmentReminders}
@@ -116,10 +116,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Client Updates</Label>
-                  <p className="text-sm text-muted-foreground">Notifications about client activity</p>
+                  <Label className="text-sm sm:text-base">Client Updates</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Notifications about client activity</p>
                 </div>
                 <Switch
                   checked={settings.clientUpdates}
@@ -132,18 +132,18 @@ export default function SettingsPage() {
 
           {/* Privacy & Security */}
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-lavender" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
                 <span>Privacy & Security</span>
               </CardTitle>
-              <CardDescription>Control your privacy and security settings</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Control your privacy and security settings</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
+                  <Label className="text-sm sm:text-base">Two-Factor Authentication</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Add an extra layer of security</p>
                 </div>
                 <Switch
                   checked={settings.twoFactorAuth}
@@ -151,10 +151,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">Allow clients to find your profile</p>
+                  <Label className="text-sm sm:text-base">Public Profile</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Allow clients to find your profile</p>
                 </div>
                 <Switch
                   checked={settings.publicProfile}
@@ -162,10 +162,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Show Email</Label>
-                  <p className="text-sm text-muted-foreground">Display email on public profile</p>
+                  <Label className="text-sm sm:text-base">Show Email</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Display email on public profile</p>
                 </div>
                 <Switch
                   checked={settings.showEmail}
@@ -173,10 +173,10 @@ export default function SettingsPage() {
                   className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <div className="space-y-0.5">
-                  <Label>Show Phone</Label>
-                  <p className="text-sm text-muted-foreground">Display phone number on public profile</p>
+                  <Label className="text-sm sm:text-base">Show Phone</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Display phone number on public profile</p>
                 </div>
                 <Switch
                   checked={settings.showPhone}
@@ -189,22 +189,22 @@ export default function SettingsPage() {
 
           {/* Preferences */}
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Palette className="h-5 w-5 text-lavender" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
                 <span>Preferences</span>
               </CardTitle>
-              <CardDescription>Customize your app experience</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Customize your app experience</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label>Timezone</Label>
+                  <Label className="text-sm sm:text-base">Timezone</Label>
                   <Select
                     value={settings.timezone}
                     onValueChange={(value) => setSettings({ ...settings, timezone: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -216,12 +216,12 @@ export default function SettingsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Language</Label>
+                  <Label className="text-sm sm:text-base">Language</Label>
                   <Select
                     value={settings.language}
                     onValueChange={(value) => setSettings({ ...settings, language: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -237,45 +237,45 @@ export default function SettingsPage() {
 
           {/* Subscription Management */}
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <CreditCard className="h-5 w-5 text-lavender" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
                 <span>Subscription Management</span>
               </CardTitle>
-              <CardDescription>Manage your PMU Pro subscription plan</CardDescription>
+              <CardDescription className="text-sm sm:text-base">Manage your PMU Pro subscription plan</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
               {/* Current Plan */}
-              <div className="bg-gradient-to-r from-lavender/10 to-purple/10 p-4 rounded-lg border border-lavender/20">
-                <div className="flex items-center justify-between">
+              <div className="bg-gradient-to-r from-lavender/10 to-purple/10 p-3 sm:p-4 rounded-lg border border-lavender/20">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                   <div>
-                    <h3 className="font-semibold text-lg">Current Plan: {BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].name}</h3>
-                    <p className="text-sm text-gray-600">${BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].price}/month</p>
+                    <h3 className="font-semibold text-base sm:text-lg">Current Plan: {BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">${BILLING_PLANS[currentPlan as keyof typeof BILLING_PLANS].price}/month</p>
                   </div>
-                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">Active</Badge>
                 </div>
               </div>
 
               {/* Plan Comparison */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">Available Plans</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-3 sm:space-y-4">
+                <h4 className="font-semibold text-sm sm:text-base">Available Plans</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {Object.entries(BILLING_PLANS).map(([key, plan]) => (
-                    <div key={key} className={`p-4 rounded-lg border ${
+                    <div key={key} className={`p-3 sm:p-4 rounded-lg border ${
                       currentPlan === key 
                         ? 'border-lavender bg-lavender/10' 
                         : 'border-gray-200 bg-white'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold">{plan.name}</h5>
-                        {plan.popular && <Star className="w-4 h-4 text-yellow-500" />}
+                        <h5 className="font-semibold text-sm sm:text-base">{plan.name}</h5>
+                        {plan.popular && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />}
                       </div>
-                      <div className="text-2xl font-bold text-lavender mb-2">${plan.price}</div>
-                      <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                      <div className="text-xl sm:text-2xl font-bold text-lavender mb-2">${plan.price}</div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3">{plan.description}</p>
                       
-                      <ul className="space-y-1 mb-4">
+                      <ul className="space-y-1 mb-3 sm:mb-4">
                         {plan.features.slice(0, 3).map((feature, index) => (
-                          <li key={index} className="flex items-center text-sm">
+                          <li key={index} className="flex items-center text-xs sm:text-sm">
                             <Check className="w-3 h-3 text-green-500 mr-2" />
                             <span>{feature}</span>
                           </li>
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleUpgradePlan(key as 'starter' | 'professional' | 'studio')}
-                          className="w-full"
+                          className="w-full text-xs sm:text-sm"
                         >
                           {currentPlan === 'starter' && key === 'professional' ? 'Upgrade' : 
                            currentPlan === 'professional' && key === 'studio' ? 'Upgrade' : 
@@ -300,18 +300,18 @@ export default function SettingsPage() {
               </div>
 
               {/* Billing Actions */}
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
                 <Button
                   variant="outline"
                   onClick={() => alert('Billing history coming soon!')}
-                  className="flex-1"
+                  className="flex-1 text-xs sm:text-sm"
                 >
                   Billing History
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => alert('Cancel subscription coming soon!')}
-                  className="flex-1"
+                  className="flex-1 text-xs sm:text-sm"
                 >
                   Cancel Subscription
                 </Button>

@@ -152,30 +152,30 @@ export function AftercareInstructions() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Procedure Selection */}
       <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-        <CardHeader>
-          <CardTitle className="font-serif text-lavender-600">Select Procedure</CardTitle>
+        <CardHeader className="p-3 sm:p-4">
+          <CardTitle className="font-serif text-lavender-600 text-base sm:text-lg">Select Procedure</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-4">
           <Tabs value={selectedProcedure} onValueChange={setSelectedProcedure}>
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-9 sm:h-10">
               <TabsTrigger 
                 value="brows" 
-                className="font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                className="font-bold text-xs sm:text-sm data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md"
               >
                 EYEBROWS
               </TabsTrigger>
               <TabsTrigger 
                 value="lips" 
-                className="font-bold data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                className="font-bold text-xs sm:text-sm data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md"
               >
                 LIPS
               </TabsTrigger>
               <TabsTrigger 
                 value="eyeliner" 
-                className="font-bold data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                className="font-bold text-xs sm:text-sm data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
               >
                 EYELINER
               </TabsTrigger>
@@ -185,30 +185,30 @@ export function AftercareInstructions() {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex gap-4 print:hidden">
-        <Button onClick={handlePrint} className="gap-2 bg-gradient-to-r from-lavender to-lavender-600">
-          <Printer className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 print:hidden">
+        <Button onClick={handlePrint} className="gap-2 bg-gradient-to-r from-lavender to-lavender-600 text-sm sm:text-base">
+          <Printer className="h-3 w-3 sm:h-4 sm:w-4" />
           Print Instructions
         </Button>
         <Button
           onClick={handleEmailReminders}
           variant="outline"
-          className="gap-2 border-lavender text-lavender hover:bg-lavender/10 bg-transparent"
+          className="gap-2 border-lavender text-lavender hover:bg-lavender/10 bg-transparent text-sm sm:text-base"
         >
-          <Mail className="h-4 w-4" />
+          <Mail className="h-3 w-3 sm:h-4 sm:w-4" />
           Schedule Email
         </Button>
       </div>
 
       {/* Instructions */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <Card className={`border-lavender/20 bg-gradient-to-r ${(procedures as any)[selectedProcedure]?.color || 'from-lavender/10 to-lavender/20'}`}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-serif text-2xl">
+          <CardHeader className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+              <CardTitle className="font-serif text-lg sm:text-xl lg:text-2xl">
                 {(procedures as any)[selectedProcedure]?.name || 'PMU'} Aftercare Instructions
               </CardTitle>
-              <Badge variant="secondary" className="bg-lavender/20 text-lavender-700">
+              <Badge variant="secondary" className="bg-lavender/20 text-lavender-700 text-xs sm:text-sm">
                 <Calendar className="h-3 w-3 mr-1" />
                 {(procedures as any)[selectedProcedure]?.healingTime || '2-4 weeks'} healing
               </Badge>
@@ -218,18 +218,18 @@ export function AftercareInstructions() {
 
                         {(procedures as any)[selectedProcedure]?.instructions?.map((phase: any, index: number) => (
           <Card key={index} className="border-lavender/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 font-serif text-lg">
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="flex items-center gap-2 sm:gap-3 font-serif text-base sm:text-lg">
                 {phase.icon}
                 {phase.phase}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-4">
               <ul className="space-y-2">
                 {phase.details.map((detail: any, detailIndex: number) => (
                   <li key={detailIndex} className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-lavender rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-sm">{detail}</span>
+                    <span className="text-xs sm:text-sm">{detail}</span>
                   </li>
                 ))}
               </ul>
@@ -239,13 +239,13 @@ export function AftercareInstructions() {
 
         {/* Important Notes */}
         <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-700 font-serif flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-red-700 font-serif flex items-center gap-2 text-base sm:text-lg">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
               Important Notes
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-red-600 space-y-2">
+          <CardContent className="text-xs sm:text-sm text-red-600 space-y-2 p-3 sm:p-4">
             <p>
               • Contact your PMU artist immediately if you experience excessive swelling, pus, or signs of infection
             </p>

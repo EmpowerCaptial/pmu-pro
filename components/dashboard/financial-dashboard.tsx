@@ -88,15 +88,15 @@ export function WeeklyBalanceCard() {
   if (loading) {
     return (
       <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-lavender" />
-            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+            <CardTitle className="text-base sm:text-lg font-bold">Weekly Balance</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-6 w-6 animate-spin text-lavender" />
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="flex items-center justify-center py-6 sm:py-8">
+            <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-lavender" />
           </div>
         </CardContent>
       </Card>
@@ -106,17 +106,17 @@ export function WeeklyBalanceCard() {
   if (error) {
     return (
       <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+            <CardTitle className="text-base sm:text-lg font-bold">Weekly Balance</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">
-            <p className="text-red-600 text-sm mb-2">{error}</p>
-            <Button onClick={loadWeeklyData} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="text-center py-3 sm:py-4">
+            <p className="text-red-600 text-xs sm:text-sm mb-2">{error}</p>
+            <Button onClick={loadWeeklyData} variant="outline" size="sm" className="text-xs sm:text-sm">
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Retry
             </Button>
           </div>
@@ -127,43 +127,43 @@ export function WeeklyBalanceCard() {
 
   return (
     <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-lavender" />
-            <CardTitle className="text-lg font-bold">Weekly Balance</CardTitle>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+            <CardTitle className="text-base sm:text-lg font-bold">Weekly Balance</CardTitle>
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
+          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm">
             <ArrowUpRight className="h-3 w-3 mr-1" />
             +{data?.growthPercentage}%
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
               ${data?.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-sm text-gray-600">Total revenue this week</p>
+            <p className="text-xs sm:text-sm text-gray-600">Total revenue this week</p>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-lg font-semibold text-gray-900">{data?.serviceCount}</div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+            <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+              <div className="text-base sm:text-lg font-semibold text-gray-900">{data?.serviceCount}</div>
               <div className="text-xs text-gray-600">Services</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm font-semibold text-gray-900">{data?.topService}</div>
+            <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+              <div className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{data?.topService}</div>
               <div className="text-xs text-gray-600">Top Service</div>
             </div>
           </div>
           
           <Button 
             onClick={() => window.location.href = '/reports'}
-            className="w-full bg-lavender hover:bg-lavender-600 text-white py-2"
+            className="w-full bg-lavender hover:bg-lavender-600 text-white py-2 text-sm sm:text-base"
           >
-            <Calendar className="h-4 w-4 mr-2" />
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             View Weekly Report
           </Button>
         </div>
@@ -265,15 +265,15 @@ export function DailyBalanceCard() {
   if (loading) {
     return (
       <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
-            <DollarSign className="h-5 w-5 text-lavender" />
-            <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+            <CardTitle className="text-base sm:text-lg font-bold">Daily Balance</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-6 w-6 animate-spin text-lavender" />
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="flex items-center justify-center py-6 sm:py-8">
+            <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-lavender" />
           </div>
         </CardContent>
       </Card>
@@ -283,17 +283,17 @@ export function DailyBalanceCard() {
   if (error) {
     return (
       <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
           <div className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+            <CardTitle className="text-base sm:text-lg font-bold">Daily Balance</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">
-            <p className="text-red-600 text-sm mb-2">{error}</p>
-            <Button onClick={loadDailyData} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="text-center py-3 sm:py-4">
+            <p className="text-red-600 text-xs sm:text-sm mb-2">{error}</p>
+            <Button onClick={loadDailyData} variant="outline" size="sm" className="text-xs sm:text-sm">
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Retry
             </Button>
           </div>
@@ -304,56 +304,56 @@ export function DailyBalanceCard() {
 
   return (
     <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
         <div className="flex items-center space-x-2">
-          <DollarSign className="h-5 w-5 text-lavender" />
-          <CardTitle className="text-lg font-bold">Daily Balance</CardTitle>
+          <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+          <CardTitle className="text-base sm:text-lg font-bold">Daily Balance</CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
               ${data?.todaysRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-sm text-gray-600">Today's revenue</p>
+            <p className="text-xs sm:text-sm text-gray-600">Today's revenue</p>
           </div>
           
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex justify-between items-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
               <div>
-                <div className="text-lg font-semibold text-green-800">
+                <div className="text-base sm:text-lg font-semibold text-green-800">
                   ${data?.stripeBalance.toFixed(2)}
                 </div>
                 <div className="text-xs text-green-600">Stripe Balance</div>
               </div>
-              <CreditCard className="h-5 w-5 text-green-600" />
+              <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
             </div>
             
-            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex justify-between items-center p-2 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div>
-                <div className="text-lg font-semibold text-blue-800">
+                <div className="text-base sm:text-lg font-semibold text-blue-800">
                   ${data?.systemBalance.toFixed(2)}
                 </div>
                 <div className="text-xs text-blue-600">System Balance</div>
               </div>
-              <div className="text-sm text-blue-600">{data?.transactionCount} transactions</div>
+              <div className="text-xs sm:text-sm text-blue-600">{data?.transactionCount} transactions</div>
             </div>
           </div>
           
           <Button 
             onClick={handleImmediatePayout}
             disabled={!data?.canPayout || payoutLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400 py-2"
+            className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400 py-2 text-sm sm:text-base"
           >
             {payoutLoading ? (
               <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                 Processing...
               </>
             ) : (
               <>
-                <ArrowUpRight className="h-4 w-4 mr-2" />
+                <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Immediate Payout - ${data?.stripeBalance.toFixed(2)}
               </>
             )}

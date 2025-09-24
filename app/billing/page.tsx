@@ -145,64 +145,64 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
           <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">Payment Processing</h1>
-            <p className="text-muted">Set up payment methods to accept payments from your clients</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Payment Processing</h1>
+            <p className="text-sm sm:text-base text-muted">Set up payment methods to accept payments from your clients</p>
           </div>
           <Button 
             variant="outline"
             size="sm"
             onClick={() => window.location.href = '/settings'}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
             Settings
           </Button>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
                 {paymentMethods.filter(m => m.isEnabled).length}
               </div>
-              <div className="text-sm text-gray-600">Active Payment Methods</div>
+              <div className="text-xs sm:text-sm text-gray-600">Active Payment Methods</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
                 {paymentMethods.filter(m => m.type === 'digital').length}
               </div>
-              <div className="text-sm text-gray-600">Digital Payment Options</div>
+              <div className="text-xs sm:text-sm text-gray-600">Digital Payment Options</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">
+          <Card className="sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">
                 {paymentMethods.filter(m => m.fees.includes('Free')).length}
               </div>
-              <div className="text-sm text-gray-600">Free Payment Methods</div>
+              <div className="text-xs sm:text-sm text-gray-600">Free Payment Methods</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Payment Methods Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {paymentMethods.map((method) => (
             <Card key={method.id} className={`${method.isEnabled ? 'ring-2 ring-green-200' : ''}`}>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">{method.icon}</div>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="text-xl sm:text-2xl">{method.icon}</div>
                     <div>
-                      <CardTitle className="text-lg">{method.name}</CardTitle>
-                      <p className="text-sm text-gray-600">{method.description}</p>
+                      <CardTitle className="text-base sm:text-lg">{method.name}</CardTitle>
+                      <p className="text-xs sm:text-sm text-gray-600">{method.description}</p>
                     </div>
                   </div>
                   <Switch
@@ -215,13 +215,13 @@ export default function BillingPage() {
                   <span className="text-xs text-gray-500">{method.type}</span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-gray-500" />
+              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                   <span>{method.fees}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Zap className="w-4 h-4 text-gray-500" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                   <span>{method.processingTime}</span>
                 </div>
                 
@@ -233,9 +233,9 @@ export default function BillingPage() {
                       if (method.id === 'stripe') handleStripeSetup()
                       else if (method.id === 'paypal') handlePayPalSetup()
                     }}
-                    className="w-full"
+                    className="w-full text-xs sm:text-sm"
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Setup Required
                   </Button>
                 )}
@@ -245,58 +245,60 @@ export default function BillingPage() {
         </div>
 
         {/* Payment Links Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
               Payment Links & QR Codes
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="venmo-link">Venmo Link</Label>
+                <Label htmlFor="venmo-link" className="text-sm sm:text-base">Venmo Link</Label>
                 <div className="flex gap-2">
                   <Input
                     id="venmo-link"
                     placeholder="@your-venmo-username"
-                    className="force-white-bg force-gray-border force-dark-text"
+                    className="force-white-bg force-gray-border force-dark-text text-xs sm:text-sm"
                   />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => copyToClipboard('@your-venmo-username')}
+                    className="px-2 sm:px-3"
                   >
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="cashapp-link">Cash App Link</Label>
+                <Label htmlFor="cashapp-link" className="text-sm sm:text-base">Cash App Link</Label>
                 <div className="flex gap-2">
                   <Input
                     id="cashapp-link"
                     placeholder="$your-cashapp-username"
-                    className="force-white-bg force-gray-border force-dark-text"
+                    className="force-white-bg force-gray-border force-dark-text text-xs sm:text-sm"
                   />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => copyToClipboard('$your-cashapp-username')}
+                    className="px-2 sm:px-3"
                   >
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
             </div>
             
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-blue-900 mb-1">Payment Security</h4>
-                  <p className="text-sm text-blue-800">
+                  <h4 className="font-semibold text-blue-900 mb-1 text-sm sm:text-base">Payment Security</h4>
+                  <p className="text-xs sm:text-sm text-blue-800">
                     All payment methods are secure and encrypted. We recommend using multiple payment options 
                     to give your clients flexibility and convenience.
                   </p>
@@ -308,38 +310,38 @@ export default function BillingPage() {
 
         {/* Integration Status */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               Integration Status
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 text-blue-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                   </div>
                   <div>
-                    <div className="font-semibold">Stripe Connect</div>
-                    <div className="text-sm text-gray-600">Credit card processing with instant payouts</div>
+                    <div className="font-semibold text-sm sm:text-base">Stripe Connect</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Credit card processing with instant payouts</div>
                   </div>
                 </div>
-                <Badge className="bg-yellow-100 text-yellow-800">Setup Required</Badge>
+                <Badge className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm">Setup Required</Badge>
               </div>
               
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-green-600" />
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Smartphone className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-semibold">Digital Payments</div>
-                    <div className="text-sm text-gray-600">Venmo, Cash App, Zelle</div>
+                    <div className="font-semibold text-sm sm:text-base">Digital Payments</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Venmo, Cash App, Zelle</div>
                   </div>
                 </div>
-                <Badge className="bg-green-100 text-green-800">Ready to Use</Badge>
+                <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">Ready to Use</Badge>
               </div>
             </div>
           </CardContent>

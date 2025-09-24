@@ -120,73 +120,74 @@ export default function ClientList({
   return (
     <div className="w-full max-w-4xl mx-auto min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 py-4 flex items-center gap-3 border-b border-beige bg-white/95 backdrop-blur shadow-sm">
+      <div className="sticky top-0 z-10 px-3 sm:px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3 border-b border-beige bg-white/95 backdrop-blur shadow-sm">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => router.push('/features')}
           className="shrink-0 rounded-xl p-2 border border-lavender/20 hover:bg-lavender/10"
         >
-          <ArrowLeft className="h-5 w-5 text-lavender" />
+          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold text-ink tracking-tight">Client Management</h1>
-          <p className="text-sm text-muted-text">{clients.length} clients</p>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold text-ink tracking-tight truncate">Client Management</h1>
+          <p className="text-xs sm:text-sm text-muted-text">{clients.length} clients</p>
         </div>
         <Button
           onClick={onAddClient}
-          className="shrink-0 rounded-xl bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg"
+          className="shrink-0 rounded-xl bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg text-xs sm:text-sm px-2 sm:px-4"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Client
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Add Client</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
       {/* Search */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <div className="relative">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search clients by name, phone, or email"
-            className="w-full h-12 rounded-2xl pl-11 pr-4 text-sm bg-white/80 border border-lavender/20 placeholder:text-muted-text focus:outline-none focus:ring-2 focus:ring-lavender/60 focus:border-lavender/40 shadow-sm"
+            className="w-full h-10 sm:h-12 rounded-2xl pl-10 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm bg-white/80 border border-lavender/20 placeholder:text-muted-text focus:outline-none focus:ring-2 focus:ring-lavender/60 focus:border-lavender/40 shadow-sm"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-text">
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="px-4 mb-4">
-        <div className="grid grid-cols-4 gap-3">
+      <div className="px-3 sm:px-4 mb-3 sm:mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <Card className="border-lavender/20 bg-gradient-to-r from-purple-50 to-lavender/10">
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-purple-600">
+            <CardContent className="p-2 sm:p-3 text-center">
+              <div className="text-sm sm:text-lg font-bold text-purple-600">
                 {clients.filter(c => getClientStatus(c).status === 'recent').length}
               </div>
               <div className="text-xs text-muted-text">Recent</div>
             </CardContent>
           </Card>
           <Card className="border-teal-200 bg-gradient-to-r from-teal-50 to-blue-50">
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-teal-600">
+            <CardContent className="p-2 sm:p-3 text-center">
+              <div className="text-sm sm:text-lg font-bold text-teal-600">
                 {clients.filter(c => getClientStatus(c).status === 'active').length}
               </div>
               <div className="text-xs text-muted-text">Active</div>
             </CardContent>
           </Card>
           <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-orange-600">
+            <CardContent className="p-2 sm:p-3 text-center">
+              <div className="text-sm sm:text-lg font-bold text-orange-600">
                 {clients.filter(c => getClientStatus(c).status === 'new').length}
               </div>
               <div className="text-xs text-muted-text">New</div>
             </CardContent>
           </Card>
           <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50">
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-gray-600">
+            <CardContent className="p-2 sm:p-3 text-center">
+              <div className="text-sm sm:text-lg font-bold text-gray-600">
                 {clients.filter(c => getClientStatus(c).status === 'inactive').length}
               </div>
               <div className="text-xs text-muted-text">Inactive</div>
@@ -199,7 +200,7 @@ export default function ClientList({
       <div className="divide-y divide-lavender/10">
         {groups.map(({ letter, people }) => (
           <section key={letter} className="">
-            <div className="px-4 py-2 text-xs font-medium tracking-widest uppercase text-lavender sticky top-[140px] backdrop-blur bg-white/90 border-l-4 border-lavender/30">
+            <div className="px-3 sm:px-4 py-2 text-xs font-medium tracking-widest uppercase text-lavender sticky top-[120px] sm:top-[140px] backdrop-blur bg-white/90 border-l-4 border-lavender/30">
               {letter}
             </div>
             <ul className="">
@@ -208,21 +209,21 @@ export default function ClientList({
                 return (
                   <li 
                     key={client.id} 
-                    className="px-4 py-4 flex items-center gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
+                    className="px-3 sm:px-4 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
                     onClick={() => onClientSelect?.(client)}
                   >
                     {/* Avatar with FITZ */}
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center flex-shrink-0">
                       {client.avatarUrl ? (
                         <img
                           src={client.avatarUrl}
                           alt=""
-                          className="h-12 w-12 rounded-full object-cover ring-2 ring-lavender/20"
+                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover ring-2 ring-lavender/20"
                           draggable={false}
                         />
                       ) : (
-                        <div className="h-12 w-12 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
-                          <span className="text-sm font-semibold text-white">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
+                          <span className="text-xs sm:text-sm font-semibold text-white">
                             {initials(client.name)}
                           </span>
                         </div>
@@ -239,30 +240,30 @@ export default function ClientList({
 
                     {/* Client Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                         <p className="text-sm font-medium text-ink truncate">{client.name}</p>
-                        <Badge className={`text-xs px-2 py-1 ${clientStatus.color} text-white`}>
+                        <Badge className={`text-xs px-2 py-1 ${clientStatus.color} text-white w-fit`}>
                           {clientStatus.label}
                         </Badge>
                       </div>
                       <div className="flex flex-col gap-1 text-xs text-muted-text">
                         {client.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {client.email}
+                          <span className="flex items-center gap-1 truncate">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{client.email}</span>
                           </span>
                         )}
                         {client.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {client.phone}
+                          <span className="flex items-center gap-1 truncate">
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{client.phone}</span>
                           </span>
                         )}
                       </div>
                       {client.lastProcedure && (
                         <div className="flex items-center gap-1 mt-1 text-xs text-muted-text">
-                          <Clock className="h-3 w-3" />
-                          Last procedure: {new Date(client.lastProcedure.createdAt).toLocaleDateString()}
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">Last procedure: {new Date(client.lastProcedure.createdAt).toLocaleDateString()}</span>
                         </div>
                       )}
                     </div>
@@ -273,39 +274,39 @@ export default function ClientList({
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-600 hover:text-gray-900 bg-gray-50"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-gray-100 text-gray-600 hover:text-gray-900 bg-gray-50 flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg">
+                      <DropdownMenuContent align="end" className="w-40 sm:w-48 bg-white border border-gray-200 shadow-lg">
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onClientSelect?.(client);
-                        }}>
-                          <Eye className="mr-2 h-4 w-4 text-lavender" />
+                        }} className="text-xs sm:text-sm">
+                          <Eye className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
                           <span>View Details</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onEditClient?.(client);
-                        }}>
-                          <Edit className="mr-2 h-4 w-4 text-teal-500" />
+                        }} className="text-xs sm:text-sm">
+                          <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-teal-500" />
                           <span>Edit Client</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onBookAppointment?.(client);
-                        }}>
-                          <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+                        }} className="text-xs sm:text-sm">
+                          <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                           <span>Book Appointment</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onSendMessage?.(client);
-                        }}>
-                          <MessageSquare className="mr-2 h-4 w-4 text-purple-500" />
+                        }} className="text-xs sm:text-sm">
+                          <MessageSquare className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
                           <span>Send Message</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
@@ -313,9 +314,9 @@ export default function ClientList({
                             e.stopPropagation();
                             onDeleteClient?.(client);
                           }}
-                          className="text-red-600 focus:text-red-600"
+                          className="text-red-600 focus:text-red-600 text-xs sm:text-sm"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           <span>Delete</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -330,20 +331,20 @@ export default function ClientList({
 
       {/* Empty State */}
       {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 px-4">
-          <div className="w-16 h-16 rounded-full bg-lavender/10 flex items-center justify-center mb-4">
-            <User className="h-8 w-8 text-lavender" />
+        <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-lavender/10 flex items-center justify-center mb-3 sm:mb-4">
+            <User className="h-6 w-6 sm:h-8 sm:w-8 text-lavender" />
           </div>
-          <h3 className="text-lg font-medium text-ink mb-2">No clients found</h3>
-          <p className="text-muted-text text-center mb-4">
+          <h3 className="text-base sm:text-lg font-medium text-ink mb-2">No clients found</h3>
+          <p className="text-sm sm:text-base text-muted-text text-center mb-4 max-w-sm">
             {q ? "Try adjusting your search terms" : "Get started by adding your first client"}
           </p>
           {!q && onAddClient && (
             <Button 
               onClick={onAddClient}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-sm sm:text-base"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Add Your First Client
             </Button>
           )}

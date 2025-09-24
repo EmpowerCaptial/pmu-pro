@@ -268,9 +268,9 @@ export default function ClientsPage() {
       if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-lavender mx-auto mb-4" />
-          <p className="text-muted-text">Loading clients...</p>
+        <div className="text-center p-4 sm:p-6">
+          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-lavender mx-auto mb-3 sm:mb-4" />
+          <p className="text-sm sm:text-base text-muted-text">Loading clients...</p>
         </div>
       </div>
     );
@@ -278,17 +278,17 @@ export default function ClientsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige p-4 sm:p-6">
+        <Card className="max-w-md w-full">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-red-600 text-base sm:text-lg">
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               Error
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-text mb-4">{error}</p>
-            <Button onClick={fetchClients} className="w-full">
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <p className="text-sm sm:text-base text-muted-text mb-4">{error}</p>
+            <Button onClick={fetchClients} className="w-full text-sm sm:text-base">
               Try Again
             </Button>
           </CardContent>
@@ -312,116 +312,130 @@ export default function ClientsPage() {
 
       {/* Add Client Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add New Client</DialogTitle>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="p-4 sm:p-6 pb-4">
+            <DialogTitle className="text-base sm:text-lg">Add New Client</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter client's full name"
+          <div className="p-4 sm:p-6 pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm sm:text-base">Full Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter client's full name"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="client@example.com"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm sm:text-base">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth" className="text-sm sm:text-base">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergencyContact" className="text-sm sm:text-base">Emergency Contact</Label>
+                <Input
+                  id="emergencyContact"
+                  value={formData.emergencyContact}
+                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                  placeholder="Emergency contact info"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="skinType" className="text-sm sm:text-base">Skin Type (Fitzpatrick)</Label>
+                <Select value={formData.skinType} onValueChange={(value) => setFormData({ ...formData, skinType: value })}>
+                  <SelectTrigger className="text-sm sm:text-base">
+                    <SelectValue placeholder="Select skin type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Type 1">Type 1 - Very Fair</SelectItem>
+                    <SelectItem value="Type 2">Type 2 - Fair</SelectItem>
+                    <SelectItem value="Type 3">Type 3 - Medium</SelectItem>
+                    <SelectItem value="Type 4">Type 4 - Olive</SelectItem>
+                    <SelectItem value="Type 5">Type 5 - Brown</SelectItem>
+                    <SelectItem value="Type 6">Type 6 - Dark</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="medicalHistory" className="text-sm sm:text-base">Medical History</Label>
+              <Textarea
+                id="medicalHistory"
+                value={formData.medicalHistory}
+                onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
+                placeholder="Any relevant medical conditions or history"
+                rows={3}
+                className="text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="client@example.com"
+              <Label htmlFor="allergies" className="text-sm sm:text-base">Allergies</Label>
+              <Textarea
+                id="allergies"
+                value={formData.allergies}
+                onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                placeholder="Known allergies or sensitivities"
+                rows={2}
+                className="text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="(555) 123-4567"
+              <Label htmlFor="notes" className="text-sm sm:text-base">Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Additional notes about the client"
+                rows={3}
+                className="text-sm sm:text-base"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-              />
+            <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAddDialogOpen(false)}
+                className="w-full sm:w-auto text-sm sm:text-base"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddClient}
+                disabled={!formData.name}
+                className="w-full sm:w-auto bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-sm sm:text-base"
+              >
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                Add Client
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="emergencyContact">Emergency Contact</Label>
-              <Input
-                id="emergencyContact"
-                value={formData.emergencyContact}
-                onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                placeholder="Emergency contact info"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="skinType">Skin Type (Fitzpatrick)</Label>
-              <Select value={formData.skinType} onValueChange={(value) => setFormData({ ...formData, skinType: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select skin type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Type 1">Type 1 - Very Fair</SelectItem>
-                  <SelectItem value="Type 2">Type 2 - Fair</SelectItem>
-                  <SelectItem value="Type 3">Type 3 - Medium</SelectItem>
-                  <SelectItem value="Type 4">Type 4 - Olive</SelectItem>
-                  <SelectItem value="Type 5">Type 5 - Brown</SelectItem>
-                  <SelectItem value="Type 6">Type 6 - Dark</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="medicalHistory">Medical History</Label>
-            <Textarea
-              id="medicalHistory"
-              value={formData.medicalHistory}
-              onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
-              placeholder="Any relevant medical conditions or history"
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="allergies">Allergies</Label>
-            <Textarea
-              id="allergies"
-              value={formData.allergies}
-              onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-              placeholder="Known allergies or sensitivities"
-              rows={2}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes about the client"
-              rows={3}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAddClient}
-              disabled={!formData.name}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Client
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

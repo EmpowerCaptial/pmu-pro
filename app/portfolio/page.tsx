@@ -169,8 +169,8 @@ export default function PortfolioPage() {
         } : undefined} 
       />
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 relative z-10">
+        <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
           {/* Header */}
           {/* Mobile Layout */}
           <div className="md:hidden text-center mb-6">

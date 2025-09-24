@@ -256,70 +256,70 @@ export default function ReferralsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/referrals" user={user} />
-      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-ink mb-2">Referral Program</h1>
-              <p className="text-muted">Grow your business through client referrals</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Referral Program</h1>
+              <p className="text-muted text-sm sm:text-base">Grow your business through client referrals</p>
             </div>
             <Button 
               onClick={() => setShowCreateProgram(true)}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Create Program
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Total Referrals</p>
-                  <p className="text-2xl font-bold text-ink">{totalReferrals}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Total Referrals</p>
+                  <p className="text-lg sm:text-2xl font-bold text-ink">{totalReferrals}</p>
                 </div>
-                <Users className="h-8 w-8 text-lavender" />
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-lavender" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{completedReferrals}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Completed</p>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600">{completedReferrals}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Total Rewards</p>
-                  <p className="text-2xl font-bold text-blue-600">${totalRewards.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Total Rewards</p>
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600">${totalRewards.toFixed(2)}</p>
                 </div>
-                <Gift className="h-8 w-8 text-blue-600" />
+                <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">${pendingRewards.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Pending</p>
+                  <p className="text-lg sm:text-2xl font-bold text-yellow-600">${pendingRewards.toFixed(2)}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
@@ -327,22 +327,22 @@ export default function ReferralsPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-9 sm:h-10">
             <TabsTrigger 
               value="overview" 
-              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="programs" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Programs
             </TabsTrigger>
             <TabsTrigger 
               value="referrals" 
-              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Referrals
             </TabsTrigger>

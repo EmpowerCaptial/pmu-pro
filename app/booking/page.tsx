@@ -451,68 +451,71 @@ export default function BookingCalendar() {
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">Booking Calendar</h1>
-            <p className="text-muted">Manage your appointments and schedule</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Booking Calendar</h1>
+            <p className="text-sm sm:text-base text-muted">Manage your appointments and schedule</p>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button 
               data-testid="booking-new-appointment"
               onClick={handleNewAppointmentClick}
-              className="bg-lavender hover:bg-lavender-600 text-white"
+              className="bg-lavender hover:bg-lavender-600 text-white text-sm sm:text-base w-full sm:w-auto"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
               New Appointment
             </Button>
             {/* Share Button */}
             <Button
               onClick={() => router.push('/booking/share')}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
             >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share Your Booking Link
+              <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+              <span className="hidden sm:inline">Share Your Booking Link</span>
+              <span className="sm:hidden">Share Link</span>
             </Button>
           </div>
         </div>
 
         {/* Calendar and Time Blocks Tabs */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-full sm:w-auto">
             <Button
               variant={activeTab === 'calendar' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveTab('calendar')}
-              className={activeTab === 'calendar' ? 'bg-lavender text-white' : ''}
+              className={`${activeTab === 'calendar' ? 'bg-lavender text-white' : ''} text-xs sm:text-sm flex-1 sm:flex-none`}
             >
-              <Calendar className="w-4 h-4 mr-2" />
-              Calendar
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Calendar</span>
+              <span className="sm:hidden">Cal</span>
             </Button>
             <Button
               variant={activeTab === 'blocks' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveTab('blocks')}
-              className={activeTab === 'blocks' ? 'bg-lavender text-white' : ''}
+              className={`${activeTab === 'blocks' ? 'bg-lavender text-white' : ''} text-xs sm:text-sm flex-1 sm:flex-none`}
             >
-              <Clock className="w-4 h-4 mr-2" />
-              Time Blocks
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Time Blocks</span>
+              <span className="sm:hidden">Blocks</span>
             </Button>
           </div>
         </div>
 
         {/* Calendar Content */}
         {activeTab === 'calendar' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Calendar */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+              <CardHeader className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                     {formatDate(currentDate)}
                   </CardTitle>
                   <div className="flex gap-2">
@@ -520,24 +523,26 @@ export default function BookingCalendar() {
                       variant="outline"
                       size="sm"
                       onClick={() => navigateMonth('prev')}
+                      className="text-xs sm:text-sm"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => navigateMonth('next')}
+                      className="text-xs sm:text-sm"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-6 pt-0">
                 {/* Calendar Grid */}
-                <div className="grid grid-cols-7 gap-1 mb-4">
+                <div className="grid grid-cols-7 gap-1 mb-3 sm:mb-4">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="p-2 text-center text-sm font-medium text-gray-600">
+                    <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-600">
                       {day}
                     </div>
                   ))}
@@ -546,7 +551,7 @@ export default function BookingCalendar() {
                 <div className="grid grid-cols-7 gap-1">
                   {days.map((day, index) => {
                     if (day === null) {
-                      return <div key={index} className="p-2"></div>
+                      return <div key={index} className="p-1 sm:p-2"></div>
                     }
                     
                     const dateString = formatDateString(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
@@ -557,7 +562,7 @@ export default function BookingCalendar() {
                     return (
                       <div
                         key={day}
-                        className={`p-2 min-h-[60px] border rounded cursor-pointer transition-colors ${
+                        className={`p-1 sm:p-2 min-h-[50px] sm:min-h-[60px] border rounded cursor-pointer transition-colors ${
                           isSelected 
                             ? 'bg-lavender text-white' 
                             : isToday 
@@ -566,7 +571,7 @@ export default function BookingCalendar() {
                         }`}
                         onClick={() => handleDateClick(day)}
                       >
-                        <div className="text-sm font-medium mb-1">{day}</div>
+                        <div className="text-xs sm:text-sm font-medium mb-1">{day}</div>
                         {dayAppointments.length > 0 && (
                           <div className="space-y-1">
                             {dayAppointments.slice(0, 2).map(apt => {
@@ -580,13 +585,13 @@ export default function BookingCalendar() {
                                     <img 
                                       src={service.imageUrl} 
                                       alt={service.name}
-                                      className="w-3 h-3 object-contain"
+                                      className="w-2 h-2 sm:w-3 sm:h-3 object-contain"
                                       onError={(e) => {
                                         e.currentTarget.style.display = 'none'
                                       }}
                                     />
                                   )}
-                                  <span className="truncate">{apt.time} - {apt.clientName.split(' ')[0]}</span>
+                                  <span className="truncate text-xs">{apt.time} - {apt.clientName.split(' ')[0]}</span>
                                 </div>
                               )
                             })}
@@ -608,22 +613,22 @@ export default function BookingCalendar() {
           {/* Appointments List */}
           <div>
             <Card>
-              <CardHeader>
-                <CardTitle>
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="text-sm sm:text-base">
                   {selectedDate 
                     ? `Appointments - ${new Date(selectedDate).toLocaleDateString()}`
                     : 'Select a date to view appointments'
                   }
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-6 pt-0">
                 {selectedDate ? (
                   selectedAppointments.length > 0 ? (
                     <div className="space-y-2">
                       {selectedAppointments.map(appointment => (
-                        <div key={appointment.id} className="flex items-center gap-3 p-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 rounded-lg">
+                        <div key={appointment.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 rounded-lg">
                           {/* Avatar */}
-                          <div className="h-10 w-10 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
+                          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20 flex-shrink-0">
                             <span className="text-xs font-semibold text-white">
                               {appointment.clientName.charAt(0).toUpperCase()}
                             </span>
@@ -631,24 +636,24 @@ export default function BookingCalendar() {
 
                           {/* Appointment Info */}
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-sm font-medium text-ink truncate">{appointment.clientName}</p>
-                              <Badge className={`text-xs px-2 py-1 ${getStatusColor(appointment.status)}`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                              <p className="text-xs sm:text-sm font-medium text-ink truncate">{appointment.clientName}</p>
+                              <Badge className={`text-xs px-2 py-1 ${getStatusColor(appointment.status)} w-fit`}>
                                 {appointment.status}
                               </Badge>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-muted-text">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-muted-text">
                               <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {appointment.time} ({appointment.duration}min)
+                                <Clock className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{appointment.time} ({appointment.duration}min)</span>
                               </span>
                               <span className="flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {appointment.service}
+                                <User className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{appointment.service}</span>
                               </span>
                               <span className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3" />
-                                ${appointment.price}
+                                <DollarSign className="h-3 w-3 flex-shrink-0" />
+                                <span>${appointment.price}</span>
                               </span>
                             </div>
                           </div>
@@ -656,15 +661,15 @@ export default function BookingCalendar() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No appointments scheduled</p>
+                    <div className="text-center py-6 sm:py-8 text-gray-500">
+                      <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                      <p className="text-sm sm:text-base">No appointments scheduled</p>
                     </div>
                   )
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Click on a date to view appointments</p>
+                  <div className="text-center py-6 sm:py-8 text-gray-500">
+                    <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">Click on a date to view appointments</p>
                   </div>
                 )}
               </CardContent>
@@ -689,48 +694,48 @@ export default function BookingCalendar() {
       {/* New Appointment Modal */}
       <Dialog open={showNewAppointmentModal} onOpenChange={setShowNewAppointmentModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200 shadow-2xl">
-          <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-6 -m-6 mb-6 border-b border-gray-200 rounded-t-lg">
-            <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-xl">
-              <Calendar className="h-6 w-6 text-lavender" />
+          <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-4 sm:p-6 -m-4 sm:-m-6 mb-4 sm:mb-6 border-b border-gray-200 rounded-t-lg">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-lg sm:text-xl">
+              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-lavender" />
               New Appointment
             </DialogTitle>
-            <DialogDescription className="text-gray-700 mt-3 text-base font-medium bg-white/80 p-3 rounded-lg border border-gray-200">
+            <DialogDescription className="text-gray-700 mt-2 sm:mt-3 text-sm sm:text-base font-medium bg-white/80 p-2 sm:p-3 rounded-lg border border-gray-200">
               Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Client Selection Type */}
             {!clientSelectionType && (
-              <div className="space-y-6 p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg inline-block">
+              <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg inline-block">
                     Choose Client Type
                   </h3>
-                  <p className="text-gray-700 mt-4 text-lg font-medium bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <p className="text-gray-700 mt-3 sm:mt-4 text-sm sm:text-lg font-medium bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
                     Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <Button
                     onClick={() => handleClientSelection('existing')}
-                    className="h-24 bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-blue-600"
+                    className="h-20 sm:h-24 bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-blue-600"
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <User className="h-8 w-8" />
-                      <span className="font-bold text-lg">Existing Client</span>
-                      <span className="text-blue-100 text-sm">Select from your client database</span>
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <User className="h-6 w-6 sm:h-8 sm:w-8" />
+                      <span className="font-bold text-sm sm:text-lg">Existing Client</span>
+                      <span className="text-blue-100 text-xs sm:text-sm text-center">Select from your client database</span>
                     </div>
                   </Button>
                   <Button
                     onClick={() => handleClientSelection('new')}
-                    className="h-24 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-green-600"
+                    className="h-20 sm:h-24 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 border-2 border-green-600"
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <UserPlus className="h-8 w-8" />
-                      <span className="font-bold text-lg">New Client</span>
-                      <span className="text-green-100 text-sm">Add a new client to your database</span>
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <UserPlus className="h-6 w-6 sm:h-8 sm:w-8" />
+                      <span className="font-bold text-sm sm:text-lg">New Client</span>
+                      <span className="text-green-100 text-xs sm:text-sm text-center">Add a new client to your database</span>
                     </div>
                   </Button>
                 </div>
@@ -739,55 +744,55 @@ export default function BookingCalendar() {
 
             {/* Existing Client Selection */}
             {clientSelectionType === 'existing' && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Select Existing Client</h3>
+              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Existing Client</h3>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
-                    className="bg-white hover:bg-gray-50 border-gray-300"
+                    className="bg-white hover:bg-gray-50 border-gray-300 text-xs sm:text-sm w-full sm:w-auto"
                   >
                     Back
                   </Button>
                 </div>
                 
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 sm:h-4 sm:w-4" />
                   <Input
                     id="clientSearch"
                     name="clientSearch"
                     placeholder="Search clients..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
-                    className="pl-10 bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20"
+                    className="pl-8 sm:pl-10 bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20 text-sm sm:text-base h-10 sm:h-12"
                     aria-label="Search clients"
                   />
                 </div>
 
-                <div className="max-h-60 overflow-y-auto space-y-2 bg-white rounded-lg p-2 border border-gray-200">
+                <div className="max-h-48 sm:max-h-60 overflow-y-auto space-y-2 bg-white rounded-lg p-2 border border-gray-200">
                   {filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
                       <div
                         key={client.id}
                         onClick={() => setSelectedClient(client)}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        className={`p-2 sm:p-3 border rounded-lg cursor-pointer transition-colors ${
                           selectedClient?.id === client.id
                             ? 'bg-lavender text-white border-lavender shadow-md'
                             : 'hover:bg-gray-50 border-gray-200 bg-white'
                         }`}
                       >
-                        <div className="font-semibold">{client.name}</div>
-                        <div className="text-sm opacity-75">
+                        <div className="font-semibold text-sm sm:text-base">{client.name}</div>
+                        <div className="text-xs sm:text-sm opacity-75 truncate">
                           {client.email} • {client.phone}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-500 bg-white rounded-lg">
-                      <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No clients found</p>
-                      <p className="text-sm">Try adjusting your search or add a new client</p>
+                    <div className="text-center py-6 sm:py-8 text-gray-500 bg-white rounded-lg">
+                      <User className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                      <p className="text-sm sm:text-base">No clients found</p>
+                      <p className="text-xs sm:text-sm">Try adjusting your search or add a new client</p>
                     </div>
                   )}
                 </div>
@@ -796,33 +801,33 @@ export default function BookingCalendar() {
 
             {/* New Client Form */}
             {clientSelectionType === 'new' && (
-              <div className="space-y-6 p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">New Client Information</h3>
+              <div className="space-y-4 sm:space-y-6 p-4 sm:p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">New Client Information</h3>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
-                    className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 font-medium px-4 py-2"
+                    className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 font-medium px-3 sm:px-4 py-2 text-xs sm:text-sm w-full sm:w-auto"
                   >
                     ← Back
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="clientName" className="text-gray-800 font-bold text-lg">Client Name *</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="clientName" className="text-gray-800 font-bold text-sm sm:text-lg">Client Name *</Label>
                     <Input
                       id="clientName"
                       name="clientName"
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
                       placeholder="Enter client name"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
-                  <div className="space-y-3">
-                    <Label htmlFor="clientEmail" className="text-gray-800 font-bold text-lg">Email</Label>
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="clientEmail" className="text-gray-800 font-bold text-sm sm:text-lg">Email</Label>
                     <Input
                       id="clientEmail"
                       name="clientEmail"
@@ -830,18 +835,18 @@ export default function BookingCalendar() {
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
                       placeholder="Enter email address"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
-                  <div className="space-y-3 md:col-span-2">
-                    <Label htmlFor="clientPhone" className="text-gray-800 font-bold text-lg">Phone</Label>
+                  <div className="space-y-2 sm:space-y-3 sm:col-span-2">
+                    <Label htmlFor="clientPhone" className="text-gray-800 font-bold text-sm sm:text-lg">Phone</Label>
                     <Input
                       id="clientPhone"
                       name="clientPhone"
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
                       placeholder="Enter phone number"
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500 force-white-bg force-gray-border force-dark-text force-gray-placeholder"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
                 </div>
@@ -850,12 +855,12 @@ export default function BookingCalendar() {
 
             {/* Appointment Details */}
             {(selectedClient || clientSelectionType === 'new') && (
-              <div className="space-y-6 p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
-                <h3 className="text-2xl font-bold text-gray-900 bg-lavender/10 px-6 py-3 rounded-lg">Appointment Details</h3>
+              <div className="space-y-4 sm:space-y-6 p-4 sm:p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
+                <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">Appointment Details</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="service" className="text-gray-800 font-bold text-lg">Service *</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="service" className="text-gray-800 font-bold text-sm sm:text-lg">Service *</Label>
                     <Select value={appointmentData.service} onValueChange={(value) => {
                       const service = getServiceById(value)
                       setAppointmentData({
@@ -865,7 +870,7 @@ export default function BookingCalendar() {
                         price: service?.defaultPrice || 0
                       })
                     }}>
-                      <SelectTrigger id="service" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 force-white-bg force-gray-border force-dark-text">
+                      <SelectTrigger id="service" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
@@ -878,50 +883,50 @@ export default function BookingCalendar() {
                     </Select>
                   </div>
                   
-                  <div className="space-y-3">
-                    <Label htmlFor="time" className="text-gray-800 font-bold text-lg">Time *</Label>
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="time" className="text-gray-800 font-bold text-sm sm:text-lg">Time *</Label>
                     <Input
                       id="time"
                       name="time"
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
                     />
                   </div>
                   
-                  <div className="space-y-3">
-                    <Label htmlFor="duration" className="text-gray-800 font-bold text-lg">Duration (minutes)</Label>
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="duration" className="text-gray-800 font-bold text-sm sm:text-lg">Duration (minutes)</Label>
                     <Input
                       id="duration"
                       name="duration"
                       type="number"
                       value={appointmentData.duration}
                       onChange={(e) => setAppointmentData({...appointmentData, duration: parseInt(e.target.value) || 60})}
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
                     />
                   </div>
                   
-                  <div className="space-y-3">
-                    <Label htmlFor="price" className="text-gray-800 font-bold text-lg">Price ($)</Label>
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label htmlFor="price" className="text-gray-800 font-bold text-sm sm:text-lg">Price ($)</Label>
                     <Input
                       id="price"
                       name="price"
                       type="number"
                       value={appointmentData.price}
                       onChange={(e) => setAppointmentData({...appointmentData, price: parseFloat(e.target.value) || 0})}
-                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900"
+                      className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
                     />
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <Label htmlFor="paymentMethod" className="text-gray-800 font-bold text-lg">Payment Method</Label>
+                <div className="space-y-2 sm:space-y-3">
+                  <Label htmlFor="paymentMethod" className="text-gray-800 font-bold text-sm sm:text-lg">Payment Method</Label>
                   <Select
                     value={appointmentData.paymentMethod}
                     onValueChange={(value) => setAppointmentData({...appointmentData, paymentMethod: value})}
                   >
-                    <SelectTrigger id="paymentMethod" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900">
+                    <SelectTrigger id="paymentMethod" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
                     <SelectContent>
@@ -931,32 +936,32 @@ export default function BookingCalendar() {
                   </Select>
                 </div>
                 
-                <div className="space-y-3">
-                  <Label htmlFor="notes" className="text-gray-800 font-bold text-lg">Notes</Label>
+                <div className="space-y-2 sm:space-y-3">
+                  <Label htmlFor="notes" className="text-gray-800 font-bold text-sm sm:text-lg">Notes</Label>
                   <Input
                     id="notes"
                     name="notes"
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
                     placeholder="Any additional notes..."
-                    className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-14 text-lg px-4 font-medium text-gray-900 placeholder-gray-500"
+                    className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                   />
                 </div>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 p-4 -m-6 mt-6 rounded-b-lg">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200 bg-gray-50 p-3 sm:p-4 -m-4 sm:-m-6 mt-4 sm:mt-6 rounded-b-lg">
               <Button
                 variant="outline"
                 onClick={() => setShowNewAppointmentModal(false)}
-                className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
+                className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 text-sm sm:text-base w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateAppointment}
-                className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
                 disabled={!selectedClient && clientSelectionType !== 'new'}
               >
                 Create Appointment

@@ -180,8 +180,8 @@ export default function ExpensesPage() {
   const filteredExpenses = expenses.filter(expense => {
     const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory
     const matchesSearch = searchTerm === '' || 
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+        expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesCategory && matchesSearch
   })
 
@@ -263,18 +263,18 @@ export default function ExpensesPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-ink mb-2">Expense Tracking</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-ink mb-2">Expense Tracking</h1>
               <p className="text-muted">Track business expenses for Schedule C tax reporting</p>
-            </div>
-            <div className="flex items-center space-x-3">
+          </div>
+          <div className="flex items-center space-x-3">
               <Button 
                 onClick={() => setShowAddExpense(true)}
                 className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Expense
-              </Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Expense
+                </Button>
               <Button 
                 variant="outline"
                 onClick={handleExportScheduleC}
@@ -282,8 +282,8 @@ export default function ExpensesPage() {
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export Schedule C
-              </Button>
-            </div>
+                  </Button>
+                </div>
           </div>
         </div>
 
@@ -300,7 +300,7 @@ export default function ExpensesPage() {
               </div>
             </CardContent>
           </Card>
-
+          
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ export default function ExpensesPage() {
               </div>
             </CardContent>
           </Card>
-
+          
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -324,7 +324,7 @@ export default function ExpensesPage() {
               </div>
             </CardContent>
           </Card>
-
+          
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -338,32 +338,32 @@ export default function ExpensesPage() {
           </Card>
         </div>
 
-        {/* Filters */}
+            {/* Filters */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search expenses..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+                <Input
+                  placeholder="Search expenses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
           </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
               {scheduleCCategories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                  ))}
+                </SelectContent>
+              </Select>
         </div>
 
         {/* Main Content */}
@@ -457,36 +457,36 @@ export default function ExpensesPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {filteredExpenses.map((expense) => (
+                      {filteredExpenses.map((expense) => (
                     <div key={expense.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-lg">{getPaymentMethodIcon(expense.paymentMethod)}</span>
                         </div>
-                        <div>
+                            <div>
                           <h3 className="font-semibold text-ink">{expense.description}</h3>
                           <p className="text-sm text-muted">{expense.vendor}</p>
                           <p className="text-xs text-muted">
                             {scheduleCCategories.find(c => c.id === expense.category)?.name} • {new Date(expense.date).toLocaleDateString()}
                           </p>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
+                            </div>
+                            <div className="flex items-center space-x-2">
                         <div className="text-right">
                           <p className="font-semibold text-ink">${expense.amount.toFixed(2)}</p>
                           <Badge className={expense.isDeductible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                             {expense.isDeductible ? 'Deductible' : 'Non-deductible'}
                           </Badge>
-                        </div>
+                            </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button 
+                                  <Button 
                               variant="ghost" 
-                              size="sm" 
+                                    size="sm" 
                               className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
-                            >
+                                  >
                               <MoreVertical className="h-4 w-4 text-gray-600" />
-                            </Button>
+                                  </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
                             <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
@@ -499,7 +499,7 @@ export default function ExpensesPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
-                              onClick={() => handleDeleteExpense(expense.id)}
+                                onClick={() => handleDeleteExpense(expense.id)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               <span>Delete</span>
@@ -507,8 +507,8 @@ export default function ExpensesPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                    </div>
-                  ))}
+                            </div>
+                      ))}
                 </div>
               </CardContent>
             </Card>
@@ -550,10 +550,10 @@ export default function ExpensesPage() {
         {showAddExpense && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Card className="w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-              <CardHeader>
+                <CardHeader>
                 <CardTitle>Add Expense</CardTitle>
                 <CardDescription>Record a new business expense</CardDescription>
-              </CardHeader>
+                </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="date">Date</Label>
@@ -598,7 +598,7 @@ export default function ExpensesPage() {
                     value={newExpense.amount}
                     onChange={(e) => setNewExpense({ ...newExpense, amount: Number(e.target.value) })}
                   />
-                </div>
+                    </div>
                 <div className="space-y-2">
                   <Label htmlFor="vendor">Vendor</Label>
                   <Input
@@ -607,7 +607,7 @@ export default function ExpensesPage() {
                     value={newExpense.vendor}
                     onChange={(e) => setNewExpense({ ...newExpense, vendor: e.target.value })}
                   />
-                </div>
+                    </div>
                 <div className="space-y-2">
                   <Label htmlFor="paymentMethod">Payment Method</Label>
                   <Select value={newExpense.paymentMethod} onValueChange={(value: any) => setNewExpense({ ...newExpense, paymentMethod: value })}>
@@ -621,7 +621,7 @@ export default function ExpensesPage() {
                       <SelectItem value="transfer">Bank Transfer</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                    </div>
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes (Optional)</Label>
                   <Textarea
@@ -630,7 +630,7 @@ export default function ExpensesPage() {
                     value={newExpense.notes}
                     onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
                   />
-                </div>
+                    </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -639,7 +639,7 @@ export default function ExpensesPage() {
                     onChange={(e) => setNewExpense({ ...newExpense, isDeductible: e.target.checked })}
                   />
                   <Label htmlFor="isDeductible">This expense is tax deductible</Label>
-                </div>
+                  </div>
                 <div className="flex space-x-2">
                   <Button 
                     onClick={handleAddExpense}
@@ -655,9 +655,9 @@ export default function ExpensesPage() {
                     Cancel
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
         )}
       </main>
     </div>

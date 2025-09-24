@@ -207,54 +207,54 @@ export default function CalendarIntegrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-ink mb-2">Calendar Integration</h1>
-          <p className="text-muted">Connect your existing booking systems with PMU Pro's calendar</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Calendar Integration</h1>
+          <p className="text-sm sm:text-base text-muted">Connect your existing booking systems with PMU Pro's calendar</p>
         </div>
 
         {/* Status Messages */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <span className="text-red-800">{error}</span>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+            <span className="text-red-800 text-sm sm:text-base">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-green-800">{success}</span>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+            <span className="text-green-800 text-sm sm:text-base">{success}</span>
           </div>
         )}
 
         {/* Add Integration Button */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Button
             onClick={() => setShowIntegrationForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm sm:text-base"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Add Calendar Integration
           </Button>
         </div>
 
         {/* Integration Form */}
         {showIntegrationForm && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Add Calendar Integration</CardTitle>
-              <CardDescription>Connect your existing booking system with PMU Pro</CardDescription>
+          <Card className="mb-6 sm:mb-8">
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="text-base sm:text-lg">Add Calendar Integration</CardTitle>
+              <CardDescription className="text-sm sm:text-base">Connect your existing booking system with PMU Pro</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <CardContent className="space-y-4 sm:space-y-6 p-3 sm:p-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="provider">Calendar Provider</Label>
+                    <Label htmlFor="provider" className="text-sm sm:text-base">Calendar Provider</Label>
                     <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 sm:h-10">
                         <SelectValue placeholder="Select a provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -271,52 +271,52 @@ export default function CalendarIntegrationPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key / Access Token</Label>
+                    <Label htmlFor="apiKey" className="text-sm sm:text-base">API Key / Access Token</Label>
                     <Input
                       id="apiKey"
                       type="password"
                       placeholder="Enter your API key"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
-                      className="force-white-bg force-gray-border force-dark-text"
+                      className="force-white-bg force-gray-border force-dark-text h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="calendarId">Calendar ID (Optional)</Label>
+                    <Label htmlFor="calendarId" className="text-sm sm:text-base">Calendar ID (Optional)</Label>
                     <Input
                       id="calendarId"
                       placeholder="Enter calendar ID if known"
                       value={calendarId}
                       onChange={(e) => setCalendarId(e.target.value)}
-                      className="force-white-bg force-gray-border force-dark-text"
+                      className="force-white-bg force-gray-border force-dark-text h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="syncDirection">Sync Direction</Label>
+                    <Label htmlFor="syncDirection" className="text-sm sm:text-base">Sync Direction</Label>
                     <Select value={syncDirection} onValueChange={(value: any) => setSyncDirection(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 sm:h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="BIDIRECTIONAL">
                           <div className="flex items-center gap-2">
-                            <ArrowLeftRight className="h-4 w-4" />
+                            <ArrowLeftRight className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span>Two-way sync</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="IMPORT_ONLY">
                           <div className="flex items-center gap-2">
-                            <Download className="h-4 w-4" />
+                            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span>Import only</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="EXPORT_ONLY">
                           <div className="flex items-center gap-2">
-                            <Upload className="h-4 w-4" />
+                            <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span>Export only</span>
                           </div>
                         </SelectItem>
@@ -325,9 +325,9 @@ export default function CalendarIntegrationPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="syncFrequency">Sync Frequency (minutes)</Label>
+                    <Label htmlFor="syncFrequency" className="text-sm sm:text-base">Sync Frequency (minutes)</Label>
                     <Select value={syncFrequency.toString()} onValueChange={(value) => setSyncFrequency(parseInt(value))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 sm:h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -340,18 +340,18 @@ export default function CalendarIntegrationPage() {
                   </div>
 
                   {selectedProvider && (
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-900 mb-2">
+                    <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">
                         {getProviderInfo(selectedProvider)?.name} Setup
                       </h4>
-                      <p className="text-sm text-blue-800 mb-2">
+                      <p className="text-xs sm:text-sm text-blue-800 mb-2">
                         {getProviderInfo(selectedProvider)?.setupInstructions}
                       </p>
                       <a 
                         href={getProviderInfo(selectedProvider)?.apiDocumentation}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-xs sm:text-sm text-blue-600 hover:underline flex items-center gap-1"
                       >
                         <ExternalLink className="h-3 w-3" />
                         API Documentation
@@ -361,20 +361,20 @@ export default function CalendarIntegrationPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <Button
                   onClick={testConnection}
                   disabled={testingConnection || !selectedProvider || !apiKey}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                 >
                   {testingConnection ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                       Testing Connection...
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                       Test & Connect
                     </>
                   )}
@@ -382,6 +382,7 @@ export default function CalendarIntegrationPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowIntegrationForm(false)}
+                  className="text-sm sm:text-base"
                 >
                   Cancel
                 </Button>
@@ -391,40 +392,40 @@ export default function CalendarIntegrationPage() {
         )}
 
         {/* Existing Integrations */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold">Connected Calendars</h2>
+        <div className="space-y-4 sm:space-y-6">
+          <h2 className="text-xl sm:text-2xl font-semibold">Connected Calendars</h2>
           
           {integrations.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Calendar Integrations</h3>
-                <p className="text-gray-600 mb-4">
+              <CardContent className="text-center py-8 sm:py-12 p-4 sm:p-6">
+                <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-semibold mb-2">No Calendar Integrations</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                   Connect your existing booking system to sync appointments with PMU Pro
                 </p>
                 <Button
                   onClick={() => setShowIntegrationForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Add Integration
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {integrations.map((integration) => (
                 <Card key={integration.id} className={`${integration.isActive ? 'ring-2 ring-green-200' : 'opacity-75'}`}>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="text-xl sm:text-2xl">
                           {getProviderInfo(integration.provider)?.logo}
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{integration.providerName}</CardTitle>
+                          <CardTitle className="text-base sm:text-lg">{integration.providerName}</CardTitle>
                           {integration.calendarName && (
-                            <p className="text-sm text-gray-600">{integration.calendarName}</p>
+                            <p className="text-xs sm:text-sm text-gray-600">{integration.calendarName}</p>
                           )}
                         </div>
                       </div>
@@ -434,10 +435,10 @@ export default function CalendarIntegrationPage() {
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={`${integration.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      <Badge className={`${integration.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} text-xs sm:text-sm`}>
                         {integration.isActive ? 'Active' : 'Inactive'}
                       </Badge>
-                      <Badge variant="outline" className="flex items-center gap-1">
+                      <Badge variant="outline" className="flex items-center gap-1 text-xs sm:text-sm">
                         {getSyncDirectionIcon(integration.syncDirection)}
                         <span className="text-xs">
                           {integration.syncDirection === 'BIDIRECTIONAL' ? 'Two-way' :
@@ -446,15 +447,15 @@ export default function CalendarIntegrationPage() {
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
+                  <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-4">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>Syncs every {integration.syncFrequency} minutes</span>
                     </div>
                     
                     {integration.lastSyncAt && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <RefreshCw className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span>Last sync: {new Date(integration.lastSyncAt).toLocaleString()}</span>
                       </div>
                     )}
@@ -464,17 +465,18 @@ export default function CalendarIntegrationPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => syncIntegration(integration.id)}
-                        className="flex-1"
+                        className="flex-1 text-xs sm:text-sm"
                       >
-                        <RefreshCw className="h-4 w-4 mr-1" />
+                        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         Sync Now
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {/* Open settings */}}
+                        className="text-xs sm:text-sm"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </CardContent>
@@ -485,27 +487,27 @@ export default function CalendarIntegrationPage() {
         </div>
 
         {/* Benefits Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+        <Card className="mt-6 sm:mt-8">
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               Calendar Integration Benefits
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h4 className="font-semibold">Unified Booking Experience</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+          <CardContent className="p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-sm sm:text-base">Unified Booking Experience</h4>
+                <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
                   <li>• Sync appointments from Calendly, Acuity, Google Calendar</li>
                   <li>• View all bookings in PMU Pro's calendar</li>
                   <li>• Maintain existing client workflows</li>
                   <li>• Two-way sync keeps everything updated</li>
                 </ul>
               </div>
-              <div className="space-y-3">
-                <h4 className="font-semibold">Seamless Integration</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+              <div className="space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-sm sm:text-base">Seamless Integration</h4>
+                <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
                   <li>• No disruption to existing processes</li>
                   <li>• Automatic sync every 15 minutes</li>
                   <li>• Real-time webhook support</li>

@@ -210,29 +210,29 @@ export default function PayoutsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/payouts" user={user} />
-      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-ink mb-2">Payouts</h1>
-              <p className="text-muted">Track your earnings and manage payouts</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Payouts</h1>
+              <p className="text-muted text-sm sm:text-base">Track your earnings and manage payouts</p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
               <Button 
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="border-lavender text-lavender hover:bg-lavender/10"
+                className="border-lavender text-lavender hover:bg-lavender/10 text-sm sm:text-base w-full sm:w-auto"
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               <Button 
                 onClick={handleRequestPayout}
-                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
               >
-                <DollarSign className="h-4 w-4 mr-2" />
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Request Payout
               </Button>
             </div>
@@ -240,70 +240,70 @@ export default function PayoutsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Available Balance</p>
-                  <p className="text-2xl font-bold text-green-600">${summary.availableBalance.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Available Balance</p>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600">${summary.availableBalance.toFixed(2)}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">This Month</p>
-                  <p className="text-2xl font-bold text-ink">${summary.thisMonthEarnings.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">This Month</p>
+                  <p className="text-lg sm:text-2xl font-bold text-ink">${summary.thisMonthEarnings.toFixed(2)}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-lavender" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-lavender" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Total Payouts</p>
-                  <p className="text-2xl font-bold text-blue-600">${summary.totalPayouts.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Total Payouts</p>
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600">${summary.totalPayouts.toFixed(2)}</p>
                 </div>
-                <ArrowUpRight className="h-8 w-8 text-blue-600" />
+                <ArrowUpRight className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">${summary.pendingAmount.toFixed(2)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Pending</p>
+                  <p className="text-lg sm:text-2xl font-bold text-yellow-600">${summary.pendingAmount.toFixed(2)}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Time Filter */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-muted">Filter by:</span>
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <span className="text-xs sm:text-sm font-medium text-muted">Filter by:</span>
             <Select value={timeFilter} onValueChange={setTimeFilter}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32 h-9 sm:h-10 text-sm sm:text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="day">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="year">This Year</SelectItem>
-                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="day" className="text-sm sm:text-base">Today</SelectItem>
+                <SelectItem value="week" className="text-sm sm:text-base">This Week</SelectItem>
+                <SelectItem value="month" className="text-sm sm:text-base">This Month</SelectItem>
+                <SelectItem value="year" className="text-sm sm:text-base">This Year</SelectItem>
+                <SelectItem value="all" className="text-sm sm:text-base">All Time</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -311,51 +311,51 @@ export default function PayoutsPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-9 sm:h-10">
             <TabsTrigger 
               value="overview" 
-              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               History
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Analytics
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Recent Payouts */}
               <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-                <CardHeader>
-                  <CardTitle className="text-lavender">Recent Payouts</CardTitle>
-                  <CardDescription>Latest payout transactions</CardDescription>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-lavender text-base sm:text-lg">Recent Payouts</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">Latest payout transactions</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="space-y-3 sm:space-y-4">
                     {payouts.slice(0, 3).map((payout) => (
-                      <div key={payout.id} className="p-4 bg-white rounded-lg border border-gray-200">
+                      <div key={payout.id} className="p-3 sm:p-4 bg-white rounded-lg border border-gray-200">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             {getMethodIcon(payout.method)}
-                            <span className="font-semibold text-ink">${payout.netAmount.toFixed(2)}</span>
+                            <span className="font-semibold text-ink text-sm sm:text-base">${payout.netAmount.toFixed(2)}</span>
                           </div>
-                          <Badge className={getStatusColor(payout.status)}>
+                          <Badge className={`${getStatusColor(payout.status)} text-xs`}>
                             {getStatusIcon(payout.status)}
                             <span className="ml-1">{payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}</span>
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted mb-2">{payout.description}</p>
+                        <p className="text-xs sm:text-sm text-muted mb-2">{payout.description}</p>
                         <div className="flex items-center justify-between text-xs text-muted">
                           <span>Fees: ${payout.fees.toFixed(2)}</span>
                           <span>{new Date(payout.createdAt).toLocaleDateString()}</span>
@@ -368,31 +368,31 @@ export default function PayoutsPage() {
 
               {/* Payout Summary */}
               <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-                <CardHeader>
-                  <CardTitle className="text-lavender">Payout Summary</CardTitle>
-                  <CardDescription>Your earnings breakdown</CardDescription>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-lavender text-base sm:text-lg">Payout Summary</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">Your earnings breakdown</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-sm font-medium text-muted">Total Earnings</span>
-                      <span className="font-semibold text-ink">${summary.totalEarnings.toFixed(2)}</span>
+                <CardContent className="p-3 sm:p-6">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-xs sm:text-sm font-medium text-muted">Total Earnings</span>
+                      <span className="font-semibold text-ink text-sm sm:text-base">${summary.totalEarnings.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-sm font-medium text-muted">Total Payouts</span>
-                      <span className="font-semibold text-blue-600">${summary.totalPayouts.toFixed(2)}</span>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-xs sm:text-sm font-medium text-muted">Total Payouts</span>
+                      <span className="font-semibold text-blue-600 text-sm sm:text-base">${summary.totalPayouts.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-sm font-medium text-muted">Available Balance</span>
-                      <span className="font-semibold text-green-600">${summary.availableBalance.toFixed(2)}</span>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-xs sm:text-sm font-medium text-muted">Available Balance</span>
+                      <span className="font-semibold text-green-600 text-sm sm:text-base">${summary.availableBalance.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-sm font-medium text-muted">Average Payout</span>
-                      <span className="font-semibold text-purple-600">${summary.averagePayout.toFixed(2)}</span>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-xs sm:text-sm font-medium text-muted">Average Payout</span>
+                      <span className="font-semibold text-purple-600 text-sm sm:text-base">${summary.averagePayout.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-sm font-medium text-muted">Last Payout</span>
-                      <span className="font-semibold text-muted">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-xs sm:text-sm font-medium text-muted">Last Payout</span>
+                      <span className="font-semibold text-muted text-xs sm:text-sm">
                         {new Date(summary.lastPayout).toLocaleDateString()}
                       </span>
                     </div>
@@ -403,58 +403,60 @@ export default function PayoutsPage() {
           </TabsContent>
 
           {/* History Tab */}
-          <TabsContent value="history" className="space-y-6">
+          <TabsContent value="history" className="space-y-4 sm:space-y-6">
             <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-              <CardHeader>
-                <CardTitle className="text-lavender">Payout History</CardTitle>
-                <CardDescription>Complete history of all payouts</CardDescription>
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="text-lavender text-base sm:text-lg">Payout History</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Complete history of all payouts</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {filteredPayouts.map((payout) => (
-                    <div key={payout.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                    <div key={payout.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-3 sm:gap-0">
+                      <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           {getMethodIcon(payout.method)}
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-ink">${payout.netAmount.toFixed(2)}</h3>
-                          <p className="text-sm text-muted">{payout.description}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-ink text-sm sm:text-base">${payout.netAmount.toFixed(2)}</h3>
+                          <p className="text-xs sm:text-sm text-muted truncate">{payout.description}</p>
                           <p className="text-xs text-muted">
                             {payout.processedAt ? `Processed: ${new Date(payout.processedAt).toLocaleDateString()}` : 'Processing...'}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="text-right text-sm text-muted">
+                      <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="text-right text-xs sm:text-sm text-muted">
                           <p>Gross: ${payout.amount.toFixed(2)}</p>
                           <p>Fees: ${payout.fees.toFixed(2)}</p>
                         </div>
-                        <Badge className={getStatusColor(payout.status)}>
-                          {getStatusIcon(payout.status)}
-                          <span className="ml-1">{payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}</span>
-                        </Badge>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
-                            >
-                              <MoreVertical className="h-4 w-4 text-gray-600" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                              <span>View Details</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Download className="mr-2 h-4 w-4 text-green-500" />
-                              <span>Download Receipt</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={`${getStatusColor(payout.status)} text-xs`}>
+                            {getStatusIcon(payout.status)}
+                            <span className="ml-1">{payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}</span>
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-7 w-7 sm:h-8 sm:w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                              >
+                                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-xs sm:text-sm">
+                                <Eye className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                                <span>View Details</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-xs sm:text-sm">
+                                <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                                <span>Download Receipt</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -464,43 +466,43 @@ export default function PayoutsPage() {
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-                <CardHeader>
-                  <CardTitle className="text-lavender">Earnings Trend</CardTitle>
-                  <CardDescription>Monthly earnings over time</CardDescription>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-lavender text-base sm:text-lg">Earnings Trend</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">Monthly earnings over time</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="h-48 sm:h-64 flex items-center justify-center bg-gray-50 rounded-lg">
                     <div className="text-center">
-                      <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500">Chart visualization coming soon</p>
+                      <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm sm:text-base">Chart visualization coming soon</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-                <CardHeader>
-                  <CardTitle className="text-lavender">Payout Methods</CardTitle>
-                  <CardDescription>Distribution by payment method</CardDescription>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-lavender text-base sm:text-lg">Payout Methods</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">Distribution by payment method</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <div className="flex items-center space-x-2">
-                        <CreditCard className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm font-medium text-muted">Stripe</span>
+                        <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                        <span className="text-xs sm:text-sm font-medium text-muted">Stripe</span>
                       </div>
-                      <span className="font-semibold text-ink">85%</span>
+                      <span className="font-semibold text-ink text-sm sm:text-base">85%</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <div className="flex items-center space-x-2">
-                        <Banknote className="h-4 w-4 text-green-500" />
-                        <span className="text-sm font-medium text-muted">Bank Transfer</span>
+                        <Banknote className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                        <span className="text-xs sm:text-sm font-medium text-muted">Bank Transfer</span>
                       </div>
-                      <span className="font-semibold text-ink">15%</span>
+                      <span className="font-semibold text-ink text-sm sm:text-base">15%</span>
                     </div>
                   </div>
                 </CardContent>

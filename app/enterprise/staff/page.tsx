@@ -205,76 +205,76 @@ export default function EnterpriseStaffPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/enterprise/staff" user={user} />
-      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-ink mb-2">Enterprise Staff Management</h1>
-              <p className="text-muted">Manage your team roles, permissions, and access levels</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Enterprise Staff Management</h1>
+              <p className="text-sm sm:text-base text-muted">Manage your team roles, permissions, and access levels</p>
             </div>
             <Button 
               onClick={handleAddStaff}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto text-sm sm:text-base"
             >
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Add Staff Member
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Total Staff</p>
-                  <p className="text-2xl font-bold text-ink">{staffMembers.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted">Total Staff</p>
+                  <p className="text-xl sm:text-2xl font-bold text-ink">{staffMembers.length}</p>
                 </div>
-                <Users className="h-8 w-8 text-lavender" />
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-lavender" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Active</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-xs sm:text-sm font-medium text-muted">Active</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
                     {staffMembers.filter(m => m.status === 'active').length}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">
+                  <p className="text-xs sm:text-sm font-medium text-muted">Pending</p>
+                  <p className="text-xl sm:text-2xl font-bold text-yellow-600">
                     {staffMembers.filter(m => m.status === 'pending').length}
                   </p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted">Roles</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-xs sm:text-sm font-medium text-muted">Roles</p>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-600">
                     {new Set(staffMembers.map(m => m.role)).size}
                   </p>
                 </div>
-                <Shield className="h-8 w-8 text-purple-600" />
+                <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -282,60 +282,60 @@ export default function EnterpriseStaffPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-9 sm:h-10">
             <TabsTrigger 
               value="overview" 
-              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-lavender data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="permissions" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Permissions
             </TabsTrigger>
             <TabsTrigger 
               value="activity" 
-              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm"
             >
               Activity
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
             <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-              <CardHeader>
-                <CardTitle className="text-lavender">Staff Members</CardTitle>
-                <CardDescription>Manage your team members and their roles</CardDescription>
+              <CardHeader className="p-3 sm:p-4">
+                <CardTitle className="text-lavender text-base sm:text-lg">Staff Members</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Manage your team members and their roles</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-3 sm:space-y-4">
                   {staffMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
+                    <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-3 sm:gap-0">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm sm:text-base">
                             {member.name.split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-ink">{member.name}</h3>
-                          <p className="text-sm text-muted">{member.email}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge className={getRoleColor(member.role)}>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-ink text-sm sm:text-base truncate">{member.name}</h3>
+                          <p className="text-xs sm:text-sm text-muted truncate">{member.email}</p>
+                          <div className="flex items-center space-x-2 mt-1 flex-wrap">
+                            <Badge className={`${getRoleColor(member.role)} text-xs sm:text-sm`}>
                               {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                             </Badge>
-                            <Badge className={getStatusColor(member.status)}>
+                            <Badge className={`${getStatusColor(member.status)} text-xs sm:text-sm`}>
                               {getStatusIcon(member.status)}
                               <span className="ml-1">{member.status.charAt(0).toUpperCase() + member.status.slice(1)}</span>
                             </Badge>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-muted">
+                      <div className="flex items-center justify-between sm:justify-end space-x-2">
+                        <span className="text-xs sm:text-sm text-muted">
                           Last active: {new Date(member.lastActive).toLocaleDateString()}
                         </span>
                         <DropdownMenu>
@@ -345,24 +345,24 @@ export default function EnterpriseStaffPage() {
                               size="sm" 
                               className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
                             >
-                              <MoreVertical className="h-4 w-4 text-gray-600" />
+                              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
                             <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Edit className="mr-2 h-4 w-4 text-blue-500" />
-                              <span>Edit</span>
+                              <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                              <span className="text-xs sm:text-sm">Edit</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Settings className="mr-2 h-4 w-4 text-green-500" />
-                              <span>Permissions</span>
+                              <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                              <span className="text-xs sm:text-sm">Permissions</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                               onClick={() => handleDeleteStaff(member.id)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Delete</span>
+                              <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="text-xs sm:text-sm">Delete</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -375,18 +375,18 @@ export default function EnterpriseStaffPage() {
           </TabsContent>
 
           {/* Permissions Tab */}
-          <TabsContent value="permissions" className="space-y-6">
+          <TabsContent value="permissions" className="space-y-4 sm:space-y-6">
             <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-              <CardHeader>
-                <CardTitle className="text-lavender">Role Permissions</CardTitle>
-                <CardDescription>Configure what each role can access and modify</CardDescription>
+              <CardHeader className="p-3 sm:p-4">
+                <CardTitle className="text-lavender text-base sm:text-lg">Role Permissions</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Configure what each role can access and modify</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-4 sm:space-y-6">
                   {['admin', 'manager', 'artist', 'receptionist'].map((role) => (
-                    <div key={role} className="p-4 bg-white rounded-lg border border-gray-200">
-                      <h3 className="font-semibold text-lg text-ink mb-3 capitalize">{role} Permissions</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div key={role} className="p-3 sm:p-4 bg-white rounded-lg border border-gray-200">
+                      <h3 className="font-semibold text-base sm:text-lg text-ink mb-2 sm:mb-3 capitalize">{role} Permissions</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                         {[
                           'Full Access',
                           'User Management', 
@@ -399,8 +399,8 @@ export default function EnterpriseStaffPage() {
                           'Inventory Management'
                         ].map((permission) => (
                           <div key={permission} className="flex items-center space-x-2">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span className="text-sm text-muted">{permission}</span>
+                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                            <span className="text-xs sm:text-sm text-muted">{permission}</span>
                           </div>
                         ))}
                       </div>
@@ -412,14 +412,14 @@ export default function EnterpriseStaffPage() {
           </TabsContent>
 
           {/* Activity Tab */}
-          <TabsContent value="activity" className="space-y-6">
+          <TabsContent value="activity" className="space-y-4 sm:space-y-6">
             <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-              <CardHeader>
-                <CardTitle className="text-lavender">Recent Activity</CardTitle>
-                <CardDescription>Track staff actions and system changes</CardDescription>
+              <CardHeader className="p-3 sm:p-4">
+                <CardTitle className="text-lavender text-base sm:text-lg">Recent Activity</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Track staff actions and system changes</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-3 sm:space-y-4">
                   {[
                     { user: 'Sarah Johnson', action: 'Updated client profile', time: '2 hours ago', type: 'edit' },
                     { user: 'Mike Chen', action: 'Scheduled new appointment', time: '4 hours ago', type: 'create' },
@@ -428,10 +428,10 @@ export default function EnterpriseStaffPage() {
                     { user: 'Mike Chen', action: 'Generated monthly report', time: '2 days ago', type: 'report' }
                   ].map((activity, index) => (
                     <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
-                      <Activity className="h-5 w-5 text-lavender" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-ink">{activity.user}</p>
-                        <p className="text-sm text-muted">{activity.action}</p>
+                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-ink truncate">{activity.user}</p>
+                        <p className="text-xs sm:text-sm text-muted truncate">{activity.action}</p>
                       </div>
                       <span className="text-xs text-muted">{activity.time}</span>
                     </div>
@@ -445,40 +445,42 @@ export default function EnterpriseStaffPage() {
 
       {/* Add Staff Dialog */}
       <Dialog open={showAddStaff} onOpenChange={setShowAddStaff}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Staff Member</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="p-4 sm:p-6 pb-4">
+            <DialogTitle className="text-base sm:text-lg">Add New Staff Member</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Add a new team member to your enterprise account
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">Full Name *</Label>
               <Input
                 id="name"
                 value={newStaffMember.name}
                 onChange={(e) => setNewStaffMember({ ...newStaffMember, name: e.target.value })}
                 placeholder="Enter full name"
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base">Email Address *</Label>
               <Input
                 id="email"
                 type="email"
                 value={newStaffMember.email}
                 onChange={(e) => setNewStaffMember({ ...newStaffMember, email: e.target.value })}
                 placeholder="Enter email address"
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role" className="text-sm sm:text-base">Role</Label>
               <Select
                 value={newStaffMember.role}
                 onValueChange={(value: StaffRole) => setNewStaffMember({ ...newStaffMember, role: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 sm:h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,29 +492,38 @@ export default function EnterpriseStaffPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
+              <Label htmlFor="department" className="text-sm sm:text-base">Department</Label>
               <Input
                 id="department"
                 value={newStaffMember.department}
                 onChange={(e) => setNewStaffMember({ ...newStaffMember, department: e.target.value })}
                 placeholder="Enter department"
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
               <Input
                 id="phone"
                 value={newStaffMember.phone}
                 onChange={(e) => setNewStaffMember({ ...newStaffMember, phone: e.target.value })}
                 placeholder="Enter phone number"
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
           </div>
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => setShowAddStaff(false)}>
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 px-4 sm:px-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAddStaff(false)}
+              className="w-full sm:w-auto text-sm sm:text-base"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmitStaff} className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white">
+            <Button 
+              onClick={handleSubmitStaff} 
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white w-full sm:w-auto text-sm sm:text-base"
+            >
               Add Staff Member
             </Button>
           </div>
