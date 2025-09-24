@@ -169,16 +169,6 @@ const businessFeatures = [
 // Marketing & Growth Features
 const marketingFeatures = [
   {
-    id: 'email-marketing',
-    title: 'Email Marketing',
-    description: 'AI-powered email templates',
-    icon: Mail,
-    href: '/email-marketing',
-    color: 'bg-rose-500',
-    status: 'active',
-    category: 'marketing'
-  },
-  {
     id: 'gift-cards',
     title: 'Gift Cards',
     description: 'Create & manage',

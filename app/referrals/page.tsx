@@ -607,60 +607,65 @@ export default function ReferralsPage() {
         {/* Create Program Modal */}
         {showCreateProgram && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4">
-              <CardHeader>
-                <CardTitle>Create Referral Program</CardTitle>
-                <CardDescription>Set up a new referral program</CardDescription>
+            <Card className="w-full max-w-md mx-4 bg-white border-lavender/20 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-lavender/10 to-teal-50 border-b border-lavender/20">
+                <CardTitle className="text-lavender">Create Referral Program</CardTitle>
+                <CardDescription className="text-muted">Set up a new referral program</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 bg-white p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Program Name</Label>
+                  <Label htmlFor="name" className="text-ink font-medium">Program Name</Label>
                   <Input
                     id="name"
                     placeholder="e.g., Standard Referral Program"
                     value={newProgram.name}
                     onChange={(e) => setNewProgram({ ...newProgram, name: e.target.value })}
+                    className="bg-white border-lavender/30 focus:border-lavender focus:ring-lavender/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description" className="text-ink font-medium">Description</Label>
                   <Input
                     id="description"
                     placeholder="Brief description of the program"
                     value={newProgram.description}
                     onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })}
+                    className="bg-white border-lavender/30 focus:border-lavender focus:ring-lavender/20"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="referralReward">Referrer Reward ($)</Label>
+                    <Label htmlFor="referralReward" className="text-ink font-medium">Referrer Reward ($)</Label>
                     <Input
                       id="referralReward"
                       type="number"
                       value={newProgram.referralReward}
                       onChange={(e) => setNewProgram({ ...newProgram, referralReward: Number(e.target.value) })}
+                      className="bg-white border-lavender/30 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="refereeReward">Referee Reward ($)</Label>
+                    <Label htmlFor="refereeReward" className="text-ink font-medium">Referee Reward ($)</Label>
                     <Input
                       id="refereeReward"
                       type="number"
                       value={newProgram.refereeReward}
                       onChange={(e) => setNewProgram({ ...newProgram, refereeReward: Number(e.target.value) })}
+                      className="bg-white border-lavender/30 focus:border-lavender focus:ring-lavender/20"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="minPurchase">Minimum Purchase ($)</Label>
+                  <Label htmlFor="minPurchase" className="text-ink font-medium">Minimum Purchase ($)</Label>
                   <Input
                     id="minPurchase"
                     type="number"
                     value={newProgram.minPurchase}
                     onChange={(e) => setNewProgram({ ...newProgram, minPurchase: Number(e.target.value) })}
+                    className="bg-white border-lavender/30 focus:border-lavender focus:ring-lavender/20"
                   />
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 pt-4">
                   <Button 
                     onClick={handleCreateProgram}
                     className="flex-1 bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white"
@@ -670,7 +675,7 @@ export default function ReferralsPage() {
                   <Button 
                     variant="outline" 
                     onClick={() => setShowCreateProgram(false)}
-                    className="flex-1"
+                    className="flex-1 border-lavender text-lavender hover:bg-lavender/10"
                   >
                     Cancel
                   </Button>

@@ -91,6 +91,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.emailNotifications}
                   onCheckedChange={(checked) => setSettings({ ...settings, emailNotifications: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -101,6 +102,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.smsNotifications}
                   onCheckedChange={(checked) => setSettings({ ...settings, smsNotifications: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -111,6 +113,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.appointmentReminders}
                   onCheckedChange={(checked) => setSettings({ ...settings, appointmentReminders: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -121,6 +124,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.clientUpdates}
                   onCheckedChange={(checked) => setSettings({ ...settings, clientUpdates: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
             </CardContent>
@@ -144,6 +148,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.twoFactorAuth}
                   onCheckedChange={(checked) => setSettings({ ...settings, twoFactorAuth: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -154,6 +159,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.publicProfile}
                   onCheckedChange={(checked) => setSettings({ ...settings, publicProfile: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -164,6 +170,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.showEmail}
                   onCheckedChange={(checked) => setSettings({ ...settings, showEmail: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -174,6 +181,7 @@ export default function SettingsPage() {
                 <Switch
                   checked={settings.showPhone}
                   onCheckedChange={(checked) => setSettings({ ...settings, showPhone: checked })}
+                  className="data-[state=checked]:bg-lavender data-[state=unchecked]:bg-gray-300"
                 />
               </div>
             </CardContent>

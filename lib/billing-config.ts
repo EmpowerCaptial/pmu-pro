@@ -4,7 +4,7 @@ export const BILLING_PLANS = {
     id: 'starter',
     name: 'Starter',
     description: 'Perfect for new PMU artists',
-    price: 29,
+    price: 10,
     priceId: 'price_starter_monthly', // This should be your actual Stripe price ID
     features: [
       'Up to 50 clients',
@@ -39,7 +39,7 @@ export const BILLING_PLANS = {
     id: 'studio',
     name: 'Studio',
     description: 'For PMU studios and teams',
-    price: 79,
+    price: 100,
     priceId: 'price_studio_monthly', // This should be your actual Stripe price ID
     features: [
       'All Professional features',

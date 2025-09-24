@@ -269,19 +269,19 @@ export default function ExpensesPage() {
             </div>
             <div className="flex items-center space-x-3">
               <Button 
+                onClick={() => setShowAddExpense(true)}
+                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Expense
+              </Button>
+              <Button 
                 variant="outline"
                 onClick={handleExportScheduleC}
                 className="border-lavender text-lavender hover:bg-lavender/10"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export Schedule C
-              </Button>
-              <Button 
-                onClick={() => setShowAddExpense(true)}
-                className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Expense
               </Button>
             </div>
           </div>
