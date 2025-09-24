@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       success: true,
       payoutId: payout.id,
       amount: availableBalance / 100, // Convert from cents to dollars
-      status: payout.status
+      status: 'pending'
     })
 
   } catch (error) {
