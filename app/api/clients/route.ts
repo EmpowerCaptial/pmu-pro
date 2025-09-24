@@ -57,16 +57,6 @@ export async function GET(request: NextRequest) {
         userId: user.id,
         isActive: true
       },
-      include: {
-        procedures: {
-          orderBy: { createdAt: 'desc' },
-          take: 1
-        },
-        analyses: {
-          orderBy: { createdAt: 'desc' },
-          take: 1
-        }
-      },
       orderBy: { name: 'asc' }
     })
 
@@ -84,8 +74,8 @@ export async function GET(request: NextRequest) {
       skinType: client.skinType,
       notes: client.notes,
       createdAt: client.createdAt,
-      lastProcedure: client.procedures[0] || null,
-      lastAnalysis: client.analyses[0] || null
+      lastProcedure: null,
+      lastAnalysis: null
     }))
 
     console.log('API: Returning', transformedClients.length, 'clients')
