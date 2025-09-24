@@ -32,11 +32,13 @@ import {
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
+type StaffRole = 'admin' | 'manager' | 'staff' | 'viewer'
+
 interface StaffMember {
   id: string
   name: string
   email: string
-  role: 'admin' | 'manager' | 'artist' | 'receptionist'
+  role: StaffRole
   status: 'active' | 'inactive' | 'pending'
   lastActive: string
   permissions: string[]
