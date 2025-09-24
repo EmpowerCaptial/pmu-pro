@@ -211,21 +211,31 @@ export default function ClientList({
                     className="px-4 py-4 flex items-center gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
                     onClick={() => onClientSelect?.(client)}
                   >
-                    {/* Avatar */}
-                    {client.avatarUrl ? (
-                      <img
-                        src={client.avatarUrl}
-                        alt=""
-                        className="h-12 w-12 rounded-full object-cover ring-2 ring-lavender/20"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="h-12 w-12 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
-                        <span className="text-sm font-semibold text-white">
-                          {initials(client.name)}
-                        </span>
-                      </div>
-                    )}
+                    {/* Avatar with FITZ */}
+                    <div className="flex flex-col items-center">
+                      {client.avatarUrl ? (
+                        <img
+                          src={client.avatarUrl}
+                          alt=""
+                          className="h-12 w-12 rounded-full object-cover ring-2 ring-lavender/20"
+                          draggable={false}
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
+                          <span className="text-sm font-semibold text-white">
+                            {initials(client.name)}
+                          </span>
+                        </div>
+                      )}
+                      {/* FITZ abbreviation under avatar */}
+                      {client.skinType && (
+                        <div className="mt-1">
+                          <Badge className={`text-xs px-1 py-0.5 ${getSkinTypeColor(client.skinType)}`}>
+                            FITZ {client.skinType.replace(/[^\d]/g, '')}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Client Info */}
                     <div className="min-w-0 flex-1">
@@ -235,23 +245,18 @@ export default function ClientList({
                           {clientStatus.label}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-text">
-                        {client.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {client.phone}
-                          </span>
-                        )}
+                      <div className="flex flex-col gap-1 text-xs text-muted-text">
                         {client.email && (
                           <span className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {client.email}
                           </span>
                         )}
-                        {client.skinType && (
-                          <Badge className={`text-xs ${getSkinTypeColor(client.skinType)}`}>
-                            {client.skinType}
-                          </Badge>
+                        {client.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {client.phone}
+                          </span>
                         )}
                       </div>
                       {client.lastProcedure && (
@@ -274,7 +279,7 @@ export default function ClientList({
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg">
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onClientSelect?.(client);
