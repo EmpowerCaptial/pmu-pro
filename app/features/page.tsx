@@ -371,15 +371,15 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - 200x200px buttons with 4 per row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+        {/* Features Grid - 50x50px buttons with 4 per row on mobile */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6 max-w-6xl mx-auto">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
               className={`
                 relative flex flex-col items-center justify-center
-                rounded-2xl border border-gray-200 bg-white
-                w-[200px] h-[200px] mx-auto shadow-sm transition-all duration-200
+                rounded-lg border border-gray-200 bg-white
+                w-[50px] h-[50px] mx-auto shadow-sm transition-all duration-200
                 ${feature.status === 'active' 
                   ? 'hover:shadow-lg hover:shadow-gray-200 hover:scale-105 cursor-pointer' 
                   : 'opacity-60 cursor-default'
@@ -390,27 +390,20 @@ export default function FeaturesPage() {
               role="button"
               tabIndex={feature.status === 'active' ? 0 : -1}
             >
-              {/* Large icon that fills the button */}
+              {/* Small icon that fills the button */}
               <div className={`
-                w-full h-full rounded-2xl flex items-center justify-center
+                w-full h-full rounded-lg flex items-center justify-center
                 ${feature.color} shadow-sm
               `}>
-                <feature.icon className="h-24 w-24 text-white" />
-              </div>
-
-              {/* Feature name overlay */}
-              <div className="absolute bottom-2 left-2 right-2 text-center">
-                <h3 className="font-medium text-sm text-white leading-tight drop-shadow-lg">
-                  {feature.title}
-                </h3>
+                <feature.icon className="h-6 w-6 text-white" />
               </div>
 
               {/* Status indicator */}
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-1 right-1">
                 {feature.status === 'active' ? (
-                  <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-sm"></div>
                 ) : (
-                  <div className="w-3 h-3 bg-gray-300 rounded-full shadow-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full shadow-sm"></div>
                 )}
               </div>
             </div>
