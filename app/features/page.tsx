@@ -115,7 +115,7 @@ const businessFeatures = [
   },
   {
     id: 'enterprise-staff',
-    title: 'Enterprise Staff Control',
+    title: 'Team',
     description: 'Manage team roles & permissions (Studio Enterprise)',
     icon: Shield,
     href: '/enterprise/staff',
