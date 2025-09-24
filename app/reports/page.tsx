@@ -88,35 +88,36 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">Reports & Analytics</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-2">Reports & Analytics</h1>
             <p className="text-muted">Track your business performance and growth</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              Filter
+              <span className="hidden sm:inline">Filter</span>
             </Button>
             <Button variant="outline" size="sm" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Export
+              <span className="hidden sm:inline">Export</span>
             </Button>
             <Button size="sm" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </div>
 
         {/* Period Selector */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {['7d', '30d', '90d', '1y'].map((period) => (
             <Button
               key={period}
               variant={selectedPeriod === period ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedPeriod(period)}
+              className="flex-1 sm:flex-none min-w-0"
             >
               {period}
             </Button>
@@ -192,24 +193,24 @@ export default function ReportsPage() {
           <CardContent>
             <div className="space-y-4">
               {recentReports.map((report) => (
-                <div key={report.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div key={report.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 rounded-lg gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                       <BarChart3 className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{report.title}</h3>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-gray-900 truncate">{report.title}</h3>
                       <p className="text-sm text-gray-600">{report.date}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="border-blue-200 text-blue-800">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <Badge variant="outline" className="border-blue-200 text-blue-800 text-xs">
                       {report.type}
                     </Badge>
-                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                       {report.status}
                     </Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="flex-shrink-0">
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>
