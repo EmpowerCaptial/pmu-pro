@@ -371,18 +371,18 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - Responsive grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+        {/* Features Grid - Apple-style layout: 4 rows of 6 */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4 md:gap-6 max-w-6xl mx-auto">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
               className={`
-                flex flex-col items-center justify-center
-                aspect-square rounded-lg border border-blue-100 bg-gradient-to-br from-blue-50 to-teal-50
-                p-1 sm:p-2 shadow-sm transition-all duration-200
+                flex flex-col items-center justify-start
+                rounded-2xl border border-gray-200 bg-white
+                p-3 sm:p-4 shadow-sm transition-all duration-200
                 ${feature.status === 'active' 
-                  ? 'hover:shadow-lg hover:border-blue-200 hover:from-blue-100 hover:to-teal-100 cursor-pointer' 
-                  : 'opacity-75 cursor-default'
+                  ? 'hover:shadow-lg hover:shadow-gray-200 hover:scale-105 cursor-pointer' 
+                  : 'opacity-60 cursor-default'
                 }
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300
               `}
@@ -390,21 +390,28 @@ export default function FeaturesPage() {
               role="button"
               tabIndex={feature.status === 'active' ? 0 : -1}
             >
-              {/* Icon in middle */}
-              <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center mb-1 ${feature.color}`}>
-                <feature.icon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
+              {/* Apple-style icon */}
+              <div className={`
+                w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3
+                ${feature.color} shadow-sm
+              `}>
+                <feature.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
 
-              {/* Words under icon */}
+              {/* Feature name underneath */}
               <div className="text-center">
-                <h3 className="font-medium text-xs sm:text-xs text-gray-900 leading-tight whitespace-normal break-words">
+                <h3 className="font-medium text-xs sm:text-sm text-gray-900 leading-tight">
                   {feature.title}
                 </h3>
               </div>
 
-              {/* Status indicator */}
-              <div className="mt-1">
-                {getStatusBadge(feature.status)}
+              {/* Status indicator - smaller and positioned */}
+              <div className="mt-2">
+                {feature.status === 'active' ? (
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                ) : (
+                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                )}
               </div>
             </div>
           ))}
