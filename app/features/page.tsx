@@ -371,19 +371,19 @@ export default function FeaturesPage() {
           />
         </div>
 
-        {/* Features Grid - 100x100px buttons with names underneath */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 max-w-6xl mx-auto">
+        {/* Features Grid - 75x75px buttons with 4 rows evenly spaced */}
+        <div className="grid grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
           {filteredFeatures.map((feature) => (
             <div
               key={feature.id}
-              className="flex flex-col items-center justify-center space-y-3"
+              className="flex flex-col items-center justify-center space-y-2"
             >
               {/* Button */}
               <div
                 className={`
                   relative flex items-center justify-center
-                  rounded-xl border border-gray-200 bg-white
-                  w-[100px] h-[100px] shadow-sm transition-all duration-200
+                  rounded-lg border border-gray-200 bg-white
+                  w-[75px] h-[75px] shadow-sm transition-all duration-200
                   ${feature.status === 'active' 
                     ? 'hover:shadow-lg hover:shadow-gray-200 hover:scale-105 cursor-pointer' 
                     : 'opacity-60 cursor-default'
@@ -396,25 +396,25 @@ export default function FeaturesPage() {
               >
                 {/* Icon that fills the button */}
                 <div className={`
-                  w-full h-full rounded-xl flex items-center justify-center
+                  w-full h-full rounded-lg flex items-center justify-center
                   ${feature.color} shadow-sm
                 `}>
-                  <feature.icon className="h-12 w-12 text-white" />
+                  <feature.icon className="h-9 w-9 text-white" />
                 </div>
 
                 {/* Status indicator */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-1.5 right-1.5">
                   {feature.status === 'active' ? (
-                    <div className="w-2 h-2 bg-green-500 rounded-full shadow-sm"></div>
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-sm"></div>
                   ) : (
-                    <div className="w-2 h-2 bg-gray-300 rounded-full shadow-sm"></div>
+                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full shadow-sm"></div>
                   )}
                 </div>
               </div>
 
               {/* Feature name underneath */}
               <div className="text-center">
-                <h3 className="font-medium text-sm text-gray-900 leading-tight">
+                <h3 className="font-medium text-xs text-gray-900 leading-tight">
                   {feature.title}
                 </h3>
               </div>
