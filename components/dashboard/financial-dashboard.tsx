@@ -70,16 +70,16 @@ export function WeeklyBalanceCard() {
       setData(weeklyData)
     } catch (err) {
       console.error('Error loading weekly data:', err)
-      setError('Failed to load weekly data')
       
-      // Fallback to mock data
-      const mockData: WeeklyBalanceData = {
-        totalRevenue: 2450.00,
-        serviceCount: 12,
-        topService: "Microblading",
-        growthPercentage: 15.3
+      // For new artists, show $0.00 instead of error
+      const emptyData: WeeklyBalanceData = {
+        totalRevenue: 0.00,
+        serviceCount: 0,
+        topService: "No services yet",
+        growthPercentage: 0
       }
-      setData(mockData)
+      setData(emptyData)
+      setError(null) // Clear error to show the empty state
     } finally {
       setLoading(false)
     }
@@ -133,10 +133,17 @@ export function WeeklyBalanceCard() {
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
             <CardTitle className="text-base sm:text-lg font-bold">Weekly Balance</CardTitle>
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm">
-            <ArrowUpRight className="h-3 w-3 mr-1" />
-            +{data?.growthPercentage}%
-          </Badge>
+          {data?.growthPercentage && data.growthPercentage > 0 ? (
+            <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm">
+              <ArrowUpRight className="h-3 w-3 mr-1" />
+              +{data.growthPercentage}%
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs sm:text-sm">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              Starting fresh
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0">
@@ -214,17 +221,17 @@ export function DailyBalanceCard() {
       setData(dailyData)
     } catch (err) {
       console.error('Error loading daily data:', err)
-      setError('Failed to load daily data')
       
-      // Fallback to mock data
-      const mockData: DailyBalanceData = {
-        todaysRevenue: 650.00,
-        stripeBalance: 425.00,
-        systemBalance: 225.00,
-        transactionCount: 3,
-        canPayout: true
+      // For new artists, show $0.00 instead of error
+      const emptyData: DailyBalanceData = {
+        todaysRevenue: 0.00,
+        stripeBalance: 0.00,
+        systemBalance: 0.00,
+        transactionCount: 0,
+        canPayout: false
       }
-      setData(mockData)
+      setData(emptyData)
+      setError(null) // Clear error to show the empty state
     } finally {
       setLoading(false)
     }
@@ -351,17 +358,25 @@ export function DailyBalanceCard() {
                 <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                 Processing...
               </>
-            ) : (
+            ) : data?.canPayout ? (
               <>
                 <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Immediate Payout - ${data?.stripeBalance.toFixed(2)}
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                Connect Stripe to enable payouts
               </>
             )}
           </Button>
           
           {!data?.canPayout && (
             <p className="text-xs text-gray-500 text-center">
-              Minimum payout threshold not met
+              {data?.stripeBalance === 0 ? 
+                "Complete your first service to start earning" : 
+                "Minimum payout threshold not met"
+              }
             </p>
           )}
         </div>
