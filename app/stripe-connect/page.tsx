@@ -86,7 +86,9 @@ export default function StripeConnectPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create Stripe account')
+        const errorData = await response.json()
+        console.error('Stripe Connect API error:', errorData)
+        throw new Error(errorData.error || 'Failed to create Stripe account')
       }
 
       const data = await response.json()

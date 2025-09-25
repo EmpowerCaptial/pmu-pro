@@ -60,10 +60,40 @@ export async function POST(request: NextRequest) {
       },
       accountLink: accountLink.url,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Stripe Connect error:', error)
+    
+    // Return more specific error information
+    let errorMessage = 'Failed to create Stripe Connect account'
+    let errorCode = 'STRIPE_ERROR'
+    
+    if (error.type) {
+      errorCode = error.type
+      switch (error.type) {
+        case 'invalid_request_error':
+          errorMessage = 'Invalid request to Stripe. Please check your Stripe configuration.'
+          break
+        case 'api_error':
+          errorMessage = 'Stripe API error. Please try again later.'
+          break
+        case 'authentication_error':
+          errorMessage = 'Stripe authentication failed. Please check your API keys.'
+          break
+        case 'rate_limit_error':
+          errorMessage = 'Rate limit exceeded. Please try again later.'
+          break
+        default:
+          errorMessage = error.message || errorMessage
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create Stripe Connect account' },
+      { 
+        error: errorMessage,
+        errorCode: errorCode,
+        details: error.message,
+        type: error.type
+      },
       { status: 500 }
     )
   }
