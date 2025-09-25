@@ -1,166 +1,162 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export const dynamic = "force-dynamic"
-
-// GET /api/appointments - Get all appointments for a user
-export async function GET(request: NextRequest) {
-  try {
-    const userEmail = request.headers.get('x-user-email')
-    
-    if (!userEmail) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Try to find user and appointments
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: userEmail }
-      })
-
-      if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
-      }
-
-      const appointments = await prisma.appointment.findMany({
-        where: {
-          userId: user.id
-        },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true
-            }
-          },
-          procedures: {
-            select: {
-              id: true,
-              procedureType: true,
-              isCompleted: true
-            }
-          }
-        },
-        orderBy: { startTime: 'desc' }
-      })
-
-      return NextResponse.json({ appointments })
-
-    } catch (dbError) {
-      console.log('Database error:', dbError)
-      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
-    }
-
-  } catch (error) {
-    console.error('Error fetching appointments:', error)
-    return NextResponse.json({ error: 'Failed to fetch appointments' }, { status: 500 })
-  }
-}
-
-// POST /api/appointments - Create new appointment
 export async function POST(request: NextRequest) {
   try {
-    const userEmail = request.headers.get('x-user-email')
-    
+    // Get user email from headers
+    const userEmail = request.headers.get('x-user-email');
     if (!userEmail) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'User email required' }, { status: 401 });
     }
 
-    const body = await request.json()
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const body = await request.json();
     const {
-      clientId,
-      serviceType,
-      title,
+      clientName,
+      clientEmail,
+      clientPhone,
+      service,
+      date,
+      time,
       duration,
-      startTime,
-      endTime,
-      status,
-      notes,
       price,
-      deposit
-    } = body
+      deposit,
+      status = 'pending_deposit'
+    } = body;
 
     // Validate required fields
-    if (!clientId || !serviceType || !title || !duration || !startTime || !endTime) {
-      return NextResponse.json(
-        { error: 'Client ID, service type, title, duration, start time, and end time are required' },
-        { status: 400 }
-      )
+    if (!clientName || !clientEmail || !service || !date || !time) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Try to find user
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: userEmail }
-      })
-
-      if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    // Check if client exists, if not create one
+    let client = await prisma.client.findFirst({
+      where: {
+        email: clientEmail,
+        userId: user.id
       }
+    });
 
-      // Verify client belongs to user
-      const client = await prisma.client.findFirst({
-        where: {
-          id: clientId,
-          userId: user.id,
-          isActive: true
-        }
-      })
-
-      if (!client) {
-        return NextResponse.json({ error: 'Client not found' }, { status: 404 })
-      }
-
-      // Create appointment
-      const appointment = await prisma.appointment.create({
+    if (!client) {
+      client = await prisma.client.create({
         data: {
           userId: user.id,
-          clientId,
-          title,
-          serviceType,
-          duration,
-          startTime: new Date(startTime),
-          endTime: new Date(endTime),
-          status: status || 'scheduled',
-          notes: notes || null,
-          price: price || 0,
-          deposit: deposit || 0
-        },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true
-            }
-          },
-          procedures: {
-            select: {
-              id: true,
-              procedureType: true,
-              isCompleted: true
-            }
-          }
+          name: clientName,
+          email: clientEmail,
+          phone: clientPhone || '',
+          isActive: true
         }
-      })
-
-      return NextResponse.json({ appointment }, { status: 201 })
-
-    } catch (dbError) {
-      console.log('Database error creating appointment:', dbError)
-      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+      });
     }
 
+    // Create appointment
+    const appointment = await prisma.appointment.create({
+      data: {
+        userId: user.id,
+        clientId: client.id,
+        title: `${service} - ${clientName}`,
+        serviceType: service,
+        duration: duration || 120,
+        startTime: new Date(`${date}T${time}`),
+        endTime: new Date(new Date(`${date}T${time}`).getTime() + (duration || 120) * 60000),
+        status: status,
+        price: price || 0,
+        deposit: deposit || 0,
+        paymentStatus: 'pending',
+        source: 'public_booking',
+        notes: `Booked via public booking page`,
+        reminderSent: false
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      appointment: {
+        id: appointment.id,
+        clientId: client.id,
+        clientName: client.name,
+        clientEmail: client.email,
+        service: appointment.serviceType,
+        date: appointment.startTime.toISOString().split('T')[0],
+        time: appointment.startTime.toTimeString().split(' ')[0].substring(0, 5),
+        duration: appointment.duration,
+        price: appointment.price,
+        deposit: appointment.deposit,
+        status: appointment.status
+      }
+    });
+
   } catch (error) {
-    console.error('Error creating appointment:', error)
+    console.error('Error creating appointment:', error);
     return NextResponse.json(
       { error: 'Failed to create appointment' },
       { status: 500 }
-    )
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    // Get user email from headers
+    const userEmail = request.headers.get('x-user-email');
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 401 });
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get appointments
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        userId: user.id
+      },
+      include: {
+        client: true
+      },
+      orderBy: {
+        startTime: 'asc'
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      appointments: appointments.map(apt => ({
+        id: apt.id,
+        clientName: apt.client.name,
+        clientEmail: apt.client.email,
+        service: apt.serviceType,
+        date: apt.startTime.toISOString().split('T')[0],
+        time: apt.startTime.toTimeString().split(' ')[0].substring(0, 5),
+        duration: apt.duration,
+        price: apt.price,
+        deposit: apt.deposit,
+        status: apt.status,
+        paymentStatus: apt.paymentStatus
+      }))
+    });
+
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch appointments' },
+      { status: 500 }
+    );
   }
 }

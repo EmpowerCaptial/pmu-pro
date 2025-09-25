@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
+import { AppointmentDetailsCard } from "@/components/dashboard/appointment-details-card"
 import { NavBar } from "@/components/ui/navbar"
 import { Button } from "@/components/ui/button"
 import { Home, Download, Smartphone } from "lucide-react"
@@ -180,7 +181,12 @@ export default function DashboardPage() {
                 <DashboardCards />
               </DemoDataProvider>
             ) : (
-              <DashboardCards />
+              <>
+                <DashboardCards />
+                <div className="mt-6">
+                  <AppointmentDetailsCard />
+                </div>
+              </>
             )}
           </main>
           <InstallPrompt />

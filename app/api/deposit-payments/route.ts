@@ -64,6 +64,30 @@ export async function POST(req: NextRequest) {
       notes,
       linkExpirationDays
     });
+
+    // Create Stripe checkout session
+    console.log('🔗 Creating Stripe checkout session...');
+    const checkoutResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com'}/api/stripe/create-deposit-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        depositId: depositPayment.id,
+        amount: amount,
+        currency: currency,
+        clientName: 'Client', // You might want to get this from client data
+        successUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com'}/booking/confirmation?deposit=${depositPayment.id}`,
+        cancelUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com'}/booking/cancelled`
+      })
+    });
+
+    if (!checkoutResponse.ok) {
+      console.error('❌ Failed to create checkout session');
+      return NextResponse.json({ error: "Failed to create payment session" }, { status: 500 });
+    }
+
+    const checkoutData = await checkoutResponse.json();
     
     console.log('✅ Deposit payment created:', depositPayment.id);
 
@@ -108,6 +132,7 @@ export async function POST(req: NextRequest) {
       success: true,
       depositPayment,
       depositLink: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/deposit/${depositPayment.depositLink}`,
+      checkoutUrl: checkoutData.url,
       emailSent: client?.email ? true : false
     });
 

@@ -14,9 +14,9 @@ export type PublicBookingConfig = {
   }>;
 };
 
-// TODO: point to your existing booking flow (internal route or external system)
+// Public booking page URL
 export const BOOK_URL_BASE = process.env.NEXT_PUBLIC_BOOK_URL_BASE || 
-  "https://thepmuguide.com/checkout"; // example placeholder; update
+  "https://thepmuguide.com/book"; // Updated to use the new booking flow
 
 export function buildBookingHref(handle: string, serviceId?: string) {
   const url = new URL(BOOK_URL_BASE);
