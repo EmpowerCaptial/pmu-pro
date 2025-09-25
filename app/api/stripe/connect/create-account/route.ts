@@ -38,10 +38,11 @@ export async function POST(request: NextRequest) {
     })
 
     // Create account link for onboarding
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com'
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/stripe-connect?refresh=true`,
-      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/stripe-connect?success=true`,
+      refresh_url: `${baseUrl}/stripe-connect?refresh=true`,
+      return_url: `${baseUrl}/stripe-connect?success=true`,
       type: 'account_onboarding',
     })
 
