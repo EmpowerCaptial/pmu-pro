@@ -14,9 +14,12 @@ import {
   Shield,
   DollarSign,
   Clock,
-  Users
+  Users,
+  Crown,
+  Star
 } from "lucide-react"
 import { NavBar } from "@/components/ui/navbar"
+import { getFeeDisplayInfo } from "@/lib/platform-fee-config"
 
 interface StripeAccount {
   id: string
@@ -33,10 +36,21 @@ export default function StripeConnectPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [isConnected, setIsConnected] = useState(false)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('starter') // Default to starter
 
   useEffect(() => {
     checkStripeConnection()
+    // In a real app, you'd get the user's subscription plan from auth/database
+    // For now, we'll simulate different plans
+    detectSubscriptionPlan()
   }, [])
+
+  const detectSubscriptionPlan = () => {
+    // In a real app, this would come from user authentication/subscription data
+    // For demo purposes, we'll check localStorage or use a default
+    const userPlan = localStorage.getItem('userSubscriptionPlan') || 'starter'
+    setSubscriptionPlan(userPlan)
+  }
 
   const checkStripeConnection = async () => {
     try {
@@ -126,6 +140,43 @@ export default function StripeConnectPage() {
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Subscription Plan Selector (for testing) */}
+          <Card className="border-lavender/30">
+            <CardHeader>
+              <CardTitle className="text-sm">Current Subscription Plan</CardTitle>
+              <CardDescription>Select your plan to see applicable fees</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={subscriptionPlan === 'starter' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSubscriptionPlan('starter')}
+                  className={subscriptionPlan === 'starter' ? 'bg-lavender text-white' : ''}
+                >
+                  Starter
+                </Button>
+                <Button
+                  variant={subscriptionPlan === 'professional' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSubscriptionPlan('professional')}
+                  className={subscriptionPlan === 'professional' ? 'bg-green-600 text-white' : ''}
+                >
+                  <Crown className="h-3 w-3 mr-1" />
+                  Professional
+                </Button>
+                <Button
+                  variant={subscriptionPlan === 'studio' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSubscriptionPlan('studio')}
+                  className={subscriptionPlan === 'studio' ? 'bg-purple-600 text-white' : ''}
+                >
+                  <Star className="h-3 w-3 mr-1" />
+                  Studio
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           {/* Current Status */}
           {stripeAccount && (
             <Card className="border-lavender/30">
@@ -310,7 +361,21 @@ export default function StripeConnectPage() {
           {/* Fee Information */}
           <Card className="border-lavender/30">
             <CardHeader>
-              <CardTitle className="text-sm">Fee Structure</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2">
+                Fee Structure
+                {subscriptionPlan === 'professional' && (
+                  <Badge className="bg-green-100 text-green-800">
+                    <Crown className="h-3 w-3 mr-1" />
+                    Professional
+                  </Badge>
+                )}
+                {subscriptionPlan === 'studio' && (
+                  <Badge className="bg-purple-100 text-purple-800">
+                    <Star className="h-3 w-3 mr-1" />
+                    Studio
+                  </Badge>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
               <div className="space-y-2">
@@ -320,12 +385,24 @@ export default function StripeConnectPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>PMU Pro Platform Fee:</span>
-                  <span>10% (min $5, max $50)</span>
+                  <span className={subscriptionPlan === 'professional' || subscriptionPlan === 'studio' ? 'text-green-600 font-semibold' : ''}>
+                    {getFeeDisplayInfo(subscriptionPlan).platformFee}
+                  </span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Your Net Receipt:</span>
-                  <span>~87% of service amount</span>
+                  <span className={subscriptionPlan === 'professional' || subscriptionPlan === 'studio' ? 'text-green-600' : ''}>
+                    {getFeeDisplayInfo(subscriptionPlan).netReceipt}
+                  </span>
                 </div>
+                {(subscriptionPlan === 'professional' || subscriptionPlan === 'studio') && (
+                  <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 text-green-800 text-xs">
+                      <CheckCircle className="h-3 w-3" />
+                      <span className="font-medium">Platform fees waived for {subscriptionPlan === 'professional' ? 'Professional' : 'Studio'} subscribers!</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

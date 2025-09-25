@@ -119,23 +119,47 @@ export const PLATFORM_FEES: PlatformFeeStructure = {
 
 ## 💰 Fee Structure
 
-### **Platform Fees**
+### **Platform Fees by Subscription Plan**
+
+#### **Starter Plan**
 - **Percentage**: 10% of service amount
 - **Minimum**: $5 per transaction
 - **Maximum**: $50 per transaction
 - **Example**: $450 service = $45 platform fee
 
-### **Stripe Processing Fees**
+#### **Professional Plan** 
+- **Percentage**: 0% (FREE)
+- **Minimum**: $0 per transaction
+- **Maximum**: $0 per transaction
+- **Example**: $450 service = $0 platform fee
+
+#### **Studio Plan**
+- **Percentage**: 0% (FREE)
+- **Minimum**: $0 per transaction
+- **Maximum**: $0 per transaction
+- **Example**: $450 service = $0 platform fee
+
+### **Stripe Processing Fees** (All Plans)
 - **Standard Rate**: 2.9% + $0.30 per transaction
 - **International**: Additional 1% for international cards
 - **Currency Conversion**: 1% for non-USD transactions
 
-### **Artist Net Receipt**
+### **Artist Net Receipt Examples**
+
+#### **Starter Plan**
 ```
 Service: $450
 Platform Fee: -$45 (10%)
 Stripe Fee: -$13.35 (2.9% + $0.30)
 Artist Net: $391.65 (87.0%)
+```
+
+#### **Professional/Studio Plans**
+```
+Service: $450
+Platform Fee: -$0 (FREE)
+Stripe Fee: -$13.35 (2.9% + $0.30)
+Artist Net: $436.65 (97.0%)
 ```
 
 ## 🔌 API Endpoints
