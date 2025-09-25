@@ -163,12 +163,6 @@ export function DashboardCards() {
         </Card>
       </div>
 
-      {/* Financial Dashboard - Mobile */}
-      <div className="lg:hidden grid grid-cols-1 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <WeeklyBalanceCard />
-        <DailyBalanceCard />
-      </div>
-
       {/* Unified Client Onboarding - Mobile */}
       <div className="lg:hidden mb-4 sm:mb-6">
         <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-lavender/10 to-lavender/20 backdrop-blur-sm border-lavender/40">
@@ -185,20 +179,6 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <Link href="/unified-onboarding" className="w-full">
-                <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
-                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
-                      🎯 Start Onboarding
-                    </span>
-                    <p className="text-lavender-100 text-xs mt-1">
-                      Complete Process
-                    </p>
-                  </div>
-                </div>
-              </Link>
-              
               <Link href="/ai-contraindication" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
@@ -208,6 +188,20 @@ export function DashboardCards() {
                     </span>
                     <p className="text-lavender-100 text-xs mt-1">
                       Safety Check
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              
+              <Link href="/unified-onboarding" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                      🎯 Start Onboarding
+                    </span>
+                    <p className="text-lavender-100 text-xs mt-1">
+                      Complete Process
                     </p>
                   </div>
                 </div>
@@ -226,6 +220,12 @@ export function DashboardCards() {
         </Card>
       </div>
 
+      {/* Financial Dashboard - Mobile */}
+      <div className="lg:hidden grid grid-cols-1 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <WeeklyBalanceCard />
+        <DailyBalanceCard />
+      </div>
+
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-6 gap-4 xl:gap-6">
         <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-lavender/10 to-lavender/20 backdrop-blur-sm border-lavender/40 col-span-2">
@@ -242,20 +242,6 @@ export function DashboardCards() {
           </CardHeader>
           <CardContent className="p-6">
             <div className="flex gap-3 mb-3">
-              <Link href="/unified-onboarding" className="flex-1">
-                <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
-                    <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
-                      🎯 Start Onboarding
-                    </span>
-                    <p className="text-lavender-100 text-xs xl:text-sm mt-1">
-                      Complete Process
-                    </p>
-                  </div>
-                </div>
-              </Link>
-              
               <Link href="/ai-contraindication" className="flex-1">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
@@ -265,6 +251,20 @@ export function DashboardCards() {
                     </span>
                     <p className="text-lavender-100 text-xs xl:text-sm mt-1">
                       Safety Check
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              
+              <Link href="/unified-onboarding" className="flex-1">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
+                    <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
+                      🎯 Start Onboarding
+                    </span>
+                    <p className="text-lavender-100 text-xs xl:text-sm mt-1">
+                      Complete Process
                     </p>
                   </div>
                 </div>
