@@ -131,28 +131,31 @@ export default function ClientConsentFormPage() {
       return
     }
     
-    if (!consentForm || !formTemplate) return
+    if (!consentForm || !formTemplate) {
+      setError("Form data is missing. Please refresh the page and try again.")
+      return
+    }
     
     setIsSubmitting(true)
     setError(null)
     
     try {
-      // Create form submission data
+      // Create form submission data with better error handling
       const submissionData: ConsentFormData = {
-        clientSignature: formData.clientSignature as string,
-        clientName: formData.clientName as string,
-        clientEmail: formData.clientEmail as string,
-        clientPhone: formData.clientPhone as string,
-        dateOfBirth: formData.dateOfBirth as string,
+        clientSignature: formData.clientSignature as string || "",
+        clientName: formData.clientName as string || "",
+        clientEmail: formData.clientEmail as string || "",
+        clientPhone: formData.clientPhone as string || "",
+        dateOfBirth: formData.dateOfBirth as string || "",
         emergencyContact: formData.emergencyContact ? {
-          name: formData.emergencyContact as string,
+          name: formData.emergencyContact as string || "",
           relationship: formData.emergencyRelationship as string || "",
-          phone: formData.emergencyPhone as string
+          phone: formData.emergencyPhone as string || ""
         } : undefined,
         medicalHistory: {
-          allergies: formData.allergies === "Yes" ? (formData.allergyDetails as string || "").split(",").map(s => s.trim()) : [],
-          medications: formData.medications === "Yes" ? (formData.medicationDetails as string || "").split(",").map(s => s.trim()) : [],
-          conditions: formData.medicalConditions === "Yes" ? (formData.conditionDetails as string || "").split(",").map(s => s.trim()) : [],
+          allergies: formData.allergies === "Yes" ? (formData.allergyDetails as string || "").split(",").map(s => s.trim()).filter(s => s) : [],
+          medications: formData.medications === "Yes" ? (formData.medicationDetails as string || "").split(",").map(s => s.trim()).filter(s => s) : [],
+          conditions: formData.medicalConditions === "Yes" ? (formData.conditionDetails as string || "").split(",").map(s => s.trim()).filter(s => s) : [],
           surgeries: []
         },
         consentAcknowledged: true,
@@ -162,6 +165,8 @@ export default function ClientConsentFormPage() {
         ipAddress: "client-side", // In production, get from server
         userAgent: navigator.userAgent
       }
+      
+      console.log("Submitting form data:", submissionData)
       
       // Submit form data to API
       const response = await fetch(`/api/consent-forms/${clientId}/${token}`, {
@@ -177,7 +182,8 @@ export default function ClientConsentFormPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit form')
+        console.error("Form submission error:", errorData)
+        throw new Error(errorData.error || `Failed to submit form (${response.status})`)
       }
       
       // Create completion notification
@@ -204,7 +210,7 @@ export default function ClientConsentFormPage() {
       
     } catch (error) {
       console.error("Error submitting form:", error)
-      setError("Failed to submit form. Please try again.")
+      setError(error instanceof Error ? error.message : "Failed to submit form. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -439,7 +445,7 @@ export default function ClientConsentFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-lavender-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-lavender-50 to-blue-50 p-4 pb-24 md:pb-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <Card className="mb-6 border-0 bg-white/90 backdrop-blur-sm shadow-lg">

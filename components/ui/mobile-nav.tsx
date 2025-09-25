@@ -60,12 +60,15 @@ export default function MobileNav() {
     // Handle scroll visibility
     const handleScroll = () => {
       const currentScrollY = window.scrollY
+      const documentHeight = document.documentElement.scrollHeight
+      const windowHeight = window.innerHeight
+      const scrollPercentage = (currentScrollY + windowHeight) / documentHeight
       
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
+      // Hide navbar when scrolling down and not near bottom
+      if (currentScrollY > lastScrollY && currentScrollY > 100 && scrollPercentage < 0.95) {
         setIsVisible(false)
       } else {
-        // Scrolling up
+        // Show navbar when scrolling up or near bottom
         setIsVisible(true)
       }
       

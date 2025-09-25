@@ -22,7 +22,7 @@ export async function GET(
         id: `form_${Date.now()}`,
         clientId: clientId,
         clientName: "Demo Client",
-        formType: "consent",
+        formType: "general-consent",
         sendMethod: "email",
         contactInfo: "demo@example.com",
         customMessage: "Please complete this consent form",

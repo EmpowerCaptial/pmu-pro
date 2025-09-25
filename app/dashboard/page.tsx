@@ -88,7 +88,7 @@ export default function DashboardPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <ArtistViewWrapper>
-        <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-20">
+        <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-24 md:pb-20">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img
               src="/images/pmu-guide-logo.png"
