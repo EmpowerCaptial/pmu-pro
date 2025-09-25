@@ -264,28 +264,28 @@ export default function InventoryPage() {
       
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-16 sm:pb-20">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
-          <div>
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4 sm:mb-6 gap-4 lg:gap-0">
+          <div className="w-full lg:w-auto">
             <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Inventory Management</h1>
             <p className="text-muted text-sm sm:text-base">Track and manage your PMU supplies and equipment</p>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 text-xs sm:text-sm flex-1 sm:flex-none">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center space-y-3 md:space-y-0 md:space-x-3 w-full lg:w-auto">
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 text-xs sm:text-sm flex-1 md:flex-none">
                 <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Export
               </Button>
-              <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 text-xs sm:text-sm flex-1 sm:flex-none">
+              <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 text-xs sm:text-sm flex-1 md:flex-none">
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Import
               </Button>
             </div>
             
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3">
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-lavender hover:bg-lavender-600 text-white text-xs sm:text-sm flex-1 sm:flex-none">
+                  <Button className="bg-lavender hover:bg-lavender-600 text-white text-xs sm:text-sm flex-1 md:flex-none">
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Add Item
                   </Button>
@@ -439,7 +439,7 @@ export default function InventoryPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Card>
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
@@ -490,7 +490,7 @@ export default function InventoryPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mb-4 sm:mb-6">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center space-y-3 md:space-y-0 md:space-x-4 mb-4 sm:mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 sm:h-4 sm:w-4" />
             <Input
@@ -502,7 +502,7 @@ export default function InventoryPage() {
           </div>
           
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10 text-sm sm:text-base">
+            <SelectTrigger className="w-full md:w-48 h-9 sm:h-10 text-sm sm:text-base">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -525,31 +525,31 @@ export default function InventoryPage() {
           </CardHeader>
           <CardContent className="p-0 sm:p-6">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Item</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Category</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Stock</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Status</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Unit Cost</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Total Value</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium">Actions</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[200px]">Item</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Category</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[120px]">Stock</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[120px]">Status</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Unit Cost</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Total Value</th>
+                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredInventory.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2 sm:p-3">
-                        <div>
-                          <p className="font-medium text-xs sm:text-sm">{item.name}</p>
-                          <p className="text-xs text-gray-600">{item.brand} - {item.sku}</p>
+                      <td className="p-2 sm:p-3 min-w-[200px]">
+                        <div className="min-w-0">
+                          <p className="font-medium text-xs sm:text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-gray-600 truncate">{item.brand} - {item.sku}</p>
                         </div>
                       </td>
-                      <td className="p-2 sm:p-3">
-                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                      <td className="p-2 sm:p-3 min-w-[100px]">
+                        <Badge variant="outline" className="text-xs whitespace-nowrap">{item.category}</Badge>
                       </td>
-                      <td className="p-2 sm:p-3">
+                      <td className="p-2 sm:p-3 min-w-[120px]">
                         <div className="flex items-center space-x-1 sm:space-x-2">
                           <Input
                             type="number"
@@ -557,20 +557,20 @@ export default function InventoryPage() {
                             onChange={(e) => handleUpdateStock(item.id, parseInt(e.target.value) || 0)}
                             className="w-16 sm:w-20 h-7 sm:h-9 text-xs sm:text-sm"
                           />
-                          <span className="text-xs text-gray-600">/ {item.maxStock}</span>
+                          <span className="text-xs text-gray-600 whitespace-nowrap">/ {item.maxStock}</span>
                         </div>
                       </td>
-                      <td className="p-2 sm:p-3">
-                        <Badge className={`${getStatusColor(item.status)} text-xs`}>
+                      <td className="p-2 sm:p-3 min-w-[120px]">
+                        <Badge className={`${getStatusColor(item.status)} text-xs whitespace-nowrap`}>
                           <div className="flex items-center space-x-1">
                             {getStatusIcon(item.status)}
                             <span>{item.status.replace('_', ' ')}</span>
                           </div>
                         </Badge>
                       </td>
-                      <td className="p-2 sm:p-3 text-xs sm:text-sm">${item.unitCost.toFixed(2)}</td>
-                      <td className="p-2 sm:p-3 text-xs sm:text-sm">${item.totalValue.toFixed(2)}</td>
-                      <td className="p-2 sm:p-3">
+                      <td className="p-2 sm:p-3 text-xs sm:text-sm min-w-[100px] whitespace-nowrap">${item.unitCost.toFixed(2)}</td>
+                      <td className="p-2 sm:p-3 text-xs sm:text-sm min-w-[100px] whitespace-nowrap">${item.totalValue.toFixed(2)}</td>
+                      <td className="p-2 sm:p-3 min-w-[100px]">
                         <div className="flex items-center space-x-1 sm:space-x-2">
                           <Button size="sm" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
                             <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
