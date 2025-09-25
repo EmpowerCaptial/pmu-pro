@@ -89,7 +89,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center space-x-2">
             <Image
-              src="/images/logotransparent.png"
+              src="/images/logotransparent.jpeg"
               alt="PMU Pro Logo"
               width={128}
               height={128}

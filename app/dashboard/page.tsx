@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-24 md:pb-20">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img
-              src="/images/logotransparent.png"
+              src="/images/logotransparent.jpeg"
               alt="PMU Pro Logo"
               className="w-[40%] max-w-lg h-auto opacity-10 object-contain"
             />
