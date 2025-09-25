@@ -12,8 +12,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-white relative">
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
         <img
-          src="/images/pmu-guide-logo-transparent.png"
-          alt="PMU Guide Watermark"
+          src="/images/logotransparent.png"
+          alt="PMU Pro Watermark"
           className="w-[80%] max-w-4xl h-auto opacity-[0.02] object-contain"
         />
       </div>
