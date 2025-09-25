@@ -21,6 +21,7 @@ import {
   Settings,
   BarChart3,
   Send,
+  CreditCard,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -220,11 +221,33 @@ export function DashboardCards() {
         </Card>
       </div>
 
-      {/* Financial Dashboard - Mobile */}
-      <div className="lg:hidden grid grid-cols-1 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <WeeklyBalanceCard />
-        <DailyBalanceCard />
-      </div>
+        {/* Financial Dashboard - Mobile */}
+        <div className="lg:hidden grid grid-cols-1 gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <WeeklyBalanceCard />
+          <DailyBalanceCard />
+          
+          {/* Stripe Connect Card */}
+          <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
+            <CardHeader className="pb-2 relative z-10 p-3 sm:p-4">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
+                <CardTitle className="text-xs sm:text-sm font-bold truncate text-gray-800 drop-shadow-sm">Payment Setup</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 p-3 sm:p-4">
+              <Link href="/stripe-connect">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-white/95 rounded-xl border border-lavender/50 group-hover:bg-lavender/10 transition-colors shadow-sm"></div>
+                  <div className="relative z-10 py-2 px-2 sm:px-3 text-center">
+                    <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
+                      Connect Stripe
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-6 gap-4 xl:gap-6">

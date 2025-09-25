@@ -120,8 +120,8 @@ export default function BillingPage() {
   }
 
   const handleStripeSetup = () => {
-    // This would typically redirect to Stripe Connect setup
-    alert('Redirecting to Stripe Connect setup...')
+    // Redirect to real Stripe Connect setup page
+    window.location.href = '/stripe-connect'
   }
 
   const handlePayPalSetup = () => {
