@@ -199,15 +199,15 @@ export function DashboardCards() {
                 </div>
               </Link>
               
-              <Link href="/clients/new" className="w-full">
+              <Link href="/ai-contraindication" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
                     <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
-                      👤 Quick Add
+                      🩺 AI Contraindication
                     </span>
                     <p className="text-lavender-100 text-xs mt-1">
-                      Basic Info
+                      Safety Check
                     </p>
                   </div>
                 </div>
@@ -256,15 +256,15 @@ export function DashboardCards() {
                 </div>
               </Link>
               
-              <Link href="/clients/new" className="flex-1">
+              <Link href="/ai-contraindication" className="flex-1">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-lavender to-lavender-600 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
                     <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
-                      👤 Quick Add
+                      🩺 AI Contraindication
                     </span>
                     <p className="text-lavender-100 text-xs xl:text-sm mt-1">
-                      Basic Info
+                      Safety Check
                     </p>
                   </div>
                 </div>
