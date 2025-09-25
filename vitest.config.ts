@@ -10,10 +10,12 @@ export default defineConfig({
     css: true,
     coverage: { 
       reporter: ["text", "html"], 
-      lines: 85, 
-      functions: 85, 
-      statements: 85, 
-      branches: 80 
+      thresholds: {
+        lines: 85, 
+        functions: 85, 
+        statements: 85, 
+        branches: 80 
+      }
     }
   }
 })

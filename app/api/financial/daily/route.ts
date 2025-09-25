@@ -4,10 +4,10 @@ import Stripe from 'stripe'
 
 const prisma = new PrismaClient()
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Initialize Stripe only if API key is available
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-07-30.basil',
-})
+}) : null
 
 export const dynamic = "force-dynamic"
 
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     let canPayout = false
     
     try {
-      if (user.stripeId) {
+      if (user.stripeId && stripe) {
         // Get Stripe Connect account balance
         const balance = await stripe.balance.retrieve({
           stripeAccount: user.stripeId
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (!user.stripeId) {
+    if (!user.stripeId || !stripe) {
       return NextResponse.json({ error: 'Stripe Connect account not set up' }, { status: 400 })
     }
 

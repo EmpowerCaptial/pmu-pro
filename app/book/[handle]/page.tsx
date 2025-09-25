@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar as CalendarIcon, 
@@ -338,13 +337,37 @@ export default function PublicBookingPage({ params }: { params: { handle: string
                   {/* Calendar */}
                   <div>
                     <h3 className="font-medium mb-3">Choose Date</h3>
-                    <Calendar
-                      mode="single"
-                      selected={bookingData.date || undefined}
-                      onSelect={handleDateSelect}
-                      disabled={isDateDisabled}
-                      className="rounded-md border"
-                    />
+                    <div className="grid grid-cols-7 gap-1 mb-3">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                        <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {availableDates.slice(0, 28).map((date, index) => {
+                        const isSelected = bookingData.date && isSameDay(bookingData.date, date);
+                        const isToday = isSameDay(date, new Date());
+                        
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleDateSelect(date)}
+                            className={`
+                              p-2 text-sm rounded-md transition-colors
+                              ${isSelected 
+                                ? 'bg-lavender text-white' 
+                                : isToday 
+                                  ? 'bg-lavender/20 text-lavender border border-lavender' 
+                                  : 'hover:bg-gray-100 text-gray-700'
+                              }
+                            `}
+                          >
+                            {date.getDate()}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Time Slots */}

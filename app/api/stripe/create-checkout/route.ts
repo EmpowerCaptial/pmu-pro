@@ -3,9 +3,9 @@ import { stripeClient, HTTPError, TimeoutError, getErrorMessage } from '@/lib/ht
 import Stripe from 'stripe'
 
 // Enhanced Stripe configuration with Undici
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-07-30.basil',
-})
+}) : null
 
 interface CreateCheckoutRequest {
   priceId: string
@@ -78,6 +78,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function createEnhancedCheckoutSession(data: CreateCheckoutRequest): Promise<Stripe.Checkout.Session> {
+  if (!stripe) {
+    throw new Error('Stripe is not configured')
+  }
+  
   try {
     // Enhanced customer creation with Undici
     const customer = await createOrRetrieveCustomer(data.customerEmail)
@@ -134,6 +138,10 @@ async function createEnhancedCheckoutSession(data: CreateCheckoutRequest): Promi
 }
 
 async function createOrRetrieveCustomer(email: string): Promise<Stripe.Customer> {
+  if (!stripe) {
+    throw new Error('Stripe is not configured')
+  }
+  
   try {
     // Enhanced customer search with Undici
     const existingCustomers = await stripe.customers.list({
@@ -176,6 +184,10 @@ async function createOrRetrieveCustomer(email: string): Promise<Stripe.Customer>
 }
 
 async function updateCustomerMetadata(customerId: string, metadata: Record<string, string>): Promise<void> {
+  if (!stripe) {
+    throw new Error('Stripe is not configured')
+  }
+  
   try {
     // Enhanced metadata update with Undici
     await stripe.customers.update(customerId, {
