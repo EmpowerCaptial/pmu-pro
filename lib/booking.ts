@@ -38,7 +38,11 @@ export async function getPublicBookingConfig(handle: string): Promise<PublicBook
     const demoEmail = 'universalbeautystudioacademy@gmail.com';
     
     // Fetch services from the API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/services`, {
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com');
+    
+    const response = await fetch(`${baseUrl}/api/services`, {
       method: 'GET',
       headers: {
         'x-user-email': demoEmail,
