@@ -1,9 +1,9 @@
-// Simple email service for development
-// In production, integrate with SendGrid, AWS SES, Resend, or Mailgun
+// Email service with SendGrid integration
+// Production-ready with proper error handling and environment-aware logging
 
 export interface EmailOptions {
   to: string
-  from: string
+  from?: string
   subject: string
   html: string
   text?: string
@@ -16,18 +16,21 @@ export class EmailService {
    * Send an email (development mode logs to console, production sends real email)
    */
   static async sendEmail(options: EmailOptions): Promise<void> {
-    console.log('📧 EmailService.sendEmail called');
-    console.log('📧 Environment:', process.env.NODE_ENV);
-    console.log('📧 Is Development:', this.isDevelopment);
-    console.log('📧 To:', options.to);
-    console.log('📧 From:', options.from);
-    console.log('📧 Subject:', options.subject);
+    const fromEmail = options.from || process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com'
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📧 EmailService.sendEmail called');
+      console.log('📧 Environment:', process.env.NODE_ENV);
+      console.log('📧 To:', options.to);
+      console.log('📧 From:', fromEmail);
+      console.log('📧 Subject:', options.subject);
+    }
     
     if (this.isDevelopment) {
       // In development, log the email to console
       console.log('📧 EMAIL SENT (Development Mode)')
       console.log('To:', options.to)
-      console.log('From:', options.from)
+      console.log('From:', fromEmail)
       console.log('Subject:', options.subject)
       console.log('HTML Content:', options.html)
       console.log('---')
@@ -41,8 +44,10 @@ export class EmailService {
       }
     } else {
       // In production, send real email
-      console.log('📧 Sending production email via SendGrid...');
-      await this.sendProductionEmail(options)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📧 Sending production email via SendGrid...');
+      }
+      await this.sendProductionEmail({ ...options, from: fromEmail })
     }
   }
 
@@ -169,22 +174,23 @@ This is an automated email, please do not reply.
    */
   private static async sendProductionEmail(options: EmailOptions): Promise<void> {
     try {
-      console.log('📧 sendProductionEmail called');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📧 sendProductionEmail called');
+      }
       
       // Check if SendGrid API key is available
       const sendGridApiKey = process.env.SENDGRID_API_KEY
-      console.log('📧 SendGrid API Key available:', sendGridApiKey ? 'Yes' : 'No');
       
       if (!sendGridApiKey) {
-        console.log('❌ SendGrid API key not configured');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ SendGrid API key not configured');
+        }
         throw new Error('SendGrid API key not configured')
       }
 
       // Import SendGrid dynamically to avoid build issues
-      console.log('📧 Loading SendGrid...');
       const sgMail = require('@sendgrid/mail')
       sgMail.setApiKey(sendGridApiKey)
-      console.log('📧 SendGrid API key set');
 
       // Prepare SendGrid message format
       const msg = {
@@ -194,21 +200,17 @@ This is an automated email, please do not reply.
         html: options.html,
         text: options.text || this.stripHtml(options.html)
       }
-      
-      console.log('📧 SendGrid message prepared:', {
-        to: msg.to,
-        from: msg.from,
-        subject: msg.subject,
-        htmlLength: msg.html.length
-      });
 
       // Send email via SendGrid
-      console.log('📧 Sending via SendGrid...');
       await sgMail.send(msg)
       
-      console.log(`✅ Email sent successfully via SendGrid to: ${options.to}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Email sent successfully via SendGrid to: ${options.to}`)
+      }
     } catch (error) {
-      console.error('❌ SendGrid email failed:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ SendGrid email failed:', error)
+      }
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       throw new Error(`SendGrid email failed: ${errorMessage}`)
     }
