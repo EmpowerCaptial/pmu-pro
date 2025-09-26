@@ -48,6 +48,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/react-pdf": "^6.2.0",
+    "@vercel/blob": "^2.0.0",
     "ai": "latest",
     "bcryptjs": "latest",
     "class-variance-authority": "^0.7.1",
