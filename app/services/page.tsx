@@ -300,8 +300,8 @@ export default function ServicesPage() {
 
         {/* Add/Edit Service Modal */}
         {(isAddingNew || editingService) && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-3 sm:p-4 z-50">
-            <Card className="w-full max-w-md bg-white shadow-2xl border-2 border-gray-200">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-3 sm:p-4 z-[60]">
+            <Card className="w-full max-w-md bg-white shadow-2xl border-2 border-gray-200 max-h-[90vh] overflow-y-auto">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                   {isAddingNew ? 'Add New Service' : 'Edit Service'}
@@ -451,7 +451,7 @@ export default function ServicesPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 pb-4 sm:pb-6">
                 <Button
                   variant="outline"
                     onClick={handleCancel}

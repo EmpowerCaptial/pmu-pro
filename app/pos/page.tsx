@@ -351,7 +351,7 @@ export default function POSPage() {
 
       {/* Client Selection Modal */}
       {showClientSelection && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4">
           <Card className="w-full max-w-md border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
             <CardHeader className="border-b border-gray-100 p-4 sm:p-6">
               <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">

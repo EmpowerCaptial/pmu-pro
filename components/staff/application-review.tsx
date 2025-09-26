@@ -540,7 +540,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
 
       {/* Response Form Modal */}
       {showResponseForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
           <Card className="w-full max-w-2xl mx-4 bg-white border border-gray-200 shadow-lg">
             <CardHeader className="bg-gray-50 border-b border-gray-200">
               <CardTitle className="text-gray-900">Send Response to {selectedApplication?.artistName}</CardTitle>

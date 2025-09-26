@@ -548,7 +548,7 @@ export default function ExpensesPage() {
 
         {/* Add Expense Modal */}
         {showAddExpense && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
             <Card className="w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
                 <CardHeader>
                 <CardTitle>Add Expense</CardTitle>

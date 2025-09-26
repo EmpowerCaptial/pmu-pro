@@ -608,7 +608,7 @@ export default function ReferralsPage() {
 
         {/* Create Program Modal */}
         {showCreateProgram && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
             <Card className="w-full max-w-md mx-4 bg-white border-lavender/20 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-lavender/10 to-teal-50 border-b border-lavender/20">
                 <CardTitle className="text-lavender">Create Referral Program</CardTitle>
