@@ -86,6 +86,13 @@ export function useDemoAuth() {
         
         return user
       } else {
+        // Check if this is a password setup error
+        if (data.needsPasswordSetup) {
+          const error = new Error(data.error || 'Password setup required')
+          ;(error as any).needsPasswordSetup = true
+          ;(error as any).email = data.email
+          throw error
+        }
         throw new Error(data.error || 'Authentication failed')
       }
     } catch (error) {

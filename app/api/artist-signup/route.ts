@@ -39,9 +39,8 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Generate a temporary password for the user
-    const tempPassword = 'temp-password-' + Math.random().toString(36).substr(2, 9);
-    const hashedPassword = await bcrypt.hash(tempPassword, 12);
+    // Set a flag to indicate password needs to be set
+    const hashedPassword = await bcrypt.hash('temp-password', 12);
 
     // Create user in database
     const user = await prisma.user.create({
@@ -97,7 +96,8 @@ export async function POST(req: NextRequest) {
         status: application.status,
         trialAccess: application.trialAccess
       },
-      message: 'Account created successfully. You can now access your trial account.'
+      needsPasswordSetup: true,
+      message: 'Account created successfully. Please set up your password to continue.'
     });
 
   } catch (error) {

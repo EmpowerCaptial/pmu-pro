@@ -35,7 +35,16 @@ export function LoginForm() {
       setTimeout(() => {
         router.push("/dashboard")
       }, 1500)
-    } catch (error) {
+    } catch (error: any) {
+      // Check if this is a password setup error
+      if (error?.needsPasswordSetup) {
+        // Store user data for password setup
+        localStorage.setItem('pendingUser', JSON.stringify({
+          email: error.email
+        }))
+        router.push('/auth/setup-password')
+        return
+      }
       setMessage("Invalid email or password. Please try again.")
     } finally {
       setIsLoading(false)

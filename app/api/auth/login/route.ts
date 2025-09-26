@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     }
 
     // Check if user has a temporary password
-    if (user.password === 'temp-password') {
+    const isTempPassword = await bcrypt.compare('temp-password', user.password);
+    if (isTempPassword) {
       return NextResponse.json({ 
         error: 'Please set up your password first',
         needsPasswordSetup: true,

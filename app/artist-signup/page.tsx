@@ -113,6 +113,20 @@ export default function ArtistSignupPage() {
       // Start trial for the user
       TrialService.startTrial(formData.email)
 
+      // Check if user needs to set up password
+      if (result.needsPasswordSetup) {
+        // Store user data temporarily for password setup
+        localStorage.setItem('pendingUser', JSON.stringify({
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name
+        }))
+        
+        // Redirect to password setup page
+        window.location.href = '/auth/setup-password'
+        return
+      }
+
       // Automatically log in the user with their application data
       // Create a temporary user object for the auth system
       const tempUser = {
