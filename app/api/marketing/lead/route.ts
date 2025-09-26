@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { sendEmail } from '@/lib/email-service'
+import { EmailService } from '@/lib/email-service'
 
 // Validation schema
 const leadSchema = z.object({
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     
     // Send email notification to ops team
     try {
-      await sendEmail({
+      await EmailService.sendEmail({
         to: 'ops@thepmuguide.com',
         subject: `New Marketing Lead: ${validatedData.name}`,
         html: `
