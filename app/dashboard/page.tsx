@@ -89,13 +89,6 @@ export default function DashboardPage() {
     <Suspense fallback={<div>Loading...</div>}>
       <ArtistViewWrapper>
         <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-24 md:pb-20">
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img
-              src="/images/logotransparent.jpeg"
-              alt="PMU Pro Logo"
-              className="w-[40%] max-w-lg h-auto opacity-10 object-contain"
-            />
-          </div>
 
           <NavBar currentPath="/dashboard" user={user} />
           <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">

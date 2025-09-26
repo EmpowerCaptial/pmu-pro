@@ -91,8 +91,8 @@ export function NavBar({ currentPath, user }: NavBarProps) {
             <Image
               src="/images/logotransparent.jpeg"
               alt="PMU Pro Logo"
-              width={128}
-              height={128}
+              width={64}
+              height={64}
               className="object-contain"
             />
             <span className="text-xl font-bold font-serif text-gray-900 hidden sm:block">PMU Pro</span>
