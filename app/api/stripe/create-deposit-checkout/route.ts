@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Create Stripe checkout session for deposit payment
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'klarna', 'affirm', 'afterpay_clearpay'],
       line_items: [
         {
           price_data: {

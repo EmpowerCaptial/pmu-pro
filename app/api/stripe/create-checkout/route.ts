@@ -110,7 +110,7 @@ async function createEnhancedCheckoutSession(data: CreateCheckoutRequest): Promi
       customer_update: { address: 'auto' },   // save entered address to it
       billing_address_collection: 'required',
       
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'klarna', 'affirm', 'afterpay_clearpay'],
       metadata: {
         ...data.metadata,
         customerEmail: data.customerEmail,

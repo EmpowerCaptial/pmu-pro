@@ -54,6 +54,9 @@ function CheckoutContent() {
 
   const paymentMethods = [
     { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, color: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+    { id: 'affirm', name: 'Affirm', icon: CreditCard, color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+    { id: 'afterpay', name: 'Afterpay', icon: CreditCard, color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+    { id: 'klarna', name: 'Klarna', icon: CreditCard, color: 'bg-pink-500', bgColor: 'bg-pink-50', textColor: 'text-pink-700' },
     { id: 'cash', name: 'Cash', icon: DollarSign, color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
     { id: 'venmo', name: 'Venmo', icon: Smartphone, color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
     { id: 'zelle', name: 'Zelle', icon: Smartphone, color: 'bg-indigo-500', bgColor: 'bg-indigo-50', textColor: 'text-indigo-700' }
@@ -66,18 +69,54 @@ function CheckoutContent() {
   const processPayment = async () => {
     setIsProcessing(true)
     
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsProcessing(false)
-    setPaymentSuccess(true)
-    
-    // In real app, this would integrate with Stripe, Square, etc.
-    console.log('Payment processed:', {
-      method: selectedPaymentMethod,
-      amount: total,
-      items: cart
-    })
+    try {
+      // Handle BNPL payments through Stripe
+      if (['affirm', 'afterpay', 'klarna'].includes(selectedPaymentMethod)) {
+        // Create Stripe checkout session for BNPL
+        const response = await fetch('/api/stripe/create-bnpl-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'usd',
+            paymentMethod: selectedPaymentMethod,
+            clientName: client.name,
+            clientEmail: client.email,
+            items: cart,
+            successUrl: `${window.location.origin}/checkout/success`,
+            cancelUrl: `${window.location.origin}/checkout`
+          }),
+        })
+
+        const data = await response.json()
+        
+        if (data.success && data.url) {
+          // Redirect to Stripe checkout for BNPL
+          window.location.href = data.url
+          return
+        } else {
+          throw new Error(data.error || 'Failed to create BNPL checkout')
+        }
+      }
+      
+      // Simulate other payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      setIsProcessing(false)
+      setPaymentSuccess(true)
+      
+      console.log('Payment processed:', {
+        method: selectedPaymentMethod,
+        amount: total,
+        items: cart
+      })
+    } catch (error) {
+      console.error('Payment processing error:', error)
+      setIsProcessing(false)
+      // Handle error - could show error message to user
+    }
   }
 
   const handleTipChange = (percent: number) => {

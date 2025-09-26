@@ -45,6 +45,39 @@ const PAYMENT_METHODS: PaymentMethod[] = [
     processingTime: 'Instant (with Stripe Connect) or 2-7 business days'
   },
   {
+    id: 'affirm',
+    name: 'Affirm',
+    type: 'bnpl',
+    description: 'Pay over time with Affirm financing',
+    icon: '🛒',
+    isEnabled: false,
+    setupRequired: true,
+    fees: '2.9% + 30¢ per transaction',
+    processingTime: 'Instant'
+  },
+  {
+    id: 'afterpay',
+    name: 'Afterpay',
+    type: 'bnpl',
+    description: 'Buy now, pay later with Afterpay',
+    icon: '💳',
+    isEnabled: false,
+    setupRequired: true,
+    fees: '2.9% + 30¢ per transaction',
+    processingTime: 'Instant'
+  },
+  {
+    id: 'klarna',
+    name: 'Klarna',
+    type: 'bnpl',
+    description: 'Pay in 4 interest-free installments',
+    icon: '🛍️',
+    isEnabled: false,
+    setupRequired: true,
+    fees: '2.9% + 30¢ per transaction',
+    processingTime: 'Instant'
+  },
+  {
     id: 'venmo',
     name: 'Venmo',
     type: 'digital',
@@ -106,6 +139,18 @@ export default function BillingPage() {
           : method
       )
     )
+  }
+
+  const handleSetupPaymentMethod = (id: string) => {
+    if (id === 'stripe') {
+      // Redirect to Stripe Connect setup
+      window.open('/stripe-connect', '_blank')
+    } else if (['affirm', 'afterpay', 'klarna'].includes(id)) {
+      // For BNPL methods, they're automatically available through Stripe
+      alert(`${id.charAt(0).toUpperCase() + id.slice(1)} is automatically available through Stripe once enabled in your Stripe dashboard.`)
+    } else {
+      alert(`${id.charAt(0).toUpperCase() + id.slice(1)} setup instructions will be available soon.`)
+    }
   }
 
   const handleStripeSetup = () => {
@@ -214,9 +259,7 @@ export default function BillingPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      if (method.id === 'stripe') handleStripeSetup()
-                    }}
+                    onClick={() => handleSetupPaymentMethod(method.id)}
                     className="w-full text-xs sm:text-sm"
                   >
                     <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
