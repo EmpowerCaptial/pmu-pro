@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function LoginForm() {
@@ -118,15 +119,23 @@ export function LoginForm() {
             )}
           </Button>
 
-          <div className="text-center">
-            <Button
-              type="button"
-              variant="link"
-              onClick={handleRequestAccess}
-              className="text-sm text-muted-foreground hover:text-primary"
+          <div className="text-center space-y-2">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-muted-foreground hover:text-primary underline"
             >
-              Don't have an account? Request access
-            </Button>
+              Forgot your password?
+            </Link>
+            <div>
+              <Button
+                type="button"
+                variant="link"
+                onClick={handleRequestAccess}
+                className="text-sm text-muted-foreground hover:text-primary"
+              >
+                Don't have an account? Request access
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>
