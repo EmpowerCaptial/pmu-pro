@@ -27,11 +27,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Map payment method to Stripe payment method type
-    const stripePaymentMethod = {
+    const paymentMethodMap: Record<string, string> = {
       'affirm': 'affirm',
       'afterpay': 'afterpay_clearpay',
       'klarna': 'klarna'
-    }[paymentMethod];
+    };
+
+    const stripePaymentMethod = paymentMethodMap[paymentMethod];
 
     if (!stripePaymentMethod) {
       return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
