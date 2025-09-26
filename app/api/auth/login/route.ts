@@ -12,48 +12,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    // Check hardcoded production accounts first (fallback for client-side issues)
-    if (email === 'admin@thepmuguide.com' && password === 'ubsa2024!') {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: 'admin_pmu_001',
-          name: 'PMU Pro Admin',
-          email: 'admin@thepmuguide.com',
-          selectedPlan: 'enterprise',
-          hasActiveSubscription: true,
-          subscriptionStatus: 'active',
-          studios: [{
-            id: 'admin_pmu_001',
-            name: 'PMU Pro Admin',
-            slug: 'pmu-pro-admin',
-            role: 'owner',
-            status: 'active'
-          }]
-        }
-      });
-    }
-
-    if (email === 'ubsateam@thepmuguide.com' && password === 'ubsa2024!') {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: 'ubsa_owner_001',
-          name: 'UBSA Team',
-          email: 'ubsateam@thepmuguide.com',
-          selectedPlan: 'enterprise',
-          hasActiveSubscription: true,
-          subscriptionStatus: 'active',
-          studios: [{
-            id: 'ubsa_owner_001',
-            name: 'UBSA Team',
-            slug: 'ubsa-team',
-            role: 'owner',
-            status: 'active'
-          }]
-        }
-      });
-    }
+    // Security: All authentication now goes through database verification
+    // No hardcoded credentials for production security
 
     // Find user by email
     const user = await prisma.user.findUnique({
@@ -107,9 +67,16 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    // Log error securely without exposing sensitive information
+    const errorMessage = error instanceof Error ? error.message : 'Login failed';
+    
+    // In production, log to secure logging service instead of console
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Login error:', errorMessage);
+    }
+    
     return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Login failed' 
+      error: 'Authentication failed. Please check your credentials and try again.'
     }, { status: 500 });
   }
 }

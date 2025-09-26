@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
+import { sendEmail } from '@/lib/email-service'
 
 // Validation schema
 const leadSchema = z.object({
@@ -18,21 +20,53 @@ export async function POST(req: NextRequest) {
     // Validate the request body
     const validatedData = leadSchema.parse(body)
     
-    // TODO: Store in database using Prisma
-    // For now, just log the lead
-    console.log('Marketing lead received:', validatedData)
+    // Store in database using Prisma
+    const lead = await prisma.marketingLead.create({
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        company: validatedData.company,
+        plan: validatedData.plan,
+        notes: validatedData.notes,
+        source: 'website',
+        status: 'new'
+      }
+    })
     
-    // TODO: Send email notification to ops@thepmuguide.com
-    // TODO: Add to CRM system
+    // Send email notification to ops team
+    try {
+      await sendEmail({
+        to: 'ops@thepmuguide.com',
+        subject: `New Marketing Lead: ${validatedData.name}`,
+        html: `
+          <h2>New Marketing Lead</h2>
+          <p><strong>Name:</strong> ${validatedData.name}</p>
+          <p><strong>Email:</strong> ${validatedData.email}</p>
+          <p><strong>Phone:</strong> ${validatedData.phone || 'Not provided'}</p>
+          <p><strong>Company:</strong> ${validatedData.company || 'Not provided'}</p>
+          <p><strong>Plan:</strong> ${validatedData.plan}</p>
+          <p><strong>Notes:</strong> ${validatedData.notes || 'None'}</p>
+          <p><strong>Lead ID:</strong> ${lead.id}</p>
+        `
+      })
+    } catch (emailError) {
+      // Email failure shouldn't break the lead capture
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Email notification failed:', emailError)
+      }
+    }
     
     return NextResponse.json({ 
       success: true, 
       message: 'Lead captured successfully',
-      leadId: `lead_${Date.now()}` // Temporary ID
+      leadId: lead.id
     })
     
   } catch (error) {
-    console.error('Lead capture error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Lead capture error:', error)
+    }
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

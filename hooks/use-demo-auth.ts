@@ -13,35 +13,8 @@ interface DemoUser {
   isOwner?: boolean
 }
 
-const PRODUCTION_USERS = {
-  'universalbeautystudioacademy@gmail.com': {
-    id: 'universal_studio_001',
-    name: 'Universal Beauty Studio Academy',
-    email: 'universalbeautystudioacademy@gmail.com',
-    role: 'artist',
-    isRealAccount: true,
-    subscription: 'premium',
-    features: ['all']
-  },
-  'admin@thepmuguide.com': {
-    id: 'admin_pmu_001',
-    name: 'PMU Pro Admin',
-    email: 'admin@thepmuguide.com',
-    role: 'owner',
-    isRealAccount: true,
-    subscription: 'enterprise',
-    features: ['all', 'admin']
-  },
-  'ubsateam@thepmuguide.com': {
-    id: 'ubsa_owner_001',
-    name: 'UBSA Team',
-    email: 'ubsateam@thepmuguide.com',
-    role: 'owner',
-    isRealAccount: true,
-    subscription: 'enterprise',
-    features: ['all', 'admin', 'production']
-  }
-}
+// SECURITY: Production users removed - all authentication now goes through database
+// No hardcoded credentials for production security
 
 const DEMO_USERS = {
   'demo@pmupro.com': {
@@ -76,63 +49,60 @@ export function useDemoAuth() {
   }, [])
 
   const login = async (email: string, password: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // SECURITY: All authentication now goes through proper API endpoints
+    // No hardcoded credentials for production security
+    
+    try {
+      // Call the secure login API endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    // Check PRODUCTION accounts first (real studio accounts)
-    if (email === 'universalbeautystudioacademy@gmail.com' && password === 'adminteam!') {
-      const user = PRODUCTION_USERS[email]
-      setCurrentUser(user)
-      localStorage.setItem('demoUser', JSON.stringify(user)) // Keep same key for compatibility
-      localStorage.setItem('userType', 'production') // Mark as production user
-      
-      // Start trial if not already started
-      if (!TrialService.getTrialUser()) {
-        TrialService.startTrial(email)
+      const data = await response.json()
+
+      if (data.success && data.user) {
+        const user = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role || 'artist',
+          isRealAccount: true,
+          subscription: data.user.selectedPlan || 'basic',
+          features: ['all']
+        }
+        
+        setCurrentUser(user)
+        localStorage.setItem('demoUser', JSON.stringify(user))
+        localStorage.setItem('userType', 'production')
+        
+        // Start trial if not already started
+        if (!TrialService.getTrialUser()) {
+          TrialService.startTrial(email)
+        }
+        
+        return user
+      } else {
+        throw new Error(data.error || 'Authentication failed')
+      }
+    } catch (error) {
+      // Fallback to demo account for development/testing
+      if (email === 'demo@pmupro.com' && password === 'demopmu') {
+        const user = DEMO_USERS[email]
+        setCurrentUser(user)
+        localStorage.setItem('demoUser', JSON.stringify(user))
+        localStorage.setItem('userType', 'demo')
+        
+        if (!TrialService.getTrialUser()) {
+          TrialService.startTrial(email)
+        }
+        
+        return user
       }
       
-      return user
-    } 
-    // Check admin@thepmuguide.com
-    else if (email === 'admin@thepmuguide.com' && password === 'ubsa2024!') {
-      const user = PRODUCTION_USERS[email]
-      setCurrentUser(user)
-      localStorage.setItem('demoUser', JSON.stringify(user))
-      localStorage.setItem('userType', 'production')
-      
-      if (!TrialService.getTrialUser()) {
-        TrialService.startTrial(email)
-      }
-      
-      return user
-    }
-    // Check ubsateam@thepmuguide.com  
-    else if (email === 'ubsateam@thepmuguide.com' && password === 'ubsa2024!') {
-      const user = PRODUCTION_USERS[email]
-      setCurrentUser(user)
-      localStorage.setItem('demoUser', JSON.stringify(user))
-      localStorage.setItem('userType', 'production')
-      
-      if (!TrialService.getTrialUser()) {
-        TrialService.startTrial(email)
-      }
-      
-      return user
-    }
-    // Check DEMO accounts (test accounts)
-    else if (email === 'demo@pmupro.com' && password === 'demopmu') {
-      const user = DEMO_USERS[email]
-      setCurrentUser(user)
-      localStorage.setItem('demoUser', JSON.stringify(user))
-      localStorage.setItem('userType', 'demo') // Mark as demo user
-      
-      // Start trial if not already started
-      if (!TrialService.getTrialUser()) {
-        TrialService.startTrial(email)
-      }
-      
-      return user
-    } else {
       throw new Error('Invalid credentials')
     }
   }

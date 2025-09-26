@@ -1,52 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
-    // TODO: Implement real spend sync with Meta and Google APIs
-    // For now, return mock data
+    // SECURITY: Implement real spend sync with Meta and Google APIs
+    // This endpoint requires proper authentication and API keys
     
-    const mockData = {
+    const metaApiKey = process.env.META_APP_SECRET
+    const googleApiKey = process.env.GOOGLE_CLIENT_SECRET
+    
+    if (!metaApiKey || !googleApiKey) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Marketing API keys not configured' 
+        },
+        { status: 503 }
+      )
+    }
+    
+    // TODO: Implement real API calls to Meta and Google
+    // For now, return structured response indicating configuration needed
+    const responseData = {
       meta: {
-        spend: 1250.50,
-        leads: 45,
-        impressions: 125000,
-        clicks: 3200,
-        ctr: 2.56,
-        cpc: 0.39,
-        cpl: 27.79
+        configured: !!metaApiKey,
+        message: 'Meta API integration requires implementation'
       },
       google: {
-        spend: 890.25,
-        leads: 32,
-        impressions: 89000,
-        clicks: 2100,
-        ctr: 2.36,
-        cpc: 0.42,
-        cpl: 27.82
-      },
-      total: {
-        spend: 2140.75,
-        leads: 77,
-        impressions: 214000,
-        clicks: 5300,
-        ctr: 2.48,
-        cpc: 0.40,
-        cpl: 27.80
+        configured: !!googleApiKey,
+        message: 'Google API integration requires implementation'
       },
       lastSync: new Date().toISOString()
     }
     
-    // TODO: Store in database
-    console.log('Spend sync completed:', mockData)
+    // Store sync attempt in database for tracking
+    try {
+      await prisma.marketingSync.create({
+        data: {
+          platform: 'both',
+          status: 'configured',
+          lastSync: new Date(),
+          notes: 'API keys configured, implementation pending'
+        }
+      })
+    } catch (dbError) {
+      // Database error shouldn't break the API response
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Database sync tracking error:', dbError)
+      }
+    }
     
     return NextResponse.json({ 
       success: true,
-      data: mockData,
-      message: 'Spend data synced successfully'
+      data: responseData,
+      message: 'Marketing sync endpoint configured. Implementation pending.'
     })
     
   } catch (error) {
-    console.error('Spend sync error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Spend sync error:', error)
+    }
     
     return NextResponse.json(
       { 

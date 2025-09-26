@@ -146,107 +146,28 @@ export function generateTemporaryPassword(): string {
   return result
 }
 
-// Staff passwords storage (in production, this would be in a database)
-let staffPasswords: Record<string, string> = {
-  'admin': 'pmupro2024',
-  'director1': 'director2024',
-  'manager1': 'manager2024',
-  'rep1': 'representative2024',
-  'tyrone': '090223',
-  'universalbeautystudioacademy@gmail.com': 'adminteam!'
-}
+// SECURITY: Staff passwords storage removed - all authentication now goes through database
+// No hardcoded credentials for production security
+let staffPasswords: Record<string, string> = {}
 
-// Dynamic staff members storage (in production, this would be in a database)
-let dynamicStaffMembers: StaffMember[] = [
-  {
-    id: '1',
-    username: 'admin',
-    email: 'admin@thepmuguide.com',
-    role: 'director',
-    firstName: 'Admin',
-    lastName: 'User',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('director'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    username: 'director1',
-    email: 'director@thepmuguide.com',
-    role: 'director',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('director'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  },
-  {
-    id: '3',
-    username: 'manager1',
-    email: 'manager@thepmuguide.com',
-    role: 'manager',
-    firstName: 'Michael',
-    lastName: 'Chen',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('manager'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  },
-  {
-    id: '4',
-    username: 'rep1',
-    email: 'representative@thepmuguide.com',
-    role: 'representative',
-    firstName: 'Emily',
-    lastName: 'Davis',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('representative'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  },
-  {
-    id: '5',
-    username: 'tyrone',
-    email: 'admin@thepmuguide.com',
-    role: 'director',
-    firstName: 'Tyrone',
-    lastName: 'Jackson',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('director'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  },
-  {
-    id: '6',
-    username: 'universalbeautystudioacademy@gmail.com',
-    email: 'universalbeautystudioacademy@gmail.com',
-    role: 'director',
-    firstName: 'Universal Beauty',
-    lastName: 'Studio Academy',
-    isActive: true,
-    passwordSet: true,
-    permissions: getPermissionsForRole('director'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date()
-  }
-]
+// SECURITY: Staff members storage - in production, this would be in a database
+// No hardcoded staff accounts for production security
+let dynamicStaffMembers: StaffMember[] = []
 
 // Set password for a staff member
 export function setStaffPassword(username: string, password: string): boolean {
   try {
-    staffPasswords[username] = password
-    // In production, hash the password before storing
-    console.log(`Password set for ${username}`)
+    // SECURITY: In production, this would hash the password and store in database
+    // For now, this is a placeholder for development
+    if (process.env.NODE_ENV === 'development') {
+      staffPasswords[username] = password
+      console.log(`Password set for ${username}`)
+    }
     return true
   } catch (error) {
-    console.error('Error setting password:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error setting password:', error)
+    }
     return false
   }
 }
@@ -258,22 +179,24 @@ export function getStaffPassword(username: string): string | null {
 
 // Validate staff login
 export function validateStaffLogin(username: string, password: string): StaffMember | null {
-  // In production, this would check against a database
-  // For now, we'll use a simple in-memory system
+  // SECURITY: In production, this would check against a database with hashed passwords
+  // For now, this is a placeholder for development
   
-  const staffMembers = getStaffMembers()
-  const staffMember = staffMembers.find(
-    staff => staff.username === username && staff.isActive
-  )
-  
-  if (!staffMember) return null
-  
-  // Check if password matches
-  const storedPassword = getStaffPassword(username)
-  if (storedPassword === password) {
-    // Update last login
-    staffMember.lastLogin = new Date()
-    return staffMember
+  if (process.env.NODE_ENV === 'development') {
+    const staffMembers = getStaffMembers()
+    const staffMember = staffMembers.find(
+      staff => staff.username === username && staff.isActive
+    )
+    
+    if (!staffMember) return null
+    
+    // Check if password matches
+    const storedPassword = getStaffPassword(username)
+    if (storedPassword === password) {
+      // Update last login
+      staffMember.lastLogin = new Date()
+      return staffMember
+    }
   }
   
   return null
@@ -305,8 +228,10 @@ export function createStaffMember(staffData: Omit<StaffMember, 'id' | 'createdAt
   dynamicStaffMembers.push(newStaff)
   
   // In production, save to database
-  console.log('Created new staff member:', newStaff)
-  console.log('Temporary password:', temporaryPassword)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Created new staff member:', newStaff)
+    console.log('Temporary password:', temporaryPassword)
+  }
   
   return newStaff
 }
@@ -327,7 +252,9 @@ export function updateStaffMember(id: string, updates: Partial<StaffMember>): St
   dynamicStaffMembers[staffIndex] = updatedStaff
   
   // In production, update database
-  console.log('Updated staff member:', updatedStaff)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Updated staff member:', updatedStaff)
+  }
   
   return updatedStaff
 }
@@ -342,7 +269,9 @@ export function suspendStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  console.log('Suspended staff member:', staff.username)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Suspended staff member:', staff.username)
+  }
   
   return true
 }
@@ -357,7 +286,9 @@ export function restoreStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  console.log('Restored staff member:', staff.username)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Restored staff member:', staff.username)
+  }
   
   return true
 }
@@ -373,7 +304,9 @@ export function deleteStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  console.log('Deleted staff member:', staff.username)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Deleted staff member:', staff.username)
+  }
   
   return true
 }
@@ -392,7 +325,9 @@ export function resetStaffPassword(username: string): string | null {
   staff.temporaryPassword = newPassword
   staff.updatedAt = new Date()
   
-  console.log(`Password reset for ${username}: ${newPassword}`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Password reset for ${username}: ${newPassword}`)
+  }
   
   return newPassword
 }

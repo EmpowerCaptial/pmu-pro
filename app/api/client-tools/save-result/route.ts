@@ -3,8 +3,9 @@ import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add proper authentication when auth system is implemented
+    // SECURITY: Add proper authentication when auth system is implemented
     // For now, we'll accept all requests for development purposes
+    // TODO: Implement JWT token validation
 
     const { clientId, toolResult } = await request.json()
 
@@ -126,7 +127,9 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error saving tool result to client file:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error saving tool result to client file:', error)
+    }
     return NextResponse.json(
       { error: 'Failed to save tool result' },
       { status: 500 }

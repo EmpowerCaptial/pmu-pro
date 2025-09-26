@@ -371,7 +371,9 @@ export default function StaffAdminDashboardPage() {
       setActivityLogs(mockActivityLogs)
       setStaffMembers(getStaffMembers())
     } catch (error) {
-      console.error('Error loading data:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading data:', error)
+      }
     } finally {
       setLoading(false)
     }
@@ -387,7 +389,9 @@ export default function StaffAdminDashboardPage() {
         setIsAuthenticated(true)
         loadData()
       } catch (error) {
-        console.error('Invalid auth data:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Invalid auth data:', error)
+        }
         router.push('/staff-admin/login')
       }
     } else {
@@ -426,10 +430,14 @@ export default function StaffAdminDashboardPage() {
           )
         )
       } else {
-        console.error('Failed to update user status')
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to update user status')
+        }
       }
     } catch (error) {
-      console.error('Error updating user status:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating user status:', error)
+      }
     }
   }
 
@@ -444,10 +452,14 @@ export default function StaffAdminDashboardPage() {
   }
 
   const openTemplateEditor = (templateId: string) => {
-    console.log('Opening template editor for:', templateId)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Opening template editor for:', templateId)
+    }
     setEditingTemplateId(templateId)
     setShowTemplateEditor(true)
-    console.log('State updated - showTemplateEditor:', true, 'editingTemplateId:', templateId)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('State updated - showTemplateEditor:', true, 'editingTemplateId:', templateId)
+    }
   }
 
   const closeTemplateEditor = () => {
@@ -500,7 +512,9 @@ export default function StaffAdminDashboardPage() {
       }, 10000)
 
     } catch (error) {
-      console.error('Error adding staff member:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error adding staff member:', error)
+      }
       alert('Failed to add staff member. Please try again.')
     } finally {
       setIsAddingStaff(false)
