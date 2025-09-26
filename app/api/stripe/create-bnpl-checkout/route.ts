@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Map payment method to Stripe payment method type
-    const paymentMethodMap: Record<string, string> = {
+    const paymentMethodMap: Record<string, 'affirm' | 'afterpay_clearpay' | 'klarna'> = {
       'affirm': 'affirm',
       'afterpay': 'afterpay_clearpay',
       'klarna': 'klarna'
