@@ -260,13 +260,13 @@ export default function ReferralsPage() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Referral Program</h1>
-              <p className="text-muted text-sm sm:text-base">Grow your business through client referrals</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2 break-words">Referral Program</h1>
+              <p className="text-muted text-sm sm:text-base break-words">Grow your business through client referrals</p>
             </div>
             <Button 
               onClick={() => setShowCreateProgram(true)}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
+              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto flex-shrink-0"
             >
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Create Program
@@ -361,12 +361,12 @@ export default function ReferralsPage() {
                   <div className="space-y-4">
                     {referralPrograms.filter(p => p.isActive).map((program) => (
                       <div key={program.id} className="p-4 bg-white rounded-lg border border-gray-200">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-ink">{program.name}</h3>
-                            <p className="text-sm text-muted">{program.description}</p>
+                        <div className="flex items-start justify-between mb-2 gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-ink break-words">{program.name}</h3>
+                            <p className="text-sm text-muted break-words">{program.description}</p>
                           </div>
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 text-green-800 flex-shrink-0">
                             Active
                           </Badge>
                         </div>
@@ -392,13 +392,13 @@ export default function ReferralsPage() {
                   <div className="space-y-4">
                     {referrals.slice(0, 3).map((referral) => (
                       <div key={referral.id} className="p-4 bg-white rounded-lg border border-gray-200">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-ink">{referral.referrerName}</h3>
-                            <p className="text-sm text-muted">Referred: {referral.refereeName}</p>
-                            <p className="text-sm text-muted">{referral.service}</p>
+                        <div className="flex items-start justify-between mb-2 gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-ink break-words">{referral.referrerName}</h3>
+                            <p className="text-sm text-muted break-words">Referred: {referral.refereeName}</p>
+                            <p className="text-sm text-muted break-words">{referral.service}</p>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-shrink-0">
                             <span className="font-semibold text-green-600">${referral.rewardAmount}</span>
                             <Badge className={getStatusColor(referral.status)}>
                               {getStatusIcon(referral.status)}
@@ -406,9 +406,9 @@ export default function ReferralsPage() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted">
-                          <span>{referral.referrerEmail}</span>
-                          <span>{new Date(referral.createdAt).toLocaleDateString()}</span>
+                        <div className="flex items-center justify-between text-xs text-muted gap-2">
+                          <span className="truncate">{referral.referrerEmail}</span>
+                          <span className="flex-shrink-0">{new Date(referral.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     ))}
@@ -426,22 +426,22 @@ export default function ReferralsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {referralLinks.map((link) => (
-                    <div key={link.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                    <div key={link.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-4">
+                      <div className="flex items-center space-x-4 min-w-0 flex-1">
+                        <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <Share2 className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-ink">{link.name}</h3>
-                          <p className="text-sm text-muted">{link.url}</p>
-                          <div className="flex items-center space-x-4 text-sm text-muted">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-ink break-words">{link.name}</h3>
+                          <p className="text-sm text-muted break-all">{link.url}</p>
+                          <div className="flex items-center space-x-4 text-sm text-muted flex-wrap">
                             <span>{link.clicks} clicks</span>
                             <span>{link.conversions} conversions</span>
                             <span>{link.clicks > 0 ? ((link.conversions / link.clicks) * 100).toFixed(1) : 0}% conversion</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         <Badge className={link.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                           {link.isActive ? 'Active' : 'Inactive'}
                         </Badge>
@@ -496,24 +496,24 @@ export default function ReferralsPage() {
                 <div className="space-y-4">
                   {referralPrograms.map((program) => (
                     <div key={program.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-4">
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 min-w-0 flex-1">
                         <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <Target className="h-6 w-6 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-ink truncate">{program.name}</h3>
-                          <p className="text-sm text-muted truncate">{program.description}</p>
+                          <h3 className="font-semibold text-ink break-words">{program.name}</h3>
+                          <p className="text-sm text-muted break-words">{program.description}</p>
                           <div className="flex flex-wrap items-center gap-2 text-sm text-muted mt-1">
-                            <span className="truncate">Referrer: ${program.referralReward}</span>
-                            <span className="truncate">Referee: ${program.refereeReward}</span>
-                            <span className="truncate">Min: ${program.minPurchase}</span>
+                            <span className="break-words">Referrer: ${program.referralReward}</span>
+                            <span className="break-words">Referee: ${program.refereeReward}</span>
+                            <span className="break-words">Min: ${program.minPurchase}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
                         <div className="text-left sm:text-right text-sm text-muted">
-                          <p className="truncate">{program.totalReferrals} referrals</p>
-                          <p className="truncate">${program.totalRewards.toFixed(2)} earned</p>
+                          <p className="break-words">{program.totalReferrals} referrals</p>
+                          <p className="break-words">${program.totalRewards.toFixed(2)} earned</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Badge className={program.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
@@ -565,19 +565,19 @@ export default function ReferralsPage() {
                   {referrals.map((referral) => (
                     <div key={referral.id} className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
                           <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-semibold text-sm">
                               {referral.referrerName.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-ink truncate">{referral.referrerName}</h3>
-                            <p className="text-sm text-muted truncate">Referred: {referral.refereeName}</p>
-                            <p className="text-sm text-muted truncate">{referral.service}</p>
+                            <h3 className="font-semibold text-ink break-words">{referral.referrerName}</h3>
+                            <p className="text-sm text-muted break-words">Referred: {referral.refereeName}</p>
+                            <p className="text-sm text-muted break-words">{referral.service}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-shrink-0">
                           <span className="font-semibold text-green-600">${referral.rewardAmount}</span>
                           <Badge className={getStatusColor(referral.status)}>
                             {getStatusIcon(referral.status)}
@@ -586,15 +586,15 @@ export default function ReferralsPage() {
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-muted gap-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 min-w-0 flex-1">
                           <span className="truncate">{referral.referrerEmail}</span>
                           <span className="hidden sm:inline">→</span>
                           <span className="truncate">{referral.refereeEmail}</span>
                         </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
-                          <span className="truncate">Created: {new Date(referral.createdAt).toLocaleDateString()}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 flex-shrink-0">
+                          <span className="break-words">Created: {new Date(referral.createdAt).toLocaleDateString()}</span>
                           {referral.completedAt && (
-                            <span className="truncate">Completed: {new Date(referral.completedAt).toLocaleDateString()}</span>
+                            <span className="break-words">Completed: {new Date(referral.completedAt).toLocaleDateString()}</span>
                           )}
                         </div>
                       </div>

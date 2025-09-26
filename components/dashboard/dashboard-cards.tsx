@@ -304,30 +304,26 @@ export function DashboardCards() {
         </Card>
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          {/* Background Image */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="40" r="25" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M30 60l40 0M35 70l30 0M40 80l20 0" stroke="currentColor" strokeWidth="2"/>
-              <circle cx="40" cy="35" r="2" fill="currentColor"/>
-              <circle cx="60" cy="35" r="2" fill="currentColor"/>
-              <path d="M45 45q5 5 10 0" stroke="currentColor" strokeWidth="1" fill="none"/>
-              <path d="M25 25l10-10M75 25l-10-10" stroke="currentColor" strokeWidth="1"/>
-            </svg>
-          </div>
+          {/* Background Image with higher opacity */}
+          <div 
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/8.jpg)' }}
+          ></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-4 relative z-10">
             <div className="flex items-center space-x-2">
               <Camera className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">Skin Analysis</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-800 drop-shadow-sm">Skin Analysis</CardTitle>
             </div>
-            <CardDescription>Analyze skin tone and get pigment recommendations</CardDescription>
+            <CardDescription className="text-gray-700 drop-shadow-sm">Analyze skin tone and get pigment recommendations</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/analyze">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
                 <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Skin Analysis
                   </span>
                 </div>
@@ -337,30 +333,26 @@ export function DashboardCards() {
         </Card>
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          {/* Background Image */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M20 20h60v60h-60z" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M30 30h40v10h-40z" fill="currentColor"/>
-              <path d="M30 45h25v5h-25z" fill="currentColor"/>
-              <path d="M30 55h35v5h-35z" fill="currentColor"/>
-              <path d="M30 65h20v5h-20z" fill="currentColor"/>
-              <circle cx="75" cy="35" r="3" fill="currentColor"/>
-            </svg>
-          </div>
+          {/* Background Image with higher opacity */}
+          <div 
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/7.jpg)' }}
+          ></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-4 relative z-10">
             <div className="flex items-center space-x-2">
               <FileText className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">Client Management</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-800 drop-shadow-sm">Client Management</CardTitle>
             </div>
-            <CardDescription>Manage your client database and documents</CardDescription>
+            <CardDescription className="text-gray-700 drop-shadow-sm">Manage your client database and documents</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/clients">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
                 <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     View Clients
                   </span>
                 </div>
@@ -370,30 +362,26 @@ export function DashboardCards() {
         </Card>
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          {/* Background Image */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="30" cy="30" r="15" fill="currentColor" opacity="0.3"/>
-              <circle cx="70" cy="30" r="15" fill="currentColor" opacity="0.5"/>
-              <circle cx="50" cy="60" r="15" fill="currentColor" opacity="0.7"/>
-              <path d="M20 20l60 60M80 20l-60 60" stroke="currentColor" strokeWidth="1"/>
-              <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <path d="M35 35l30 30M65 35l-30 30" stroke="currentColor" strokeWidth="1"/>
-            </svg>
-          </div>
+          {/* Background Image with higher opacity */}
+          <div 
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/5.jpg)' }}
+          ></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-4 relative z-10">
             <div className="flex items-center space-x-2">
               <Palette className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">Color Correction</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-800 drop-shadow-sm">Color Correction</CardTitle>
             </div>
-            <CardDescription>Fix and adjust PMU color issues</CardDescription>
+            <CardDescription className="text-gray-700 drop-shadow-sm">Fix and adjust PMU color issues</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/color-correction">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
                 <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Correction
                   </span>
                 </div>
@@ -407,29 +395,26 @@ export function DashboardCards() {
         <DailyBalanceCard />
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
-          {/* Background Image */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none">
-            <svg className="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <circle cx="50" cy="50" r="25" fill="currentColor" opacity="0.3"/>
-              <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.5"/>
-              <path d="M20 20l15 15M80 20l-15 15M20 80l15-15M80 80l-15-15" stroke="currentColor" strokeWidth="1"/>
-              <path d="M35 50h30M50 35v30" stroke="currentColor" strokeWidth="1"/>
-            </svg>
-          </div>
+          {/* Background Image with higher opacity */}
+          <div 
+            className="absolute inset-0 opacity-80 pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/images/6.jpg)' }}
+          ></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-white/30 pointer-events-none"></div>
           <CardHeader className="pb-4 relative z-10">
             <div className="flex items-center space-x-2">
               <Microscope className="h-5 w-5 text-lavender" />
-              <CardTitle className="text-lg font-bold">ProCell Analysis</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-800 drop-shadow-sm">ProCell Analysis</CardTitle>
             </div>
-            <CardDescription>Advanced skin analysis for optimal results</CardDescription>
+            <CardDescription className="text-gray-700 drop-shadow-sm">Advanced skin analysis for optimal results</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/procell-analysis">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 to-lavender/20 rounded-xl border border-lavender/30 group-hover:bg-lavender/10 transition-colors"></div>
                 <div className="relative z-10 py-3 px-4 text-center">
-                  <span className="text-lavender-700 font-semibold text-shadow-sm shadow-white/80">
+                  <span className="text-gray-800 font-semibold text-xs sm:text-sm drop-shadow-sm">
                     Start Analysis
                   </span>
                 </div>
