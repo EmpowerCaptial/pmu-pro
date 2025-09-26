@@ -56,17 +56,6 @@ const PAYMENT_METHODS: PaymentMethod[] = [
     processingTime: 'Instant'
   },
   {
-    id: 'paypal',
-    name: 'PayPal',
-    type: 'digital',
-    description: 'Accept PayPal payments and credit cards',
-    icon: '🅿️',
-    isEnabled: false,
-    setupRequired: true,
-    fees: '2.9% + fixed fee',
-    processingTime: 'Instant to 1 day'
-  },
-  {
     id: 'cashapp',
     name: 'Cash App',
     type: 'digital',
@@ -124,10 +113,6 @@ export default function BillingPage() {
     window.location.href = '/stripe-connect'
   }
 
-  const handlePayPalSetup = () => {
-    // This would typically redirect to PayPal setup
-    alert('Redirecting to PayPal setup...')
-  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -231,7 +216,6 @@ export default function BillingPage() {
                     size="sm"
                     onClick={() => {
                       if (method.id === 'stripe') handleStripeSetup()
-                      else if (method.id === 'paypal') handlePayPalSetup()
                     }}
                     className="w-full text-xs sm:text-sm"
                   >

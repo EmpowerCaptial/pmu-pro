@@ -896,7 +896,6 @@ export default function HelpPage() {
           content: "PMU Pro supports multiple payment methods to help you accept payments from clients in the way that works best for your business.",
           paymentMethods: [
             "Venmo - Popular peer-to-peer payment app",
-            "PayPal - Universal online payment platform",
             "CashApp - Mobile payment solution",
             "Zelle - Bank-to-bank transfers",
             "Stripe - Professional payment processing",
@@ -979,7 +978,6 @@ export default function HelpPage() {
           content: "Understand the fees associated with different payment methods to make informed decisions.",
           feeStructure: [
             "Venmo: Free for personal accounts, business fees apply",
-            "PayPal: 2.9% + $0.30 per transaction",
             "CashApp: Free for personal, business fees apply",
             "Zelle: Free (bank-dependent)",
             "Stripe: 2.9% + $0.30 per transaction",

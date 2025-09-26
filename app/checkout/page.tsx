@@ -56,7 +56,6 @@ function CheckoutContent() {
     { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, color: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
     { id: 'cash', name: 'Cash', icon: DollarSign, color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
     { id: 'venmo', name: 'Venmo', icon: Smartphone, color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
-    { id: 'paypal', name: 'PayPal', icon: Wallet, color: 'bg-yellow-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
     { id: 'zelle', name: 'Zelle', icon: Smartphone, color: 'bg-indigo-500', bgColor: 'bg-indigo-50', textColor: 'text-indigo-700' }
   ]
 

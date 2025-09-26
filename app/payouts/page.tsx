@@ -36,7 +36,7 @@ interface Payout {
   id: string
   amount: number
   status: 'pending' | 'processing' | 'completed' | 'failed'
-  method: 'stripe' | 'bank_transfer' | 'paypal'
+  method: 'stripe' | 'bank_transfer'
   createdAt: string
   processedAt?: string
   description: string
@@ -164,8 +164,6 @@ export default function PayoutsPage() {
         return <CreditCard className="h-4 w-4" />
       case 'bank_transfer':
         return <Banknote className="h-4 w-4" />
-      case 'paypal':
-        return <CreditCard className="h-4 w-4" />
       default:
         return <CreditCard className="h-4 w-4" />
     }
