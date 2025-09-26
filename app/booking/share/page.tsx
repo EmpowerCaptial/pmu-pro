@@ -51,7 +51,7 @@ export default function ShareBookingPage() {
     const fetchServices = async () => {
       try {
         setLoadingServices(true);
-        const config = await getPublicBookingConfig(userHandle);
+        const config = await getPublicBookingConfig(userHandle, currentUser?.email);
         setServices(config?.services || []);
       } catch (error) {
         console.error('Error fetching services:', error);
@@ -61,10 +61,10 @@ export default function ShareBookingPage() {
       }
     };
 
-    if (userHandle) {
+    if (userHandle && currentUser?.email) {
       fetchServices();
     }
-  }, [userHandle]);
+  }, [userHandle, currentUser?.email]);
 
   const handleCopyLink = async () => {
     try {

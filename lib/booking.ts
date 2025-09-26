@@ -30,12 +30,24 @@ export function generateUserHandle(email: string): string {
   return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
 }
 
+// Map handle back to email (for public booking pages)
+export function getEmailFromHandle(handle: string): string | null {
+  // For now, we'll use a simple approach - in production you'd want to store this in a database
+  // This is a temporary solution that works for the current demo setup
+  if (handle === 'demo-artist' || handle === 'universalbeautystudioacademy') {
+    return 'universalbeautystudioacademy@gmail.com';
+  }
+  
+  // For other handles, we'll need to implement a proper mapping system
+  // For now, return null to indicate we don't have a mapping
+  return null;
+}
+
 // Get booking config for a user handle
-export async function getPublicBookingConfig(handle: string): Promise<PublicBookingConfig | null> {
+export async function getPublicBookingConfig(handle: string, userEmail?: string): Promise<PublicBookingConfig | null> {
   try {
-    // For demo purposes, we'll use the demo email
-    // In production, you'd want to store handle-to-email mapping in the database
-    const demoEmail = 'universalbeautystudioacademy@gmail.com';
+    // Use the provided user email, or try to map from handle, or fall back to demo email
+    const emailToUse = userEmail || getEmailFromHandle(handle) || 'universalbeautystudioacademy@gmail.com';
     
     // Fetch services from the API
     const baseUrl = typeof window !== 'undefined' 
@@ -45,7 +57,7 @@ export async function getPublicBookingConfig(handle: string): Promise<PublicBook
     const response = await fetch(`${baseUrl}/api/services`, {
       method: 'GET',
       headers: {
-        'x-user-email': demoEmail,
+        'x-user-email': emailToUse,
         'Accept': 'application/json'
       }
     });
