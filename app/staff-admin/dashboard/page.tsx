@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Users, 
   Activity, 
@@ -398,6 +399,39 @@ export default function StaffAdminDashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('staffAuth')
     router.push('/staff-admin/login')
+  }
+
+  const handleUserStatusUpdate = async (userId: string, newStatus: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          updates: {
+            subscriptionStatus: newStatus,
+            hasActiveSubscription: newStatus === 'active'
+          }
+        })
+      })
+
+      if (response.ok) {
+        // Update the local state
+        setUserAccounts(prev => 
+          prev.map(user => 
+            user.id === userId 
+              ? { ...user, status: newStatus, subscriptionStatus: newStatus }
+              : user
+          )
+        )
+      } else {
+        console.error('Failed to update user status')
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error)
+    }
   }
 
   const handleMobileTabSelect = (tab: string) => {
@@ -1118,19 +1152,51 @@ export default function StaffAdminDashboardPage() {
                               <p className="text-xs text-gray-500">Role: {user.role}</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <Badge 
-                              className={
-                                user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }
-                            >
-                              {user.status}
-                            </Badge>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Last login: {formatTimestamp(user.lastLogin)}
-                            </p>
+                          <div className="flex items-center space-x-3">
+                            <div className="text-right">
+                              <Badge 
+                                className={
+                                  user.status === 'active' ? 'bg-green-100 text-green-800' :
+                                  user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }
+                              >
+                                {user.status}
+                              </Badge>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Last login: {formatTimestamp(user.lastLogin)}
+                              </p>
+                            </div>
+                            <div className="min-w-[120px]">
+                              <Select
+                                value={user.status}
+                                onValueChange={(value) => handleUserStatusUpdate(user.id, value)}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-2">
+                                      <Clock className="h-4 w-4 text-yellow-600" />
+                                      <span>Pending</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="active">
+                                    <div className="flex items-center space-x-2">
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                      <span>Approved</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="suspended">
+                                    <div className="flex items-center space-x-2">
+                                      <XCircle className="h-4 w-4 text-red-600" />
+                                      <span>Denied</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                         </div>
                       ))}
