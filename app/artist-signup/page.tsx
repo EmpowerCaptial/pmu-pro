@@ -83,20 +83,32 @@ export default function ArtistSignupPage() {
         return
       }
 
-      // Submit application
-      const application = ArtistApplicationService.submitApplication({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        businessName: formData.businessName,
-        businessAddress: formData.businessAddress,
-        licenseNumber: formData.licenseNumber || undefined,
-        licenseState: formData.licenseState || undefined,
-        experience: formData.experience,
-        specialties: formData.specialties,
-        portfolioUrl: formData.portfolioUrl || undefined,
-        socialMedia: formData.socialMedia
+      // Submit application to database
+      const response = await fetch('/api/artist-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          businessName: formData.businessName,
+          businessAddress: formData.businessAddress,
+          licenseNumber: formData.licenseNumber || undefined,
+          licenseState: formData.licenseState || undefined,
+          experience: formData.experience,
+          specialties: formData.specialties,
+          portfolioUrl: formData.portfolioUrl || undefined,
+          socialMedia: formData.socialMedia
+        }),
       })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create account')
+      }
 
       // Start trial for the user
       TrialService.startTrial(formData.email)
@@ -104,9 +116,9 @@ export default function ArtistSignupPage() {
       // Automatically log in the user with their application data
       // Create a temporary user object for the auth system
       const tempUser = {
-        id: application.id,
-        name: formData.name,
-        email: formData.email,
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
         role: 'artist',
         isRealAccount: true,
         subscription: 'trial',
@@ -142,7 +154,7 @@ export default function ArtistSignupPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to PMU Pro!</h2>
             <p className="text-gray-600 mb-4">
-              Your application has been submitted and you've been automatically logged in. You now have immediate access to your 30-day free trial.
+              Your account has been created and you've been automatically logged in. You now have immediate access to your 30-day free trial.
             </p>
             <Alert className="border-blue-200 bg-blue-50 mb-4">
               <AlertTriangle className="h-4 w-4 text-blue-600" />
