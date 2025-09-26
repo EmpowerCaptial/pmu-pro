@@ -661,7 +661,7 @@ export default function StaffAdminDashboardPage() {
                   {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
                 </Badge>
               </p>
-              <Button variant="outline" onClick={handleLogout} className="w-full">
+              <Button variant="outline" onClick={handleLogout} className="w-full bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -683,7 +683,7 @@ export default function StaffAdminDashboardPage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleLogout}>
+              <Button variant="outline" onClick={handleLogout} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -996,7 +996,7 @@ export default function StaffAdminDashboardPage() {
                   <div className="space-y-2">
                     <Button 
                       size="sm" 
-                      className="w-full justify-start" 
+                      className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50" 
                       variant="outline"
                       onClick={() => setActiveTab('applications')}
                     >
@@ -1005,7 +1005,7 @@ export default function StaffAdminDashboardPage() {
                     </Button>
                     <Button 
                       size="sm" 
-                      className="w-full justify-start" 
+                      className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50" 
                       variant="outline"
                       onClick={() => setActiveTab('tickets')}
                     >
@@ -1014,7 +1014,7 @@ export default function StaffAdminDashboardPage() {
                     </Button>
                     <Button 
                       size="sm" 
-                      className="w-full justify-start" 
+                      className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50" 
                       variant="outline"
                       onClick={() => setActiveTab('staff')}
                     >
@@ -1023,7 +1023,7 @@ export default function StaffAdminDashboardPage() {
                     </Button>
                     <Button 
                       size="sm" 
-                      className="w-full justify-start" 
+                      className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50" 
                       variant="outline"
                       onClick={() => setActiveTab('users')}
                     >
@@ -1032,7 +1032,7 @@ export default function StaffAdminDashboardPage() {
                     </Button>
                     <Button 
                       size="sm" 
-                      className="w-full justify-start" 
+                      className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50" 
                       variant="outline"
                       onClick={() => window.open('/admin', '_blank')}
                     >
@@ -1070,7 +1070,7 @@ export default function StaffAdminDashboardPage() {
                   ))}
                 </div>
                 <div className="mt-4 text-center">
-                  <Button variant="outline" onClick={() => setActiveTab('activity')}>
+                  <Button variant="outline" onClick={() => setActiveTab('activity')} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                     View All Activity Logs
                   </Button>
                 </div>

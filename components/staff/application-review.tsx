@@ -373,6 +373,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                             size="sm"
                             variant="outline"
                             onClick={() => openDocument(doc.url, doc.originalName)}
+                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             View
@@ -381,6 +382,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                             size="sm"
                             variant="outline"
                             onClick={() => window.open(doc.url, '_blank')}
+                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                           >
                             <Download className="h-4 w-4 mr-1" />
                             Download
@@ -398,7 +400,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                     <Button
                       size="sm"
                       onClick={() => setShowResponseForm(true)}
-                      className="bg-lavender hover:bg-lavender/90"
+                      className="bg-lavender hover:bg-lavender/90 text-white"
                     >
                       <MessageSquare className="h-4 w-4 mr-1" />
                       Send Response
@@ -476,7 +478,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                       <Button
                         size="sm"
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                         onClick={() => {
                           setResponseData({
                             type: 'approval',
@@ -492,7 +494,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                       <Button
                         size="sm"
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                         onClick={() => {
                           setResponseData({
                             type: 'denial',
@@ -508,7 +510,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                       <Button
                         size="sm"
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                         onClick={() => {
                           setResponseData({
                             type: 'request_info',
@@ -539,17 +541,17 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
       {/* Response Form Modal */}
       {showResponseForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-2xl mx-4">
-            <CardHeader>
-              <CardTitle>Send Response to {selectedApplication?.artistName}</CardTitle>
-              <CardDescription>
+          <Card className="w-full max-w-2xl mx-4 bg-white border border-gray-200 shadow-lg">
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
+              <CardTitle className="text-gray-900">Send Response to {selectedApplication?.artistName}</CardTitle>
+              <CardDescription className="text-gray-600">
                 Send a message to the applicant regarding their application
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-white">
               <form onSubmit={handleResponseSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Response Type</label>
+                  <label className="text-sm font-medium mb-2 block text-gray-700">Response Type</label>
                   <Select
                     value={responseData.type}
                     onValueChange={(value) => setResponseData({...responseData, type: value as any})}
@@ -568,7 +570,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Message</label>
+                  <label className="text-sm font-medium mb-2 block text-gray-700">Message</label>
                   <Textarea
                     value={responseData.message}
                     onChange={(e) => setResponseData({...responseData, message: e.target.value})}
@@ -585,7 +587,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                     checked={responseData.requiresResponse}
                     onChange={(e) => setResponseData({...responseData, requiresResponse: e.target.checked})}
                   />
-                  <label htmlFor="requiresResponse" className="text-sm">
+                  <label htmlFor="requiresResponse" className="text-sm text-gray-700">
                     This message requires a response from the applicant
                   </label>
                 </div>
@@ -595,10 +597,11 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                     type="button"
                     variant="outline"
                     onClick={() => setShowResponseForm(false)}
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-lavender hover:bg-lavender/90">
+                  <Button type="submit" className="bg-lavender hover:bg-lavender/90 text-white">
                     <Send className="h-4 w-4 mr-2" />
                     Send Response
                   </Button>
