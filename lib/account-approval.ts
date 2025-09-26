@@ -246,7 +246,23 @@ export function getAllApplications(): ArtistApplication[] {
   try {
     const applications = localStorage.getItem('pmu_applications')
     if (applications) {
-      return JSON.parse(applications)
+      const parsed = JSON.parse(applications)
+      // Convert date strings back to Date objects
+      return parsed.map((app: any) => ({
+        ...app,
+        submittedAt: new Date(app.submittedAt),
+        reviewedAt: app.reviewedAt ? new Date(app.reviewedAt) : undefined,
+        lastUpdated: new Date(app.lastUpdated),
+        documents: app.documents.map((doc: any) => ({
+          ...doc,
+          uploadedAt: new Date(doc.uploadedAt)
+        })),
+        responses: app.responses.map((resp: any) => ({
+          ...resp,
+          sentAt: new Date(resp.sentAt),
+          respondedAt: resp.respondedAt ? new Date(resp.respondedAt) : undefined
+        }))
+      }))
     }
   } catch (error) {
     console.error('Error loading applications:', error)
@@ -336,8 +352,14 @@ export function getApprovalStats(): ApprovalStats {
     approved: applications.filter(app => app.status === 'approved').length,
     denied: applications.filter(app => app.status === 'denied').length,
     needsInfo: applications.filter(app => app.status === 'needs_info').length,
-    thisWeek: applications.filter(app => app.submittedAt >= weekAgo).length,
-    thisMonth: applications.filter(app => app.submittedAt >= monthAgo).length
+    thisWeek: applications.filter(app => {
+      const submittedAt = app.submittedAt instanceof Date ? app.submittedAt : new Date(app.submittedAt)
+      return submittedAt >= weekAgo
+    }).length,
+    thisMonth: applications.filter(app => {
+      const submittedAt = app.submittedAt instanceof Date ? app.submittedAt : new Date(app.submittedAt)
+      return submittedAt >= monthAgo
+    }).length
   }
 }
 

@@ -252,7 +252,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                     </p>
                     <p className="flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      Submitted: {app.submittedAt.toLocaleDateString()}
+                      Submitted: {app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : 'Unknown'}
                     </p>
                     {app.businessName && (
                       <p className="flex items-center gap-2">
