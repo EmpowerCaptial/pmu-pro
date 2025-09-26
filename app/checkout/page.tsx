@@ -544,7 +544,7 @@ function CheckoutContent() {
             </Card>
 
             {/* Process Payment - Sticky Button */}
-            <div className="sticky bottom-4 z-10">
+            <div className="sticky bottom-4 z-[60]">
               <Card className="border-0 shadow-xl bg-white">
                 <CardContent className="p-6">
                   <Button 
