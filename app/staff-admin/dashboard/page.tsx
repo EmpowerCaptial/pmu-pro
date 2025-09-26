@@ -59,7 +59,6 @@ import { ClientPortalManagement } from '@/components/admin/client-portal-managem
 import ApplicationReview from '@/components/staff/application-review'
 import TicketManagement from '@/components/staff/ticket-management'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface ActivityLog {
   id: string;
