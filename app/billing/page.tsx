@@ -23,7 +23,7 @@ import {
 interface PaymentMethod {
   id: string
   name: string
-  type: 'digital' | 'card' | 'bank'
+  type: 'digital' | 'card' | 'bank' | 'bnpl'
   description: string
   icon: string
   isEnabled: boolean
