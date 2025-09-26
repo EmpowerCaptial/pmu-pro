@@ -127,6 +127,8 @@ export default function StaffAdminDashboardPage() {
   })
   const [isAddingStaff, setIsAddingStaff] = useState(false)
   const [newStaffSuccess, setNewStaffSuccess] = useState<{show: boolean, data: any}>({show: false, data: null})
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   // Mock data for demonstration
@@ -335,6 +337,46 @@ export default function StaffAdminDashboardPage() {
     }
   ]
 
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const [usersRes, ticketsRes, complaintsRes, analyticsRes] = await Promise.all([
+        fetch('/api/admin/users'),
+        fetch('/api/admin/tickets'),
+        fetch('/api/admin/complaints'),
+        fetch('/api/admin/analytics')
+      ])
+
+      if (usersRes.ok) {
+        const usersData = await usersRes.json()
+        setUserAccounts(usersData.data || [])
+      }
+
+      if (ticketsRes.ok) {
+        const ticketsData = await ticketsRes.json()
+        setTickets(ticketsData.data || [])
+      }
+
+      if (complaintsRes.ok) {
+        const complaintsData = await complaintsRes.json()
+        setComplaints(complaintsData.data || [])
+      }
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json()
+        setAnalytics(analyticsData.data || null)
+      }
+
+      // Keep mock data for activity logs and staff members for now
+      setActivityLogs(mockActivityLogs)
+      setStaffMembers(getStaffMembers())
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     // Check authentication
     const staffAuth = localStorage.getItem('staffAuth')
@@ -343,13 +385,7 @@ export default function StaffAdminDashboardPage() {
         const authData = JSON.parse(staffAuth)
         setCurrentUser(authData)
         setIsAuthenticated(true)
-        setStaffMembers(getStaffMembers())
-        
-        // Load mock data
-        setActivityLogs(mockActivityLogs)
-        setUserAccounts(mockUserAccounts)
-        setTickets(mockTickets)
-        setComplaints(mockComplaints)
+        loadData()
       } catch (error) {
         console.error('Invalid auth data:', error)
         router.push('/staff-admin/login')

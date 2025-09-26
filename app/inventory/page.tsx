@@ -118,12 +118,13 @@ const mockInventory: InventoryItem[] = [
 
 export default function InventoryPage() {
   const { currentUser } = useDemoAuth()
-  const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory)
-  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>(mockInventory)
+  const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
+  const [loading, setLoading] = useState(true)
   
   const [newItem, setNewItem] = useState({
     name: '',
@@ -141,14 +142,33 @@ export default function InventoryPage() {
 
   const categories = ['all', 'Tools', 'Pigments', 'Consumables', 'Anesthetics', 'Aftercare']
 
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/inventory')
+      if (response.ok) {
+        const data = await response.json()
+        setInventory(data.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading inventory:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
   useEffect(() => {
     let filtered = inventory
 
     if (searchTerm) {
       filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sku.toLowerCase().includes(searchTerm.toLowerCase())
+        item.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.sku?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
