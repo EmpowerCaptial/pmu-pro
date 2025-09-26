@@ -6,6 +6,9 @@ const prisma = new PrismaClient()
 // GET /api/admin/complaints - Get all complaints
 export async function GET(request: NextRequest) {
   try {
+    // Check if database is available
+    await prisma.$connect()
+    
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
@@ -75,10 +78,25 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching complaints:', error)
+    
+    // Check if it's a database connection error
+    if (error instanceof Error && error.message.includes('datasource')) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database not configured. Please set up PostgreSQL database in Vercel.',
+          data: []
+        },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch complaints' },
+      { success: false, error: 'Failed to fetch complaints', data: [] },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

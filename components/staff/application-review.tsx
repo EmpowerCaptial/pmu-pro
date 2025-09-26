@@ -331,9 +331,9 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
                             </Badge>
                           ))}
                         </div>
-                        <p><strong>Submitted:</strong> {selectedApplication.submittedAt.toLocaleDateString()}</p>
+                        <p><strong>Submitted:</strong> {selectedApplication.submittedAt ? new Date(selectedApplication.submittedAt).toLocaleDateString() : 'Unknown'}</p>
                         {selectedApplication.reviewedAt && (
-                          <p><strong>Reviewed:</strong> {selectedApplication.reviewedAt.toLocaleDateString()}</p>
+                          <p><strong>Reviewed:</strong> {new Date(selectedApplication.reviewedAt).toLocaleDateString()}</p>
                         )}
                         {selectedApplication.reviewedBy && (
                           <p><strong>Reviewed By:</strong> {selectedApplication.reviewedBy}</p>
