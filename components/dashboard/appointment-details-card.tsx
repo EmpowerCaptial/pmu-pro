@@ -7,13 +7,8 @@ import { Button } from '@/components/ui/button';
 import { 
   Calendar, 
   Clock, 
-  DollarSign, 
   User, 
-  Mail, 
-  Phone,
-  CreditCard,
   AlertCircle,
-  CheckCircle,
   Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -113,22 +108,6 @@ export function AppointmentDetailsCard() {
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getDepositStatus = (appointmentId: string) => {
-    return depositPayments.find(dp => dp.id === appointmentId);
-  };
 
   if (loading) {
     return (
@@ -172,114 +151,54 @@ export function AppointmentDetailsCard() {
             <p className="text-sm">Appointments will appear here when clients book</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {appointments.slice(0, 5).map((appointment) => {
-              const depositInfo = getDepositStatus(appointment.id);
-              const remainingAmount = appointment.price - appointment.deposit;
+          <div className="space-y-2">
+            {appointments.slice(0, 8).map((appointment) => {
+              const appointmentDate = new Date(appointment.date);
+              const isToday = appointmentDate.toDateString() === new Date().toDateString();
+              const isTomorrow = appointmentDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
               
               return (
-                <div key={appointment.id} className="border rounded-lg p-4 space-y-3">
-                  {/* Client Info */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-lavender/20 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-lavender" />
+                <div key={appointment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-colors">
+                  {/* Client Info & Time */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 bg-lavender/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-4 w-4 text-lavender" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-sm truncate">{appointment.clientName}</h3>
+                        <Badge className={`${getStatusColor(appointment.status)} text-xs px-2 py-0.5`}>
+                          {appointment.status === 'pending_deposit' ? 'Pending' : appointment.status}
+                        </Badge>
                       </div>
-                      <div>
-                        <h3 className="font-medium">{appointment.clientName}</h3>
-                        <p className="text-sm text-gray-600">{appointment.service}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className={getStatusColor(appointment.status)}>
-                        {appointment.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Appointment Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span>{format(new Date(appointment.date), 'MMM dd, yyyy')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span>{appointment.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span>{Math.round(appointment.duration / 60)}h duration</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-gray-500" />
-                      <span>${appointment.price}</span>
-                    </div>
-                  </div>
-
-                  {/* Payment Information */}
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Payment Status</span>
-                      <Badge className={getPaymentStatusColor(appointment.paymentStatus)}>
-                        {appointment.paymentStatus}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="text-center">
-                        <div className="font-medium text-green-600">${appointment.deposit}</div>
-                        <div className="text-xs text-gray-500">Deposit</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-blue-600">${remainingAmount}</div>
-                        <div className="text-xs text-gray-500">Due Day Of</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-gray-900">${appointment.price}</div>
-                        <div className="text-xs text-gray-500">Total</div>
-                      </div>
-                    </div>
-
-                    {/* Deposit Status */}
-                    {depositInfo && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">Deposit Status:</span>
+                      <div className="flex items-center gap-4 text-xs text-gray-600 mt-1">
                         <div className="flex items-center gap-1">
-                          {depositInfo.status === 'PAID' ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-yellow-500" />
-                          )}
-                          <span className={depositInfo.status === 'PAID' ? 'text-green-600' : 'text-yellow-600'}>
-                            {depositInfo.status}
+                          <Clock className="h-3 w-3" />
+                          <span className="font-medium">
+                            {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(appointmentDate, 'MMM dd')} • {appointment.time}
                           </span>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
 
-                  {/* Contact Info */}
-                  <div className="flex items-center gap-4 text-xs text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      <span>{appointment.clientEmail}</span>
+                  {/* Procedure & Cost */}
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                      {appointment.service}
                     </div>
-                    {appointment.clientPhone && (
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        <span>{appointment.clientPhone}</span>
-                      </div>
-                    )}
+                    <div className="text-sm font-semibold text-lavender">
+                      ${appointment.price}
+                    </div>
                   </div>
                 </div>
               );
             })}
             
-            {appointments.length > 5 && (
-              <div className="text-center pt-4">
-                <Button variant="outline" size="sm">
-                  View All Appointments
+            {appointments.length > 8 && (
+              <div className="text-center pt-2">
+                <Button variant="ghost" size="sm" className="text-lavender hover:text-lavender-600">
+                  View All ({appointments.length - 8} more)
                 </Button>
               </div>
             )}

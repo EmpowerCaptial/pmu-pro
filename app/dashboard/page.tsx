@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from "react"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
 import { AppointmentDetailsCard } from "@/components/dashboard/appointment-details-card"
+import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 import { NavBar } from "@/components/ui/navbar"
 import { Button } from "@/components/ui/button"
 import { Home, Download, Smartphone } from "lucide-react"
@@ -178,12 +179,15 @@ export default function DashboardPage() {
               </DemoDataProvider>
             ) : (
               <>
-                {/* Mobile: Show appointments first, then dashboard cards (which includes messenger) */}
+                {/* Mobile: Show dashboard cards first, then appointments, then messenger */}
                 <div className="md:hidden">
-                  <div className="mb-6">
+                  <DashboardCards />
+                  <div className="mt-6">
                     <AppointmentDetailsCard />
                   </div>
-                  <DashboardCards />
+                  <div className="mt-6">
+                    <MetaMessengerBox />
+                  </div>
                 </div>
                 
                 {/* Desktop: Show dashboard cards first, then appointments */}

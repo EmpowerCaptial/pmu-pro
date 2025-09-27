@@ -426,7 +426,8 @@ export function DashboardCards() {
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
+      {/* Hide messenger on mobile since it's shown separately in mobile layout */}
+      <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
         <MetaMessengerBox />
       </div>
 
