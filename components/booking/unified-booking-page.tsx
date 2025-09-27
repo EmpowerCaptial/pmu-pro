@@ -166,74 +166,74 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
       <div className="container mx-auto px-4 py-8">
         {/* Artist Header */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-6">
+        <Card className="mb-6 sm:mb-8 bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
               {/* Artist Avatar */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 {artist.avatar ? (
                   <img
                     src={artist.avatar}
                     alt={artist.name}
-                    className="w-20 h-20 rounded-full object-cover border-4 border-lavender/30"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-lavender/30"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-lavender to-purple-500 flex items-center justify-center text-white font-semibold text-2xl">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-lavender to-purple-500 flex items-center justify-center text-white font-semibold text-xl sm:text-2xl">
                     {artist.name.split(' ').map(n => n[0]).join('')}
                   </div>
                 )}
               </div>
 
               {/* Artist Info */}
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">{artist.name}</h1>
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 break-words">{artist.name}</h1>
                 {artist.studioName && (
-                  <h2 className="text-xl text-lavender font-semibold mb-2">{artist.studioName}</h2>
+                  <h2 className="text-lg sm:text-xl text-lavender font-semibold mb-2 break-words">{artist.studioName}</h2>
                 )}
-                <p className="text-gray-600 mb-3">{artist.bio}</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 break-words">{artist.bio}</p>
                 
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                    <span className="font-semibold">{artist.rating}</span>
-                    <span className="text-gray-600">({artist.reviewCount} reviews)</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
+                  <div className="flex items-center justify-center sm:justify-start gap-1">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 fill-current" />
+                    <span className="font-semibold text-sm sm:text-base">{artist.rating}</span>
+                    <span className="text-gray-600 text-sm sm:text-base">({artist.reviewCount} reviews)</span>
                   </div>
                   {artist.experience && (
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                       {artist.experience} experience
                     </div>
                   )}
                 </div>
 
                 {/* Contact Info */}
-                <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 mb-3 text-xs sm:text-sm text-gray-600">
                   {artist.phone && (
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      <span>{artist.phone}</span>
+                    <div className="flex items-center justify-center sm:justify-start gap-1">
+                      <Phone className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="break-all">{artist.phone}</span>
                     </div>
                   )}
                   {artist.website && (
-                    <div className="flex items-center gap-1">
-                      <Globe className="h-4 w-4" />
-                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline">
+                    <div className="flex items-center justify-center sm:justify-start gap-1">
+                      <Globe className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline break-all">
                         Website
                       </a>
                     </div>
                   )}
                   {artist.instagram && (
-                    <div className="flex items-center gap-1">
-                      <Camera className="h-4 w-4" />
-                      <a href={`https://instagram.com/${artist.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline">
+                    <div className="flex items-center justify-center sm:justify-start gap-1">
+                      <Camera className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <a href={`https://instagram.com/${artist.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline break-all">
                         {artist.instagram}
                       </a>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
                   {artist.specialties.map((specialty) => (
-                    <Badge key={specialty} variant="secondary" className="bg-lavender/20 text-lavender">
+                    <Badge key={specialty} variant="secondary" className="bg-lavender/20 text-lavender text-xs">
                       {specialty}
                     </Badge>
                   ))}
@@ -241,15 +241,15 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
               </div>
 
               {/* Book Now Button */}
-              <div className="text-center">
+              <div className="text-center w-full sm:w-auto">
                 <Button 
                   size="lg" 
-                  className="bg-lavender hover:bg-lavender-600 text-white px-8 py-3 text-lg font-semibold"
+                  className="bg-lavender hover:bg-lavender-600 text-white px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold w-full sm:w-auto"
                   onClick={() => setActiveTab('booking')}
                 >
                   Book Appointment
                 </Button>
-                <p className="text-sm text-gray-600 mt-2">Available for bookings</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2">Available for bookings</p>
               </div>
             </div>
           </CardContent>
@@ -257,51 +257,54 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/90 backdrop-blur-sm border-lavender/20">
-            <TabsTrigger value="portfolio" className="flex items-center gap-2">
-              <Camera className="h-4 w-4" />
-              Portfolio
+          <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 bg-white/90 backdrop-blur-sm border-lavender/20 h-auto">
+            <TabsTrigger value="portfolio" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
+              <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Portfolio</span>
+              <span className="sm:hidden">Work</span>
             </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2">
-              <Palette className="h-4 w-4" />
-              Services & Pricing
+            <TabsTrigger value="services" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
+              <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Services & Pricing</span>
+              <span className="sm:hidden">Services</span>
             </TabsTrigger>
-            <TabsTrigger value="booking" className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4" />
-              Book Now
+            <TabsTrigger value="booking" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
+              <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Book Now</span>
+              <span className="sm:hidden">Book</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Portfolio Tab */}
           <TabsContent value="portfolio">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {portfolio.map((item) => (
                 <Card key={item.id} className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="bg-lavender/20 text-lavender font-bold">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="secondary" className="bg-lavender/20 text-lavender font-bold text-xs">
                         {item.type.toUpperCase()}
                       </Badge>
                     </div>
-                    <CardTitle className="text-lg font-serif">{item.title}</CardTitle>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <CardTitle className="text-base sm:text-lg font-serif break-words">{item.title}</CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-600 break-words">{item.description}</p>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-2">
+                      <div className="space-y-1 sm:space-y-2">
                         <p className="text-xs font-semibold text-gray-500">BEFORE</p>
                         <img
                           src={item.beforeImage}
                           alt="Before"
-                          className="w-full h-24 object-cover rounded-md border"
+                          className="w-full h-20 sm:h-24 object-cover rounded-md border"
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-1 sm:space-y-2">
                         <p className="text-xs font-semibold text-gray-500">AFTER</p>
                         <img
                           src={item.afterImage}
                           alt="After"
-                          className="w-full h-24 object-cover rounded-md border"
+                          className="w-full h-20 sm:h-24 object-cover rounded-md border"
                         />
                       </div>
                     </div>
@@ -313,28 +316,28 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
           {/* Services Tab */}
           <TabsContent value="services">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {services.map((service) => (
                 <Card key={service.id} className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg hover:shadow-xl transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{service.name}</span>
-                      <Badge variant="secondary" className="bg-lavender/20 text-lavender">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="break-words">{service.name}</span>
+                      <Badge variant="secondary" className="bg-lavender/20 text-lavender text-xs self-start sm:self-auto">
                         {service.category.toUpperCase()}
                       </Badge>
                     </CardTitle>
-                    <p className="text-gray-600">{service.description}</p>
+                    <p className="text-sm text-gray-600 break-words">{service.description}</p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <CardContent className="pt-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span>{Math.round(service.defaultDuration / 60)}h</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="font-semibold text-lg text-gray-900">${service.defaultPrice}</span>
+                          <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="font-semibold text-base sm:text-lg text-gray-900">${service.defaultPrice}</span>
                         </div>
                       </div>
                       <Button 
@@ -342,7 +345,7 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                           setSelectedService(service)
                           setActiveTab('booking')
                         }}
-                        className="bg-lavender hover:bg-lavender-600 text-white"
+                        className="bg-lavender hover:bg-lavender-600 text-white w-full sm:w-auto"
                       >
                         Book This Service
                       </Button>
@@ -356,29 +359,29 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
           {/* Booking Tab */}
           <TabsContent value="booking">
             <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-lavender" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
                   Book Your Appointment
                 </CardTitle>
                 {selectedService && (
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600 break-words">
                     Selected: <span className="font-semibold">{selectedService.name}</span> - ${selectedService.defaultPrice}
                   </p>
                 )}
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <CalendarIcon className="h-16 w-16 text-lavender/50 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Booking System Coming Soon</h3>
-                  <p className="text-gray-600 mb-6">
+              <CardContent className="pt-0">
+                <div className="text-center py-8 sm:py-12">
+                  <CalendarIcon className="h-12 w-12 sm:h-16 sm:w-16 text-lavender/50 mx-auto mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 break-words">Booking System Coming Soon</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-6 px-4">
                     We're working on integrating the full booking system with calendar availability.
                   </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button variant="outline" onClick={() => setActiveTab('services')}>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+                    <Button variant="outline" onClick={() => setActiveTab('services')} className="w-full sm:w-auto">
                       Back to Services
                     </Button>
-                    <Button className="bg-lavender hover:bg-lavender-600 text-white">
+                    <Button className="bg-lavender hover:bg-lavender-600 text-white w-full sm:w-auto">
                       Contact {artist.name}
                     </Button>
                   </div>
