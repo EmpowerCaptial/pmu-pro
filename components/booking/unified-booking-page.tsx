@@ -21,11 +21,16 @@ import {
   Globe
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface ArtistProfile {
   id: string
   name: string
   email: string
+  handle: string
   avatar?: string
   bio?: string
   studioName?: string
@@ -371,26 +376,302 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                 )}
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="text-center py-8 sm:py-12">
-                  <CalendarIcon className="h-12 w-12 sm:h-16 sm:w-16 text-lavender/50 mx-auto mb-4" />
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 break-words">Booking System Coming Soon</h3>
-                  <p className="text-sm sm:text-base text-gray-600 mb-6 px-4">
-                    We're working on integrating the full booking system with calendar availability.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-                    <Button variant="outline" onClick={() => setActiveTab('services')} className="w-full sm:w-auto">
-                      Back to Services
-                    </Button>
-                    <Button className="bg-lavender hover:bg-lavender-600 text-white w-full sm:w-auto">
-                      Contact {artist.name}
-                    </Button>
-                  </div>
-                </div>
+                <BookingForm 
+                  artist={artist}
+                  selectedService={selectedService}
+                  services={services}
+                  onBackToServices={() => setActiveTab('services')}
+                  onSelectService={(service) => setSelectedService(service)}
+                />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
     </div>
+  )
+}
+
+interface BookingFormProps {
+  artist: ArtistProfile
+  selectedService: Service | null
+  services: Service[]
+  onBackToServices: () => void
+  onSelectService: (service: Service) => void
+}
+
+function BookingForm({ artist, selectedService, services, onBackToServices, onSelectService }: BookingFormProps) {
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    service: selectedService?.id || '',
+    date: '',
+    time: '',
+    notes: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    setError('')
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    // Validate required fields
+    if (!formData.clientName || !formData.clientEmail || !formData.service || !formData.date || !formData.time) {
+      setError('Please fill in all required fields')
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.clientEmail)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Get service details
+      const service = services.find(s => s.id === formData.service)
+      if (!service) {
+        throw new Error('Service not found')
+      }
+
+      // Create appointment
+      const appointmentResponse = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': artist.email
+        },
+        body: JSON.stringify({
+          clientName: formData.clientName,
+          clientEmail: formData.clientEmail,
+          clientPhone: formData.clientPhone,
+          service: service.name,
+          date: formData.date,
+          time: formData.time,
+          duration: service.defaultDuration,
+          price: service.defaultPrice,
+          deposit: Math.round(service.defaultPrice * 0.3), // 30% deposit
+          status: 'pending_deposit',
+          notes: formData.notes
+        })
+      })
+
+      if (!appointmentResponse.ok) {
+        const errorData = await appointmentResponse.json()
+        throw new Error(errorData.error || 'Failed to create appointment')
+      }
+
+      const appointmentData = await appointmentResponse.json()
+      
+      // Create Stripe checkout session directly for deposit payment
+      const checkoutResponse = await fetch('/api/stripe/create-deposit-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          depositId: appointmentData.appointment.id, // Use appointment ID as deposit ID for now
+          amount: Math.round(service.defaultPrice * 0.3),
+          currency: 'USD',
+          clientName: formData.clientName,
+          successUrl: `${window.location.origin}/booking/confirmation?appointment=${appointmentData.appointment.id}`,
+          cancelUrl: `${window.location.origin}/book/${artist.handle}?tab=booking`
+        })
+      })
+
+      if (!checkoutResponse.ok) {
+        const errorData = await checkoutResponse.json()
+        throw new Error(errorData.error || 'Failed to create payment session')
+      }
+
+      const checkoutData = await checkoutResponse.json()
+
+      // Redirect to Stripe checkout
+      if (checkoutData.url) {
+        window.location.href = checkoutData.url
+      } else {
+        // Fallback: show success message
+        alert(`Appointment created successfully! Please contact ${artist.name} to complete your deposit payment.`)
+        setFormData({
+          clientName: '',
+          clientEmail: '',
+          clientPhone: '',
+          service: '',
+          date: '',
+          time: '',
+          notes: ''
+        })
+      }
+
+    } catch (error) {
+      console.error('Booking error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to create appointment')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Service Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="service">Service *</Label>
+        <Select value={formData.service} onValueChange={(value) => {
+          handleInputChange('service', value)
+          const service = services.find(s => s.id === value)
+          if (service) onSelectService(service)
+        }}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a service" />
+          </SelectTrigger>
+          <SelectContent>
+            {services.map((service) => (
+              <SelectItem key={service.id} value={service.id}>
+                {service.name} - ${service.defaultPrice} ({Math.round(service.defaultDuration / 60)}h)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Client Information */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="clientName">Full Name *</Label>
+          <Input
+            id="clientName"
+            type="text"
+            value={formData.clientName}
+            onChange={(e) => handleInputChange('clientName', e.target.value)}
+            placeholder="Your full name"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="clientEmail">Email *</Label>
+          <Input
+            id="clientEmail"
+            type="email"
+            value={formData.clientEmail}
+            onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+            placeholder="your@email.com"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="clientPhone">Phone Number</Label>
+        <Input
+          id="clientPhone"
+          type="tel"
+          value={formData.clientPhone}
+          onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+          placeholder="(555) 123-4567"
+        />
+      </div>
+
+      {/* Appointment Date and Time */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="date">Preferred Date *</Label>
+          <Input
+            id="date"
+            type="date"
+            value={formData.date}
+            onChange={(e) => handleInputChange('date', e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="time">Preferred Time *</Label>
+          <Select value={formData.time} onValueChange={(value) => handleInputChange('time', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select time" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => {
+                const hour = 9 + i // 9 AM to 8 PM
+                return (
+                  <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
+                    {hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Additional Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">Additional Notes</Label>
+        <Textarea
+          id="notes"
+          value={formData.notes}
+          onChange={(e) => handleInputChange('notes', e.target.value)}
+          placeholder="Any specific requests or information..."
+          rows={3}
+        />
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Service Summary */}
+      {selectedService && (
+        <div className="bg-lavender/10 border border-lavender/20 rounded-md p-4">
+          <h4 className="font-semibold text-gray-900 mb-2">Service Summary</h4>
+          <div className="space-y-1 text-sm text-gray-600">
+            <p><span className="font-medium">Service:</span> {selectedService.name}</p>
+            <p><span className="font-medium">Duration:</span> {Math.round(selectedService.defaultDuration / 60)} hours</p>
+            <p><span className="font-medium">Total Price:</span> ${selectedService.defaultPrice}</p>
+            <p><span className="font-medium">Deposit Required:</span> ${Math.round(selectedService.defaultPrice * 0.3)} (30%)</p>
+            <p className="text-xs text-gray-500 mt-2">* A deposit is required to secure your appointment</p>
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBackToServices}
+          className="w-full sm:w-auto"
+        >
+          Back to Services
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting || !formData.clientName || !formData.clientEmail || !formData.service || !formData.date || !formData.time}
+          className="bg-lavender hover:bg-lavender-600 text-white w-full sm:w-auto"
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Creating Appointment...
+            </>
+          ) : (
+            'Book Appointment & Pay Deposit'
+          )}
+        </Button>
+      </div>
+    </form>
   )
 }
