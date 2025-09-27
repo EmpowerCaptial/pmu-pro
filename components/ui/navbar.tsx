@@ -60,6 +60,7 @@ interface NavBarProps {
     name?: string
     email: string
     initials?: string
+    avatar?: string
   }
 }
 
@@ -122,9 +123,13 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0">
                     <Avatar className="h-10 w-10 border-2 border-white/30">
-                      <AvatarFallback className="bg-white text-lavender font-semibold text-sm shadow-lg">
-                        {user.initials || user.name?.split(' ').map(n => n[0]).join('') || user.email.charAt(0).toUpperCase()}
-                      </AvatarFallback>
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <AvatarFallback className="bg-white text-lavender font-semibold text-sm shadow-lg">
+                          {user.initials || user.name?.split(' ').map(n => n[0]).join('') || user.email.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

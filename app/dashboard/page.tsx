@@ -29,7 +29,8 @@ export default function DashboardPage() {
   const user = currentUser ? {
     name: currentUser.name,
     email: currentUser.email,
-    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: localStorage.getItem(`profile_photo_${currentUser.email}`) || undefined
   } : {
     name: "PMU Artist",
     email: "artist@pmupro.com",

@@ -20,6 +20,8 @@ export default function ProfilePage() {
     name: currentUser?.name || "PMU Artist",
     email: currentUser?.email || "",
     phone: "",
+    website: "",
+    instagram: "",
     location: "",
     address: {
       street: "",
@@ -32,6 +34,16 @@ export default function ProfilePage() {
     certifications: [],
     experience: "",
     specialties: [],
+    studioName: "",
+    businessHours: {
+      monday: "",
+      tuesday: "",
+      wednesday: "",
+      thursday: "",
+      friday: "",
+      saturday: "",
+      sunday: ""
+    }
   })
 
   // Load saved profile data on component mount
@@ -106,7 +118,8 @@ export default function ProfilePage() {
         user={currentUser ? {
           name: currentUser.name,
           email: currentUser.email,
-          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+          avatar: profilePhoto || undefined
         } : undefined} 
       />
 
@@ -225,35 +238,84 @@ export default function ProfilePage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Contact Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+              {/* Studio Information */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Studio Information</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="studioName">Studio Name</Label>
                     {isEditing ? (
                       <Input
-                        id="email"
-                        value={profile.email}
-                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        id="studioName"
+                        value={profile.studioName}
+                        onChange={(e) => setProfile({ ...profile, studioName: e.target.value })}
+                        placeholder="Enter your studio name"
                       />
                     ) : (
-                      <span>{profile.email}</span>
+                      <span>{profile.studioName || "Not provided"}</span>
                     )}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Contact Information</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      {isEditing ? (
+                        <Input
+                          id="email"
+                          value={profile.email}
+                          onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        />
+                      ) : (
+                        <span>{profile.email}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      {isEditing ? (
+                        <Input
+                          id="phone"
+                          value={profile.phone}
+                          onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                        />
+                      ) : (
+                        <span>{profile.phone}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
                     {isEditing ? (
                       <Input
-                        id="phone"
-                        value={profile.phone}
-                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                        id="website"
+                        value={profile.website}
+                        onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                        placeholder="https://yourwebsite.com"
                       />
                     ) : (
-                      <span>{profile.phone}</span>
+                      <span>{profile.website || "Not provided"}</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">Instagram</Label>
+                    {isEditing ? (
+                      <Input
+                        id="instagram"
+                        value={profile.instagram}
+                        onChange={(e) => setProfile({ ...profile, instagram: e.target.value })}
+                        placeholder="@yourusername"
+                      />
+                    ) : (
+                      <span>{profile.instagram || "Not provided"}</span>
                     )}
                   </div>
                 </div>
@@ -358,10 +420,46 @@ export default function ProfilePage() {
                     value={profile.bio}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                     rows={3}
+                    placeholder="Tell clients about your experience, specialties, and what makes you unique..."
                   />
                 ) : (
-                  <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                  <p className="text-sm text-muted-foreground">{profile.bio || "No bio provided yet"}</p>
                 )}
+              </div>
+
+              {/* Business Hours */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Business Hours</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { key: 'monday', label: 'Monday' },
+                    { key: 'tuesday', label: 'Tuesday' },
+                    { key: 'wednesday', label: 'Wednesday' },
+                    { key: 'thursday', label: 'Thursday' },
+                    { key: 'friday', label: 'Friday' },
+                    { key: 'saturday', label: 'Saturday' },
+                    { key: 'sunday', label: 'Sunday' }
+                  ].map(({ key, label }) => (
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={key}>{label}</Label>
+                      {isEditing ? (
+                        <Input
+                          id={key}
+                          value={profile.businessHours[key as keyof typeof profile.businessHours]}
+                          onChange={(e) => setProfile({ 
+                            ...profile, 
+                            businessHours: { ...profile.businessHours, [key]: e.target.value }
+                          })}
+                          placeholder="9:00 AM - 6:00 PM"
+                        />
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          {profile.businessHours[key as keyof typeof profile.businessHours] || "Closed"}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Specialties */}

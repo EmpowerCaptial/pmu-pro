@@ -17,7 +17,8 @@ import {
   Palette,
   Eye,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -27,7 +28,14 @@ interface ArtistProfile {
   email: string
   avatar?: string
   bio?: string
+  studioName?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  address?: any
+  businessHours?: any
   specialties: string[]
+  experience?: string
   rating: number
   reviewCount: number
 }
@@ -137,7 +145,10 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
               {/* Artist Info */}
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{artist.name}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">{artist.name}</h1>
+                {artist.studioName && (
+                  <h2 className="text-xl text-lavender font-semibold mb-2">{artist.studioName}</h2>
+                )}
                 <p className="text-gray-600 mb-3">{artist.bio}</p>
                 
                 <div className="flex items-center gap-4 mb-3">
@@ -146,6 +157,37 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                     <span className="font-semibold">{artist.rating}</span>
                     <span className="text-gray-600">({artist.reviewCount} reviews)</span>
                   </div>
+                  {artist.experience && (
+                    <div className="text-sm text-gray-600">
+                      {artist.experience} experience
+                    </div>
+                  )}
+                </div>
+
+                {/* Contact Info */}
+                <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
+                  {artist.phone && (
+                    <div className="flex items-center gap-1">
+                      <Phone className="h-4 w-4" />
+                      <span>{artist.phone}</span>
+                    </div>
+                  )}
+                  {artist.website && (
+                    <div className="flex items-center gap-1">
+                      <Globe className="h-4 w-4" />
+                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline">
+                        Website
+                      </a>
+                    </div>
+                  )}
+                  {artist.instagram && (
+                    <div className="flex items-center gap-1">
+                      <Camera className="h-4 w-4" />
+                      <a href={`https://instagram.com/${artist.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline">
+                        {artist.instagram}
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">

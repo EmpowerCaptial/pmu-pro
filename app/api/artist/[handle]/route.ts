@@ -63,14 +63,35 @@ export async function GET(
       console.error('Error fetching services:', error)
     }
 
+    // Try to load profile data from localStorage (this is a demo approach)
+    // In production, you'd store this in the database
+    let profileData = null
+    try {
+      // This is a demo approach - in production, store profile data in database
+      const profileJson = localStorage?.getItem(`profile_${artist.email}`)
+      if (profileJson) {
+        profileData = JSON.parse(profileJson)
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error)
+    }
+
     return NextResponse.json({
       artist: {
         id: artist.id,
         name: artist.name,
         email: artist.email,
         handle: handle,
-        bio: 'Professional PMU artist', // You might want to add this to your User model
-        specialties: ['Microblading', 'Lip Blush', 'Eyeliner'], // You might want to add this to your User model
+        avatar: localStorage?.getItem(`profile_photo_${artist.email}`) || null,
+        bio: profileData?.bio || 'Professional PMU artist specializing in natural-looking permanent makeup',
+        studioName: profileData?.studioName || artist.name + "'s Studio",
+        phone: profileData?.phone || null,
+        website: profileData?.website || null,
+        instagram: profileData?.instagram || null,
+        address: profileData?.address || null,
+        businessHours: profileData?.businessHours || null,
+        specialties: profileData?.specialties || ['Microblading', 'Lip Blush', 'Eyeliner'],
+        experience: profileData?.experience || '5+ years',
         rating: 4.9, // You might want to add this to your User model
         reviewCount: 127 // You might want to add this to your User model
       },
