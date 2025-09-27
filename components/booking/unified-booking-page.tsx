@@ -85,8 +85,49 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
         }
 
         const data = await response.json()
-        setArtist(data.artist)
-        setPortfolio(data.portfolio)
+        let artistData = data.artist
+
+        // Load profile data from localStorage (client-side only)
+        if (typeof window !== 'undefined' && artistData.email) {
+          try {
+            // Load profile photo
+            const profilePhoto = localStorage.getItem(`profile_photo_${artistData.email}`)
+            if (profilePhoto) {
+              artistData.avatar = profilePhoto
+            }
+
+            // Load profile data
+            const profileJson = localStorage.getItem(`profile_${artistData.email}`)
+            if (profileJson) {
+              const profileData = JSON.parse(profileJson)
+              artistData = {
+                ...artistData,
+                bio: profileData.bio || artistData.bio,
+                studioName: profileData.studioName || artistData.studioName,
+                phone: profileData.phone || artistData.phone,
+                website: profileData.website || artistData.website,
+                instagram: profileData.instagram || artistData.instagram,
+                address: profileData.address || artistData.address,
+                businessHours: profileData.businessHours || artistData.businessHours,
+                specialties: profileData.specialties || artistData.specialties,
+                experience: profileData.experience || artistData.experience
+              }
+            }
+
+            // Load portfolio data
+            const portfolioJson = localStorage.getItem(`portfolio_${artistData.email}`)
+            if (portfolioJson) {
+              const portfolioData = JSON.parse(portfolioJson)
+              // Filter for public items only
+              const publicPortfolio = portfolioData.filter((item: any) => item.isPublic)
+              setPortfolio(publicPortfolio)
+            }
+          } catch (localStorageError) {
+            console.error('Error loading profile data from localStorage:', localStorageError)
+          }
+        }
+
+        setArtist(artistData)
         setServices(data.services)
 
       } catch (error) {
