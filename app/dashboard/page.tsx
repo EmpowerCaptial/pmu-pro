@@ -24,13 +24,22 @@ export default function DashboardPage() {
   const { currentUser, isLoading, isProductionUser, isDemoUser } = useDemoAuth()
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [hasApplication, setHasApplication] = useState(false)
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  
+  // Load avatar from localStorage after component mounts
+  useEffect(() => {
+    if (currentUser?.email && typeof window !== 'undefined') {
+      const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+      setUserAvatar(avatar || undefined)
+    }
+  }, [currentUser?.email])
   
   // Fallback user if not authenticated
   const user = currentUser ? {
     name: currentUser.name,
     email: currentUser.email,
     initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
-    avatar: localStorage.getItem(`profile_photo_${currentUser.email}`) || undefined
+    avatar: userAvatar
   } : {
     name: "PMU Artist",
     email: "artist@pmupro.com",

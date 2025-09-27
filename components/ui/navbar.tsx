@@ -83,6 +83,10 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     }
   }
 
+  const handleAvatarClick = () => {
+    console.log("Avatar clicked!", { user })
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-r from-lavender to-lavender-600 shadow-sm">
       <div className="container mx-auto px-4">
@@ -119,10 +123,15 @@ export function NavBar({ currentPath, user }: NavBarProps) {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <DropdownMenu>
+              <DropdownMenu onOpenChange={(open) => console.log('Dropdown menu open state:', open)}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0">
-                    <Avatar className="h-10 w-10 border-2 border-white/30">
+                  <Button 
+                    variant="ghost" 
+                    className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0 cursor-pointer"
+                    onClick={handleAvatarClick}
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-white/30 pointer-events-none">
                       {user.avatar ? (
                         <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
@@ -133,7 +142,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-lavender border-lavender-600" align="end" forceMount>
+                <DropdownMenuContent className="w-56 bg-lavender border-lavender-600 z-[60]" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-white">{user.name || "PMU Artist"}</p>
