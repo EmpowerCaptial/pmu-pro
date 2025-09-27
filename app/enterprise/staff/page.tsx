@@ -23,6 +23,8 @@ import {
   Trash2,
   MoreVertical
 } from 'lucide-react'
+import { PermissionManager } from '@/components/staff/permission-manager'
+import { StaffMember, StaffPermission, hasPermission, setStaffPermission } from '@/lib/staff-auth'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,6 +98,7 @@ export default function EnterpriseStaffPage() {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>(mockStaffMembers)
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddStaff, setShowAddStaff] = useState(false)
+  const [selectedStaffForPermissions, setSelectedStaffForPermissions] = useState<StaffMember | null>(null)
   const [newStaffMember, setNewStaffMember] = useState({
     name: '',
     email: '',
@@ -193,6 +196,15 @@ export default function EnterpriseStaffPage() {
 
   const handleEditStaff = (staffId: string) => {
     alert(`Edit staff member ${staffId} functionality would open here`)
+  }
+
+  const handlePermissionChange = (staffId: string, permission: StaffPermission) => {
+    setStaffMembers(prev => prev.map(staff => {
+      if (staff.id === staffId) {
+        return setStaffPermission(staff, permission.resource, permission.action, permission.granted, currentUser?.name || 'admin', permission.reason)
+      }
+      return staff
+    }))
   }
 
   const handleDeleteStaff = (staffId: string) => {
@@ -378,31 +390,97 @@ export default function EnterpriseStaffPage() {
           <TabsContent value="permissions" className="space-y-4 sm:space-y-6">
             <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
               <CardHeader className="p-3 sm:p-4">
-                <CardTitle className="text-lavender text-base sm:text-lg">Role Permissions</CardTitle>
-                <CardDescription className="text-sm sm:text-base">Configure what each role can access and modify</CardDescription>
+                <CardTitle className="text-lavender text-base sm:text-lg">Individual Staff Permissions</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Manage specific permissions for each staff member. Individual permissions override role-based defaults.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-3 sm:p-4">
-                <div className="space-y-4 sm:space-y-6">
-                  {['admin', 'manager', 'artist', 'receptionist'].map((role) => (
-                    <div key={role} className="p-3 sm:p-4 bg-white rounded-lg border border-gray-200">
-                      <h3 className="font-semibold text-base sm:text-lg text-ink mb-2 sm:mb-3 capitalize">{role} Permissions</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {[
-                          'Full Access',
-                          'User Management', 
-                          'Financial Reports',
-                          'Appointment Management',
-                          'Client Management',
-                          'Reports & Analytics',
-                          'Settings Configuration',
-                          'Staff Management',
-                          'Inventory Management'
-                        ].map((permission) => (
-                          <div key={permission} className="flex items-center space-x-2">
-                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                            <span className="text-xs sm:text-sm text-muted">{permission}</span>
+                <div className="space-y-6">
+                  {staffMembers.map((staff) => (
+                    <div key={staff.id} className="p-4 bg-white rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg">{staff.firstName} {staff.lastName}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {staff.email} • Role: {staff.role}
+                          </p>
+                        </div>
+                        <Badge variant={staff.isActive ? 'default' : 'secondary'}>
+                          {staff.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      
+                      {/* Quick Permission Summary */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-2xl font-bold text-green-600">
+                            {staff.customPermissions?.filter(p => p.granted).length || 0}
                           </div>
-                        ))}
+                          <div className="text-sm text-muted-foreground">Custom Permissions</div>
+                        </div>
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {staff.role === 'director' ? 'Full' : staff.role === 'manager' ? 'Enhanced' : 'Basic'}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Role Access</div>
+                        </div>
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-2xl font-bold text-purple-600">
+                            {staff.lastLogin ? new Date(staff.lastLogin).toLocaleDateString() : 'Never'}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Last Login</div>
+                        </div>
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {staff.customPermissions?.length || 0}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Overrides</div>
+                        </div>
+                      </div>
+
+                      {/* Permission Details */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Key Permissions</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {[
+                            { resource: 'users', action: 'delete', label: 'Delete Users' },
+                            { resource: 'staff', action: 'create', label: 'Create Staff' },
+                            { resource: 'system', action: 'configure', label: 'System Config' },
+                            { resource: 'billing', action: 'refund', label: 'Process Refunds' },
+                            { resource: 'reports', action: 'generate', label: 'Generate Reports' },
+                            { resource: 'activity_logs', action: 'export', label: 'Export Logs' }
+                          ].map(({ resource, action, label }) => {
+                            const hasAccess = hasPermission(staff, resource, action)
+                            return (
+                              <div key={`${resource}-${action}`} className="flex items-center justify-between p-2 border rounded">
+                                <span className="text-sm">{label}</span>
+                                <div className="flex items-center gap-2">
+                                  {hasAccess ? (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <XCircle className="h-4 w-4 text-red-500" />
+                                  )}
+                                  <Badge variant={hasAccess ? 'default' : 'secondary'} className="text-xs">
+                                    {hasAccess ? 'Allowed' : 'Denied'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Manage Permissions Button */}
+                      <div className="mt-4 pt-4 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedStaffForPermissions(staff)}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Manage Individual Permissions
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -527,6 +605,25 @@ export default function EnterpriseStaffPage() {
               Add Staff Member
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Permission Manager Dialog */}
+      <Dialog open={!!selectedStaffForPermissions} onOpenChange={() => setSelectedStaffForPermissions(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Individual Permissions</DialogTitle>
+            <DialogDescription>
+              Configure specific permissions for {selectedStaffForPermissions?.firstName} {selectedStaffForPermissions?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStaffForPermissions && currentUser && (
+            <PermissionManager
+              staffMember={selectedStaffForPermissions}
+              currentAdmin={currentUser as StaffMember}
+              onPermissionChange={handlePermissionChange}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

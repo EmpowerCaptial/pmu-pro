@@ -10,10 +10,20 @@ export interface StaffMember {
   isActive: boolean
   lastLogin?: Date
   permissions: Permission[]
+  customPermissions?: StaffPermission[] // Individual permissions that override role defaults
   createdAt: Date
   updatedAt: Date
   passwordSet: boolean
   temporaryPassword?: string
+}
+
+export interface StaffPermission {
+  resource: string
+  action: string
+  granted: boolean
+  grantedBy?: string // Admin who granted/revoked this permission
+  grantedAt?: string
+  reason?: string // Optional reason for granting/revoking
 }
 
 export type StaffRole = 'representative' | 'manager' | 'director'
@@ -123,12 +133,92 @@ export function hasPermission(
   resource: string,
   action: string
 ): boolean {
-  const permissions = staffMember.permissions
-  const permission = permissions.find(p => p.resource === resource)
+  // First check custom permissions (individual overrides)
+  if (staffMember.customPermissions) {
+    const customPermission = staffMember.customPermissions.find(
+      p => p.resource === resource && p.action === action
+    )
+    if (customPermission !== undefined) {
+      return customPermission.granted
+    }
+  }
+  
+  // Fall back to role-based permissions
+  const rolePermissions = ROLE_PERMISSIONS[staffMember.role]
+  const permission = rolePermissions.find(p => p.resource === resource)
   
   if (!permission) return false
   
   return permission.actions.includes(action) || permission.actions.includes('*')
+}
+
+// Grant or revoke individual permission for a staff member
+export function setStaffPermission(
+  staffMember: StaffMember,
+  resource: string,
+  action: string,
+  granted: boolean,
+  grantedBy: string,
+  reason?: string
+): StaffMember {
+  const customPermissions = staffMember.customPermissions || []
+  
+  // Remove existing permission for this resource/action
+  const filteredPermissions = customPermissions.filter(
+    p => !(p.resource === resource && p.action === action)
+  )
+  
+  // Add new permission
+  const newPermission: StaffPermission = {
+    resource,
+    action,
+    granted,
+    grantedBy,
+    grantedAt: new Date().toISOString(),
+    reason
+  }
+  
+  return {
+    ...staffMember,
+    customPermissions: [...filteredPermissions, newPermission]
+  }
+}
+
+// Get all permissions (role + custom) for a staff member
+export function getAllStaffPermissions(staffMember: StaffMember): StaffPermission[] {
+  const rolePermissions = ROLE_PERMISSIONS[staffMember.role]
+  const allPermissions: StaffPermission[] = []
+  
+  // Add role permissions as granted by default
+  rolePermissions.forEach(rolePerm => {
+    rolePerm.actions.forEach(action => {
+      allPermissions.push({
+        resource: rolePerm.resource,
+        action,
+        granted: true,
+        grantedBy: 'system',
+        grantedAt: staffMember.createdAt.toISOString(),
+        reason: `Default ${staffMember.role} role permission`
+      })
+    })
+  })
+  
+  // Override with custom permissions
+  if (staffMember.customPermissions) {
+    staffMember.customPermissions.forEach(customPerm => {
+      const existingIndex = allPermissions.findIndex(
+        p => p.resource === customPerm.resource && p.action === customPerm.action
+      )
+      
+      if (existingIndex >= 0) {
+        allPermissions[existingIndex] = customPerm
+      } else {
+        allPermissions.push(customPerm)
+      }
+    })
+  }
+  
+  return allPermissions
 }
 
 // Get all permissions for a role
