@@ -83,11 +83,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     }
   }
 
-  const handleAvatarClick = () => {
-    console.log("Avatar clicked!", { user })
-  }
 
-  const [showTestDropdown, setShowTestDropdown] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-r from-lavender to-lavender-600 shadow-sm">
@@ -124,26 +120,12 @@ export function NavBar({ currentPath, user }: NavBarProps) {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Test Button */}
-            <Button 
-              onClick={() => setShowTestDropdown(!showTestDropdown)}
-              className="bg-red-500 text-white"
-            >
-              Test Dropdown
-            </Button>
-            {showTestDropdown && (
-              <div className="absolute top-16 right-4 bg-red-500 text-white p-4 rounded shadow-lg z-[9999]">
-                Test dropdown is working!
-              </div>
-            )}
-            
             {user ? (
-              <DropdownMenu onOpenChange={(open) => console.log('Dropdown menu open state:', open)}>
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     className="relative h-10 w-10 rounded-full hover:bg-white/20 p-0 cursor-pointer"
-                    onClick={handleAvatarClick}
                     style={{ pointerEvents: 'auto' }}
                   >
                     <Avatar className="h-10 w-10 border-2 border-white/30 pointer-events-none">
