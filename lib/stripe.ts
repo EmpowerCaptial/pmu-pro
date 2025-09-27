@@ -55,7 +55,7 @@ export const SUBSCRIPTION_PLANS = {
   premium: {
     name: 'PMU Pro Premium',
     description: 'Complete PMU business solution',
-    price: 79,
+    price: 99,
     priceId: process.env.STRIPE_PREMIUM_PRICE_ID,
     features: [
       'Everything in Basic',

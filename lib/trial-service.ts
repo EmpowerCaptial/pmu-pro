@@ -22,7 +22,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'starter',
     name: 'Starter',
-    price: 29,
+    price: 10,
     maxClients: 50,
     description: 'Perfect for new PMU artists',
     features: [
@@ -55,7 +55,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'studio',
     name: 'Studio',
-    price: 79,
+    price: 99,
     maxClients: -1, // Unlimited
     description: 'For multi-artist studios',
     features: [

@@ -11,7 +11,7 @@ The payment system is failing because Stripe price IDs are not properly configur
 
 ### Basic Plan Product
 - **Name**: PMU Pro Basic
-- **Price**: $29/month
+- **Price**: $10/month
 - **Billing**: Recurring (monthly)
 - **Save the Price ID** (starts with `price_`)
 
