@@ -87,6 +87,8 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     console.log("Avatar clicked!", { user })
   }
 
+  const [showTestDropdown, setShowTestDropdown] = useState(false)
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-r from-lavender to-lavender-600 shadow-sm">
       <div className="container mx-auto px-4">
@@ -122,6 +124,19 @@ export function NavBar({ currentPath, user }: NavBarProps) {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Test Button */}
+            <Button 
+              onClick={() => setShowTestDropdown(!showTestDropdown)}
+              className="bg-red-500 text-white"
+            >
+              Test Dropdown
+            </Button>
+            {showTestDropdown && (
+              <div className="absolute top-16 right-4 bg-red-500 text-white p-4 rounded shadow-lg z-[9999]">
+                Test dropdown is working!
+              </div>
+            )}
+            
             {user ? (
               <DropdownMenu onOpenChange={(open) => console.log('Dropdown menu open state:', open)}>
                 <DropdownMenuTrigger asChild>
@@ -142,7 +157,19 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-lavender border-lavender-600 z-[60]" align="end" forceMount>
+                <DropdownMenuContent 
+                  className="w-56 bg-lavender border-lavender-600 z-[60] shadow-lg" 
+                  align="end"
+                  style={{ 
+                    zIndex: 9999,
+                    position: 'fixed',
+                    backgroundColor: '#8B5CF6',
+                    border: '1px solid #7C3AED',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                  }}
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-white">{user.name || "PMU Artist"}</p>
