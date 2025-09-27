@@ -57,18 +57,19 @@ export default function MobileNav() {
   useEffect(() => {
     setIsMounted(true)
     
-    // Handle scroll visibility
+    // Handle scroll visibility with improved logic
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const documentHeight = document.documentElement.scrollHeight
       const windowHeight = window.innerHeight
       const scrollPercentage = (currentScrollY + windowHeight) / documentHeight
       
-      // Hide navbar when scrolling down and not near bottom
-      if (currentScrollY > lastScrollY && currentScrollY > 100 && scrollPercentage < 0.95) {
+      // Hide navbar when scrolling down, not at top, and not near bottom
+      if (currentScrollY > lastScrollY && currentScrollY > 50 && scrollPercentage < 0.9) {
         setIsVisible(false)
-      } else {
-        // Show navbar when scrolling up or near bottom
+      } 
+      // Show navbar when scrolling up, at top, or near bottom
+      else if (currentScrollY < lastScrollY || currentScrollY <= 50 || scrollPercentage >= 0.9) {
         setIsVisible(true)
       }
       

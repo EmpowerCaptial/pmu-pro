@@ -126,10 +126,10 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-24 md:pb-0">
       {/* Mobile POS Interface */}
       {isMobileView ? (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-24">
           {/* Client Information Section */}
           <div className="bg-white p-3 sm:p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3 sm:gap-4">

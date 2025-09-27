@@ -92,7 +92,10 @@ export default function DashboardPage() {
 
           <NavBar currentPath="/dashboard" user={user} />
           <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
-            <OfflineIndicator />
+            {/* Only show offline indicator on desktop */}
+            <div className="hidden md:block">
+              <OfflineIndicator />
+            </div>
             <TrialBanner onUpgrade={() => window.location.href = '/pricing'} />
             {isDemoUser && <DemoBanner />}
             
@@ -175,9 +178,20 @@ export default function DashboardPage() {
               </DemoDataProvider>
             ) : (
               <>
-                <DashboardCards />
-                <div className="mt-6">
-                  <AppointmentDetailsCard />
+                {/* Mobile: Show appointments first, then dashboard cards (which includes messenger) */}
+                <div className="md:hidden">
+                  <div className="mb-6">
+                    <AppointmentDetailsCard />
+                  </div>
+                  <DashboardCards />
+                </div>
+                
+                {/* Desktop: Show dashboard cards first, then appointments */}
+                <div className="hidden md:block">
+                  <DashboardCards />
+                  <div className="mt-6">
+                    <AppointmentDetailsCard />
+                  </div>
                 </div>
               </>
             )}

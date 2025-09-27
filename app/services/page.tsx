@@ -174,7 +174,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 pb-24 md:pb-0">
       {/* Header (App Bar) */}
       <div className="flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4 bg-white border-b border-gray-200 shadow-sm">
         {/* Left: Back button */}
