@@ -110,30 +110,43 @@ export default function ServicesPage() {
   const handleSaveService = async () => {
     if (!currentUser?.email) return
 
-    if (editingService) {
-      // Update existing service
-      const updated = await updateService(currentUser.email, editingService.id, editingService)
-      if (updated) {
-        await loadServices() // Reload services from API
-        setEditingService(null)
-      }
-    } else if (isAddingNew) {
-      // Add new service
-      if (newService.name) {
-        const created = await createService(currentUser.email, newService as Omit<Service, 'id'>)
-        if (created) {
+    try {
+      if (editingService) {
+        // Update existing service
+        const updated = await updateService(currentUser.email, editingService.id, editingService)
+        if (updated) {
           await loadServices() // Reload services from API
-          setIsAddingNew(false)
-          setNewService({
-            name: '',
-            description: '',
-            defaultDuration: 60,
-            defaultPrice: 0,
-            category: 'other',
-            isActive: true
-          })
+          setEditingService(null)
+          alert('Service updated successfully!')
+        } else {
+          alert('Failed to update service. Please try again.')
+        }
+      } else if (isAddingNew) {
+        // Add new service
+        if (newService.name) {
+          const created = await createService(currentUser.email, newService as Omit<Service, 'id'>)
+          if (created) {
+            await loadServices() // Reload services from API
+            setIsAddingNew(false)
+            setNewService({
+              name: '',
+              description: '',
+              defaultDuration: 60,
+              defaultPrice: 0,
+              category: 'other',
+              isActive: true
+            })
+            alert('Service created successfully!')
+          } else {
+            alert('Failed to create service. Please try again.')
+          }
+        } else {
+          alert('Please enter a service name.')
         }
       }
+    } catch (error) {
+      console.error('Error in handleSaveService:', error)
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`)
     }
   }
 

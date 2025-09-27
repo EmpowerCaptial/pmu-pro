@@ -101,6 +101,8 @@ export async function getServices(userEmail: string): Promise<Service[]> {
 
 export async function createService(userEmail: string, service: Omit<Service, 'id'>): Promise<Service | null> {
   try {
+    console.log('Creating service with data:', { userEmail, service })
+    
     const response = await fetch('/api/services', {
       method: 'POST',
       headers: {
@@ -111,15 +113,20 @@ export async function createService(userEmail: string, service: Omit<Service, 'i
       body: JSON.stringify(service)
     })
 
+    console.log('Service creation response status:', response.status)
+    
     if (!response.ok) {
-      throw new Error(`Failed to create service: ${response.statusText}`)
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+      console.error('Service creation failed:', errorData)
+      throw new Error(`Failed to create service: ${errorData.error || response.statusText}`)
     }
 
     const data = await response.json()
+    console.log('Service created successfully:', data)
     return data.service
   } catch (error) {
     console.error('Error creating service:', error)
-    return null
+    throw error // Re-throw to let the UI handle it
   }
 }
 
