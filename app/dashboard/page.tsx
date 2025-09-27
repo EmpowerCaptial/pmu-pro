@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from "react"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
 import { AppointmentDetailsCard } from "@/components/dashboard/appointment-details-card"
 import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
+import { BlogSection } from "@/components/dashboard/blog-section"
 import { NavBar } from "@/components/ui/navbar"
 import { Button } from "@/components/ui/button"
 import { Home, Download, Smartphone } from "lucide-react"
@@ -199,6 +200,11 @@ export default function DashboardPage() {
                 </div>
               </>
             )}
+            
+            {/* Blog Section - Always visible at the end */}
+            <div className="mt-8">
+              <BlogSection />
+            </div>
           </main>
           <InstallPrompt />
         </div>
