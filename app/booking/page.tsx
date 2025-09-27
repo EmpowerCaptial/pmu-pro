@@ -558,7 +558,12 @@ export default function BookingCalendar() {
                         }`}
                         onClick={() => handleDateClick(day)}
                       >
-                        <div className="text-xs sm:text-sm font-medium mb-1">{day}</div>
+                        <div className="relative">
+                          <div className="text-xs sm:text-sm font-medium mb-1">{day}</div>
+                          {dayAppointments.length > 0 && (
+                            <div className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-teal-400 rounded-full border border-white shadow-sm"></div>
+                          )}
+                        </div>
                         {dayAppointments.length > 0 && (
                           <div className="space-y-1">
                             {dayAppointments.slice(0, 2).map(apt => {
