@@ -624,10 +624,23 @@ export default function EnterpriseStaffPage() {
               Configure specific permissions for {selectedStaffForPermissions?.firstName} {selectedStaffForPermissions?.lastName}
             </DialogDescription>
           </DialogHeader>
-          {selectedStaffForPermissions && currentUser && (
+          {selectedStaffForPermissions && (
             <PermissionManager
               staffMember={selectedStaffForPermissions}
-              currentAdmin={currentUser as StaffMemberType}
+              currentAdmin={{
+                id: 'admin-1',
+                username: 'admin',
+                email: 'admin@pmupro.com',
+                firstName: 'Admin',
+                lastName: 'User',
+                role: 'director',
+                isActive: true,
+                permissions: [],
+                customPermissions: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                passwordSet: true
+              }}
               onPermissionChange={handlePermissionChange}
             />
           )}
