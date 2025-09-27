@@ -24,7 +24,7 @@ import {
   MoreVertical
 } from 'lucide-react'
 import { PermissionManager } from '@/components/staff/permission-manager'
-import { StaffMember, StaffPermission, hasPermission, setStaffPermission } from '@/lib/staff-auth'
+import { StaffMember as StaffMemberType, StaffPermission, hasPermission, setStaffPermission } from '@/lib/staff-auth'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,69 +36,76 @@ import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 type StaffRole = 'admin' | 'manager' | 'staff' | 'viewer'
 
-interface StaffMember {
-  id: string
-  name: string
-  email: string
-  role: StaffRole
-  status: 'active' | 'inactive' | 'pending'
-  lastActive: string
-  permissions: string[]
-  joinDate: string
-  department?: string
-  phone?: string
-}
-
-const mockStaffMembers: StaffMember[] = [
+const mockStaffMembers: StaffMemberType[] = [
   {
     id: '1',
-    name: 'Sarah Johnson',
+    username: 'sarah@pmupro.com',
     email: 'sarah@pmupro.com',
-    role: 'admin',
-    status: 'active',
-    lastActive: '2024-01-20T10:30:00Z',
-    permissions: ['full_access', 'user_management', 'financial_reports'],
-    joinDate: '2023-06-15T00:00:00Z'
+    firstName: 'Sarah',
+    lastName: 'Johnson',
+    role: 'director',
+    isActive: true,
+    lastLogin: new Date('2024-01-20T10:30:00Z'),
+    permissions: [],
+    customPermissions: [],
+    createdAt: new Date('2023-06-15T00:00:00Z'),
+    updatedAt: new Date(),
+    passwordSet: true
   },
   {
     id: '2',
-    name: 'Mike Chen',
+    username: 'mike@pmupro.com',
     email: 'mike@pmupro.com',
+    firstName: 'Mike',
+    lastName: 'Chen',
     role: 'manager',
-    status: 'active',
-    lastActive: '2024-01-20T09:15:00Z',
-    permissions: ['appointment_management', 'client_management', 'reports'],
-    joinDate: '2023-08-20T00:00:00Z'
+    isActive: true,
+    lastLogin: new Date('2024-01-20T09:15:00Z'),
+    permissions: [],
+    customPermissions: [],
+    createdAt: new Date('2023-08-20T00:00:00Z'),
+    updatedAt: new Date(),
+    passwordSet: true
   },
   {
     id: '3',
-    name: 'Emma Rodriguez',
+    username: 'emma@pmupro.com',
     email: 'emma@pmupro.com',
-    role: 'staff',
-    status: 'active',
-    lastActive: '2024-01-19T16:45:00Z',
-    permissions: ['appointment_management', 'client_notes'],
-    joinDate: '2023-11-10T00:00:00Z'
+    firstName: 'Emma',
+    lastName: 'Rodriguez',
+    role: 'representative',
+    isActive: true,
+    lastLogin: new Date('2024-01-19T16:45:00Z'),
+    permissions: [],
+    customPermissions: [],
+    createdAt: new Date('2023-11-10T00:00:00Z'),
+    updatedAt: new Date(),
+    passwordSet: true
   },
   {
     id: '4',
-    name: 'Lisa Park',
+    username: 'lisa@pmupro.com',
     email: 'lisa@pmupro.com',
-    role: 'staff',
-    status: 'pending',
-    lastActive: '2024-01-18T14:20:00Z',
-    permissions: ['appointment_scheduling', 'client_checkin'],
-    joinDate: '2024-01-15T00:00:00Z'
+    firstName: 'Lisa',
+    lastName: 'Park',
+    role: 'representative',
+    isActive: false,
+    lastLogin: new Date('2024-01-18T14:20:00Z'),
+    permissions: [],
+    customPermissions: [],
+    createdAt: new Date('2024-01-15T00:00:00Z'),
+    updatedAt: new Date(),
+    passwordSet: false
   }
 ]
 
 export default function EnterpriseStaffPage() {
   const { currentUser } = useDemoAuth()
   const router = useRouter()
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(mockStaffMembers)
+  const [staffMembers, setStaffMembers] = useState<StaffMemberType[]>(mockStaffMembers)
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddStaff, setShowAddStaff] = useState(false)
-  const [selectedStaffForPermissions, setSelectedStaffForPermissions] = useState<StaffMember | null>(null)
+  const [selectedStaffForPermissions, setSelectedStaffForPermissions] = useState<StaffMemberType | null>(null)
   const [newStaffMember, setNewStaffMember] = useState({
     name: '',
     email: '',
@@ -120,13 +127,11 @@ export default function EnterpriseStaffPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin':
+      case 'director':
         return 'bg-red-100 text-red-800'
       case 'manager':
         return 'bg-blue-100 text-blue-800'
-      case 'artist':
-        return 'bg-purple-100 text-purple-800'
-      case 'receptionist':
+      case 'representative':
         return 'bg-green-100 text-green-800'
       default:
         return 'bg-gray-100 text-gray-800'
@@ -169,17 +174,19 @@ export default function EnterpriseStaffPage() {
       return
     }
 
-    const staffMember: StaffMember = {
+    const staffMember: StaffMemberType = {
       id: `staff-${Date.now()}`,
-      name: newStaffMember.name,
+      username: newStaffMember.email,
       email: newStaffMember.email,
-      role: newStaffMember.role,
-      department: newStaffMember.department,
-      phone: newStaffMember.phone,
-      status: 'active',
-      permissions: ['basic_access'], // Default permissions
-      lastActive: new Date().toISOString(),
-      joinDate: new Date().toISOString()
+      firstName: newStaffMember.name.split(' ')[0],
+      lastName: newStaffMember.name.split(' ').slice(1).join(' '),
+      role: 'representative', // Default to representative role
+      isActive: true,
+      permissions: [],
+      customPermissions: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      passwordSet: false
     }
 
     setStaffMembers([...staffMembers, staffMember])
@@ -255,7 +262,7 @@ export default function EnterpriseStaffPage() {
                 <div>
                   <p className="text-xs sm:text-sm font-medium text-muted">Active</p>
                   <p className="text-xl sm:text-2xl font-bold text-green-600">
-                    {staffMembers.filter(m => m.status === 'active').length}
+                    {staffMembers.filter(m => m.isActive).length}
                   </p>
                 </div>
                 <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
@@ -269,7 +276,7 @@ export default function EnterpriseStaffPage() {
                 <div>
                   <p className="text-xs sm:text-sm font-medium text-muted">Pending</p>
                   <p className="text-xl sm:text-2xl font-bold text-yellow-600">
-                    {staffMembers.filter(m => m.status === 'pending').length}
+                    {staffMembers.filter(m => !m.passwordSet).length}
                   </p>
                 </div>
                 <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
@@ -329,26 +336,26 @@ export default function EnterpriseStaffPage() {
                       <div className="flex items-center space-x-3 sm:space-x-4">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
                           <span className="text-white font-semibold text-sm sm:text-base">
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                            {member.firstName[0]}{member.lastName[0]}
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-ink text-sm sm:text-base truncate">{member.name}</h3>
+                          <h3 className="font-semibold text-ink text-sm sm:text-base truncate">{member.firstName} {member.lastName}</h3>
                           <p className="text-xs sm:text-sm text-muted truncate">{member.email}</p>
                           <div className="flex items-center space-x-2 mt-1 flex-wrap">
                             <Badge className={`${getRoleColor(member.role)} text-xs sm:text-sm`}>
                               {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                             </Badge>
-                            <Badge className={`${getStatusColor(member.status)} text-xs sm:text-sm`}>
-                              {getStatusIcon(member.status)}
-                              <span className="ml-1">{member.status.charAt(0).toUpperCase() + member.status.slice(1)}</span>
+                            <Badge className={`${member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} text-xs sm:text-sm`}>
+                              {member.isActive ? <CheckCircle className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                              <span>{member.isActive ? 'Active' : 'Inactive'}</span>
                             </Badge>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end space-x-2">
                         <span className="text-xs sm:text-sm text-muted">
-                          Last active: {new Date(member.lastActive).toLocaleDateString()}
+                          Last active: {member.lastLogin ? new Date(member.lastLogin).toLocaleDateString() : 'Never'}
                         </span>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -620,7 +627,7 @@ export default function EnterpriseStaffPage() {
           {selectedStaffForPermissions && currentUser && (
             <PermissionManager
               staffMember={selectedStaffForPermissions}
-              currentAdmin={currentUser as StaffMember}
+              currentAdmin={currentUser as StaffMemberType}
               onPermissionChange={handlePermissionChange}
             />
           )}
