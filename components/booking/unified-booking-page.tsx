@@ -18,7 +18,11 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  Globe
+  Globe,
+  ShoppingCart,
+  Package,
+  Plus,
+  Minus
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Input } from '@/components/ui/input'
@@ -67,6 +71,17 @@ interface Service {
   imageUrl?: string
 }
 
+interface Product {
+  id: string
+  name: string
+  description?: string
+  price: number
+  category?: string
+  images: string[]
+  isDigital: boolean
+  stockQuantity: number
+}
+
 interface UnifiedBookingPageProps {
   artistHandle: string
 }
@@ -75,9 +90,12 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
   const [artist, setArtist] = useState<ArtistProfile | null>(null)
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [activeTab, setActiveTab] = useState('portfolio')
+  const [cart, setCart] = useState<{[key: string]: number}>({})
+  const [showCart, setShowCart] = useState(false)
 
   // Load artist data, portfolio, and services
   useEffect(() => {
@@ -134,6 +152,17 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
         setArtist(artistData)
         setServices(data.services)
+
+        // Load products
+        try {
+          const productsResponse = await fetch(`/api/artist/${artistHandle}/products`)
+          if (productsResponse.ok) {
+            const productsData = await productsResponse.json()
+            setProducts(productsData.products || [])
+          }
+        } catch (error) {
+          console.error('Error loading products:', error)
+        }
 
       } catch (error) {
         console.error('Error loading artist data:', error)
@@ -262,7 +291,7 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 bg-white/90 backdrop-blur-sm border-lavender/20 h-auto">
+          <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6 bg-white/90 backdrop-blur-sm border-lavender/20 h-auto">
             <TabsTrigger value="portfolio" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
               <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Portfolio</span>
@@ -270,8 +299,13 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
             </TabsTrigger>
             <TabsTrigger value="services" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
               <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Services & Pricing</span>
+              <span className="hidden sm:inline">Services</span>
               <span className="sm:hidden">Services</span>
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
+              <Package className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Products</span>
+              <span className="sm:hidden">Shop</span>
             </TabsTrigger>
             <TabsTrigger value="booking" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-3 px-1 sm:px-2 text-xs sm:text-sm">
               <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -359,6 +393,130 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Products Tab */}
+          <TabsContent value="products">
+            {products.length === 0 ? (
+              <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
+                <CardContent className="text-center py-12">
+                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No products available</h3>
+                  <p className="text-gray-600">This artist hasn't added any products yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {/* Shopping Cart Summary */}
+                {Object.keys(cart).length > 0 && (
+                  <Card className="bg-lavender/10 border-lavender/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ShoppingCart className="h-5 w-5 text-lavender" />
+                          <span className="font-semibold">Cart ({Object.values(cart).reduce((a, b) => a + b, 0)} items)</span>
+                        </div>
+                        <Button 
+                          onClick={() => setShowCart(true)}
+                          size="sm"
+                          className="bg-lavender hover:bg-lavender-600 text-white"
+                        >
+                          View Cart
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Products Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {products.map((product) => {
+                    const cartQuantity = cart[product.id] || 0
+                    const isOutOfStock = !product.isDigital && product.stockQuantity === 0
+                    
+                    return (
+                      <Card key={product.id} className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg hover:shadow-xl transition-shadow">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <span className="break-words">{product.name}</span>
+                            {product.category && (
+                              <Badge variant="secondary" className="bg-lavender/20 text-lavender text-xs self-start sm:self-auto">
+                                {product.category}
+                              </Badge>
+                            )}
+                          </CardTitle>
+                          {product.description && (
+                            <p className="text-sm text-gray-600 break-words">{product.description}</p>
+                          )}
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-gray-500" />
+                              <span className="font-semibold text-lg text-gray-900">${product.price}</span>
+                            </div>
+                            {isOutOfStock && (
+                              <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
+                            )}
+                          </div>
+                          
+                          {/* Quantity Controls */}
+                          {!isOutOfStock && (
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setCart(prev => ({
+                                    ...prev,
+                                    [product.id]: Math.max(0, (prev[product.id] || 0) - 1)
+                                  }))}
+                                  disabled={cartQuantity === 0}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center font-medium">{cartQuantity}</span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setCart(prev => ({
+                                    ...prev,
+                                    [product.id]: (prev[product.id] || 0) + 1
+                                  }))}
+                                  disabled={!product.isDigital && cartQuantity >= product.stockQuantity}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              
+                              <Button
+                                size="sm"
+                                onClick={() => setCart(prev => ({
+                                  ...prev,
+                                  [product.id]: (prev[product.id] || 0) + 1
+                                }))}
+                                disabled={!product.isDigital && product.stockQuantity === 0}
+                                className="bg-lavender hover:bg-lavender-600 text-white"
+                              >
+                                Add to Cart
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {!product.isDigital && product.stockQuantity > 0 && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              {product.stockQuantity} in stock
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Booking Tab */}
