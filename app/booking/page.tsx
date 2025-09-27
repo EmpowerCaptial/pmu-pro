@@ -29,6 +29,7 @@ import { getActiveServices, getServiceById } from '@/lib/services-config'
 import { AuthService } from '@/lib/auth'
 import { TimeBlockManager } from '@/components/booking/TimeBlockManager'
 import { TimeBlock } from '@/lib/time-blocks'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 interface Appointment {
   id: string
@@ -44,51 +45,15 @@ interface Appointment {
   notes?: string
 }
 
-const mockAppointments: Appointment[] = [
-  {
-    id: '1',
-    clientName: 'Sarah Johnson',
-    clientEmail: 'sarah@email.com',
-    clientPhone: '(555) 123-4567',
-    service: 'Eyebrow Microblading',
-    date: '2024-01-15',
-    time: '10:00',
-    duration: 120,
-    price: 350,
-    status: 'scheduled',
-    notes: 'First time client'
-  },
-  {
-    id: '2',
-    clientName: 'Emily Davis',
-    clientEmail: 'emily@email.com',
-    clientPhone: '(555) 987-6543',
-    service: 'Lip Blush',
-    date: '2024-01-15',
-    time: '14:00',
-    duration: 90,
-    price: 400,
-    status: 'scheduled'
-  },
-  {
-    id: '3',
-    clientName: 'Jessica Brown',
-    clientEmail: 'jessica@email.com',
-    clientPhone: '(555) 456-7890',
-    service: 'Eyeliner',
-    date: '2024-01-16',
-    time: '11:00',
-    duration: 60,
-    price: 300,
-    status: 'completed'
-  }
-]
+// Mock appointments removed - now using database API
 
 export default function BookingCalendar() {
   const router = useRouter()
+  const { currentUser } = useDemoAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
   
   // New Appointment Modal States
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false)
@@ -114,29 +79,58 @@ export default function BookingCalendar() {
     paymentMethod: 'online' // 'online' or 'in-person'
   })
 
-  // Load clients and appointments on component mount
+  // Load clients and appointments from database
   useEffect(() => {
     const loadedClients = getClients()
     setClients(loadedClients)
     
-    // Load appointments from localStorage
-    const savedAppointments = localStorage.getItem('pmu_appointments')
-    if (savedAppointments) {
-      try {
-        const parsedAppointments = JSON.parse(savedAppointments)
-        setAppointments(parsedAppointments)
-      } catch (error) {
-        console.error('Error loading appointments:', error)
-      }
+    if (currentUser?.email) {
+      loadAppointments()
     }
-  }, [])
+  }, [currentUser])
 
-  // Save appointments to localStorage whenever appointments change
-  useEffect(() => {
-    if (appointments.length > 0) {
-      localStorage.setItem('pmu_appointments', JSON.stringify(appointments))
+  // Load appointments from database API
+  const loadAppointments = async () => {
+    if (!currentUser?.email) return
+    
+    try {
+      setLoading(true)
+      const response = await fetch('/api/appointments', {
+        headers: {
+          'x-user-email': currentUser.email,
+          'Accept': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Convert database appointments to booking page format
+        const formattedAppointments = data.appointments?.map((apt: any) => ({
+          id: apt.id,
+          clientName: apt.clientName,
+          clientEmail: apt.clientEmail,
+          clientPhone: '', // Not available in current API response
+          service: apt.service,
+          date: apt.date,
+          time: apt.time,
+          duration: apt.duration,
+          price: apt.price,
+          status: apt.status === 'scheduled' ? 'scheduled' : apt.status === 'completed' ? 'completed' : 'scheduled',
+          notes: ''
+        })) || []
+        
+        setAppointments(formattedAppointments)
+      } else {
+        console.error('Failed to load appointments:', response.statusText)
+        setAppointments([])
+      }
+    } catch (error) {
+      console.error('Error loading appointments:', error)
+      setAppointments([])
+    } finally {
+      setLoading(false)
     }
-  }, [appointments])
+  }
 
   // Filter clients based on search term
   const filteredClients = clients.filter(client =>
@@ -246,133 +240,114 @@ export default function BookingCalendar() {
     const finalDuration = appointmentData.duration || selectedService?.defaultDuration || 60
     const finalPrice = appointmentData.price || selectedService?.defaultPrice || 0
 
-    // Create appointment
-    const newAppointment: Appointment = {
-      id: Date.now().toString(),
-      clientName: client.name,
-      clientEmail: client.email || '',
-      clientPhone: client.phone || '',
-      service: appointmentData.service,
-      date: selectedDate,
-      time: appointmentData.time,
-      duration: finalDuration,
-      price: finalPrice,
-      status: 'scheduled',
-      notes: appointmentData.notes
-    }
+    // Create appointment in database
+    try {
+      const appointmentResponse = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          clientName: client.name,
+          clientEmail: client.email || '',
+          clientPhone: client.phone || '',
+          service: appointmentData.service,
+          date: selectedDate,
+          time: appointmentData.time,
+          duration: finalDuration,
+          price: finalPrice,
+          deposit: Math.round(finalPrice * 0.3), // 30% deposit
+          status: 'scheduled',
+          notes: appointmentData.notes
+        })
+      })
 
-    // Add procedure to client record
-    addClientProcedure(client.id, {
-      type: appointmentData.service,
-      description: `${appointmentData.service} appointment`,
-      cost: appointmentData.price,
-      status: 'scheduled',
-      notes: appointmentData.notes
-    })
+      if (appointmentResponse.ok) {
+        const createdAppointment = await appointmentResponse.json()
+        
+        // Create appointment object for local state
+        const newAppointment: Appointment = {
+          id: createdAppointment.id,
+          clientName: client.name,
+          clientEmail: client.email || '',
+          clientPhone: client.phone || '',
+          service: appointmentData.service,
+          date: selectedDate,
+          time: appointmentData.time,
+          duration: finalDuration,
+          price: finalPrice,
+          status: 'scheduled',
+          notes: appointmentData.notes
+        }
 
-    // Save appointment to state
-    setAppointments([...appointments, newAppointment])
-    
+        // Add procedure to client record
+        addClientProcedure(client.id, {
+          type: appointmentData.service,
+          description: `${appointmentData.service} appointment`,
+          cost: appointmentData.price,
+          status: 'scheduled',
+          notes: appointmentData.notes
+        })
+
+        // Update local state
+        setAppointments([...appointments, newAppointment])
+        
+        console.log('✅ Appointment created successfully in database')
+
         // Generate deposit payment link if payment is not in person
         if (appointmentData.paymentMethod !== 'in-person' && finalPrice > 0) {
           try {
             console.log('🔍 Attempting to create deposit payment...');
             
-            // Check for both demo user and real user authentication
-            const demoUser = localStorage.getItem('demoUser');
-            const authToken = localStorage.getItem('authToken');
-            
-            console.log('🔑 Demo user found:', demoUser ? 'Yes' : 'No');
-            console.log('🔑 Auth token found:', authToken ? 'Yes' : 'No');
-            
             const depositAmount = Math.round(finalPrice * 0.3); // 30% deposit
             console.log('💰 Deposit amount:', depositAmount, 'Total amount:', finalPrice);
             console.log('👤 Client ID:', client.id, 'Client email:', client.email);
 
-            if (authToken) {
-              // Real user with JWT token - use the full deposit payment API
-              console.log('👤 Real user detected - using full deposit payment API...');
-              
-              const depositResponse = await fetch('/api/deposit-payments', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${authToken}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  clientId: client.id,
-                  amount: depositAmount,
-                  totalAmount: finalPrice,
-                  currency: 'USD',
-                  notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
-                })
-              });
-
-              console.log('📡 Deposit API response status:', depositResponse.status);
-              
-              if (depositResponse.ok) {
-                const depositData = await depositResponse.json();
-                console.log('✅ Deposit payment created successfully:', depositData);
-                alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
-              } else {
-                const errorData = await depositResponse.json();
-                console.error('❌ Failed to create deposit payment:', errorData);
-                alert(`Appointment created, but deposit email failed: ${errorData.error || 'Unknown error'}`);
-              }
-            } else if (demoUser) {
-              // Demo user - send email directly
-              console.log('👤 Demo user detected - sending email directly...');
-              
-              const user = JSON.parse(demoUser);
-              console.log('👤 User:', user.email, 'Type:', localStorage.getItem('userType'));
-              
-              // Create a mock deposit payment object
-              const mockDepositPayment = {
-                id: `deposit_${Date.now()}`,
+            // Use the appointment ID from the database response
+            const depositResponse = await fetch('/api/deposit-payments', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-user-email': currentUser?.email || ''
+              },
+              body: JSON.stringify({
+                clientId: client.id,
+                appointmentId: createdAppointment.id,
                 amount: depositAmount,
                 totalAmount: finalPrice,
                 currency: 'USD',
-                depositLink: `demo_${Date.now()}`,
-                createdAt: new Date(),
-                updatedAt: new Date()
-              };
-              
-              // Send email directly using the email service
-              const depositLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/deposit/${mockDepositPayment.depositLink}`;
-              
-              try {
-                const emailResponse = await fetch('/api/test-email', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    to: client.email,
-                    subject: `Deposit Payment Required - ${appointmentData.service} Appointment`,
-                    message: `Hello ${client.name},\n\nYour appointment for ${appointmentData.service} on ${selectedDate} at ${appointmentData.time} has been scheduled.\n\nDeposit Required: $${depositAmount}\nTotal Amount: $${finalPrice}\nRemaining Due: $${finalPrice - depositAmount}\n\nPlease complete your deposit payment: ${depositLink}\n\nThank you!`
-                  })
-                });
-                
-                if (emailResponse.ok) {
-                  console.log('✅ Deposit email sent successfully');
-                  alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
-                } else {
-                  console.error('❌ Failed to send deposit email');
-                  alert('Appointment created, but deposit email failed to send.');
-                }
-              } catch (emailError) {
-                console.error('❌ Error sending deposit email:', emailError);
-                alert('Appointment created, but deposit email failed to send.');
-              }
+                notes: `Deposit for ${appointmentData.service} appointment on ${selectedDate} at ${appointmentData.time}`
+              })
+            });
+
+            console.log('📡 Deposit API response status:', depositResponse.status);
+            
+            if (depositResponse.ok) {
+              const depositData = await depositResponse.json();
+              console.log('✅ Deposit payment created successfully:', depositData);
+              alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
             } else {
-              console.error('❌ No authentication found');
-              alert('Appointment created, but deposit email failed: Please log in first.');
+              const errorData = await depositResponse.json();
+              console.error('❌ Failed to create deposit payment:', errorData);
+              alert(`Appointment created, but deposit email failed: ${errorData.error || 'Unknown error'}`);
             }
           } catch (error) {
             console.error('❌ Error creating deposit payment:', error);
             alert(`Appointment created, but deposit email failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
+      } else {
+        const error = await appointmentResponse.json()
+        console.error('❌ Failed to create appointment:', error)
+        alert('Failed to create appointment. Please try again.')
+        return
+      }
+    } catch (error) {
+      console.error('❌ Error creating appointment:', error)
+      alert('Error creating appointment. Please try again.')
+      return
+    }
     
     // Reset form
     setShowNewAppointmentModal(false)
@@ -449,6 +424,18 @@ export default function BookingCalendar() {
 
   const days = getDaysInMonth(currentDate)
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
+
+  // Show loading state while fetching appointments
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
