@@ -530,14 +530,14 @@ export default function EnterpriseStaffPage() {
 
       {/* Add Staff Dialog */}
       <Dialog open={showAddStaff} onOpenChange={setShowAddStaff}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="p-4 sm:p-6 pb-4">
-            <DialogTitle className="text-base sm:text-lg">Add New Staff Member</DialogTitle>
-            <DialogDescription className="text-sm sm:text-base">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-2 border-gray-200 shadow-xl">
+          <DialogHeader className="p-4 sm:p-6 pb-4 bg-gray-50 rounded-t-lg -m-6 mb-4">
+            <DialogTitle className="text-base sm:text-lg text-gray-900">Add New Staff Member</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base text-gray-600">
               Add a new team member to your enterprise account
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+          <div className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 bg-white">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm sm:text-base">Full Name *</Label>
               <Input
@@ -568,11 +568,11 @@ export default function EnterpriseStaffPage() {
                 <SelectTrigger className="h-9 sm:h-10">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
+                <SelectContent className="bg-white border-gray-200 shadow-lg">
+                  <SelectItem value="admin" className="hover:bg-gray-50 focus:bg-gray-50">Administrator</SelectItem>
+                  <SelectItem value="manager" className="hover:bg-gray-50 focus:bg-gray-50">Manager</SelectItem>
+                  <SelectItem value="staff" className="hover:bg-gray-50 focus:bg-gray-50">Staff</SelectItem>
+                  <SelectItem value="viewer" className="hover:bg-gray-50 focus:bg-gray-50">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -597,11 +597,11 @@ export default function EnterpriseStaffPage() {
               />
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 px-4 sm:px-6 bg-gray-50 -m-6 mt-4 p-4 rounded-b-lg">
             <Button 
               variant="outline" 
               onClick={() => setShowAddStaff(false)}
-              className="w-full sm:w-auto text-sm sm:text-base"
+              className="w-full sm:w-auto text-sm sm:text-base bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </Button>
@@ -617,10 +617,10 @@ export default function EnterpriseStaffPage() {
 
       {/* Permission Manager Dialog */}
       <Dialog open={!!selectedStaffForPermissions} onOpenChange={() => setSelectedStaffForPermissions(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Manage Individual Permissions</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-2 border-gray-200 shadow-xl">
+          <DialogHeader className="bg-gray-50 p-6 rounded-t-lg -m-6 mb-4">
+            <DialogTitle className="text-lg font-semibold text-gray-900">Manage Individual Permissions</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Configure specific permissions for {selectedStaffForPermissions?.firstName} {selectedStaffForPermissions?.lastName}
             </DialogDescription>
           </DialogHeader>

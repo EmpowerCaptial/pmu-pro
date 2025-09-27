@@ -244,6 +244,7 @@ export function PermissionManager({ staffMember, currentAdmin, onPermissionChang
                             checked={isGranted}
                             onCheckedChange={() => handlePermissionToggle(resourceGroup.resource, action, isGranted)}
                             disabled={currentAdmin.role !== 'director'}
+                            className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
                           />
                         </div>
                       </div>
@@ -257,36 +258,44 @@ export function PermissionManager({ staffMember, currentAdmin, onPermissionChang
       </Card>
 
       <Dialog open={showReasonDialog} onOpenChange={setShowReasonDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="bg-white border-2 border-gray-200 shadow-xl">
+          <DialogHeader className="bg-gray-50 p-4 rounded-t-lg -m-6 mb-4">
+            <DialogTitle className="text-lg font-semibold text-gray-900">
               {grantPermission ? 'Grant' : 'Revoke'} Permission
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600">
               {selectedPermission && (
                 <>
                   {grantPermission ? 'Granting' : 'Revoking'} access to{' '}
-                  <strong>{selectedPermission.action}</strong> on{' '}
-                  <strong>{selectedPermission.resource}</strong> for {staffMember.firstName} {staffMember.lastName}
+                  <strong className="text-blue-600">{selectedPermission.action}</strong> on{' '}
+                  <strong className="text-blue-600">{selectedPermission.resource}</strong> for {staffMember.firstName} {staffMember.lastName}
                 </>
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 bg-white">
             <div>
-              <Label htmlFor="reason">Reason (Optional)</Label>
+              <Label htmlFor="reason" className="text-sm font-medium text-gray-700">Reason (Optional)</Label>
               <Textarea
                 id="reason"
                 placeholder="Enter reason for this permission change..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
+                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowReasonDialog(false)}>
+            <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowReasonDialog(false)}
+                className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Cancel
               </Button>
-              <Button onClick={confirmPermissionChange}>
+              <Button 
+                onClick={confirmPermissionChange}
+                className={`${grantPermission ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+              >
                 {grantPermission ? 'Grant' : 'Revoke'} Permission
               </Button>
             </div>
