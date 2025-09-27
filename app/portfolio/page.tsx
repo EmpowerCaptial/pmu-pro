@@ -17,7 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Send, Eye, Trash2, Plus, Share, Camera } from "lucide-react"
+import { Send, Eye, Trash2, Plus, Share, Camera, Globe, Lock } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 interface PortfolioItem {
@@ -28,6 +29,7 @@ interface PortfolioItem {
   beforeImage: string
   afterImage: string
   date: string
+  isPublic: boolean // New field for public/private toggle
 }
 
 export default function PortfolioPage() {
@@ -77,6 +79,7 @@ export default function PortfolioPage() {
       beforeImage: URL.createObjectURL(newWork.beforeImage),
       afterImage: URL.createObjectURL(newWork.afterImage),
       date: new Date().toISOString().split("T")[0],
+      isPublic: true, // Default to public for new items
     }
 
     const updatedItems = [newItem, ...portfolioItems]
@@ -99,6 +102,18 @@ export default function PortfolioPage() {
 
   const handleDeleteWork = (itemId: string) => {
     const updatedItems = portfolioItems.filter(item => item.id !== itemId)
+    setPortfolioItems(updatedItems)
+    
+    // Save to localStorage
+    if (currentUser) {
+      localStorage.setItem(`portfolio_${currentUser.email}`, JSON.stringify(updatedItems))
+    }
+  }
+
+  const togglePublicStatus = (itemId: string) => {
+    const updatedItems = portfolioItems.map(item => 
+      item.id === itemId ? { ...item, isPublic: !item.isPublic } : item
+    )
     setPortfolioItems(updatedItems)
     
     // Save to localStorage
@@ -516,7 +531,26 @@ export default function PortfolioPage() {
                           />
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">Added {new Date(item.date).toLocaleDateString()}</p>
+                      <div className="flex items-center justify-between mt-4">
+                        <p className="text-xs text-muted-foreground">Added {new Date(item.date).toLocaleDateString()}</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {item.isPublic ? (
+                              <Globe className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Lock className="h-3 w-3 text-gray-400" />
+                            )}
+                            <span className="text-xs text-gray-600">
+                              {item.isPublic ? 'Public' : 'Private'}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={item.isPublic}
+                            onCheckedChange={() => togglePublicStatus(item.id)}
+                            className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
+                          />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
