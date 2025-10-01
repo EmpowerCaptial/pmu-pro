@@ -296,15 +296,18 @@ export default function ClientList({
           <p className="text-sm sm:text-base text-muted-text text-center mb-4 max-w-sm">
             {q ? "Try adjusting your search terms" : "Get started by adding your first client"}
           </p>
-          {!q && onAddClient && (
-            <Button 
-              onClick={onAddClient}
-              className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-sm sm:text-base"
-            >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              Add Your First Client
-            </Button>
-          )}
+        </div>
+      )}
+
+      {/* Small notification for adding first client */}
+      {clients.length === 0 && !q && (
+        <div className="px-3 sm:px-4 py-2">
+          <div className="bg-lavender/10 border border-lavender/20 rounded-lg p-3 flex items-center gap-2">
+            <Plus className="h-4 w-4 text-lavender flex-shrink-0" />
+            <span className="text-sm text-lavender-700">
+              Click the "Add Client" button above to get started
+            </span>
+          </div>
         </div>
       )}
     </div>
