@@ -35,6 +35,8 @@ function CheckoutContent() {
   const [customTip, setCustomTip] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [showNextAppointmentDialog, setShowNextAppointmentDialog] = useState(false)
+  const [selectedWeeks, setSelectedWeeks] = useState<number | null>(null)
   
   // Discount and split payment states
   const [discountType, setDiscountType] = useState<'percentage' | 'dollar'>('percentage')
@@ -112,6 +114,7 @@ function CheckoutContent() {
       
       setIsProcessing(false)
       setPaymentSuccess(true)
+      setShowNextAppointmentDialog(true)
       
       console.log('Payment processed:', {
         method: selectedPaymentMethod,
@@ -149,6 +152,21 @@ function CheckoutContent() {
     setDiscountAmount(0)
   }
 
+  const handleScheduleNextAppointment = (weeks: number) => {
+    setSelectedWeeks(weeks)
+    const nextDate = new Date()
+    nextDate.setDate(nextDate.getDate() + (weeks * 7))
+    const formattedDate = nextDate.toISOString().split('T')[0]
+    
+    // Navigate to booking page with pre-selected date and client
+    router.push(`/booking?date=${formattedDate}&clientName=${encodeURIComponent(client.name)}&clientEmail=${encodeURIComponent(client.email)}&clientPhone=${encodeURIComponent(client.phone)}`)
+  }
+
+  const handleScheduleLater = () => {
+    setShowNextAppointmentDialog(false)
+    // Client can schedule later
+  }
+
   if (paymentSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -177,6 +195,13 @@ function CheckoutContent() {
             
             <div className="pt-4 space-y-3">
               <Button 
+                className="w-full bg-gradient-to-r from-teal-500 to-lavender hover:from-teal-600 hover:to-lavender-600 text-white shadow-lg"
+                onClick={() => setShowNextAppointmentDialog(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Schedule Next Appointment
+              </Button>
+              <Button 
                 className="w-full bg-lavender hover:bg-lavender-600 text-white"
                 onClick={() => router.push('/pos')}
               >
@@ -194,6 +219,62 @@ function CheckoutContent() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Schedule Next Appointment Dialog */}
+        {showNextAppointmentDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
+            <Card className="w-full max-w-md border-0 shadow-2xl bg-white">
+              <CardHeader className="text-center border-b border-gray-100">
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-lavender/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-teal-600" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-900">Schedule Follow-up Appointment?</CardTitle>
+                <CardDescription className="text-lg text-gray-600">
+                  Book {client.name}'s next visit now
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <p className="text-center text-gray-600 mb-4">
+                  When would you like to schedule the next appointment?
+                </p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    onClick={() => handleScheduleNextAppointment(2)}
+                    className="flex flex-col items-center gap-2 h-24 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-700 border border-blue-200"
+                  >
+                    <Clock className="h-6 w-6" />
+                    <span className="font-bold">2 Weeks</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleScheduleNextAppointment(4)}
+                    className="flex flex-col items-center gap-2 h-24 bg-gradient-to-br from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 text-teal-700 border border-teal-200"
+                  >
+                    <Clock className="h-6 w-6" />
+                    <span className="font-bold">4 Weeks</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleScheduleNextAppointment(6)}
+                    className="flex flex-col items-center gap-2 h-24 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 text-purple-700 border border-purple-200"
+                  >
+                    <Clock className="h-6 w-6" />
+                    <span className="font-bold">6 Weeks</span>
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    onClick={handleScheduleLater}
+                    className="w-full border-gray-300 hover:bg-gray-50"
+                  >
+                    Schedule Later
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     )
   }

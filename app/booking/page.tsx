@@ -315,6 +315,37 @@ export default function BookingCalendar() {
         
         console.log('✅ Appointment created successfully in database')
 
+        // Send booking confirmation email
+        if (client.email) {
+          try {
+            const emailResponse = await fetch('/api/send-booking-confirmation', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                clientEmail: client.email,
+                clientName: client.name,
+                service: appointmentData.service,
+                date: selectedDate,
+                time: appointmentData.time,
+                duration: finalDuration,
+                price: finalPrice,
+                artistName: currentUser?.name || 'PMU Pro',
+                artistEmail: currentUser?.email || ''
+              })
+            })
+
+            if (emailResponse.ok) {
+              console.log('✅ Booking confirmation email sent')
+            } else {
+              console.log('⚠️ Failed to send booking confirmation email')
+            }
+          } catch (emailError) {
+            console.error('Error sending confirmation email:', emailError)
+          }
+        }
+
         // Generate deposit payment link if payment is not in person
         if (appointmentData.paymentMethod !== 'in-person' && finalPrice > 0) {
           try {
