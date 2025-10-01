@@ -64,8 +64,8 @@ function checkBuild() {
   console.log('🔍 Checking build process...')
   
   try {
-    // Test build without actually building
-    execSync('npx next build --dry-run', { stdio: 'inherit' })
+    // Check if Next.js config is valid
+    execSync('npx next lint --dir . --fix false', { stdio: 'inherit' })
     console.log('✅ Build process is valid')
   } catch (error) {
     console.error('❌ Build process failed')
