@@ -62,7 +62,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
 
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-r from-lavender to-lavender-600 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-lavender shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

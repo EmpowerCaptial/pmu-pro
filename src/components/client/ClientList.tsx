@@ -158,43 +158,6 @@ export default function ClientList({
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="px-3 sm:px-4 mb-3 sm:mb-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-          <Card className="border-lavender/20 bg-gradient-to-r from-purple-50 to-lavender/10">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <div className="text-sm sm:text-lg font-bold text-purple-600">
-                {clients.filter(c => getClientStatus(c).status === 'recent').length}
-              </div>
-              <div className="text-xs text-muted-text">Recent</div>
-            </CardContent>
-          </Card>
-          <Card className="border-teal-200 bg-gradient-to-r from-teal-50 to-blue-50">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <div className="text-sm sm:text-lg font-bold text-teal-600">
-                {clients.filter(c => getClientStatus(c).status === 'active').length}
-              </div>
-              <div className="text-xs text-muted-text">Active</div>
-            </CardContent>
-          </Card>
-          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <div className="text-sm sm:text-lg font-bold text-orange-600">
-                {clients.filter(c => getClientStatus(c).status === 'new').length}
-              </div>
-              <div className="text-xs text-muted-text">New</div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <div className="text-sm sm:text-lg font-bold text-gray-600">
-                {clients.filter(c => getClientStatus(c).status === 'inactive').length}
-              </div>
-              <div className="text-xs text-muted-text">Inactive</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
 
       {/* Client List */}
       <div className="divide-y divide-lavender/10">
@@ -209,7 +172,7 @@ export default function ClientList({
                 return (
                   <li 
                     key={client.id} 
-                    className="px-3 sm:px-4 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
+                    className="px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
                     onClick={() => onClientSelect?.(client)}
                   >
                     {/* Avatar with FITZ */}
@@ -218,12 +181,12 @@ export default function ClientList({
                         <img
                           src={client.avatarUrl}
                           alt=""
-                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover ring-2 ring-lavender/20"
+                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover ring-2 ring-lavender/20"
                           draggable={false}
                         />
                       ) : (
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
-                          <span className="text-xs sm:text-sm font-semibold text-white">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20">
+                          <span className="text-xs font-semibold text-white">
                             {initials(client.name)}
                           </span>
                         </div>
@@ -240,13 +203,13 @@ export default function ClientList({
 
                     {/* Client Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-medium text-ink truncate">{client.name}</p>
-                        <Badge className={`text-xs px-2 py-1 ${clientStatus.color} text-white w-fit`}>
+                        <Badge className={`text-xs px-1.5 py-0.5 ${clientStatus.color} text-white`}>
                           {clientStatus.label}
                         </Badge>
                       </div>
-                      <div className="flex flex-col gap-1 text-xs text-muted-text">
+                      <div className="flex items-center gap-3 text-xs text-muted-text">
                         {client.email && (
                           <span className="flex items-center gap-1 truncate">
                             <Mail className="h-3 w-3 flex-shrink-0" />
@@ -260,12 +223,6 @@ export default function ClientList({
                           </span>
                         )}
                       </div>
-                      {client.lastProcedure && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-muted-text">
-                          <Clock className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">Last procedure: {new Date(client.lastProcedure.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Action Menu */}
@@ -274,10 +231,10 @@ export default function ClientList({
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-gray-100 text-gray-600 hover:text-gray-900 bg-gray-50 flex-shrink-0"
+                          className="h-6 w-6 sm:h-7 sm:w-7 p-0 hover:bg-gray-100 text-gray-600 hover:text-gray-900 bg-gray-50 flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <MoreHorizontal className="h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40 sm:w-48 bg-white border border-gray-200 shadow-lg">
