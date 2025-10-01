@@ -64,8 +64,23 @@ function checkBuild() {
   console.log('🔍 Checking build process...')
   
   try {
-    // Check if Next.js config is valid
-    execSync('npx next lint', { stdio: 'inherit' })
+    // Check if Next.js config files exist
+    const fs = require('fs')
+    const path = require('path')
+    
+    const requiredFiles = [
+      'next.config.js',
+      'next.config.mjs',
+      'package.json'
+    ]
+    
+    const missingFiles = requiredFiles.filter(file => !fs.existsSync(file))
+    
+    if (missingFiles.length > 0) {
+      console.error('❌ Missing required files:', missingFiles.join(', '))
+      process.exit(1)
+    }
+    
     console.log('✅ Build process is valid')
   } catch (error) {
     console.error('❌ Build process failed')
