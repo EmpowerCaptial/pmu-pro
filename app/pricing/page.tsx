@@ -26,6 +26,16 @@ export default function PricingPage() {
       // Get current user email from demo auth
       const userEmail = currentUser?.email || 'demo@pmupro.com'
       
+      // Check if this is a trial user transitioning to paid
+      const { TrialSubscriptionBridge } = await import('@/lib/trial-subscription-bridge')
+      const isTrialUser = TrialSubscriptionBridge.isTrialUser(userEmail)
+      const isExpiredTrialUser = TrialSubscriptionBridge.isExpiredTrialUser(userEmail)
+      
+      if (isTrialUser || isExpiredTrialUser) {
+        // Handle trial user upgrade (active or expired)
+        await TrialSubscriptionBridge.handleTrialUpgrade(userEmail, planId)
+      }
+      
       // Call the artist subscription API
       const response = await fetch('/api/artist/subscribe', {
         method: 'POST',
@@ -34,7 +44,8 @@ export default function PricingPage() {
         },
         body: JSON.stringify({
           planId,
-          userEmail
+          userEmail,
+          isTrialUpgrade: isTrialUser || isExpiredTrialUser
         })
       })
 

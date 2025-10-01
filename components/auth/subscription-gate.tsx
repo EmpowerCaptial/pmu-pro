@@ -34,9 +34,11 @@ export function SubscriptionGate({ children, fallback }: SubscriptionGateProps) 
       // Allow access if:
       // 1. User has active subscription
       // 2. User is admin/staff
+      // 3. User has trial status (active or expired)
       if (hasActiveSubscription || 
           currentUser.role === 'admin' || 
-          currentUser.role === 'staff') {
+          currentUser.role === 'staff' ||
+          subscriptionStatus === 'trial') {
         setHasAccess(true)
       } else {
         setHasAccess(false)

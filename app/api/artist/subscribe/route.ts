@@ -11,6 +11,7 @@ const prisma = new PrismaClient()
 interface SubscribeRequest {
   planId: 'starter' | 'professional' | 'studio'
   userEmail: string
+  isTrialUpgrade?: boolean
 }
 
 // Stripe price IDs for artist subscription plans
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SubscribeRequest = await request.json()
-    const { planId, userEmail } = body
+    const { planId, userEmail, isTrialUpgrade } = body
 
     if (!planId || !userEmail) {
       return NextResponse.json(
@@ -45,10 +46,30 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      // If this is a trial upgrade, create the user
+      if (isTrialUpgrade) {
+        user = await prisma.user.create({
+          data: {
+            email: userEmail,
+            name: userEmail.split('@')[0],
+            password: 'temp-password',
+            businessName: 'PMU Studio',
+            licenseNumber: '',
+            licenseState: '',
+            yearsExperience: '',
+            isLicenseVerified: true,
+            hasActiveSubscription: false,
+            subscriptionStatus: 'trial',
+            role: 'user'
+          }
+        })
+        console.log(`Created user for trial upgrade: ${userEmail}`)
+      } else {
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        )
+      }
     }
 
     // Get the price ID for the selected plan
@@ -96,13 +117,15 @@ export async function POST(request: NextRequest) {
       metadata: {
         userId: user.id,
         plan: planId,
-        type: 'artist_subscription'
+        type: 'artist_subscription',
+        isTrialUpgrade: isTrialUpgrade?.toString() || 'false'
       },
       subscription_data: {
         metadata: {
           userId: user.id,
           plan: planId,
-          type: 'artist_subscription'
+          type: 'artist_subscription',
+          isTrialUpgrade: isTrialUpgrade?.toString() || 'false'
         }
       },
       allow_promotion_codes: true,

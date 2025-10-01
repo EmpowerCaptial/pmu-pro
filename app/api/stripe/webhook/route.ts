@@ -125,7 +125,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
           })
           
           if (!user) {
-            // Create user if doesn't exist
+            // Create user if doesn't exist (likely a trial user transitioning to paid)
             user = await prisma.user.create({
               data: {
                 email: customer.email,
@@ -145,7 +145,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
                 stripeSubscriptionId: subscription.id
               }
             })
-            console.log(`Created new user ${user.id} for email ${customer.email}`)
+            console.log(`Created new user ${user.id} for email ${customer.email} (trial transition)`)
           } else {
             // Update existing user
             await prisma.user.update({

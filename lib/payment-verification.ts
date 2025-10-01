@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 export interface PaymentVerificationResult {
   hasAccess: boolean
-  subscriptionStatus: 'active' | 'inactive' | 'past_due' | 'canceled' | 'unpaid'
+  subscriptionStatus: 'active' | 'inactive' | 'past_due' | 'canceled' | 'unpaid' | 'trial'
   redirectTo?: string
   message?: string
 }
@@ -55,6 +55,14 @@ export class PaymentVerificationService {
           subscriptionStatus: 'inactive',
           redirectTo: '/auth/verification-pending',
           message: 'License verification pending'
+        }
+      }
+
+      // Allow trial users to access the app (they can upgrade during trial)
+      if (user.subscriptionStatus === 'trial') {
+        return {
+          hasAccess: true,
+          subscriptionStatus: 'trial'
         }
       }
 

@@ -1,111 +1,121 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { CheckCircle, Home, User } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CheckCircle, ArrowRight } from 'lucide-react'
+import { TrialSubscriptionBridge } from '@/lib/trial-subscription-bridge'
 
-function SuccessContent() {
+export default function BillingSuccessPage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get('session_id')
-  const [loading, setLoading] = useState(true)
-  const [session, setSession] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isTrialUpgrade, setIsTrialUpgrade] = useState(false)
 
   useEffect(() => {
+    const sessionId = searchParams.get('session_id')
+    
     if (sessionId) {
-      // In a real app, you'd verify the session with your backend
-      // For now, we'll just simulate loading
-      setTimeout(() => {
-        setLoading(false)
-        setSession({ id: sessionId })
-      }, 2000)
+      // Check if this was a trial upgrade
+      const trialUser = TrialSubscriptionBridge.getTrialUserData()
+      if (trialUser && !trialUser.plan) {
+        setIsTrialUpgrade(true)
+        // Clear trial data after successful subscription
+        TrialSubscriptionBridge.clearTrialData()
+      }
+      
+      setIsLoading(false)
     } else {
-      setLoading(false)
+      // No session ID, redirect to dashboard
+      router.push('/dashboard')
     }
-  }, [sessionId])
+  }, [searchParams, router])
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
-        <p className="text-muted">Processing your subscription...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender"></div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-md w-full">
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-lavender/20 text-center">
-        <div className="mb-6">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-serif font-bold text-ink mb-2">Welcome to PMU Pro!</h1>
-          <p className="text-muted">Your subscription has been activated successfully.</p>
-        </div>
-
-        {sessionId && (
-          <div className="bg-lavender/5 rounded-lg p-4 mb-6">
-            <p className="text-sm text-muted">
-              Session ID: <span className="font-mono text-xs">{sessionId}</span>
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
+            <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-        )}
-
-        <div className="space-y-3">
-          <p className="text-ink">
-            You now have access to all PMU Pro features including AI contraindication analysis, 
-            pigment matching, and client management tools.
-          </p>
-          
-          <div className="pt-4 space-y-3">
-            <Link href="/dashboard" className="block">
-              <Button className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white hover:shadow-lg transition-all duration-300">
-                <User className="h-4 w-4 mr-2" />
-                Go to Dashboard
-              </Button>
-            </Link>
-            
-            <Link href="/" className="block">
-              <Button variant="outline" className="w-full hover:bg-lavender/10 hover:border-lavender">
-                <Home className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function BillingSuccessPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <img
-          src="/images/pmu-guide-logo.png"
-          alt="PMU Guide Logo"
-          className="w-[60%] max-w-2xl h-auto opacity-10 object-contain"
-        />
-      </div>
-
-      {/* Floating elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-lavender/10 rounded-full blur-xl"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-beige/20 rounded-full blur-lg"></div>
-        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-lavender/5 rounded-full blur-2xl"></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-12 flex items-center justify-center min-h-screen">
-        <Suspense fallback={
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            {isTrialUpgrade ? 'Trial Upgraded Successfully!' : 'Subscription Activated!'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
-            <p className="text-muted">Loading...</p>
+            <p className="text-gray-600 mb-4">
+              {isTrialUpgrade 
+                ? 'Your trial has been successfully upgraded to a paid subscription. You now have full access to all PMU Pro features.'
+                : 'Your subscription is now active. Welcome to PMU Pro!'
+              }
+            </p>
+            
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <div className="flex items-center justify-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-green-800 font-medium">
+                  {isTrialUpgrade ? 'Trial Upgraded' : 'Subscription Active'}
+                </span>
+              </div>
+              <p className="text-xs text-green-700 mt-1">
+                {isTrialUpgrade 
+                  ? 'No interruption in service - your data is preserved'
+                  : 'All features are now unlocked'
+                }
+              </p>
+            </div>
           </div>
-        }>
-          <SuccessContent />
-        </Suspense>
-      </div>
+
+          <div className="space-y-3">
+            <Button 
+              onClick={() => router.push('/dashboard')}
+              className="w-full bg-gradient-to-r from-lavender to-lavender-600 text-white hover:shadow-lg transition-all duration-300"
+            >
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Go to Dashboard
+            </Button>
+            
+            <div className="text-center">
+              <p className="text-xs text-gray-500">
+                {isTrialUpgrade 
+                  ? 'Your trial data has been preserved and is now part of your paid subscription'
+                  : 'You can manage your subscription in the billing section'
+                }
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-2">What's next:</p>
+              <div className="space-y-1">
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">Access all premium features</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">Unlimited client management</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">Priority support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
