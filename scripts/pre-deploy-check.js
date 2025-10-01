@@ -65,7 +65,7 @@ function checkBuild() {
   
   try {
     // Check if Next.js config is valid
-    execSync('npx next lint --dir . --fix false', { stdio: 'inherit' })
+    execSync('npx next lint', { stdio: 'inherit' })
     console.log('✅ Build process is valid')
   } catch (error) {
     console.error('❌ Build process failed')
