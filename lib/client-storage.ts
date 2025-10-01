@@ -178,15 +178,33 @@ export async function getClients(userEmail?: string): Promise<Client[]> {
           emergencyContact: dbClient.emergencyContact,
           emergencyPhone: undefined, // Not in database schema
           dateOfBirth: dbClient.dateOfBirth ? new Date(dbClient.dateOfBirth).toISOString() : undefined,
-          medicalConditions: dbClient.medicalHistory ? (typeof dbClient.medicalHistory === 'string' ? JSON.parse(dbClient.medicalHistory) : dbClient.medicalHistory) : [],
+          medicalConditions: dbClient.medicalHistory ? (typeof dbClient.medicalHistory === 'string' ? (() => {
+            try {
+              return JSON.parse(dbClient.medicalHistory)
+            } catch {
+              return []
+            }
+          })() : dbClient.medicalHistory) : [],
           medications: [], // Not in database schema
-          allergies: dbClient.allergies ? (typeof dbClient.allergies === 'string' ? JSON.parse(dbClient.allergies) : dbClient.allergies) : [],
+          allergies: dbClient.allergies ? (typeof dbClient.allergies === 'string' ? (() => {
+            try {
+              return JSON.parse(dbClient.allergies)
+            } catch {
+              return []
+            }
+          })() : dbClient.allergies) : [],
           // Database fields
           userId: dbClient.userId,
           medicalHistory: dbClient.medicalHistory,
           skinType: dbClient.skinType,
           isActive: dbClient.isActive,
-          skinConditions: dbClient.skinType ? (typeof dbClient.skinType === 'string' ? JSON.parse(dbClient.skinType) : dbClient.skinType) : [],
+          skinConditions: dbClient.skinType ? (typeof dbClient.skinType === 'string' ? (() => {
+            try {
+              return JSON.parse(dbClient.skinType)
+            } catch {
+              return []
+            }
+          })() : dbClient.skinType) : [],
           previousPMU: false, // Not in database schema
           previousPMUDetails: undefined, // Not in database schema
           desiredService: undefined, // Not in database schema
