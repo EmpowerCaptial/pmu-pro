@@ -823,35 +823,54 @@ export default function BookingCalendar() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-8 w-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                               >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                              <DropdownMenuLabel>Appointment Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleCheckout(appointment)}>
-                                <CreditCard className="mr-2 h-4 w-4" />
+                            <DropdownMenuContent 
+                              align="end" 
+                              className="w-56 bg-white border border-gray-200 shadow-xl z-[9999]"
+                              style={{ 
+                                position: 'fixed',
+                                zIndex: 9999
+                              }}
+                            >
+                              <DropdownMenuLabel className="font-semibold text-gray-900">Appointment Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator className="bg-gray-200" />
+                              <DropdownMenuItem 
+                                onClick={() => handleCheckout(appointment)}
+                                className="cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-gray-900"
+                              >
+                                <CreditCard className="mr-2 h-4 w-4 text-blue-600" />
                                 Checkout
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleSendReceipt(appointment)}>
-                                <Receipt className="mr-2 h-4 w-4" />
+                              <DropdownMenuItem 
+                                onClick={() => handleSendReceipt(appointment)}
+                                className="cursor-pointer hover:bg-green-50 focus:bg-green-50 text-gray-900"
+                              >
+                                <Receipt className="mr-2 h-4 w-4 text-green-600" />
                                 Send Receipt
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleRefund(appointment)}>
-                                <RefreshCw className="mr-2 h-4 w-4" />
+                              <DropdownMenuSeparator className="bg-gray-200" />
+                              <DropdownMenuItem 
+                                onClick={() => handleRefund(appointment)}
+                                className="cursor-pointer hover:bg-yellow-50 focus:bg-yellow-50 text-gray-900"
+                              >
+                                <RefreshCw className="mr-2 h-4 w-4 text-yellow-600" />
                                 Process Refund
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMarkNoShow(appointment)}>
-                                <UserX className="mr-2 h-4 w-4" />
+                              <DropdownMenuItem 
+                                onClick={() => handleMarkNoShow(appointment)}
+                                className="cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-gray-900"
+                              >
+                                <UserX className="mr-2 h-4 w-4 text-orange-600" />
                                 Mark as No-Show
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
+                              <DropdownMenuSeparator className="bg-gray-200" />
                               <DropdownMenuItem 
                                 onClick={() => handleCancelAppointment(appointment)}
-                                className="text-red-600"
+                                className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
                               >
                                 <XCircle className="mr-2 h-4 w-4" />
                                 Cancel Appointment
