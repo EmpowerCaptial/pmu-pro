@@ -168,6 +168,8 @@ export default function ProductsPage() {
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product)
+    // Clean broken images when editing
+    const cleanedImages = cleanBrokenImages(product.images)
     setNewProduct({
       name: product.name,
       description: product.description || '',
@@ -176,7 +178,7 @@ export default function ProductsPage() {
       sku: product.sku || '',
       stockQuantity: product.stockQuantity.toString(),
       isDigital: product.isDigital,
-      images: product.images,
+      images: cleanedImages,
       isActive: product.isActive
     })
     setShowAddModal(true)
@@ -203,6 +205,18 @@ export default function ProductsPage() {
     return { status: 'in-stock', color: 'bg-green-100 text-green-800' }
   }
 
+  const isBrokenImageUrl = (url: string) => {
+    // Check for common broken URL patterns
+    return url.includes('thepmuguide.com/m') || 
+           url.includes('localhost:3000') || 
+           url.startsWith('blob:') ||
+           url.length < 10
+  }
+
+  const cleanBrokenImages = (images: string[]) => {
+    return images.filter(img => !isBrokenImageUrl(img))
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-1 py-2">
@@ -221,6 +235,48 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
           <p className="text-gray-600">Manage your products and inventory</p>
         </div>
+        
+        {products.length > 0 && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!currentUser?.email) return
+                
+                // Clean broken images for all products
+                const updatedProducts = products.map(product => ({
+                  ...product,
+                  images: cleanBrokenImages(product.images)
+                }))
+                
+                // Update each product that had broken images
+                for (const product of updatedProducts) {
+                  if (product.images.length !== products.find(p => p.id === product.id)?.images.length) {
+                    try {
+                      await fetch(`/api/products/${product.id}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'x-user-email': currentUser.email
+                        },
+                        body: JSON.stringify(product)
+                      })
+                    } catch (error) {
+                      console.error('Error cleaning images for product:', product.id, error)
+                    }
+                  }
+                }
+                
+                // Reload products
+                await loadProducts()
+              }}
+              className="text-orange-600 hover:text-orange-700"
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Clean Broken Images
+            </Button>
+          </div>
+        )}
         
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
@@ -360,6 +416,12 @@ export default function ProductsPage() {
                               src={newProduct.images[index]}
                               alt={`Product ${index + 1}`}
                               className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                              onError={(e) => {
+                                console.error('Image failed to load:', newProduct.images[index])
+                                // Replace broken image with placeholder
+                                const target = e.target as HTMLImageElement
+                                target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00OCA0OEg4MFY4MEg0OFY0OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTU2IDU2SDcyVjcySDU2VjU2WiIgZmlsbD0iI0YzRjRGNiIvPgo8L3N2Zz4K'
+                              }}
                             />
                             <button
                               type="button"
@@ -368,7 +430,7 @@ export default function ProductsPage() {
                                 newImages.splice(index, 1)
                                 setNewProduct({...newProduct, images: newImages})
                               }}
-                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 z-10"
                             >
                               ×
                             </button>
@@ -493,6 +555,12 @@ export default function ProductsPage() {
                         src={product.images[0]}
                         alt={product.name}
                         className="w-full h-32 object-cover rounded-lg"
+                        onError={(e) => {
+                          console.error('Product image failed to load:', product.images[0])
+                          // Replace broken image with placeholder
+                          const target = e.target as HTMLImageElement
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00OCA0OEg4MFY4MEg0OFY0OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTU2IDU2SDcyVjcySDU2VjU2WiIgZmlsbD0iI0YzRjRGNiIvPgo8L3N2Zz4K'
+                        }}
                       />
                       {product.images.length > 1 && (
                         <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
