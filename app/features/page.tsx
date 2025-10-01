@@ -131,6 +131,16 @@ const coreFeatures = [
     category: 'core'
   },
   {
+    id: 'invoices',
+    title: 'Invoices',
+    description: 'Create & manage invoices',
+    icon: FileText,
+    href: '/invoices',
+    color: 'bg-gradient-to-br from-green-500 to-green-600',
+    status: 'active',
+    category: 'core'
+  },
+  {
     id: 'pos',
     title: 'POS',
     description: 'Point of Sale system',
