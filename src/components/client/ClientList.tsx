@@ -160,7 +160,7 @@ export default function ClientList({
                 return (
                   <li 
                     key={client.id} 
-                    className="px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer"
+                    className="px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer border-b border-gray-100"
                     onClick={() => onClientSelect?.(client)}
                   >
                     {/* Avatar with FITZ */}
@@ -195,16 +195,16 @@ export default function ClientList({
                         <p className="text-sm font-medium text-ink truncate">{client.name}</p>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-text">
-                        {client.email && (
-                          <span className="flex items-center gap-1 truncate">
-                            <Mail className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{client.email}</span>
-                          </span>
-                        )}
                         {client.phone && (
                           <span className="flex items-center gap-1 truncate">
                             <Phone className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{client.phone}</span>
+                          </span>
+                        )}
+                        {client.email && (
+                          <span className="flex items-center gap-1 truncate">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{client.email}</span>
                           </span>
                         )}
                       </div>
