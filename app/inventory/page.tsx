@@ -279,7 +279,7 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10 pb-20 sm:pb-0">
       <NavBar currentPath="/inventory" user={currentUser || undefined} />
       
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-16 sm:pb-20">

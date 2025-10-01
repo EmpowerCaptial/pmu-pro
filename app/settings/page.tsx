@@ -133,7 +133,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory pb-20 sm:pb-0">
       {/* Background Logo */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
         <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-96 h-96 opacity-5 object-contain" />

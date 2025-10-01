@@ -300,7 +300,7 @@ export default function ClientsPage() {
 
   return (
     <SubscriptionGate>
-      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige pb-20 sm:pb-0">
       {/* Client List Component */}
       <ClientList
         clients={clients}
