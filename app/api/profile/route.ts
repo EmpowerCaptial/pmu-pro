@@ -14,7 +14,9 @@ const profileSchema = z.object({
   specialties: z.string().optional(), // JSON string array
   experience: z.string().optional(),
   certifications: z.string().optional(), // JSON string array
-  avatar: z.string().optional()
+  avatar: z.string().optional(),
+  venmoUsername: z.string().optional(),
+  cashAppUsername: z.string().optional()
 })
 
 // GET /api/profile - Get user's profile
@@ -40,7 +42,9 @@ export async function GET(request: NextRequest) {
         businessHours: true,
         specialties: true,
         experience: true,
-        certifications: true
+        certifications: true,
+        venmoUsername: true,
+        cashAppUsername: true
       }
     })
 
@@ -94,6 +98,8 @@ export async function PUT(request: NextRequest) {
     if (validatedData.instagram !== undefined) updateData.instagram = validatedData.instagram
     if (validatedData.avatar !== undefined) updateData.avatar = validatedData.avatar
     if (validatedData.experience !== undefined) updateData.experience = validatedData.experience
+    if (validatedData.venmoUsername !== undefined) updateData.venmoUsername = validatedData.venmoUsername
+    if (validatedData.cashAppUsername !== undefined) updateData.cashAppUsername = validatedData.cashAppUsername
     
     if (validatedData.address !== undefined) {
       updateData.address = typeof validatedData.address === 'string' 
@@ -132,7 +138,9 @@ export async function PUT(request: NextRequest) {
         businessHours: true,
         specialties: true,
         experience: true,
-        certifications: true
+        certifications: true,
+        venmoUsername: true,
+        cashAppUsername: true
       }
     })
 
