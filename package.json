@@ -20,7 +20,10 @@
     "db:seed": "prisma db seed",
     "db:setup": "node scripts/setup-database.js",
     "db:setup:prod": "node scripts/setup-production-db.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "health:check": "node scripts/health-check.js",
+    "pre-deploy": "node scripts/pre-deploy-check.js",
+    "build:prod": "npm run pre-deploy && npm run build"
   },
   "dependencies": {
     "@ai-sdk/groq": "latest",

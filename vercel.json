@@ -1,36 +1,32 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:prod",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
   },
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
   "headers": [
     {
-      "source": "/documents/signature-demo",
+      "source": "/api/health",
       "headers": [
         {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }
   ],
   "rewrites": [
     {
-      "source": "/public-signature-demo",
-      "destination": "/documents/signature-demo"
+      "source": "/health",
+      "destination": "/api/health"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
