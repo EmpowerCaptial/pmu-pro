@@ -46,8 +46,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ clients })
   } catch (error) {
     console.error('Error fetching clients:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     return NextResponse.json(
-      { error: 'Failed to fetch clients' },
+      { 
+        error: 'Failed to fetch clients',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
