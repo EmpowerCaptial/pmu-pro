@@ -112,6 +112,7 @@ function BookingCalendarContent() {
   useEffect(() => {
     const loadClients = async () => {
       console.log('Loading clients for user:', currentUser?.email)
+      console.log('Current user object:', currentUser)
       const loadedClients = await getClients(currentUser?.email)
       console.log('Loaded clients:', loadedClients)
       setClients(loadedClients)
@@ -130,6 +131,8 @@ function BookingCalendarContent() {
     if (currentUser?.email) {
       loadClients()
       loadAppointments()
+    } else {
+      console.log('No current user email found')
     }
   }, [currentUser, searchParams])
 
@@ -196,6 +199,8 @@ function BookingCalendarContent() {
   }
 
   const handleClientSelection = (type: 'new' | 'existing') => {
+    console.log('Client selection type:', type)
+    console.log('Current clients:', clients.length)
     setClientSelectionType(type)
   }
 
@@ -1125,6 +1130,10 @@ function BookingCalendarContent() {
                 </div>
 
                 <div className="max-h-48 sm:max-h-60 overflow-y-auto space-y-2 bg-white rounded-lg p-2 border border-gray-200">
+                  {/* Debug info */}
+                  <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+                    Debug: Total clients: {clients.length}, Filtered: {filteredClients.length}, Search: "{clientSearchTerm}"
+                  </div>
                   {filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
                       <div
