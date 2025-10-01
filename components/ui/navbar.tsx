@@ -66,15 +66,28 @@ export function NavBar({ currentPath, user }: NavBarProps) {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <Link href="/dashboard" className="flex items-center space-x-3">
             <Image
               src="/images/nobglotus.png"
-              alt="PMU Pro Logo"
-              width={64}
-              height={64}
+              alt="PMU Guide Logo"
+              width={48}
+              height={48}
               className="object-contain"
             />
-            <span className="text-xl font-bold font-serif text-gray-900 hidden sm:block">PMU Pro</span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-white tracking-wide leading-tight" 
+                    style={{ 
+                      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontWeight: '700',
+                      letterSpacing: '0.5px',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                    }}>
+                PMU GUIDE
+              </span>
+              <span className="text-xs text-white/80 font-medium tracking-wider uppercase hidden sm:block">
+                Professional Management
+              </span>
+            </div>
           </Link>
 
 
