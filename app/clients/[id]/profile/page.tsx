@@ -243,14 +243,24 @@ export default function ClientProfilePage() {
                     <Mail className="h-4 w-4 text-gray-500" />
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Email</Label>
-                      <p className="text-sm">{client.email}</p>
+                      <a 
+                        href={`mailto:${client.email}`}
+                        className="text-sm text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {client.email}
+                      </a>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-500" />
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Phone</Label>
-                      <p className="text-sm">{client.phone}</p>
+                      <a 
+                        href={`tel:${client.phone}`}
+                        className="text-sm text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {client.phone}
+                      </a>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

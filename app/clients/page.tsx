@@ -576,14 +576,32 @@ export default function ClientsPage() {
                   <Label className="text-sm font-medium text-muted-text">Email</Label>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-lavender" />
-                    <span>{selectedClient.email || 'Not provided'}</span>
+                    {selectedClient.email ? (
+                      <a 
+                        href={`mailto:${selectedClient.email}`}
+                        className="text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {selectedClient.email}
+                      </a>
+                    ) : (
+                      <span>Not provided</span>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-text">Phone</Label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-lavender" />
-                    <span>{selectedClient.phone || 'Not provided'}</span>
+                    {selectedClient.phone ? (
+                      <a 
+                        href={`tel:${selectedClient.phone}`}
+                        className="text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {selectedClient.phone}
+                      </a>
+                    ) : (
+                      <span>Not provided</span>
+                    )}
                   </div>
                 </div>
               </div>

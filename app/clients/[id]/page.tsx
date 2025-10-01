@@ -278,13 +278,23 @@ export default function ClientProfilePage() {
                   {client.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      <span>{client.email}</span>
+                      <a 
+                        href={`mailto:${client.email}`}
+                        className="text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {client.email}
+                      </a>
                     </div>
                   )}
                   {client.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4" />
-                      <span>{client.phone}</span>
+                      <a 
+                        href={`tel:${client.phone}`}
+                        className="text-lavender hover:text-lavender-600 hover:underline transition-colors"
+                      >
+                        {client.phone}
+                      </a>
                     </div>
                   )}
                   {client.dateOfBirth && (
