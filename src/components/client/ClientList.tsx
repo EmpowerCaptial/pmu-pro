@@ -93,17 +93,6 @@ export default function ClientList({
       }));
   }, [filtered]);
 
-  const getClientStatus = (client: Client) => {
-    if (client.lastProcedure) {
-      const procedureDate = new Date(client.lastProcedure.createdAt);
-      const daysSince = Math.floor((Date.now() - procedureDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysSince < 30) return { status: 'recent', label: 'Recent Client', color: 'bg-green-500' };
-      if (daysSince < 90) return { status: 'active', label: 'Active', color: 'bg-blue-500' };
-      return { status: 'inactive', label: 'Inactive', color: 'bg-gray-500' };
-    }
-    return { status: 'new', label: 'New Client', color: 'bg-purple-500' };
-  };
 
   const getSkinTypeColor = (skinType?: string) => {
     switch (skinType?.toLowerCase()) {
@@ -168,7 +157,6 @@ export default function ClientList({
             </div>
             <ul className="">
               {people.map((client) => {
-                const clientStatus = getClientStatus(client);
                 return (
                   <li 
                     key={client.id} 
@@ -205,9 +193,6 @@ export default function ClientList({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-medium text-ink truncate">{client.name}</p>
-                        <Badge className={`text-xs px-1.5 py-0.5 ${clientStatus.color} text-white`}>
-                          {clientStatus.label}
-                        </Badge>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-text">
                         {client.email && (
