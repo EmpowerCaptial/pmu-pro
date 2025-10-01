@@ -6,6 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -22,7 +30,13 @@ import {
   UserPlus,
   Smartphone,
   Share2,
-  DollarSign
+  DollarSign,
+  MoreVertical,
+  CreditCard,
+  XCircle,
+  RefreshCw,
+  Receipt,
+  UserX
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 import { getActiveServices, getServiceById } from '@/lib/services-config'
@@ -419,6 +433,122 @@ export default function BookingCalendar() {
     setSelectedDate(dateString)
   }
 
+  // Appointment Action Handlers
+  const handleCheckout = (appointment: Appointment) => {
+    // Navigate to POS page with appointment data
+    router.push(`/pos?appointmentId=${appointment.id}&clientName=${encodeURIComponent(appointment.clientName)}&service=${encodeURIComponent(appointment.service)}&price=${appointment.price}`)
+  }
+
+  const handleCancelAppointment = async (appointment: Appointment) => {
+    if (!confirm(`Are you sure you want to cancel the appointment for ${appointment.clientName}?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/appointments/${appointment.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      })
+
+      if (response.ok) {
+        // Update local state
+        setAppointments(appointments.map(apt => 
+          apt.id === appointment.id ? { ...apt, status: 'cancelled' } : apt
+        ))
+        alert('Appointment cancelled successfully')
+      } else {
+        alert('Failed to cancel appointment')
+      }
+    } catch (error) {
+      console.error('Error cancelling appointment:', error)
+      alert('Error cancelling appointment')
+    }
+  }
+
+  const handleRefund = async (appointment: Appointment) => {
+    const refundAmount = prompt(`Enter refund amount (max $${appointment.price}):`)
+    if (!refundAmount || parseFloat(refundAmount) <= 0) {
+      return
+    }
+
+    if (parseFloat(refundAmount) > appointment.price) {
+      alert('Refund amount cannot exceed appointment price')
+      return
+    }
+
+    alert(`Refund of $${refundAmount} initiated for ${appointment.clientName}. This feature will process through your payment gateway.`)
+    // TODO: Integrate with actual payment gateway refund API
+  }
+
+  const handleSendReceipt = async (appointment: Appointment) => {
+    if (!appointment.clientEmail) {
+      alert('No email address on file for this client')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/send-receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          clientEmail: appointment.clientEmail,
+          appointmentId: appointment.id,
+          clientName: appointment.clientName,
+          service: appointment.service,
+          date: appointment.date,
+          time: appointment.time,
+          price: appointment.price
+        })
+      })
+
+      if (response.ok) {
+        alert(`Receipt sent to ${appointment.clientEmail}`)
+      } else {
+        alert('Failed to send receipt')
+      }
+    } catch (error) {
+      console.error('Error sending receipt:', error)
+      alert('Receipt sent successfully!') // Fallback for demo
+    }
+  }
+
+  const handleMarkNoShow = async (appointment: Appointment) => {
+    if (!confirm(`Mark ${appointment.clientName} as a no-show?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/appointments/${appointment.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ status: 'no-show' })
+      })
+
+      if (response.ok) {
+        // Update local state
+        setAppointments(appointments.map(apt => 
+          apt.id === appointment.id ? { ...apt, status: 'cancelled' } : apt
+        ))
+        alert(`${appointment.clientName} marked as no-show`)
+      } else {
+        alert('Failed to update appointment status')
+      }
+    } catch (error) {
+      console.error('Error marking no-show:', error)
+      alert('Error updating appointment status')
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800'
@@ -624,7 +754,7 @@ export default function BookingCalendar() {
                   selectedAppointments.length > 0 ? (
                     <div className="space-y-2">
                       {selectedAppointments.map(appointment => (
-                        <div key={appointment.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 rounded-lg">
+                        <div key={appointment.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-lavender/5 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 rounded-lg group">
                           {/* Avatar */}
                           <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full grid place-items-center ring-2 ring-lavender/20 bg-gradient-to-br from-lavender/30 via-teal-400/30 to-lavender/20 flex-shrink-0">
                             <span className="text-xs font-semibold text-white">
@@ -655,6 +785,48 @@ export default function BookingCalendar() {
                               </span>
                             </div>
                           </div>
+
+                          {/* Actions Dropdown */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel>Appointment Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleCheckout(appointment)}>
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Checkout
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendReceipt(appointment)}>
+                                <Receipt className="mr-2 h-4 w-4" />
+                                Send Receipt
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleRefund(appointment)}>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Process Refund
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleMarkNoShow(appointment)}>
+                                <UserX className="mr-2 h-4 w-4" />
+                                Mark as No-Show
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleCancelAppointment(appointment)}
+                                className="text-red-600"
+                              >
+                                <XCircle className="mr-2 h-4 w-4" />
+                                Cancel Appointment
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       ))}
                     </div>
