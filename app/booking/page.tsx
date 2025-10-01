@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -62,7 +62,7 @@ interface Appointment {
 
 // Mock appointments removed - now using database API
 
-export default function BookingCalendar() {
+function BookingCalendarContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
@@ -1458,5 +1458,20 @@ export default function BookingCalendar() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function BookingCalendar() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-lavender/10 via-white to-purple/5">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+          <p className="text-muted-text">Loading booking page...</p>
+        </div>
+      </div>
+    }>
+      <BookingCalendarContent />
+    </Suspense>
   )
 }
