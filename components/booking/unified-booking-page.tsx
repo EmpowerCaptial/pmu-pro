@@ -358,6 +358,23 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {services.map((service) => (
                 <Card key={service.id} className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg hover:shadow-xl transition-shadow">
+                  {/* Service Image */}
+                  {service.imageUrl && (
+                    <div className="relative h-48 overflow-hidden rounded-t-lg">
+                      <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Service image failed to load:', service.imageUrl)
+                          // Hide the image container on error
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   <CardHeader className="pb-3">
                     <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <span className="break-words">{service.name}</span>
@@ -433,9 +450,32 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                   {products.map((product) => {
                     const cartQuantity = cart[product.id] || 0
                     const isOutOfStock = !product.isDigital && product.stockQuantity === 0
+                    const productImages = Array.isArray(product.images) ? product.images : []
                     
                     return (
                       <Card key={product.id} className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg hover:shadow-xl transition-shadow">
+                        {/* Product Image */}
+                        {productImages.length > 0 && (
+                          <div className="relative h-48 overflow-hidden rounded-t-lg">
+                            <img
+                              src={productImages[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                console.error('Product image failed to load:', productImages[0])
+                                // Hide the image container on error
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
+                            {productImages.length > 1 && (
+                              <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                +{productImages.length - 1} more
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
                         <CardHeader className="pb-3">
                           <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span className="break-words">{product.name}</span>

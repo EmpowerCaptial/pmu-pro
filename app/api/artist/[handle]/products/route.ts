@@ -53,7 +53,13 @@ export async function GET(
       }
     })
 
-    return NextResponse.json({ products })
+    // Parse images from JSON strings
+    const productsWithParsedImages = products.map((product: any) => ({
+      ...product,
+      images: typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+    }))
+    
+    return NextResponse.json({ products: productsWithParsedImages })
 
   } catch (error) {
     console.error('Error fetching artist products:', error)
