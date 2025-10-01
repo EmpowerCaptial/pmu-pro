@@ -139,6 +139,16 @@ const coreFeatures = [
     color: 'bg-gradient-to-br from-teal-500 to-teal-600',
     status: 'active',
     category: 'core'
+  },
+  {
+    id: 'products',
+    title: 'Products',
+    description: 'Ecommerce & product management',
+    icon: Package,
+    href: '/products',
+    color: 'bg-gradient-to-br from-orange-500 to-orange-600',
+    status: 'active',
+    category: 'core'
   }
 ]
 
@@ -246,6 +256,16 @@ const marketingFeatures = [
     icon: Rocket,
     href: '/marketing',
     color: 'bg-gradient-to-br from-sky-500 to-sky-600',
+    status: 'active',
+    category: 'marketing'
+  },
+  {
+    id: 'email-marketing',
+    title: 'Email Marketing',
+    description: 'AI-powered email campaigns',
+    icon: Mail,
+    href: '/email-marketing',
+    color: 'bg-gradient-to-br from-indigo-500 to-purple-600',
     status: 'active',
     category: 'marketing'
   },

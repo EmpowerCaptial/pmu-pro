@@ -53,51 +53,148 @@ export default function PortfolioPage() {
 
   // Load saved portfolio items on component mount
   useEffect(() => {
-    if (currentUser) {
-      const savedPortfolio = localStorage.getItem(`portfolio_${currentUser.email}`)
-      if (savedPortfolio) {
+    const loadPortfolio = async () => {
+      if (currentUser?.email) {
         try {
-          setPortfolioItems(JSON.parse(savedPortfolio))
+          const response = await fetch('/api/portfolio', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setPortfolioItems(data.portfolio || [])
+          } else {
+            // Fallback to localStorage for existing data
+            const savedPortfolio = localStorage.getItem(`portfolio_${currentUser.email}`)
+            if (savedPortfolio) {
+              try {
+                setPortfolioItems(JSON.parse(savedPortfolio))
+              } catch (error) {
+                console.error('Error loading saved portfolio from localStorage:', error)
+              }
+            }
+          }
         } catch (error) {
-          console.error('Error loading saved portfolio:', error)
+          console.error('Error loading portfolio:', error)
+          // Fallback to localStorage
+          const savedPortfolio = localStorage.getItem(`portfolio_${currentUser.email}`)
+          if (savedPortfolio) {
+            try {
+              setPortfolioItems(JSON.parse(savedPortfolio))
+            } catch (error) {
+              console.error('Error loading saved portfolio from localStorage:', error)
+            }
+          }
         }
       }
     }
+
+    loadPortfolio()
   }, [currentUser])
 
-  const handleAddWork = () => {
+  const handleAddWork = async () => {
     if (!newWork.title || !newWork.description || !newWork.beforeImage || !newWork.afterImage) {
       alert("Please fill in all fields and upload both images")
       return
     }
 
-    const newItem: PortfolioItem = {
-      id: Date.now().toString(),
-      type: newWork.type,
-      title: newWork.title,
-      description: newWork.description,
-      beforeImage: URL.createObjectURL(newWork.beforeImage),
-      afterImage: URL.createObjectURL(newWork.afterImage),
-      date: new Date().toISOString().split("T")[0],
-      isPublic: true, // Default to public for new items
-    }
+    try {
+      // First, upload images to Vercel Blob
+      const formData = new FormData()
+      formData.append('beforeImage', newWork.beforeImage)
+      formData.append('afterImage', newWork.afterImage)
 
-    const updatedItems = [newItem, ...portfolioItems]
-    setPortfolioItems(updatedItems)
-    
-    // Save to localStorage
-    if (currentUser) {
-      localStorage.setItem(`portfolio_${currentUser.email}`, JSON.stringify(updatedItems))
+      const uploadResponse = await fetch('/api/portfolio/upload', {
+        method: 'POST',
+        headers: {
+          'x-user-email': currentUser?.email || ''
+        },
+        body: formData
+      })
+
+      const uploadData = await uploadResponse.json()
+      
+      if (!uploadData.success) {
+        alert('Failed to upload images: ' + (uploadData.error || 'Unknown error'))
+        return
+      }
+
+      // Then create the portfolio item with the uploaded image URLs
+      const response = await fetch('/api/portfolio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          type: newWork.type,
+          title: newWork.title,
+          description: newWork.description,
+          beforeImage: uploadData.beforeImageUrl,
+          afterImage: uploadData.afterImageUrl,
+          isPublic: true,
+          date: new Date().toISOString().split("T")[0]
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const newItem = data.portfolio
+        
+        const updatedItems = [newItem, ...portfolioItems]
+        setPortfolioItems(updatedItems)
+        
+        // Also save to localStorage as backup
+        if (currentUser) {
+          localStorage.setItem(`portfolio_${currentUser.email}`, JSON.stringify(updatedItems))
+        }
+        
+        setIsAddWorkOpen(false)
+        setNewWork({
+          type: "eyebrows",
+          title: "",
+          description: "",
+          beforeImage: null,
+          afterImage: null,
+        })
+        alert("Portfolio item added successfully!")
+      } else {
+        throw new Error('Failed to save portfolio item')
+      }
+    } catch (error) {
+      console.error('Error saving portfolio item:', error)
+      
+      // Fallback to localStorage only
+      const newItem: PortfolioItem = {
+        id: Date.now().toString(),
+        type: newWork.type,
+        title: newWork.title,
+        description: newWork.description,
+        beforeImage: URL.createObjectURL(newWork.beforeImage),
+        afterImage: URL.createObjectURL(newWork.afterImage),
+        date: new Date().toISOString().split("T")[0],
+        isPublic: true,
+      }
+
+      const updatedItems = [newItem, ...portfolioItems]
+      setPortfolioItems(updatedItems)
+      
+      if (currentUser) {
+        localStorage.setItem(`portfolio_${currentUser.email}`, JSON.stringify(updatedItems))
+      }
+      
+      setIsAddWorkOpen(false)
+      setNewWork({
+        type: "eyebrows",
+        title: "",
+        description: "",
+        beforeImage: null,
+        afterImage: null,
+      })
+      alert("Portfolio item added successfully (saved locally)!")
     }
-    
-    setIsAddWorkOpen(false)
-    setNewWork({
-      type: "eyebrows",
-      title: "",
-      description: "",
-      beforeImage: null,
-      afterImage: null,
-    })
   }
 
   const handleDeleteWork = (itemId: string) => {
@@ -143,9 +240,9 @@ export default function PortfolioPage() {
         message: shareMessage,
         portfolioItems: selectedImages,
         artistInfo: {
-          name: "Sarah Johnson",
-          specialties: ["Microblading", "Lip Blush", "Eyeliner"],
-          experience: "5+ years",
+          name: currentUser?.studioName || currentUser?.name || "PMU Artist",
+          specialties: (currentUser as any)?.specialties || ["Microblading", "Lip Blush", "Eyeliner"],
+          experience: (currentUser as any)?.experience || "5+ years",
         },
       }
 

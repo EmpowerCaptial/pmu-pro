@@ -42,6 +42,11 @@ const PIGMENT_BRANDS = [
   'Tina Davies',
   'Brow Daddy',
   'Everlasting',
+  'PhiBrows',
+  'World Famous Ink',
+  'Inkredible',
+  'Beauty Angels',
+  'Fusion Ink',
   'Other'
 ];
 
@@ -92,6 +97,7 @@ export default function ProcedureForm({
     needleConfiguration: initialData?.needleConfiguration || '',
     needleSize: initialData?.needleSize || '',
     pigmentBrand: initialData?.pigmentBrand || '',
+    customPigmentBrand: initialData?.customPigmentBrand || '',
     pigmentColor: initialData?.pigmentColor || '',
     lotNumber: initialData?.lotNumber || '',
     depth: initialData?.depth || '',
@@ -132,7 +138,7 @@ export default function ProcedureForm({
         voltage: formData.voltage ? parseFloat(formData.voltage) : null,
         needleConfiguration: formData.needleConfiguration,
         needleSize: formData.needleSize,
-        pigmentBrand: formData.pigmentBrand,
+        pigmentBrand: formData.pigmentBrand === 'Other' ? formData.customPigmentBrand : formData.pigmentBrand,
         pigmentColor: formData.pigmentColor,
         lotNumber: formData.lotNumber,
         depth: formData.depth,
@@ -182,9 +188,9 @@ export default function ProcedureForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select procedure type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
                   {PROCEDURE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
+                    <SelectItem key={type} value={type} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
                       {type}
                     </SelectItem>
                   ))}
@@ -226,9 +232,9 @@ export default function ProcedureForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select needle config" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
                   {NEEDLE_CONFIGURATIONS.map((config) => (
-                    <SelectItem key={config} value={config}>
+                    <SelectItem key={config} value={config} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
                       {config}
                     </SelectItem>
                   ))}
@@ -258,14 +264,21 @@ export default function ProcedureForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
                   {PIGMENT_BRANDS.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
+                    <SelectItem key={brand} value={brand} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
                       {brand}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {formData.pigmentBrand === 'Other' && (
+                <Input
+                  placeholder="Enter custom brand name"
+                  value={formData.customPigmentBrand || ''}
+                  onChange={(e) => handleInputChange('customPigmentBrand', e.target.value)}
+                />
+              )}
             </div>
 
             <div className="space-y-2">
@@ -300,9 +313,9 @@ export default function ProcedureForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select depth" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
                   {SKIN_DEPTHS.map((depth) => (
-                    <SelectItem key={depth} value={depth}>
+                    <SelectItem key={depth} value={depth} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
                       {depth}
                     </SelectItem>
                   ))}
@@ -319,9 +332,9 @@ export default function ProcedureForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select technique" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
                   {TECHNIQUES.map((technique) => (
-                    <SelectItem key={technique} value={technique}>
+                    <SelectItem key={technique} value={technique} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
                       {technique}
                     </SelectItem>
                   ))}

@@ -544,64 +544,126 @@ export default function InventoryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 sm:p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-3 p-3">
+              {filteredInventory.map((item) => (
+                <div key={item.id} className="border rounded-lg p-3 bg-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{item.name}</p>
+                      <p className="text-xs text-gray-600 truncate">{item.brand} - {item.sku}</p>
+                    </div>
+                    <Badge className={`${getStatusColor(item.status)} text-xs`}>
+                      <div className="flex items-center space-x-1">
+                        {getStatusIcon(item.status)}
+                        <span>{item.status.replace('_', ' ')}</span>
+                      </div>
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                      <p className="text-xs text-gray-600">Category</p>
+                      <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600">Unit Cost</p>
+                      <p className="text-sm font-medium">${item.unitCost.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={item.currentStock}
+                        onChange={(e) => handleUpdateStock(item.id, parseInt(e.target.value) || 0)}
+                        className="w-16 h-8 text-xs"
+                      />
+                      <span className="text-xs text-gray-600">/ {item.maxStock}</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-600">Total Value</p>
+                      <p className="text-sm font-medium">${item.totalValue.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteItem(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[200px]">Item</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Category</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[120px]">Stock</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[120px]">Status</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Unit Cost</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Total Value</th>
-                    <th className="text-left p-2 sm:p-3 text-xs sm:text-sm font-medium min-w-[100px]">Actions</th>
+                    <th className="text-left p-3 text-sm font-medium">Item</th>
+                    <th className="text-left p-3 text-sm font-medium">Category</th>
+                    <th className="text-left p-3 text-sm font-medium">Stock</th>
+                    <th className="text-left p-3 text-sm font-medium">Status</th>
+                    <th className="text-left p-3 text-sm font-medium">Unit Cost</th>
+                    <th className="text-left p-3 text-sm font-medium">Total Value</th>
+                    <th className="text-left p-3 text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredInventory.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2 sm:p-3 min-w-[200px]">
-                        <div className="min-w-0">
-                          <p className="font-medium text-xs sm:text-sm truncate">{item.name}</p>
-                          <p className="text-xs text-gray-600 truncate">{item.brand} - {item.sku}</p>
+                      <td className="p-3">
+                        <div>
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-xs text-gray-600">{item.brand} - {item.sku}</p>
                         </div>
                       </td>
-                      <td className="p-2 sm:p-3 min-w-[100px]">
-                        <Badge variant="outline" className="text-xs whitespace-nowrap">{item.category}</Badge>
+                      <td className="p-3">
+                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
                       </td>
-                      <td className="p-2 sm:p-3 min-w-[120px]">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
+                      <td className="p-3">
+                        <div className="flex items-center space-x-2">
                           <Input
                             type="number"
                             value={item.currentStock}
                             onChange={(e) => handleUpdateStock(item.id, parseInt(e.target.value) || 0)}
-                            className="w-16 sm:w-20 h-7 sm:h-9 text-xs sm:text-sm"
+                            className="w-20 h-9 text-sm"
                           />
-                          <span className="text-xs text-gray-600 whitespace-nowrap">/ {item.maxStock}</span>
+                          <span className="text-xs text-gray-600">/ {item.maxStock}</span>
                         </div>
                       </td>
-                      <td className="p-2 sm:p-3 min-w-[120px]">
-                        <Badge className={`${getStatusColor(item.status)} text-xs whitespace-nowrap`}>
+                      <td className="p-3">
+                        <Badge className={`${getStatusColor(item.status)} text-xs`}>
                           <div className="flex items-center space-x-1">
                             {getStatusIcon(item.status)}
                             <span>{item.status.replace('_', ' ')}</span>
                           </div>
                         </Badge>
                       </td>
-                      <td className="p-2 sm:p-3 text-xs sm:text-sm min-w-[100px] whitespace-nowrap">${item.unitCost.toFixed(2)}</td>
-                      <td className="p-2 sm:p-3 text-xs sm:text-sm min-w-[100px] whitespace-nowrap">${item.totalValue.toFixed(2)}</td>
-                      <td className="p-2 sm:p-3 min-w-[100px]">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                          <Button size="sm" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
-                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <td className="p-3 text-sm">${item.unitCost.toFixed(2)}</td>
+                      <td className="p-3 text-sm">${item.totalValue.toFixed(2)}</td>
+                      <td className="p-3">
+                        <div className="flex items-center space-x-2">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
                             size="sm" 
                             variant="ghost" 
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                             onClick={() => handleDeleteItem(item.id)}
-                            className="text-red-600 hover:text-red-700 h-7 w-7 sm:h-8 sm:w-8 p-0"
                           >
-                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>

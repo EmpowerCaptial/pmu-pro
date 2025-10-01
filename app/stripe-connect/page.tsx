@@ -54,7 +54,26 @@ export default function StripeConnectPage() {
 
   const checkStripeConnection = async () => {
     try {
-      const response = await fetch('/api/stripe/connect/account-status')
+      // Get user email from localStorage
+      const userEmail = localStorage.getItem('userEmail') || ''
+      const demoUser = localStorage.getItem('demoUser')
+      let email = userEmail
+      
+      if (demoUser) {
+        try {
+          const user = JSON.parse(demoUser)
+          email = user.email || userEmail
+        } catch (e) {
+          console.error('Error parsing demoUser:', e)
+        }
+      }
+      
+      const response = await fetch('/api/stripe/connect/account-status', {
+        headers: {
+          'x-user-email': email
+        }
+      })
+      
       if (response.ok) {
         const data = await response.json()
         setStripeAccount(data.account)

@@ -12,6 +12,9 @@ import { CheckCircle, AlertTriangle } from "lucide-react"
 import { ArtistApplicationService } from "@/lib/artist-application-service"
 import { TrialService } from "@/lib/trial-service"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { useAutoSave } from "@/hooks/use-auto-save"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { FormRecovery } from "@/components/forms/form-recovery"
 
 export default function ArtistSignupPage() {
   const { currentUser, login } = useDemoAuth()
@@ -19,7 +22,7 @@ export default function ArtistSignupPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
-  const [formData, setFormData] = useState({
+  const initialData = {
     name: currentUser?.name || "",
     email: currentUser?.email || "",
     phone: "",
@@ -31,7 +34,36 @@ export default function ArtistSignupPage() {
     specialties: [] as string[],
     portfolioUrl: "",
     socialMedia: [] as string[],
-    agreeToTerms: false
+    agreeToTerms: false,
+    licenseFileUrl: "",
+    insuranceFileUrl: ""
+  }
+
+  const {
+    formData,
+    updateFormData,
+    saveForm,
+    clearDraft,
+    isSaving,
+    lastSaved,
+    hasUnsavedChanges,
+    error: saveError
+  } = useAutoSave(initialData, {
+    formType: 'artist_signup',
+    onSave: (data) => console.log('Artist signup auto-saved:', data),
+    onError: (error) => console.error('Auto-save error:', error)
+  })
+
+  const { uploadFile, isUploading: isUploadingFile } = useFileUpload({
+    fileType: 'document',
+    onSuccess: (file) => {
+      if (file.fileName.includes('license')) {
+        updateFormData({ licenseFileUrl: file.fileUrl })
+      } else if (file.fileName.includes('insurance')) {
+        updateFormData({ insuranceFileUrl: file.fileUrl })
+      }
+    },
+    onError: (error) => console.error('File upload error:', error)
   })
 
   const specialtyOptions = [
@@ -45,14 +77,11 @@ export default function ArtistSignupPage() {
   ]
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    updateFormData({ [field]: value })
   }
 
   const handleSpecialtyChange = (specialty: string, checked: boolean) => {
-    setFormData(prev => ({
+    updateFormData(prev => ({
       ...prev,
       specialties: checked 
         ? [...prev.specialties, specialty]
@@ -66,6 +95,15 @@ export default function ArtistSignupPage() {
     setErrors([])
 
     try {
+      // Save form as complete first
+      const success = await saveForm(formData, true)
+      
+      if (!success) {
+        setErrors(["Failed to save form. Please try again."])
+        setIsSubmitting(false)
+        return
+      }
+
       // Validate required fields
       const validationErrors: string[] = []
       
@@ -100,7 +138,9 @@ export default function ArtistSignupPage() {
           experience: formData.experience,
           specialties: formData.specialties,
           portfolioUrl: formData.portfolioUrl || undefined,
-          socialMedia: formData.socialMedia
+          socialMedia: formData.socialMedia,
+          licenseFileUrl: formData.licenseFileUrl,
+          insuranceFileUrl: formData.insuranceFileUrl
         }),
       })
 
@@ -379,6 +419,16 @@ export default function ArtistSignupPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Form Recovery Component */}
+      <FormRecovery
+        hasUnsavedChanges={hasUnsavedChanges}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        onSave={() => saveForm(formData, false)}
+        onDiscard={clearDraft}
+        formName="artist signup form"
+      />
     </div>
   )
 }

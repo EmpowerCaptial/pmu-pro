@@ -13,8 +13,10 @@ import { ArrowLeft, Save, User, Send } from "lucide-react"
 import Link from "next/link"
 import { addClient } from "@/lib/client-storage"
 import { ClientPortalService } from "@/lib/client-portal-service"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function NewClientForm() {
+  const { currentUser } = useDemoAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPortalOption, setShowPortalOption] = useState(false)
@@ -31,7 +33,7 @@ export function NewClientForm() {
 
     try {
       // Create new client with storage system
-      const newClient = addClient({
+        const newClient = await addClient({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -46,7 +48,7 @@ export function NewClientForm() {
         medicalRelease: false,
         liabilityWaiver: false,
         aftercareAgreement: false
-      })
+      }, currentUser?.email)
 
       // If portal access is requested, generate and show the link
       if (showPortalOption && newClient) {

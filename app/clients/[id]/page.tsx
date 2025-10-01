@@ -315,10 +315,10 @@ export default function ClientProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="procedures">Procedures</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsTrigger value="overview" className="bg-blue-50 hover:bg-blue-100 data-[state=active]:bg-blue-200 data-[state=active]:text-blue-900">Overview</TabsTrigger>
+            <TabsTrigger value="procedures" className="bg-green-50 hover:bg-green-100 data-[state=active]:bg-green-200 data-[state=active]:text-green-900">Procedures</TabsTrigger>
+            <TabsTrigger value="appointments" className="bg-purple-50 hover:bg-purple-100 data-[state=active]:bg-purple-200 data-[state=active]:text-purple-900">Appointments</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -436,14 +436,16 @@ export default function ClientProfilePage() {
           <DialogHeader>
             <DialogTitle>Add New Procedure</DialogTitle>
           </DialogHeader>
-          {client && (
-            <ProcedureForm
-              clientId={client.id}
-              clientName={client.name}
-              onSave={handleSaveProcedure}
-              onCancel={() => setShowProcedureForm(false)}
-            />
-          )}
+          <div className="relative z-50">
+            {client && (
+              <ProcedureForm
+                clientId={client.id}
+                clientName={client.name}
+                onSave={handleSaveProcedure}
+                onCancel={() => setShowProcedureForm(false)}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

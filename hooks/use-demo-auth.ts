@@ -6,6 +6,7 @@ interface DemoUser {
   name: string
   email: string
   role: string
+  studioName?: string
   isRealAccount?: boolean
   subscription?: string
   features?: string[]
@@ -16,42 +17,37 @@ interface DemoUser {
 // SECURITY: Production users removed - all authentication now goes through database
 // No hardcoded credentials for production security
 
-const DEMO_USERS = {
-  'demo@pmupro.com': {
-    id: 'demo_artist_001',
-    name: 'Demo Artist',
-    email: 'demo@pmupro.com',
-    role: 'artist',
-    isRealAccount: false,
-    subscription: 'demo',
-    features: ['limited']
-  }
-}
+const DEMO_USERS = {}
 
 export function useDemoAuth() {
   const [currentUser, setCurrentUser] = useState<DemoUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Check for saved user in localStorage
     const savedUser = localStorage.getItem('demoUser')
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser)
-        setCurrentUser(user)
-        setIsLoading(false)
+        // Only use saved user if it's a real account (not demo)
+        if (user.isRealAccount) {
+          setCurrentUser(user)
+        } else {
+          // Clear demo users from localStorage
+          localStorage.removeItem('demoUser')
+          localStorage.removeItem('userType')
+        }
       } catch (error) {
+        console.error('Error parsing saved user:', error)
         localStorage.removeItem('demoUser')
-        setIsLoading(false)
+        localStorage.removeItem('userType')
       }
-    } else {
-      setIsLoading(false)
     }
+    setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string) => {
-    // SECURITY: All authentication now goes through proper API endpoints
-    // No hardcoded credentials for production security
-    
+    // All authentication now goes through database API endpoints
     try {
       // Call the secure login API endpoint
       const response = await fetch('/api/auth/login', {
@@ -72,7 +68,10 @@ export function useDemoAuth() {
           role: data.user.role || 'artist',
           isRealAccount: true,
           subscription: data.user.selectedPlan || 'basic',
-          features: ['all']
+          features: ['all'],
+          hasActiveSubscription: data.user.hasActiveSubscription,
+          subscriptionStatus: data.user.subscriptionStatus,
+          selectedPlan: data.user.selectedPlan
         }
         
         setCurrentUser(user)
@@ -96,20 +95,6 @@ export function useDemoAuth() {
         throw new Error(data.error || 'Authentication failed')
       }
     } catch (error) {
-      // Fallback to demo account for development/testing
-      if (email === 'demo@pmupro.com' && password === 'demopmu') {
-        const user = DEMO_USERS[email]
-        setCurrentUser(user)
-        localStorage.setItem('demoUser', JSON.stringify(user))
-        localStorage.setItem('userType', 'demo')
-        
-        if (!TrialService.getTrialUser()) {
-          TrialService.startTrial(email)
-        }
-        
-        return user
-      }
-      
       throw new Error('Invalid credentials')
     }
   }

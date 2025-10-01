@@ -6,12 +6,13 @@ import { usePathname } from 'next/navigation'
 import { 
   Home, 
   CreditCard, 
-  Calendar, 
-  BookOpen, 
+  Calendar,
+  BookOpen,
   Users, 
   Settings,
   Plus,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Package
 } from 'lucide-react'
 
 const navItems = [
@@ -22,23 +23,16 @@ const navItems = [
     color: 'text-blue-600'
   },
   {
-    name: 'POS',
-    href: '/pos',
-    icon: CreditCard,
-    color: 'text-green-600',
-    comingSoon: true
+    name: 'Features',
+    href: '/features',
+    icon: BookOpen,
+    color: 'text-orange-600'
   },
   {
     name: 'Calendar',
     href: '/booking',
     icon: Calendar,
     color: 'text-purple-600'
-  },
-  {
-    name: 'Features',
-    href: '/features',
-    icon: BookOpen,
-    color: 'text-orange-600'
   },
   {
     name: 'Clients',
@@ -95,7 +89,7 @@ export default function MobileNav() {
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
-          const isComingSoon = item.comingSoon
+          const isComingSoon = 'comingSoon' in item ? (item as any).comingSoon : false
           
           return (
             <Link
@@ -120,15 +114,13 @@ export default function MobileNav() {
           )
         })}
         
-        {/* Book URL Button */}
+        {/* Checkout Button */}
         <Link
-          href="/book/tierra"
+          href="/pos"
           className="flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 text-gray-600 hover:text-lavender hover:bg-lavender/5"
         >
-          <div className="w-6 h-6 mb-1 rounded-full bg-lavender/20 flex items-center justify-center">
-            <LinkIcon className="w-4 h-4 text-lavender" />
-          </div>
-          <span className="text-xs font-medium">Book URL</span>
+          <CreditCard className="w-6 h-6 mb-1 text-lavender" />
+          <span className="text-xs font-medium">Checkout</span>
         </Link>
       </div>
     </div>

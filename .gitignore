@@ -26,3 +26,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .ENV_VARS_TEMP.md
+.env*.local

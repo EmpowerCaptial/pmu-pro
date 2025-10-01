@@ -46,61 +46,257 @@ export default function ProfilePage() {
     }
   })
 
+  // Auto-migrate localStorage data silently
+  const autoMigrateData = async () => {
+    if (!currentUser?.email) return
+    
+    try {
+      // Check for localStorage data
+      const portfolioData = localStorage.getItem(`portfolio_${currentUser.email}`)
+      const profileData = localStorage.getItem(`profile_${currentUser.email}`)
+      const avatarData = localStorage.getItem(`profile_photo_${currentUser.email}`)
+      const clientData = localStorage.getItem('pmu_clients')
+      
+      const hasData = portfolioData || profileData || avatarData || clientData
+      
+      if (hasData) {
+        // Migrate silently
+        const response = await fetch('/api/migrate-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser.email
+          },
+          body: JSON.stringify({
+            portfolioData: portfolioData ? JSON.parse(portfolioData) : null,
+            profileData: profileData ? JSON.parse(profileData) : null,
+            avatarData: avatarData,
+            clientData: clientData ? JSON.parse(clientData) : null
+          })
+        })
+
+        if (response.ok) {
+          // Clear localStorage after successful migration
+          if (portfolioData) localStorage.removeItem(`portfolio_${currentUser.email}`)
+          if (profileData) localStorage.removeItem(`profile_${currentUser.email}`)
+          if (avatarData) localStorage.removeItem(`profile_photo_${currentUser.email}`)
+          if (clientData) localStorage.removeItem('pmu_clients')
+          
+          console.log('Data migrated successfully')
+        }
+      }
+    } catch (error) {
+      console.error('Silent migration failed:', error)
+      // Don't show error to user, just log it
+    }
+  }
+
   // Load saved profile data on component mount
   useEffect(() => {
-    if (currentUser) {
-      // Load profile photo
-      const savedPhoto = localStorage.getItem(`profile_photo_${currentUser.email}`)
-      if (savedPhoto) {
-        setProfilePhoto(savedPhoto)
-      }
+    const loadProfile = async () => {
+      if (currentUser?.email) {
+        try {
+          // Load profile data from API
+          const response = await fetch('/api/profile', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            const apiProfile = data.profile
+            
+            setProfile(prev => ({
+              ...prev,
+              name: apiProfile.name || currentUser.name || prev.name,
+              email: apiProfile.email || currentUser.email || prev.email,
+              phone: apiProfile.phone || prev.phone,
+              website: apiProfile.website || prev.website,
+              instagram: apiProfile.instagram || prev.instagram,
+              bio: apiProfile.bio || prev.bio,
+              studioName: apiProfile.studioName || prev.studioName,
+              address: apiProfile.address || prev.address,
+              businessHours: apiProfile.businessHours || prev.businessHours,
+              specialties: apiProfile.specialties || prev.specialties,
+              experience: apiProfile.experience || prev.experience,
+              certifications: apiProfile.certifications || prev.certifications
+            }))
+            
+            if (apiProfile.avatar) {
+              setProfilePhoto(apiProfile.avatar)
+            }
+          } else {
+            // Fallback to localStorage for existing data
+            const savedPhoto = localStorage.getItem(`profile_photo_${currentUser.email}`)
+            if (savedPhoto) {
+              setProfilePhoto(savedPhoto)
+            }
 
-      // Load profile data
-      const savedProfile = localStorage.getItem(`profile_${currentUser.email}`)
-      if (savedProfile) {
-        const parsedProfile = JSON.parse(savedProfile)
-        setProfile(prev => ({
-          ...prev,
-          ...parsedProfile,
-          name: currentUser.name || prev.name,
-          email: currentUser.email || prev.email
-        }))
-      } else {
-        // Initialize with current user data
-        setProfile(prev => ({
-          ...prev,
-          name: currentUser.name || prev.name,
-          email: currentUser.email || prev.email
-        }))
+            const savedProfile = localStorage.getItem(`profile_${currentUser.email}`)
+            if (savedProfile) {
+              const parsedProfile = JSON.parse(savedProfile)
+              setProfile(prev => ({
+                ...prev,
+                ...parsedProfile,
+                name: currentUser.name || prev.name,
+                email: currentUser.email || prev.email
+              }))
+            } else {
+              setProfile(prev => ({
+                ...prev,
+                name: currentUser.name || prev.name,
+                email: currentUser.email || prev.email
+              }))
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error)
+          
+          // Fallback to localStorage
+          const savedPhoto = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          if (savedPhoto) {
+            setProfilePhoto(savedPhoto)
+          }
+
+          const savedProfile = localStorage.getItem(`profile_${currentUser.email}`)
+          if (savedProfile) {
+            const parsedProfile = JSON.parse(savedProfile)
+            setProfile(prev => ({
+              ...prev,
+              ...parsedProfile,
+              name: currentUser.name || prev.name,
+              email: currentUser.email || prev.email
+            }))
+          } else {
+            setProfile(prev => ({
+              ...prev,
+              name: currentUser.name || prev.name,
+              email: currentUser.email || prev.email
+            }))
+          }
+        }
       }
     }
+
+    // Auto-migrate first, then load profile
+    autoMigrateData().then(() => {
+      loadProfile()
+    })
   }, [currentUser])
 
-  const handleSave = () => {
-    if (currentUser) {
-      // Save profile to localStorage with user-specific key
-      localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(profile))
-      alert("Profile saved successfully!")
+  const handleSave = async () => {
+    if (currentUser?.email) {
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser.email
+          },
+          body: JSON.stringify({
+            bio: profile.bio,
+            studioName: profile.studioName,
+            website: profile.website,
+            instagram: profile.instagram,
+            address: profile.address,
+            businessHours: profile.businessHours,
+            specialties: profile.specialties,
+            experience: profile.experience,
+            certifications: profile.certifications,
+            avatar: profilePhoto
+          })
+        })
+
+        if (response.ok) {
+          // Also save to localStorage as backup
+          localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(profile))
+          if (profilePhoto) {
+            localStorage.setItem(`profile_photo_${currentUser.email}`, profilePhoto)
+          }
+          alert("Profile saved successfully!")
+        } else {
+          throw new Error('Failed to save profile')
+        }
+      } catch (error) {
+        console.error('Error saving profile:', error)
+        
+        // Fallback to localStorage only
+        localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(profile))
+        if (profilePhoto) {
+          localStorage.setItem(`profile_photo_${currentUser.email}`, profilePhoto)
+        }
+        alert("Profile saved locally (connection issue)!")
+      }
     }
     setIsEditing(false)
   }
 
-  const handleChangePhoto = () => {
+  const handleChangePhoto = async () => {
     const input = document.createElement("input")
     input.type = "file"
     input.accept = "image/*"
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file && currentUser) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const imageUrl = e.target?.result as string
-          // Save photo with user-specific key
-          localStorage.setItem(`profile_photo_${currentUser.email}`, imageUrl)
-          setProfilePhoto(imageUrl)
-          alert("Profile photo updated successfully!")
+      if (file && currentUser?.email) {
+        try {
+          // Upload to Vercel Blob
+          const formData = new FormData()
+          formData.append('avatar', file)
+
+          const response = await fetch('/api/avatar/upload', {
+            method: 'POST',
+            headers: {
+              'x-user-email': currentUser.email
+            },
+            body: formData
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            setProfilePhoto(data.avatarUrl)
+            
+            // Also save to localStorage as backup
+            localStorage.setItem(`profile_photo_${currentUser.email}`, data.avatarUrl)
+            
+            // Update the profile in the database with the new avatar URL
+            try {
+              const profileResponse = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-user-email': currentUser.email
+                },
+                body: JSON.stringify({
+                  avatar: data.avatarUrl
+                })
+              })
+              
+              if (profileResponse.ok) {
+                alert("Profile photo updated successfully!")
+              } else {
+                alert("Photo uploaded but profile update failed. Please try saving your profile again.")
+              }
+            } catch (profileError) {
+              console.error('Error updating profile with avatar:', profileError)
+              alert("Photo uploaded but profile update failed. Please try saving your profile again.")
+            }
+          } else {
+            throw new Error('Upload failed')
+          }
+        } catch (error) {
+          console.error('Error uploading avatar:', error)
+          
+          // Fallback to localStorage only
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            const imageUrl = e.target?.result as string
+            localStorage.setItem(`profile_photo_${currentUser.email}`, imageUrl)
+            setProfilePhoto(imageUrl)
+            alert("Profile photo updated locally (upload failed)!")
+          }
+          reader.readAsDataURL(file)
         }
-        reader.readAsDataURL(file)
       }
     }
     input.click()
@@ -125,6 +321,7 @@ export default function ProfilePage() {
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6">
+
           {/* Header */}
           {/* Mobile Layout */}
           <div className="md:hidden text-center mb-6">

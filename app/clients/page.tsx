@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
+import { SubscriptionGate } from '@/components/auth/subscription-gate';
 import ClientList, { Client } from '@/src/components/client/ClientList';
 import MessageForm from '@/src/components/client/MessageForm';
 import { Button } from '@/components/ui/button';
@@ -298,7 +299,8 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+    <SubscriptionGate>
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
       {/* Client List Component */}
       <ClientList
         clients={clients}
@@ -679,6 +681,7 @@ export default function ClientsPage() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </SubscriptionGate>
   );
 }

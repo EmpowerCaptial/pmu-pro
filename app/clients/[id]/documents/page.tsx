@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, User, FileText, PenTool } from "lucide-react"
 import Link from "next/link"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
-import { getClients } from "@/lib/client-storage"
-import { useState } from "react"
+import { getClients, Client } from "@/lib/client-storage"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface PDFDocument {
@@ -41,8 +41,16 @@ export default function ClientDocumentsPage({ params }: ClientDocumentsPageProps
   const [uploadedDocuments, setUploadedDocuments] = useState<PDFDocument[]>([])
   
   // Get client data
-  const clients = getClients()
-  const client = clients.find(c => c.id === params.id)
+  const [client, setClient] = useState<Client | undefined>(undefined)
+  
+  useEffect(() => {
+    const loadClient = async () => {
+      const clients = await getClients(currentUser?.email)
+      const foundClient = clients.find(c => c.id === params.id)
+      setClient(foundClient)
+    }
+    loadClient()
+  }, [params.id, currentUser?.email])
   
   // Fallback user if not authenticated
   const user = currentUser ? {

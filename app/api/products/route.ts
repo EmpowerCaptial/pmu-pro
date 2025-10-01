@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic"
 export async function GET(request: NextRequest) {
   try {
     const userEmail = request.headers.get('x-user-email')
+    console.log('GET /api/products - userEmail:', userEmail)
+    
     if (!userEmail) {
       return NextResponse.json({ error: 'User email required' }, { status: 401 })
     }
@@ -18,12 +20,15 @@ export async function GET(request: NextRequest) {
       where: { email: userEmail }
     })
 
+    console.log('GET /api/products - user found:', !!user)
+
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     // Fetch products
-    const products = await (prisma as any).product.findMany({
+    console.log('GET /api/products - fetching products for userId:', user.id)
+    const products = await prisma.product.findMany({
       where: {
         userId: user.id
       },
@@ -32,12 +37,14 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    console.log('GET /api/products - products found:', products.length)
     return NextResponse.json({ products })
 
   } catch (error) {
     console.error('Error fetching products:', error)
+    console.error('Error details:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { error: 'Failed to fetch products', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -79,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create product
-    const product = await (prisma as any).product.create({
+    const product = await prisma.product.create({
       data: {
         userId: user.id,
         name,
@@ -98,8 +105,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating product:', error)
+    console.error('Error details:', error)
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { error: 'Failed to create product', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

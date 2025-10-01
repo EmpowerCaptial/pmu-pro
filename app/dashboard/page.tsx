@@ -7,7 +7,7 @@ import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 import { BlogSection } from "@/components/dashboard/blog-section"
 import { NavBar } from "@/components/ui/navbar"
 import { Button } from "@/components/ui/button"
-import { Home, Download, Smartphone } from "lucide-react"
+import { Home, Download, Smartphone, CreditCard, Package } from "lucide-react"
 import Link from "next/link"
 import ArtistViewWrapper from "@/components/staff/artist-view-wrapper"
 import InstallPrompt from "@/components/pwa/install-prompt"
@@ -15,6 +15,8 @@ import OfflineIndicator from "@/components/pwa/offline-indicator"
 import DemoBanner from "@/components/demo/demo-banner"
 import DemoDataProvider from "@/components/demo/demo-data-provider"
 import { TrialBanner } from "@/components/trial/trial-banner"
+import { TrialExpirationBanner } from "@/components/trial/trial-expiration-banner"
+import { SubscriptionGate } from "@/components/auth/subscription-gate"
 import { TrialOnboarding } from "@/components/trial/trial-onboarding"
 import { ApplicationStatusCard } from "@/components/trial/application-status-card"
 import { ArtistApplicationService } from "@/lib/artist-application-service"
@@ -100,7 +102,8 @@ export default function DashboardPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <ArtistViewWrapper>
-        <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-24 md:pb-20">
+        <SubscriptionGate>
+          <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige pb-24 md:pb-20">
 
           <NavBar currentPath="/dashboard" user={user} />
           <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
@@ -108,11 +111,20 @@ export default function DashboardPage() {
             <div className="hidden md:block">
               <OfflineIndicator />
             </div>
-            <TrialBanner onUpgrade={() => window.location.href = '/pricing'} />
+            {/* Only show trial banners for users without active subscriptions */}
+            {!(currentUser as any)?.hasActiveSubscription && (
+              <>
+                <TrialBanner onUpgrade={() => window.location.href = '/pricing'} />
+                <TrialExpirationBanner 
+                  onSubscribe={() => window.location.href = '/pricing'}
+                  onDismiss={() => console.log('Trial banner dismissed')}
+                />
+              </>
+            )}
             {isDemoUser && <DemoBanner />}
             
-            {/* Application Status Card */}
-            {hasApplication && currentUser?.email && (
+            {/* Application Status Card - only for users without active subscriptions */}
+            {hasApplication && currentUser?.email && !(currentUser as any)?.hasActiveSubscription && (
               <ApplicationStatusCard 
                 userEmail={currentUser.email}
                 onUpdateApplication={handleUpdateApplication}
@@ -139,14 +151,14 @@ export default function DashboardPage() {
                   <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />
                   Install App
                 </Button>
-                <Link href="/dashboard" className="w-full sm:w-auto">
+                <Link href="/products" className="w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto gap-2 hover:bg-lavender/10 hover:border-lavender bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold text-xs sm:text-sm"
+                    className="w-full sm:w-auto gap-2 hover:bg-teal-50 hover:border-teal-300 bg-white/90 backdrop-blur-sm border-teal-200 text-teal-700 font-semibold text-xs sm:text-sm"
                   >
-                    <Home className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Dashboard
+                    <Package className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Products
                   </Button>
                 </Link>
               </div>
@@ -211,13 +223,14 @@ export default function DashboardPage() {
               </>
             )}
             
-            {/* Blog Section - Always visible at the end */}
-            <div className="mt-8">
+            {/* Blog Section - Hidden while building */}
+            {/* <div className="mt-8">
               <BlogSection />
-            </div>
+            </div> */}
           </main>
           <InstallPrompt />
         </div>
+        </SubscriptionGate>
       </ArtistViewWrapper>
       
       {/* Trial Onboarding Modal */}

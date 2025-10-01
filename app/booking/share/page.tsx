@@ -29,18 +29,19 @@ export default function ShareBookingPage() {
   const [services, setServices] = useState<any[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
 
-  // Generate user handle from email (fallback to demo handle)
+  // Generate user handle from studio name or email (fallback to demo handle)
   const getUserHandle = () => {
-    if (currentUser?.email) {
-      return generateUserHandle(currentUser.email);
+    if (currentUser?.studioName || currentUser?.email) {
+      return generateUserHandle(currentUser.studioName, currentUser.email);
     }
     return 'demo-artist'; // fallback
   };
 
   const userHandle = getUserHandle();
-  const bookingLink = `https://thepmuguide.com/book/${userHandle}`;
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thepmuguide.com';
+  const bookingLink = `${baseUrl}/book/${userHandle}`;
   const embedCode = `<iframe 
-  src="https://thepmuguide.com/book/${userHandle}/embed" 
+  src="${baseUrl}/book/${userHandle}/embed" 
   width="100%" 
   height="680" 
   frameborder="0">

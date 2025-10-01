@@ -64,9 +64,15 @@ export function SaveToClientPrompt({ toolResult, onSave, onSkip, isOpen, onOpenC
   const handleCreateNewClient = async () => {
     try {
       // Create new client via API
+      // Get user email from localStorage or context
+      const userEmail = localStorage.getItem('userEmail') || ''
+      
       const response = await fetch('/api/clients', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-email': userEmail
+        },
         body: JSON.stringify(newClientData)
       })
 

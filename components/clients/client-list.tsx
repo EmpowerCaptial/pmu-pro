@@ -9,9 +9,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label'
 import { Search, Eye, Edit, Plus, User, Mail, Phone, Calendar, MapPin, Trash2, FileText } from 'lucide-react'
 import { getClients, Client, onClientsUpdate, deleteClient } from '@/lib/client-storage'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import Link from 'next/link'
 
 export default function ClientList() {
+  const { currentUser } = useDemoAuth()
   const [clients, setClients] = useState<Client[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredClients, setFilteredClients] = useState<Client[]>([])
@@ -23,7 +25,11 @@ export default function ClientList() {
   const [deleteError, setDeleteError] = useState("")
 
   useEffect(() => {
-    loadClients()
+    const initializeClients = async () => {
+      await loadClients()
+    }
+    
+    initializeClients()
     
     // Listen for real-time updates
     const unsubscribe = onClientsUpdate((updatedClients) => {
@@ -37,8 +43,8 @@ export default function ClientList() {
     filterClients()
   }, [searchQuery, clients])
 
-  const loadClients = () => {
-    const allClients = getClients()
+  const loadClients = async () => {
+    const allClients = await getClients(currentUser?.email)
     setClients(allClients)
   }
 
@@ -71,7 +77,7 @@ export default function ClientList() {
     setDeleteError("")
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (clientToDelete && deleteConfirmation === clientToDelete.name) {
       deleteClient(clientToDelete.id)
       setIsDeleteDialogOpen(false)
@@ -79,7 +85,7 @@ export default function ClientList() {
       setDeleteConfirmation("")
       setDeleteError("")
       // Refresh the client list
-      loadClients()
+      await loadClients()
     } else {
       setDeleteError("Client name does not match. Please type the exact client name to confirm deletion.")
     }

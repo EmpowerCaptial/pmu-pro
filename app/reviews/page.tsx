@@ -219,13 +219,31 @@ export default function ReviewsPage() {
     alert('Review link created successfully!')
   }
 
-  const handleCopyLink = (url: string) => {
-    navigator.clipboard.writeText(url)
-    alert('Link copied to clipboard!')
+  const handleCopyLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      alert('Link copied to clipboard!')
+    } catch (error) {
+      console.error('Failed to copy link:', error)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = url
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      alert('Link copied to clipboard!')
+    }
   }
 
   const handleSendLink = (linkId: string) => {
-    alert(`Send review link ${linkId} functionality would open here`)
+    const link = reviewLinks.find(l => l.id === linkId)
+    if (link) {
+      // Open email client with pre-filled content
+      const subject = encodeURIComponent('Review Request')
+      const body = encodeURIComponent(`Hi! I hope you're happy with your recent PMU service. I would greatly appreciate if you could take a moment to leave a review: ${link.url}`)
+      window.open(`mailto:?subject=${subject}&body=${body}`)
+    }
   }
 
   const averageRating = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0
@@ -477,7 +495,10 @@ export default function ReviewsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
-                              onClick={() => alert(`Viewing responses for ${link.name}`)}
+                              onClick={() => {
+                                // Navigate to responses page or show modal
+                                alert(`Viewing responses for ${link.name}\n\nResponses: ${link.responses}\nSent to: ${link.sentTo} clients`)
+                              }}
                             >
                               <Eye className="mr-2 h-4 w-4 text-purple-500" />
                               <span>View Responses</span>

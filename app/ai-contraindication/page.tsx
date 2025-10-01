@@ -13,7 +13,6 @@ import {
   AlertTriangle, 
   XCircle, 
   Loader2,
-  ArrowLeft,
   FileText,
   Pill,
   Heart
@@ -123,18 +122,9 @@ export default function AIContraindicationPage() {
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/ai-contraindication" />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 sm:pb-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-          
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="w-10 h-10 bg-lavender rounded-full flex items-center justify-center">
@@ -221,7 +211,7 @@ export default function AIContraindicationPage() {
               <Button
                 onClick={handleAnalysis}
                 disabled={isAnalyzing}
-                className="w-full bg-lavender hover:bg-lavender/90 text-white gap-2"
+                className="w-full bg-lavender hover:bg-lavender/90 text-white gap-2 mb-4"
               >
                 {isAnalyzing ? (
                   <>
@@ -306,7 +296,7 @@ export default function AIContraindicationPage() {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-4 pb-4">
                   <Button
                     onClick={() => {
                       setResult(null)

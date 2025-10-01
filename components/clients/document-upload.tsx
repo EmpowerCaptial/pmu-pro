@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, FileText, X, Download, Trash2 } from "lucide-react"
 import { addClientDocument, deleteClientDocument, type ClientDocument } from "@/lib/client-storage"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 interface DocumentUploadProps {
   clientId: string
@@ -17,7 +19,37 @@ interface DocumentUploadProps {
 }
 
 export function DocumentUpload({ clientId, documents, onDocumentsUpdate }: DocumentUploadProps) {
-  const [isUploading, setIsUploading] = useState(false)
+  const { currentUser } = useDemoAuth()
+  const { uploadFile, isUploading } = useFileUpload({
+    fileType: 'document',
+    clientId,
+    onSuccess: (file) => {
+      const newDocument = addClientDocument(clientId, {
+        name: documentName,
+        type: documentType,
+        fileName: file.fileName,
+        fileUrl: file.fileUrl,
+        notes: documentNotes
+      })
+      if (newDocument) {
+        setSavedDocumentName(documentName)
+        setShowSaveSuccess(true)
+        setTimeout(() => setShowSaveSuccess(false), 3000)
+        onDocumentsUpdate()
+        // Reset form
+        setDocumentName("")
+        setDocumentType('other')
+        setDocumentNotes("")
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      }
+    },
+    onError: (error) => {
+      console.error('File upload error:', error)
+    }
+  })
   const [documentName, setDocumentName] = useState("")
   const [documentType, setDocumentType] = useState<'consent' | 'medical' | 'insurance' | 'photo' | 'other'>('other')
   const [documentNotes, setDocumentNotes] = useState("")
@@ -39,44 +71,10 @@ export function DocumentUpload({ clientId, documents, onDocumentsUpdate }: Docum
   const handleUpload = async () => {
     if (!selectedFile || !documentName.trim()) return
 
-    setIsUploading(true)
     try {
-      // In a real app, you'd upload to a file storage service
-      // For now, we'll create a mock file URL
-      const mockFileUrl = URL.createObjectURL(selectedFile)
-      
-      const newDocument = addClientDocument(clientId, {
-        name: documentName,
-        type: documentType,
-        fileName: selectedFile.name,
-        fileUrl: mockFileUrl,
-        notes: documentNotes
-      })
-
-      if (newDocument) {
-        // Show success message
-        setSavedDocumentName(documentName)
-        setShowSaveSuccess(true)
-        
-        // Reset form
-        setDocumentName("")
-        setDocumentType('other')
-        setDocumentNotes("")
-        setSelectedFile(null)
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-        
-        // Notify parent component
-        onDocumentsUpdate()
-        
-        // Hide success message after 8 seconds (longer for better visibility)
-        setTimeout(() => setShowSaveSuccess(false), 8000)
-      }
+      await uploadFile(selectedFile)
     } catch (error) {
       console.error('Error uploading document:', error)
-    } finally {
-      setIsUploading(false)
     }
   }
 

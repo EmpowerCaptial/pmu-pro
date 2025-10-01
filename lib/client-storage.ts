@@ -93,7 +93,7 @@ export function updateClientFromPortal(clientId: string, updates: Partial<Client
   if (typeof window === 'undefined') return null
   
   try {
-    const clients = getClients()
+    const clients = getClientsSync()
     const clientIndex = clients.findIndex(c => c.id === clientId)
     
     if (clientIndex === -1) return null
@@ -115,8 +115,8 @@ export function updateClientFromPortal(clientId: string, updates: Partial<Client
   }
 }
 
-// Get all clients from localStorage
-export function getClients(): Client[] {
+// Get all clients from localStorage (synchronous version for backward compatibility)
+export function getClientsSync(): Client[] {
   if (typeof window === 'undefined') return []
   
   try {
@@ -128,7 +128,79 @@ export function getClients(): Client[] {
       return parsedClients
     }
   } catch (error) {
-    // Silent error handling
+    console.error('Error fetching clients:', error)
+  }
+  
+  // Return default mock clients if none exist
+  return [] // No mock data - only real clients from onboarding
+}
+
+// Get all clients from API with localStorage fallback
+export async function getClients(userEmail?: string): Promise<Client[]> {
+  if (typeof window === 'undefined') return []
+  
+  try {
+    // Try API first if userEmail is provided
+    if (userEmail) {
+      const response = await fetch('/api/clients', {
+        headers: {
+          'x-user-email': userEmail
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const apiClients = data.clients || []
+        
+        // Convert database format to Client interface
+        return apiClients.map((dbClient: any) => ({
+          id: dbClient.id,
+          name: dbClient.name,
+          email: dbClient.email || '',
+          phone: dbClient.phone || '',
+          notes: dbClient.notes || '',
+          lastVisit: undefined, // Not in database schema
+          totalAnalyses: 0, // Not in database schema
+          lastResult: undefined, // Not in database schema
+          createdAt: new Date(dbClient.createdAt).toISOString(),
+          updatedAt: new Date(dbClient.updatedAt).toISOString(),
+          analyses: dbClient.analyses || [],
+          procedures: dbClient.procedures || [],
+          documents: dbClient.documents || [],
+          insurance: [],
+          emergencyContact: dbClient.emergencyContact,
+          emergencyPhone: undefined, // Not in database schema
+          dateOfBirth: dbClient.dateOfBirth ? new Date(dbClient.dateOfBirth).toISOString() : undefined,
+          medicalConditions: dbClient.medicalHistory ? JSON.parse(dbClient.medicalHistory) : [],
+          medications: [], // Not in database schema
+          allergies: dbClient.allergies ? (typeof dbClient.allergies === 'string' ? JSON.parse(dbClient.allergies) : dbClient.allergies) : [],
+          skinConditions: dbClient.skinType ? JSON.parse(dbClient.skinType) : [],
+          previousPMU: false, // Not in database schema
+          previousPMUDetails: undefined, // Not in database schema
+          desiredService: undefined, // Not in database schema
+          desiredColor: undefined, // Not in database schema
+          sunExposure: undefined, // Not in database schema
+          skincareRoutine: undefined, // Not in database schema
+          exerciseHabits: undefined, // Not in database schema
+          smokingStatus: undefined, // Not in database schema
+          photoConsent: false, // Not in database schema
+          medicalRelease: false, // Not in database schema
+          liabilityWaiver: false, // Not in database schema
+          aftercareAgreement: false // Not in database schema
+        }))
+      }
+    }
+    
+    // Fallback to localStorage
+    const clients = localStorage.getItem('pmu_clients')
+    if (clients) {
+      const parsedClients = JSON.parse(clients)
+      // Migrate any old ID formats
+      migrateClientIds()
+      return parsedClients
+    }
+  } catch (error) {
+    console.error('Error fetching clients:', error)
   }
   
   // Return default mock clients if none exist
@@ -149,28 +221,112 @@ export function saveClients(clients: Client[]): void {
 }
 
 // Add new client
-export function addClient(clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'analyses' | 'procedures' | 'documents' | 'insurance'>): Client {
-  const clients = getClients()
-  
-  const newClient: Client = {
-    ...clientData,
-    id: `client_${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    analyses: [],
-    procedures: [],
-    documents: [],
-    insurance: []
+export async function addClient(clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'analyses' | 'procedures' | 'documents' | 'insurance'>, userEmail?: string): Promise<Client> {
+  try {
+    // Try API first if userEmail is provided
+    if (userEmail) {
+      const response = await fetch('/api/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': userEmail
+        },
+        body: JSON.stringify(clientData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const apiClient = data.client
+        
+        // Convert database format to Client interface
+        const newClient: Client = {
+          id: apiClient.id,
+          name: apiClient.name,
+          email: apiClient.email || '',
+          phone: apiClient.phone || '',
+          notes: apiClient.notes || '',
+          lastVisit: undefined, // Not in database schema
+          totalAnalyses: 0, // Not in database schema
+          lastResult: undefined, // Not in database schema
+          createdAt: new Date(apiClient.createdAt).toISOString(),
+          updatedAt: new Date(apiClient.updatedAt).toISOString(),
+          analyses: [],
+          procedures: [],
+          documents: [],
+          insurance: [],
+          emergencyContact: apiClient.emergencyContact,
+          emergencyPhone: undefined, // Not in database schema
+          dateOfBirth: apiClient.dateOfBirth ? new Date(apiClient.dateOfBirth).toISOString() : undefined,
+          medicalConditions: apiClient.medicalHistory ? JSON.parse(apiClient.medicalHistory) : [],
+          medications: [], // Not in database schema
+          allergies: apiClient.allergies ? (typeof apiClient.allergies === 'string' ? JSON.parse(apiClient.allergies) : apiClient.allergies) : [],
+          skinConditions: apiClient.skinType ? JSON.parse(apiClient.skinType) : [],
+          previousPMU: false, // Not in database schema
+          previousPMUDetails: undefined, // Not in database schema
+          desiredService: undefined, // Not in database schema
+          desiredColor: undefined, // Not in database schema
+          sunExposure: undefined, // Not in database schema
+          skincareRoutine: undefined, // Not in database schema
+          exerciseHabits: undefined, // Not in database schema
+          smokingStatus: undefined, // Not in database schema
+          photoConsent: false, // Not in database schema
+          medicalRelease: false, // Not in database schema
+          liabilityWaiver: false, // Not in database schema
+          aftercareAgreement: false // Not in database schema
+        }
+
+        // Also save to localStorage as backup
+        const clients = await getClients(userEmail)
+        clients.push(newClient)
+        saveClients(clients)
+
+        return newClient
+      }
+    }
+    
+    // Fallback to localStorage only
+    const clients = await getClients()
+    
+    const newClient: Client = {
+      ...clientData,
+      id: `client_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      analyses: [],
+      procedures: [],
+      documents: [],
+      insurance: []
+    }
+    
+    clients.push(newClient)
+    saveClients(clients)
+    return newClient
+  } catch (error) {
+    console.error('Error adding client:', error)
+    
+    // Fallback to localStorage only
+    const clients = await getClients()
+    
+    const newClient: Client = {
+      ...clientData,
+      id: `client_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      analyses: [],
+      procedures: [],
+      documents: [],
+      insurance: []
+    }
+    
+    clients.push(newClient)
+    saveClients(clients)
+    return newClient
   }
-  
-  clients.push(newClient)
-  saveClients(clients)
-  return newClient
 }
 
 // Update existing client
 export function updateClient(id: string, updates: Partial<Client>): Client | null {
-  const clients = getClients()
+  const clients = getClientsSync()
   const clientIndex = clients.findIndex(client => client.id === id)
   
   if (clientIndex === -1) return null
@@ -324,7 +480,7 @@ export function deleteClientInsurance(clientId: string, insuranceId: string): bo
 
 // Delete client
 export function deleteClient(clientId: string): boolean {
-  const clients = getClients()
+  const clients = getClientsSync()
   const initialLength = clients.length
   const filteredClients = clients.filter(client => client.id !== clientId)
   
@@ -337,13 +493,13 @@ export function deleteClient(clientId: string): boolean {
 
 // Get client by ID
 export function getClientById(id: string): Client | null {
-  const clients = getClients()
+  const clients = getClientsSync()
   return clients.find(client => client.id === id) || null
 }
 
 // Search clients
 export function searchClients(query: string): Client[] {
-  const clients = getClients()
+  const clients = getClientsSync()
   const lowerQuery = query.toLowerCase()
   
   return clients.filter(client => 
@@ -356,7 +512,7 @@ export function searchClients(query: string): Client[] {
 
 // Get client statistics
 export function getClientStats() {
-  const clients = getClients()
+  const clients = getClientsSync()
   
   return {
     total: clients.length,

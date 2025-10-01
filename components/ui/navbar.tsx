@@ -26,6 +26,7 @@ import {
   Target,
   BarChart3,
   Crown,
+  Package,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
@@ -76,6 +77,20 @@ export function NavBar({ currentPath, user }: NavBarProps) {
             <span className="text-xl font-bold font-serif text-gray-900 hidden sm:block">PMU Pro</span>
           </Link>
 
+
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/products">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 bg-transparent"
+              >
+                <Package className="mr-2 h-4 w-4" />
+                Products
+              </Button>
+            </Link>
+          </div>
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">

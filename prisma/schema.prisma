@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -26,7 +26,21 @@ model User {
   stripeId              String?  @unique
   stripeCustomerId      String?
   stripeSubscriptionId  String?
+  stripeConnectAccountId String? @unique
   subscriptionStatus    String   @default("inactive")
+  // Profile fields (migrated from localStorage)
+  avatar                String?  // URL to avatar image stored in Vercel Blob
+  bio                   String?
+  studioName            String?
+  website               String?
+  instagram             String?
+  address               String?  // JSON string for address object
+  businessHours         String?  // JSON string for business hours
+  specialties           String?  // JSON string array
+  experience            String?
+  certifications        String?  // JSON string array
+  venmoUsername         String?
+  cashAppUsername       String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   clients               Client[]
@@ -42,6 +56,9 @@ model User {
   complaints            Complaint[]
   products              Product[]
   orders                Order[]
+  portfolios            Portfolio[]
+  formDrafts            FormDraft[]
+  fileUploads           FileUpload[]
 
   @@map("users")
 }
@@ -71,6 +88,8 @@ model Client {
   consentForms ConsentForm[]
   depositPayments DepositPayment[]
   orders Order[]
+  formDrafts FormDraft[]
+  fileUploads FileUpload[]
 
   @@map("clients")
 }
@@ -282,9 +301,9 @@ model DepositPayment {
   clientId             String
   appointmentId        String?  // Optional - can be created before appointment
   userId               String   // PMU Pro user (artist)
-  amount               Decimal  // Deposit amount
-  totalAmount          Decimal  // Total procedure cost
-  remainingAmount      Decimal  // Amount due on procedure day
+  amount               Decimal @db.Decimal(10,2)  // Deposit amount
+  totalAmount          Decimal @db.Decimal(10,2)  // Total procedure cost
+  remainingAmount      Decimal @db.Decimal(10,2)  // Amount due on procedure day
   currency             String   @default("USD")
   status               DepositStatus @default(PENDING)
   paymentMethod        String?  // Stripe payment method ID
@@ -294,7 +313,7 @@ model DepositPayment {
   depositLinkExpiresAt DateTime // Link expiration
   paidAt               DateTime?
   refundedAt           DateTime?
-  refundAmount         Decimal?
+  refundAmount         Decimal? @db.Decimal(10,2)
   refundReason         String?
   notes                String?  // Additional notes
   createdAt            DateTime @default(now())
@@ -633,4 +652,66 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("order_items")
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // 'eyebrows' | 'lips' | 'eyeliner'
+  title       String
+  description String?
+  beforeImage String?  // URL to before image stored in Vercel Blob
+  afterImage  String?  // URL to after image stored in Vercel Blob
+  isPublic    Boolean  @default(true)
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isPublic])
+  @@map("portfolios")
+}
+
+model FormDraft {
+  id          String   @id @default(cuid())
+  userId      String?
+  clientId    String?
+  formType    String   // 'client_intake', 'consent_form', 'credit_application', 'artist_signup', 'skin_analysis'
+  formData    String   // Store form data as JSON string
+  isComplete  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([formType])
+  @@map("form_drafts")
+}
+
+model FileUpload {
+  id          String   @id @default(cuid())
+  userId      String?
+  clientId    String?
+  fileName    String
+  fileUrl     String   // URL to file stored in Vercel Blob
+  fileType    String   // 'image', 'document', 'signature', 'id_document'
+  fileSize    Int      // File size in bytes
+  mimeType    String   // MIME type of the file
+  isTemporary Boolean  @default(false) // Mark temporary uploads for cleanup
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([fileType])
+  @@index([isTemporary])
+  @@map("file_uploads")
 }

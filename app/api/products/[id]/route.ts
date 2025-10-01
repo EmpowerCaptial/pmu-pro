@@ -26,7 +26,7 @@ export async function GET(
     }
 
     // Fetch product
-    const product = await (prisma as any).product.findFirst({
+    const product = await prisma.product.findFirst({
       where: {
         id: params.id,
         userId: user.id
@@ -82,7 +82,7 @@ export async function PUT(
     } = body
 
     // Check if product exists and belongs to user
-    const existingProduct = await (prisma as any).product.findFirst({
+    const existingProduct = await prisma.product.findFirst({
       where: {
         id: params.id,
         userId: user.id
@@ -94,7 +94,7 @@ export async function PUT(
     }
 
     // Update product
-    const product = await (prisma as any).product.update({
+    const product = await prisma.product.update({
       where: {
         id: params.id
       },
@@ -143,7 +143,7 @@ export async function DELETE(
     }
 
     // Check if product exists and belongs to user
-    const existingProduct = await (prisma as any).product.findFirst({
+    const existingProduct = await prisma.product.findFirst({
       where: {
         id: params.id,
         userId: user.id
@@ -155,7 +155,7 @@ export async function DELETE(
     }
 
     // Delete product
-    await (prisma as any).product.delete({
+    await prisma.product.delete({
       where: {
         id: params.id
       }

@@ -4,7 +4,7 @@ export interface User {
   id: string
   name: string
   email: string
-  password: string
+  password?: string // Make optional since we remove it from responses
   businessName: string
   phone?: string
   licenseNumber: string
@@ -20,6 +20,17 @@ export interface User {
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   subscriptionStatus: string
+  // Profile fields (migrated from localStorage)
+  avatar?: string
+  bio?: string
+  studioName?: string
+  website?: string
+  instagram?: string
+  address?: string
+  businessHours?: string
+  specialties?: string
+  experience?: string
+  certifications?: string
   createdAt: Date
   updatedAt: Date
 }

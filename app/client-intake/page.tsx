@@ -11,6 +11,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Upload, Save, FileText, User, Calendar } from "lucide-react"
 import Link from "next/link"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { useAutoSave } from "@/hooks/use-auto-save"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { FormRecovery } from "@/components/forms/form-recovery"
 
 interface ClientData {
   fullName: string
@@ -27,11 +31,14 @@ interface ClientData {
   photoConsent: boolean
   procedureConsent: boolean
   idDocument?: File
+  idDocumentUrl?: string
   signatureImage?: string
 }
 
 export default function ClientIntakePage() {
-  const [clientData, setClientData] = useState<ClientData>({
+  const { currentUser } = useDemoAuth()
+  
+  const initialData: ClientData = {
     fullName: "",
     dateOfBirth: "",
     address: "",
@@ -45,6 +52,29 @@ export default function ClientIntakePage() {
     medications: "",
     photoConsent: false,
     procedureConsent: false,
+  }
+
+  const {
+    formData: clientData,
+    updateFormData,
+    saveForm,
+    clearDraft,
+    isSaving,
+    lastSaved,
+    hasUnsavedChanges,
+    error: saveError
+  } = useAutoSave(initialData, {
+    formType: 'client_intake',
+    onSave: (data) => console.log('Client intake auto-saved:', data),
+    onError: (error) => console.error('Auto-save error:', error)
+  })
+
+  const { uploadFile, isUploading: isUploadingFile } = useFileUpload({
+    fileType: 'id_document',
+    onSuccess: (file) => {
+      updateFormData({ idDocumentUrl: file.fileUrl })
+    },
+    onError: (error) => console.error('File upload error:', error)
   })
 
   const [idUpload, setIdUpload] = useState<File | null>(null)
@@ -62,7 +92,7 @@ export default function ClientIntakePage() {
   ]
 
   const handleInputChange = (field: keyof ClientData, value: string | boolean | string[]) => {
-    setClientData((prev) => ({ ...prev, [field]: value }))
+    updateFormData({ [field]: value })
   }
 
   const handleMedicalHistoryChange = (condition: string, checked: boolean) => {
@@ -72,33 +102,27 @@ export default function ClientIntakePage() {
     handleInputChange("medicalHistory", updated)
   }
 
-  const handleIdUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       setIdUpload(file)
+      await uploadFile(file)
     }
   }
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      // Create FormData for file upload
-      const formData = new FormData()
-      formData.append("clientData", JSON.stringify(clientData))
-      if (idUpload) {
-        formData.append("idDocument", idUpload)
-      }
-
-      const response = await fetch("/api/client-intake", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (response.ok) {
+      // Save form as complete
+      const success = await saveForm(clientData, true)
+      
+      if (success) {
         alert("Client intake completed successfully!")
-        // Reset form or redirect
+        // Clear draft after successful submission
+        await clearDraft()
+        setIdUpload(null)
       } else {
-        throw new Error("Failed to submit intake")
+        alert("Failed to submit form. Please try again.")
       }
     } catch (error) {
       console.error("Intake submission error:", error)
@@ -329,6 +353,16 @@ export default function ClientIntakePage() {
           </Button>
         </div>
       </div>
+
+      {/* Form Recovery Component */}
+      <FormRecovery
+        hasUnsavedChanges={hasUnsavedChanges}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        onSave={() => saveForm(clientData, false)}
+        onDiscard={clearDraft}
+        formName="client intake form"
+      />
     </div>
   )
 }

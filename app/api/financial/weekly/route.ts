@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate weekly totals
     const totalRevenue = appointments.reduce((sum, appointment) => {
-      return sum + (appointment.price || 0)
+      return sum + Number(appointment.price || 0)
     }, 0)
 
     const serviceCount = appointments.length
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
     })
 
     const previousWeekRevenue = previousWeekAppointments.reduce((sum, appointment) => {
-      return sum + (appointment.price || 0)
+      return sum + Number(appointment.price || 0)
     }, 0)
 
     const growthPercentage = previousWeekRevenue > 0 

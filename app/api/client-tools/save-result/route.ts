@@ -3,9 +3,20 @@ import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    // SECURITY: Add proper authentication when auth system is implemented
-    // For now, we'll accept all requests for development purposes
-    // TODO: Implement JWT token validation
+    // Get user email from headers for authentication
+    const userEmail = request.headers.get('x-user-email')
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 401 })
+    }
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
     const { clientId, toolResult } = await request.json()
 

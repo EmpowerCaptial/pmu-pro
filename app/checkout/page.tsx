@@ -45,12 +45,18 @@ function CheckoutContent() {
   const [splitMethod, setSplitMethod] = useState('')
   const [taxesEnabled, setTaxesEnabled] = useState(true)
 
-  // Sample client data (in real app, this would come from the selected client)
-  const client = {
-    name: 'Sarah Johnson',
-    email: 'sarah.j@email.com',
-    phone: '(555) 123-4567'
-  }
+  // Get client data from URL params or use default
+  const [client, setClient] = useState(() => {
+    const clientName = searchParams.get('clientName')
+    const clientEmail = searchParams.get('clientEmail') 
+    const clientPhone = searchParams.get('clientPhone')
+    
+    return {
+      name: clientName || 'Guest Client',
+      email: clientEmail || '',
+      phone: clientPhone || ''
+    }
+  })
 
   const paymentMethods = [
     { id: 'card', name: 'Credit/Debit Card', icon: CreditCard, color: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },

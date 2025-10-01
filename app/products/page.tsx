@@ -23,6 +23,7 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { SubscriptionGate } from '@/components/auth/subscription-gate'
 
 interface Product {
   id: string
@@ -204,7 +205,7 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-1 py-2">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender"></div>
         </div>
@@ -213,7 +214,8 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <SubscriptionGate>
+      <div className="container mx-auto px-1 py-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
@@ -344,6 +346,67 @@ export default function ProductsPage() {
                 </div>
               </div>
 
+              {/* Product Images */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Product Images</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[0, 1, 2].map((index) => (
+                    <div key={index} className="space-y-2">
+                      <Label>Image {index + 1}</Label>
+                      <div className="relative">
+                        {newProduct.images[index] ? (
+                          <div className="relative">
+                            <img
+                              src={newProduct.images[index]}
+                              alt={`Product ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = [...newProduct.images]
+                                newImages.splice(index, 1)
+                                setNewProduct({...newProduct, images: newImages})
+                              }}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => {
+                              const input = document.createElement('input')
+                              input.type = 'file'
+                              input.accept = 'image/*'
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) {
+                                  const reader = new FileReader()
+                                  reader.onload = (e) => {
+                                    const imageUrl = e.target?.result as string
+                                    const newImages = [...newProduct.images]
+                                    newImages[index] = imageUrl
+                                    setNewProduct({...newProduct, images: newImages})
+                                  }
+                                  reader.readAsDataURL(file)
+                                }
+                              }
+                              input.click()
+                            }}
+                            className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-lavender hover:bg-lavender/5 transition-colors"
+                          >
+                            <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-500">Click to upload</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">Upload up to 3 images. First image will be the main product image.</p>
+              </div>
+
               {/* Status */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Status</h3>
@@ -396,7 +459,7 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {products.map((product) => {
             const stockStatus = getStockStatus(product.stockQuantity, product.isDigital)
             
@@ -423,6 +486,26 @@ export default function ProductsPage() {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
+                  {/* Product Image */}
+                  {product.images && product.images.length > 0 ? (
+                    <div className="relative">
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      {product.images.length > 1 && (
+                        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                          +{product.images.length - 1} more
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <ImageIcon className="h-8 w-8 text-gray-400" />
+                    </div>
+                  )}
+                  
                   {product.description && (
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {product.description}
@@ -480,6 +563,7 @@ export default function ProductsPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </SubscriptionGate>
   )
 }

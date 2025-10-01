@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { CheckCircle, Crown, Zap, Users, BarChart3, Settings, Shield } from "lucide-react"
 import { TrialService, PRICING_PLANS, type TrialUser } from "@/lib/trial-service"
 import { TrialBanner } from "@/components/trial/trial-banner"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export default function PricingPage() {
+  const { currentUser } = useDemoAuth()
   const [trialUser, setTrialUser] = useState<TrialUser | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'professional' | 'studio' | null>(null)
 
@@ -17,18 +19,40 @@ export default function PricingPage() {
     setTrialUser(user)
   }, [])
 
-  const handleUpgrade = (planId: 'starter' | 'professional' | 'studio') => {
+  const handleUpgrade = async (planId: 'starter' | 'professional' | 'studio') => {
     setSelectedPlan(planId)
     
-    // Simulate upgrade process
-    setTimeout(() => {
-      TrialService.upgradeToPlan(planId)
-      setTrialUser(TrialService.getTrialUser())
-      setSelectedPlan(null)
+    try {
+      // Get current user email from demo auth
+      const userEmail = currentUser?.email || 'demo@pmupro.com'
       
-      // Show success message
-      alert(`Successfully upgraded to ${PRICING_PLANS.find(p => p.id === planId)?.name} plan!`)
-    }, 1000)
+      // Call the artist subscription API
+      const response = await fetch('/api/artist/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId,
+          userEmail
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url
+      } else {
+        console.error('Subscription failed:', data.error)
+        alert(`Subscription failed: ${data.error || 'Unknown error'}`)
+        setSelectedPlan(null)
+      }
+    } catch (error) {
+      console.error('Subscription error:', error)
+      alert('Subscription failed: Network error. Please try again.')
+      setSelectedPlan(null)
+    }
   }
 
   const getFeatureIcon = (feature: string) => {

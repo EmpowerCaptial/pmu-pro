@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate today's revenue
     const todaysRevenue = todaysAppointments.reduce((sum, appointment) => {
-      return sum + (appointment.price || 0)
+      return sum + Number(appointment.price || 0)
     }, 0)
 
     const transactionCount = todaysAppointments.length

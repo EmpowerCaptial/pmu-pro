@@ -24,6 +24,7 @@ export function SendAnalysisForm() {
   // Fallback user if not authenticated
   const user = currentUser || {
     name: "PMU Artist",
+    studioName: "PMU Studio",
     email: "artist@pmupro.com",
     initials: "PA",
   }
@@ -31,7 +32,8 @@ export function SendAnalysisForm() {
   const generateAnalysisLink = () => {
     // Generate unique analysis link for client
     const linkId = Math.random().toString(36).substring(2, 15)
-    const link = `${window.location.origin}/client-analysis?id=${linkId}&artist=${encodeURIComponent(user.name)}`
+    const artistName = user.studioName || user.name
+    const link = `${window.location.origin}/client-analysis?id=${linkId}&artist=${encodeURIComponent(artistName)}`
     setAnalysisLink(link)
     setLinkGenerated(true)
   }

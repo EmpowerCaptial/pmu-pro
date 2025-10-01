@@ -58,13 +58,13 @@ export class PaymentVerificationService {
         }
       }
 
-      // If no Stripe customer ID, redirect to billing
+      // If no Stripe customer ID, redirect to pricing
       if (!user.stripeCustomerId) {
         return {
           hasAccess: false,
           subscriptionStatus: 'inactive',
-          redirectTo: '/billing',
-          message: 'Payment required to access PMU Pro'
+          redirectTo: '/pricing',
+          message: 'Subscription required to access PMU Pro'
         }
       }
 
@@ -85,14 +85,14 @@ export class PaymentVerificationService {
               return {
                 hasAccess: false,
                 subscriptionStatus: status,
-                redirectTo: '/billing',
+                redirectTo: '/pricing',
                 message: 'Payment past due. Please update your payment method.'
               }
             } else if (status === 'canceled') {
               return {
                 hasAccess: false,
                 subscriptionStatus: 'canceled',
-                redirectTo: '/billing',
+                redirectTo: '/pricing',
                 message: 'Subscription canceled. Please renew to continue access.'
               }
             }
@@ -106,7 +106,7 @@ export class PaymentVerificationService {
       return {
         hasAccess: false,
         subscriptionStatus: 'inactive',
-        redirectTo: '/billing',
+        redirectTo: '/pricing',
         message: 'Active subscription required to access PMU Pro'
       }
 
@@ -115,7 +115,7 @@ export class PaymentVerificationService {
       return {
         hasAccess: false,
         subscriptionStatus: 'inactive',
-        redirectTo: '/billing',
+        redirectTo: '/pricing',
         message: 'Error verifying payment status'
       }
     }

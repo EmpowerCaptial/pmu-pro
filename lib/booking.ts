@@ -25,21 +25,37 @@ export function buildBookingHref(handle: string, serviceId?: string) {
   return url.toString();
 }
 
-// Generate user handle from email
-export function generateUserHandle(email: string): string {
-  return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+// Generate user handle from studio name or email
+export function generateUserHandle(studioName?: string, email?: string): string {
+  // Prefer studio name if available
+  if (studioName && studioName.trim()) {
+    return studioName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  }
+  
+  // Fallback to email if no studio name
+  if (email) {
+    return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+  }
+  
+  // Final fallback
+  return 'pmu-artist';
 }
 
 // Map handle back to email (for public booking pages)
 export function getEmailFromHandle(handle: string): string | null {
-  // For now, we'll use a simple approach - in production you'd want to store this in a database
-  // This is a temporary solution that works for the current demo setup
+  // Handle special demo cases
   if (handle === 'demo-artist' || handle === 'universalbeautystudioacademy') {
     return 'universalbeautystudioacademy@gmail.com';
   }
   
-  // For other handles, we'll need to implement a proper mapping system
-  // For now, return null to indicate we don't have a mapping
+  // For production, we would query the database to find the user by handle
+  // For now, we'll return null to indicate we don't have a mapping
+  // This will be handled by the API route which has database access
   return null;
 }
 

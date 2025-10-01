@@ -44,6 +44,20 @@ const PROCEDURE_TYPES = [
   'Other'
 ]
 
+const PIGMENT_BRANDS = [
+  'Permablend',
+  'Li Pigments',
+  'Tina Davies',
+  'Brow Daddy',
+  'Everlasting',
+  'PhiBrows',
+  'World Famous Ink',
+  'Inkredible',
+  'Beauty Angels',
+  'Fusion Ink',
+  'Other'
+]
+
 interface ProcedureManagerProps {
   clientId: string
   procedures: Procedure[]
@@ -59,6 +73,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
     voltage: '',
     needleConfiguration: '',
     pigmentBrand: '',
+    customPigmentBrand: '',
     pigmentColor: '',
     lotNumber: '',
     depth: '',
@@ -102,7 +117,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
         procedureType: newProcedure.procedureType,
         voltage: parseFloat(newProcedure.voltage),
         needleConfiguration: newProcedure.needleConfiguration,
-        pigmentBrand: newProcedure.pigmentBrand,
+        pigmentBrand: newProcedure.pigmentBrand === 'Other' ? newProcedure.customPigmentBrand : newProcedure.pigmentBrand,
         pigmentColor: newProcedure.pigmentColor,
         lotNumber: newProcedure.lotNumber,
         depth: newProcedure.depth,
@@ -125,6 +140,7 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
         voltage: '',
         needleConfiguration: '',
         pigmentBrand: '',
+        customPigmentBrand: '',
         pigmentColor: '',
         lotNumber: '',
         depth: '',
@@ -176,9 +192,9 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
                 <SelectTrigger className="bg-white border-gray-300">
                   <SelectValue placeholder="Choose from your services" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300">
+                <SelectContent className="bg-white border-gray-300 z-[100] shadow-lg">
                   {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id} className="hover:bg-lavender/10">
+                    <SelectItem key={service.id} value={service.id} className="hover:bg-lavender/10 text-gray-900 focus:bg-lavender/10">
                       <div className="flex items-center justify-between w-full">
                         <span>{service.name}</span>
                         <span className="text-sm text-gray-500 ml-2">${service.price}</span>
@@ -270,13 +286,29 @@ export function ProcedureManager({ clientId, procedures, onProceduresChange }: P
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="pigment-brand">Pigment Brand *</Label>
-                <Input
-                  id="pigment-brand"
-                  placeholder="Permablend"
+                <Select
                   value={newProcedure.pigmentBrand}
-                  onChange={(e) => setNewProcedure(prev => ({ ...prev, pigmentBrand: e.target.value }))}
-                  required
-                />
+                  onValueChange={(value) => setNewProcedure(prev => ({ ...prev, pigmentBrand: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select brand" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100] bg-white border border-gray-200 shadow-lg">
+                    {PIGMENT_BRANDS.map((brand) => (
+                      <SelectItem key={brand} value={brand} className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {newProcedure.pigmentBrand === 'Other' && (
+                  <Input
+                    placeholder="Enter custom brand name"
+                    value={newProcedure.customPigmentBrand || ''}
+                    onChange={(e) => setNewProcedure(prev => ({ ...prev, customPigmentBrand: e.target.value }))}
+                    className="mt-2"
+                  />
+                )}
               </div>
               <div>
                 <Label htmlFor="pigment-color">Pigment Color *</Label>

@@ -50,7 +50,7 @@ interface PayoutSummary {
   pendingAmount: number
   availableBalance: number
   thisMonthEarnings: number
-  lastPayout: string
+  lastPayout: string | null
   averagePayout: number
 }
 
@@ -111,11 +111,59 @@ const mockSummary: PayoutSummary = {
 
 export default function PayoutsPage() {
   const { currentUser } = useDemoAuth()
-  const [payouts, setPayouts] = useState<Payout[]>(mockPayouts)
-  const [summary, setSummary] = useState<PayoutSummary>(mockSummary)
+  const [payouts, setPayouts] = useState<Payout[]>([])
+  const [summary, setSummary] = useState<PayoutSummary | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [timeFilter, setTimeFilter] = useState('week')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load payout data
+  useEffect(() => {
+    if (currentUser?.email) {
+      loadPayoutData()
+    }
+  }, [currentUser])
+
+  const loadPayoutData = async () => {
+    if (!currentUser?.email) return
+    
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('/api/payouts', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch payout data: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      setSummary(data.summary)
+      setPayouts(data.payouts || [])
+    } catch (err) {
+      console.error('Error loading payout data:', err)
+      setError('Failed to load payout data')
+      
+      // Fallback to empty state for new artists
+      setSummary({
+        totalEarnings: 0,
+        totalPayouts: 0,
+        pendingAmount: 0,
+        availableBalance: 0,
+        thisMonthEarnings: 0,
+        lastPayout: null,
+        averagePayout: 0
+      })
+      setPayouts([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Fallback user if not authenticated
   const user = currentUser ? {
@@ -169,21 +217,43 @@ export default function PayoutsPage() {
     }
   }
 
-  const handleRequestPayout = () => {
-    if (summary.availableBalance < 10) {
+  const handleRequestPayout = async () => {
+    if (!summary || summary.availableBalance < 10) {
       alert('Minimum payout amount is $10.00')
       return
     }
-    alert(`Request payout of $${summary.availableBalance.toFixed(2)} functionality would open here`)
+    
+    if (!currentUser?.email) return
+    
+    try {
+      const response = await fetch('/api/payouts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          amount: summary.availableBalance
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message)
+        // Refresh the data
+        loadPayoutData()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to request payout')
+      }
+    } catch (error) {
+      console.error('Error requesting payout:', error)
+      alert('Failed to request payout. Please try again.')
+    }
   }
 
   const handleRefresh = () => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      alert('Payout data refreshed!')
-    }, 1000)
+    loadPayoutData()
   }
 
   const filteredPayouts = payouts.filter(payout => {
@@ -238,7 +308,36 @@ export default function PayoutsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center justify-center">
+                    <RefreshCw className="h-6 w-6 animate-spin text-lavender" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="mb-6 sm:mb-8">
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-4 text-center">
+                <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                <p className="text-red-700">{error}</p>
+                <Button 
+                  onClick={handleRefresh}
+                  variant="outline"
+                  className="mt-2 border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : summary ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
             <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
@@ -286,7 +385,16 @@ export default function PayoutsPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
+              <CardContent className="p-3 sm:p-6 text-center">
+                <p className="text-gray-500">No data available</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Time Filter */}
         <div className="mb-4 sm:mb-6">
@@ -374,24 +482,24 @@ export default function PayoutsPage() {
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <span className="text-xs sm:text-sm font-medium text-muted">Total Earnings</span>
-                      <span className="font-semibold text-ink text-sm sm:text-base">${summary.totalEarnings.toFixed(2)}</span>
+                      <span className="font-semibold text-ink text-sm sm:text-base">${summary?.totalEarnings?.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <span className="text-xs sm:text-sm font-medium text-muted">Total Payouts</span>
-                      <span className="font-semibold text-blue-600 text-sm sm:text-base">${summary.totalPayouts.toFixed(2)}</span>
+                      <span className="font-semibold text-blue-600 text-sm sm:text-base">${summary?.totalPayouts?.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <span className="text-xs sm:text-sm font-medium text-muted">Available Balance</span>
-                      <span className="font-semibold text-green-600 text-sm sm:text-base">${summary.availableBalance.toFixed(2)}</span>
+                      <span className="font-semibold text-green-600 text-sm sm:text-base">${summary?.availableBalance?.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <span className="text-xs sm:text-sm font-medium text-muted">Average Payout</span>
-                      <span className="font-semibold text-purple-600 text-sm sm:text-base">${summary.averagePayout.toFixed(2)}</span>
+                      <span className="font-semibold text-purple-600 text-sm sm:text-base">${summary?.averagePayout?.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
                       <span className="text-xs sm:text-sm font-medium text-muted">Last Payout</span>
                       <span className="font-semibold text-muted text-xs sm:text-sm">
-                        {new Date(summary.lastPayout).toLocaleDateString()}
+                        {summary?.lastPayout ? new Date(summary.lastPayout).toLocaleDateString() : 'No payouts yet'}
                       </span>
                     </div>
                   </div>

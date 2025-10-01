@@ -386,11 +386,11 @@ Time: ${new Date().toLocaleTimeString()}
     `.trim()
   }
 
-  const createClient = () => {
+  const createClient = async () => {
     try {
       console.log('Creating client with data:', formData)
       
-      const newClient = addClient({
+      const newClient = await addClient({
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         phone: formData.phone,
@@ -417,12 +417,12 @@ Time: ${new Date().toLocaleTimeString()}
         medicalRelease: formData.medicalRelease,
         liabilityWaiver: formData.liabilityWaiver,
         aftercareAgreement: formData.aftercareAgreement
-      })
+      }, currentUser?.email)
       
       console.log('Client created successfully:', newClient)
       
       // Verify the client was saved
-      const allClients = getClients()
+      const allClients = await getClients(currentUser?.email)
       console.log('All clients after creation:', allClients)
       
       return newClient
@@ -498,8 +498,8 @@ Time: ${new Date().toLocaleTimeString()}
           
           <div className="flex gap-3 justify-center">
             <Button 
-              onClick={() => {
-                const newClient = createClient()
+              onClick={async () => {
+                const newClient = await createClient()
                 if (newClient) {
                   alert(`Client ${newClient.name} created successfully! You can now view them in your client database.`)
                   router.push('/clients')

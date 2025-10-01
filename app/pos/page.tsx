@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Service, getServices } from '@/lib/services-api'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { SubscriptionGate } from '@/components/auth/subscription-gate'
+import { Package } from 'lucide-react'
 
 export default function POSPage() {
   const router = useRouter()
@@ -16,35 +18,54 @@ export default function POSPage() {
   const [showClientSelection, setShowClientSelection] = useState(false)
   const [cart, setCart] = useState<any[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'services' | 'products'>('services')
   
   // POS is now active - no longer coming soon
   const isComingSoon = false
   
-  // Sample appointments
-  const appointments = [
-  {
-    id: 1,
-    clientName: 'Sarah Johnson',
-    phone: '(555) 123-4567',
-    email: 'sarah.j@email.com',
-    service: 'Eyebrow Microblading',
-    duration: '2 hours',
-    price: 350.00,
-    }
-  ]
+  // Load appointments from API
+  const [appointments, setAppointments] = useState<any[]>([])
   
-  // Load services from API
+  const loadAppointments = async () => {
+    if (!currentUser?.email) return
+    
+    try {
+      const response = await fetch('/api/appointments', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAppointments(data.appointments || [])
+      }
+    } catch (error) {
+      console.error('Error loading appointments:', error)
+      setAppointments([])
+    }
+  }
+  
+  // Load appointments on component mount
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.email) {
+      loadAppointments()
+    }
+  }, [isAuthenticated, currentUser])
+  
+  // Load services and products from API
   useEffect(() => {
     if (isAuthenticated && currentUser?.email) {
       loadServices()
+      loadProducts()
     }
   }, [isAuthenticated, currentUser])
 
   const loadServices = async () => {
     if (!currentUser?.email) return
     
-    setLoading(true)
     try {
       const userServices = await getServices(currentUser.email)
       // Filter only active services for POS
@@ -52,6 +73,27 @@ export default function POSPage() {
     } catch (error) {
       console.error('Error loading services:', error)
       setServices([])
+    }
+  }
+
+  const loadProducts = async () => {
+    if (!currentUser?.email) return
+    
+    try {
+      const response = await fetch('/api/products', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        // Filter only active products for POS
+        setProducts(data.products?.filter((product: any) => product.isActive) || [])
+      }
+    } catch (error) {
+      console.error('Error loading products:', error)
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -78,9 +120,30 @@ export default function POSPage() {
       const cartItem = {
         id: `service-${service.id}`,
         name: service.name,
-        price: service.defaultPrice,
+        price: Number(service.defaultPrice || 0),
         quantity: 1,
-        serviceId: service.id
+        serviceId: service.id,
+        type: 'service'
+      }
+      setCart([...cart, cartItem])
+    }
+  }
+
+  const toggleProductInCart = (product: any) => {
+    const existingItemIndex = cart.findIndex(item => item.productId === product.id)
+    
+    if (existingItemIndex >= 0) {
+      // Remove product from cart
+      setCart(cart.filter((_, index) => index !== existingItemIndex))
+    } else {
+      // Add product to cart
+      const cartItem = {
+        id: `product-${product.id}`,
+        name: product.name,
+        price: Number(product.price || 0),
+        quantity: 1,
+        productId: product.id,
+        type: 'product'
       }
       setCart([...cart, cartItem])
     }
@@ -90,8 +153,12 @@ export default function POSPage() {
     return cart.some(item => item.serviceId === serviceId)
   }
 
+  const isProductInCart = (productId: string) => {
+    return cart.some(item => item.productId === productId)
+  }
+
   const getCartTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price, 0)
+    return cart.reduce((sum, item) => sum + Number(item.price || 0), 0)
   }
 
   const handleCheckout = () => {
@@ -126,7 +193,8 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 md:pb-0">
+    <SubscriptionGate>
+      <div className="min-h-screen bg-white pb-24 md:pb-0">
       {/* Mobile POS Interface */}
       {isMobileView ? (
         <div className="min-h-screen bg-gray-50 pb-24">
@@ -162,59 +230,136 @@ export default function POSPage() {
               </Button>
             </div>
             
-            {/* Selected Services */}
+            {/* Selected Items */}
             {cart.length > 0 && (
               <div className="mt-3 sm:mt-4">
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Service</h2>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Selected Items</h2>
                 <ul className="list-disc list-inside text-gray-600 space-y-1 text-sm sm:text-base">
                   {cart.map((item) => (
-                    <li key={item.id}>{item.name}</li>
+                    <li key={item.id}>
+                      {item.name} - ${item.price} 
+                      <span className="text-xs text-gray-500 ml-1">({item.type})</span>
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
       </div>
 
-          {/* Service Selection Grid */}
-          <div className="p-3 sm:p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-              {services.map((service) => {
-                const isSelected = isServiceInCart(service.id)
-                return (
-                  <div key={service.id} className="relative">
-                    <button
-                      className={`w-full aspect-square rounded-lg border-2 transition-colors relative overflow-hidden ${
-                        isSelected 
-                          ? 'bg-lavender border-lavender' 
-                          : 'bg-white border-gray-200 hover:border-lavender'
-                      }`}
-                      onClick={() => toggleServiceInCart(service)}
-                    >
-                      {service.imageUrl && service.isCustomImage ? (
-                        <img 
-                          src={service.imageUrl} 
-                          alt={service.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs text-center px-1 sm:px-2">{service.name}</span>
-                        </div>
-                      )}
-                      {isSelected && (
-                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-white text-lavender rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs font-bold">
-                          ✓
-                        </div>
-                      )}
-                    </button>
-                    <p className="text-xs sm:text-sm text-center mt-1 sm:mt-2 font-medium text-gray-700 truncate">
-                      {service.name}
-                    </p>
-                      </div>
-                )
-              })}
-                </div>
+          {/* Tab Navigation */}
+          <div className="p-3 sm:p-4 border-b border-gray-200">
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <button
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'services'
+                    ? 'bg-white text-lavender shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                onClick={() => setActiveTab('services')}
+              >
+                Services
+              </button>
+              <button
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'products'
+                    ? 'bg-white text-lavender shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                onClick={() => setActiveTab('products')}
+              >
+                Products
+              </button>
+            </div>
           </div>
+
+          {/* Services Selection Grid */}
+          {activeTab === 'services' && (
+            <div className="p-3 sm:p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                {services.map((service) => {
+                  const isSelected = isServiceInCart(service.id)
+                  return (
+                    <div key={service.id} className="relative">
+                      <button
+                        className={`w-full aspect-square rounded-lg border-2 transition-colors relative overflow-hidden ${
+                          isSelected 
+                            ? 'bg-lavender border-lavender' 
+                            : 'bg-white border-gray-200 hover:border-lavender'
+                        }`}
+                        onClick={() => toggleServiceInCart(service)}
+                      >
+                        {service.imageUrl && service.isCustomImage ? (
+                          <img 
+                            src={service.imageUrl} 
+                            alt={service.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                            <span className="text-gray-500 text-xs text-center px-1 sm:px-2">{service.name}</span>
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-white text-lavender rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs font-bold">
+                            ✓
+                          </div>
+                        )}
+                      </button>
+                      <p className="text-xs sm:text-sm text-center mt-1 sm:mt-2 font-medium text-gray-700 truncate">
+                        {service.name}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Products Selection Grid */}
+          {activeTab === 'products' && (
+            <div className="p-3 sm:p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                {products.map((product) => {
+                  const isSelected = isProductInCart(product.id)
+                  return (
+                    <div key={product.id} className="relative">
+                      <button
+                        className={`w-full aspect-square rounded-lg border-2 transition-colors relative overflow-hidden ${
+                          isSelected 
+                            ? 'bg-lavender border-lavender' 
+                            : 'bg-white border-gray-200 hover:border-lavender'
+                        }`}
+                        onClick={() => toggleProductInCart(product)}
+                      >
+                        {product.images && product.images.length > 0 ? (
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                            <Package className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-white text-lavender rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs font-bold">
+                            ✓
+                          </div>
+                        )}
+                      </button>
+                      <p className="text-xs sm:text-sm text-center mt-1 sm:mt-2 font-medium text-gray-700 truncate">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-center text-gray-500">
+                        ${product.price}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
                     </div>
                   ) : (
         /* Desktop View */
@@ -253,52 +398,120 @@ export default function POSPage() {
                   </CardContent>
                 </Card>
 
-                {/* Service Selection */}
+                {/* Services & Products Selection */}
                 <Card>
                   <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="text-base sm:text-lg">Select Services</CardTitle>
-                    <CardDescription className="text-sm sm:text-base">Click on services to add them to the cart</CardDescription>
+                    <CardTitle className="text-base sm:text-lg">Select Services & Products</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">Click on items to add them to the cart</CardDescription>
+                    
+                    {/* Tab Navigation */}
+                    <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mt-4">
+                      <button
+                        className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                          activeTab === 'services'
+                            ? 'bg-white text-lavender shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                        onClick={() => setActiveTab('services')}
+                      >
+                        Services
+                      </button>
+                      <button
+                        className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                          activeTab === 'products'
+                            ? 'bg-white text-lavender shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                        onClick={() => setActiveTab('products')}
+                      >
+                        Products
+                      </button>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                      {services.map((service) => {
-                        const isSelected = isServiceInCart(service.id)
-                        return (
-                          <button
-                            key={service.id}
-                            className={`p-3 sm:p-4 rounded-lg border-2 transition-colors text-left ${
-                              isSelected 
-                                ? 'bg-lavender border-lavender text-white' 
-                                : 'bg-white border-gray-200 hover:border-lavender'
-                            }`}
-                            onClick={() => toggleServiceInCart(service)}
-                          >
-                            <div className="flex items-center space-x-2 sm:space-x-3">
-                              {service.imageUrl && service.isCustomImage ? (
-                                <img 
-                                  src={service.imageUrl} 
-                                  alt={service.name}
-                                  className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center">
-                                  <span className="text-gray-500 text-xs text-center">{service.name.charAt(0)}</span>
+                    {/* Services Grid */}
+                    {activeTab === 'services' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        {services.map((service) => {
+                          const isSelected = isServiceInCart(service.id)
+                          return (
+                            <button
+                              key={service.id}
+                              className={`p-3 sm:p-4 rounded-lg border-2 transition-colors text-left ${
+                                isSelected 
+                                  ? 'bg-lavender border-lavender text-white' 
+                                  : 'bg-white border-gray-200 hover:border-lavender'
+                              }`}
+                              onClick={() => toggleServiceInCart(service)}
+                            >
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                {service.imageUrl && service.isCustomImage ? (
+                                  <img 
+                                    src={service.imageUrl} 
+                                    alt={service.name}
+                                    className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center">
+                                    <span className="text-gray-500 text-xs text-center">{service.name.charAt(0)}</span>
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-xs sm:text-sm truncate">{service.name}</h4>
+                                  <p className="text-xs opacity-75">${service.defaultPrice}</p>
                                 </div>
-                              )}
-                              <div className="flex-1">
-                                <h4 className="font-medium text-xs sm:text-sm truncate">{service.name}</h4>
-                                <p className="text-xs opacity-75">${service.defaultPrice}</p>
+                                {isSelected && (
+                                  <div className="text-white text-base sm:text-lg">✓</div>
+                                )}
                               </div>
-                              {isSelected && (
-                                <div className="text-white text-base sm:text-lg">✓</div>
-                              )}
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-              </CardContent>
-            </Card>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* Products Grid */}
+                    {activeTab === 'products' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        {products.map((product) => {
+                          const isSelected = isProductInCart(product.id)
+                          return (
+                            <button
+                              key={product.id}
+                              className={`p-3 sm:p-4 rounded-lg border-2 transition-colors text-left ${
+                                isSelected 
+                                  ? 'bg-lavender border-lavender text-white' 
+                                  : 'bg-white border-gray-200 hover:border-lavender'
+                              }`}
+                              onClick={() => toggleProductInCart(product)}
+                            >
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                {product.images && product.images.length > 0 ? (
+                                  <img 
+                                    src={product.images[0]} 
+                                    alt={product.name}
+                                    className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center">
+                                    <Package className="w-6 h-6 text-gray-400" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-xs sm:text-sm truncate">{product.name}</h4>
+                                  <p className="text-xs opacity-75">${product.price}</p>
+                                </div>
+                                {isSelected && (
+                                  <div className="text-white text-base sm:text-lg">✓</div>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
           </div>
 
               {/* Right Column - Cart & Checkout */}
@@ -311,13 +524,14 @@ export default function POSPage() {
             </CardHeader>
                   <CardContent className="p-4 sm:p-6">
                     {cart.length === 0 ? (
-                      <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">No services selected</p>
+                      <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">No items selected</p>
                     ) : (
               <div className="space-y-2 sm:space-y-3">
                         {cart.map((item) => (
                           <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                             <div>
                               <p className="font-medium text-xs sm:text-sm truncate">{item.name}</p>
+                              <p className="text-xs text-gray-500 capitalize">{item.type}</p>
                 </div>
                             <p className="font-semibold text-sm sm:text-base">${item.price}</p>
                 </div>
@@ -408,6 +622,7 @@ export default function POSPage() {
           </Card>
         </div>
       )}
-    </div>
+      </div>
+    </SubscriptionGate>
   )
 }

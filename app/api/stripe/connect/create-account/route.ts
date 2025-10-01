@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 // Initialize Stripe with conditional API key
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -46,8 +49,27 @@ export async function POST(request: NextRequest) {
       type: 'account_onboarding',
     })
 
-    // Store account information (in a real app, this would go to a database)
-    // For now, we'll return the account info
+    // Store account information in database
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: artistEmail }
+      })
+
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            stripeConnectAccountId: account.id
+          }
+        })
+        console.log(`✅ Saved Stripe Connect account ${account.id} for user ${user.email}`)
+      } else {
+        console.warn(`⚠️ User not found for email ${artistEmail}, Stripe account created but not linked to user`)
+      }
+    } catch (dbError) {
+      console.error('Database error saving Stripe account:', dbError)
+      // Continue anyway - account was created successfully
+    }
     
     return NextResponse.json({
       success: true,

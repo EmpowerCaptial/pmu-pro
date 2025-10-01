@@ -89,7 +89,14 @@ export default function ClientDepositPage() {
   const loadAdditionalInfo = async (deposit: DepositPayment) => {
     try {
       // Load client info
-      const clientResponse = await fetch(`/api/clients/${deposit.clientId}`);
+      // Get user email from localStorage or context
+      const userEmail = localStorage.getItem('userEmail') || ''
+      
+      const clientResponse = await fetch(`/api/clients/${deposit.clientId}`, {
+        headers: {
+          'x-user-email': userEmail
+        }
+      });
       if (clientResponse.ok) {
         const clientData = await clientResponse.json();
         setClientInfo({

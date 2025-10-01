@@ -26,19 +26,76 @@ interface AnalysisResultsStepProps {
 }
 
 export function AnalysisResultsStep({ photo, results, onRetake, onNewAnalysis }: AnalysisResultsStepProps) {
-  const handleSaveToClient = () => {
-    // TODO: Implement save to client functionality
-    console.log("Save to client")
+  const handleSaveToClient = async () => {
+    try {
+      // Get current user email for authentication
+      const userEmail = localStorage.getItem('demoUser') ? JSON.parse(localStorage.getItem('demoUser')!).email : null
+      
+      if (!userEmail) {
+        alert('Please log in to save results')
+        return
+      }
+
+      // For demo purposes, we'll save to a default client
+      // In production, this would open a client selection dialog
+      const response = await fetch('/api/client-tools/save-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': userEmail
+        },
+        body: JSON.stringify({
+          clientId: 'demo-client-001', // This would be selected by user
+          toolResult: {
+            type: 'skin-analysis',
+            toolName: 'Skin Analysis',
+            data: results
+          }
+        })
+      })
+
+      if (response.ok) {
+        alert('Results saved to client file successfully!')
+      } else {
+        alert('Failed to save results')
+      }
+    } catch (error) {
+      console.error('Error saving to client:', error)
+      alert('Error saving results')
+    }
   }
 
   const handleExportResults = () => {
-    // TODO: Implement export functionality
-    console.log("Export results")
+    try {
+      // Create a downloadable JSON file with the results
+      const dataStr = JSON.stringify(results, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `skin-analysis-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      alert('Results exported successfully!')
+    } catch (error) {
+      console.error('Error exporting results:', error)
+      alert('Error exporting results')
+    }
   }
 
   const handleSelectPigment = (pigmentId: string) => {
-    // TODO: Implement pigment selection
-    console.log("Selected pigment:", pigmentId)
+    // Store selected pigment in localStorage for later use
+    const selectedPigments = JSON.parse(localStorage.getItem('selectedPigments') || '[]')
+    if (!selectedPigments.includes(pigmentId)) {
+      selectedPigments.push(pigmentId)
+      localStorage.setItem('selectedPigments', JSON.stringify(selectedPigments))
+    }
+    
+    alert(`Pigment ${pigmentId} added to your selection!`)
   }
 
   return (

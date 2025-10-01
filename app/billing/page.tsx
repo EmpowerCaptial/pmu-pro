@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -130,6 +130,101 @@ export default function BillingPage() {
     webhookSecret: '',
     isConnected: false
   })
+  const [isStripeConnected, setIsStripeConnected] = useState(false)
+  const [userPaymentLinks, setUserPaymentLinks] = useState({
+    venmoUsername: '',
+    cashAppUsername: ''
+  })
+
+  // Check Stripe Connect status and load user payment links on mount
+  useEffect(() => {
+    checkStripeConnection()
+    loadUserPaymentLinks()
+  }, [])
+
+  const loadUserPaymentLinks = async () => {
+    try {
+      // Get user email from localStorage
+      const userEmail = localStorage.getItem('userEmail') || ''
+      const demoUser = localStorage.getItem('demoUser')
+      let email = userEmail
+      
+      if (demoUser) {
+        try {
+          const user = JSON.parse(demoUser)
+          email = user.email || userEmail
+        } catch (e) {
+          console.error('Error parsing demoUser:', e)
+        }
+      }
+      
+      // Load user payment links from database
+      const response = await fetch('/api/profile', {
+        headers: {
+          'x-user-email': email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.user) {
+          setUserPaymentLinks({
+            venmoUsername: data.user.venmoUsername || '',
+            cashAppUsername: data.user.cashAppUsername || ''
+          })
+        }
+      }
+    } catch (err) {
+      console.log('Error loading user payment links:', err)
+    }
+  }
+
+  const checkStripeConnection = async () => {
+    try {
+      // Get user email from localStorage
+      const userEmail = localStorage.getItem('userEmail') || ''
+      const demoUser = localStorage.getItem('demoUser')
+      let email = userEmail
+      
+      if (demoUser) {
+        try {
+          const user = JSON.parse(demoUser)
+          email = user.email || userEmail
+        } catch (e) {
+          console.error('Error parsing demoUser:', e)
+        }
+      }
+      
+      const response = await fetch('/api/stripe/connect/account-status', {
+        headers: {
+          'x-user-email': email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const connected = data.account?.status === 'active'
+        setIsStripeConnected(connected)
+        
+        // If Stripe is connected, automatically mark BNPL methods as ready
+        if (connected) {
+          setPaymentMethods(prev => 
+            prev.map(method => {
+              if (['affirm', 'afterpay', 'klarna'].includes(method.id)) {
+                return { ...method, setupRequired: false }
+              }
+              if (method.id === 'stripe') {
+                return { ...method, setupRequired: false }
+              }
+              return method
+            })
+          )
+        }
+      }
+    } catch (err) {
+      console.log('Error checking Stripe connection:', err)
+    }
+  }
 
   const handleTogglePaymentMethod = (id: string) => {
     setPaymentMethods(prev => 
@@ -146,8 +241,12 @@ export default function BillingPage() {
       // Redirect to Stripe Connect setup
       window.open('/stripe-connect', '_blank')
     } else if (['affirm', 'afterpay', 'klarna'].includes(id)) {
-      // For BNPL methods, they're automatically available through Stripe
-      alert(`${id.charAt(0).toUpperCase() + id.slice(1)} is automatically available through Stripe once enabled in your Stripe dashboard.`)
+      // Check if Stripe is connected first
+      if (isStripeConnected) {
+        alert(`${id.charAt(0).toUpperCase() + id.slice(1)} is ready to use! Make sure it's enabled in your Stripe Dashboard under Settings → Payment Methods.`)
+      } else {
+        alert(`Please set up Stripe Connect first. ${id.charAt(0).toUpperCase() + id.slice(1)} is automatically available through Stripe once both Stripe Connect is set up and the payment method is enabled in your Stripe dashboard.`)
+      }
     } else {
       alert(`${id.charAt(0).toUpperCase() + id.slice(1)} setup instructions will be available soon.`)
     }
@@ -162,6 +261,45 @@ export default function BillingPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     alert('Copied to clipboard!')
+  }
+
+  const savePaymentLink = async (type: 'venmo' | 'cashapp', value: string) => {
+    try {
+      // Get user email from localStorage
+      const userEmail = localStorage.getItem('userEmail') || ''
+      const demoUser = localStorage.getItem('demoUser')
+      let email = userEmail
+      
+      if (demoUser) {
+        try {
+          const user = JSON.parse(demoUser)
+          email = user.email || userEmail
+        } catch (e) {
+          console.error('Error parsing demoUser:', e)
+        }
+      }
+      
+      // Save to database
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': email
+        },
+        body: JSON.stringify({
+          [type === 'venmo' ? 'venmoUsername' : 'cashAppUsername']: value
+        })
+      })
+      
+      if (response.ok) {
+        setUserPaymentLinks(prev => ({
+          ...prev,
+          [type === 'venmo' ? 'venmoUsername' : 'cashAppUsername']: value
+        }))
+      }
+    } catch (err) {
+      console.error('Error saving payment link:', err)
+    }
   }
 
   const getStatusBadge = (method: PaymentMethod) => {
@@ -287,13 +425,17 @@ export default function BillingPage() {
                   <Input
                     id="venmo-link"
                     placeholder="@your-venmo-username"
+                    value={userPaymentLinks.venmoUsername}
+                    onChange={(e) => setUserPaymentLinks(prev => ({ ...prev, venmoUsername: e.target.value }))}
+                    onBlur={(e) => savePaymentLink('venmo', e.target.value)}
                     className="force-white-bg force-gray-border force-dark-text text-xs sm:text-sm"
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard('@your-venmo-username')}
+                    onClick={() => copyToClipboard(`@${userPaymentLinks.venmoUsername}`)}
                     className="px-2 sm:px-3"
+                    disabled={!userPaymentLinks.venmoUsername}
                   >
                     <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
@@ -306,13 +448,17 @@ export default function BillingPage() {
                   <Input
                     id="cashapp-link"
                     placeholder="$your-cashapp-username"
+                    value={userPaymentLinks.cashAppUsername}
+                    onChange={(e) => setUserPaymentLinks(prev => ({ ...prev, cashAppUsername: e.target.value }))}
+                    onBlur={(e) => savePaymentLink('cashapp', e.target.value)}
                     className="force-white-bg force-gray-border force-dark-text text-xs sm:text-sm"
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard('$your-cashapp-username')}
+                    onClick={() => copyToClipboard(`$${userPaymentLinks.cashAppUsername}`)}
                     className="px-2 sm:px-3"
+                    disabled={!userPaymentLinks.cashAppUsername}
                   >
                     <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
@@ -355,7 +501,11 @@ export default function BillingPage() {
                     <div className="text-xs sm:text-sm text-gray-600">Credit card processing with instant payouts</div>
                   </div>
                 </div>
-                <Badge className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm">Setup Required</Badge>
+                {isStripeConnected ? (
+                  <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">Connected</Badge>
+                ) : (
+                  <Badge className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm">Setup Required</Badge>
+                )}
               </div>
               
               <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">

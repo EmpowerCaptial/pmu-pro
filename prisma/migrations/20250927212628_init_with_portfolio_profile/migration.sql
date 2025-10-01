@@ -19,6 +19,16 @@ CREATE TABLE "users" (
     "stripeCustomerId" TEXT,
     "stripeSubscriptionId" TEXT,
     "subscriptionStatus" TEXT NOT NULL DEFAULT 'inactive',
+    "avatar" TEXT,
+    "bio" TEXT,
+    "studioName" TEXT,
+    "website" TEXT,
+    "instagram" TEXT,
+    "address" TEXT,
+    "businessHours" TEXT,
+    "specialties" TEXT,
+    "experience" TEXT,
+    "certifications" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -456,6 +466,22 @@ CREATE TABLE "order_items" (
     CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- CreateTable
+CREATE TABLE "portfolios" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "beforeImage" TEXT,
+    "afterImage" TEXT,
+    "isPublic" BOOLEAN NOT NULL DEFAULT true,
+    "date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "portfolios_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -620,3 +646,9 @@ CREATE INDEX "order_items_orderId_idx" ON "order_items"("orderId");
 
 -- CreateIndex
 CREATE INDEX "order_items_productId_idx" ON "order_items"("productId");
+
+-- CreateIndex
+CREATE INDEX "portfolios_userId_idx" ON "portfolios"("userId");
+
+-- CreateIndex
+CREATE INDEX "portfolios_isPublic_idx" ON "portfolios"("isPublic");

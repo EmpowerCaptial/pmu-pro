@@ -14,6 +14,9 @@ import { FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { getFormTemplate } from "@/lib/data/consent-form-templates"
 import { ConsentForm, ConsentFormData } from "@/types/consent-forms"
 import { SignaturePad } from "@/components/consent/signature-pad"
+import { useAutoSave } from "@/hooks/use-auto-save"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { FormRecovery } from "@/components/forms/form-recovery"
 
 interface FormFieldData {
   [key: string]: string | boolean | string[]
@@ -24,7 +27,6 @@ export default function ClientConsentFormPage() {
   const clientId = params.clientId as string
   const token = params.token as string
   
-  const [formData, setFormData] = useState<FormFieldData>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -32,6 +34,33 @@ export default function ClientConsentFormPage() {
   const [error, setError] = useState<string | null>(null)
   const [consentForm, setConsentForm] = useState<ConsentForm | null>(null)
   const [formTemplate, setFormTemplate] = useState<any>(null)
+
+  const initialFormData: FormFieldData = {}
+
+  const {
+    formData,
+    updateFormData,
+    saveForm,
+    clearDraft,
+    isSaving,
+    lastSaved,
+    hasUnsavedChanges,
+    error: saveError
+  } = useAutoSave(initialFormData, {
+    formType: 'consent_form',
+    clientId,
+    onSave: (data) => console.log('Consent form auto-saved:', data),
+    onError: (error) => console.error('Auto-save error:', error)
+  })
+
+  const { uploadFile, isUploading: isUploadingFile } = useFileUpload({
+    fileType: 'signature',
+    clientId,
+    onSuccess: (file) => {
+      updateFormData({ signatureImage: file.fileUrl })
+    },
+    onError: (error) => console.error('File upload error:', error)
+  })
 
   useEffect(() => {
     loadFormData()
@@ -77,7 +106,8 @@ export default function ClientConsentFormPage() {
             initialData[field.id] = ""
           }
         })
-        setFormData(initialData)
+        // Update the auto-save form data
+        updateFormData(initialData)
       }
       
       setIsLoading(false)
@@ -89,10 +119,7 @@ export default function ClientConsentFormPage() {
   }
 
   const handleFieldChange = (fieldId: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [fieldId]: value
-    }))
+    updateFormData({ [fieldId]: value })
   }
 
   const validateForm = (): boolean => {
@@ -140,6 +167,14 @@ export default function ClientConsentFormPage() {
     setError(null)
     
     try {
+      // Save form as complete first
+      const success = await saveForm(formData, true)
+      
+      if (!success) {
+        setError("Failed to save form. Please try again.")
+        return
+      }
+
       // Create form submission data with better error handling
       const submissionData: ConsentFormData = {
         clientSignature: formData.clientSignature as string || "",
@@ -519,6 +554,16 @@ export default function ClientConsentFormPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Form Recovery Component */}
+      <FormRecovery
+        hasUnsavedChanges={hasUnsavedChanges}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        onSave={() => saveForm(formData, false)}
+        onDiscard={clearDraft}
+        formName="consent form"
+      />
     </div>
   )
 }

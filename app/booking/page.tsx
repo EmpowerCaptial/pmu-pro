@@ -81,8 +81,12 @@ export default function BookingCalendar() {
 
   // Load clients and appointments from database
   useEffect(() => {
-    const loadedClients = getClients()
-    setClients(loadedClients)
+    const loadClients = async () => {
+      const loadedClients = await getClients(currentUser?.email)
+      setClients(loadedClients)
+    }
+    
+    loadClients()
     
     if (currentUser?.email) {
       loadAppointments()
@@ -169,7 +173,7 @@ export default function BookingCalendar() {
       }
 
       // First save to localStorage (existing system)
-      client = addClient({
+      client = await addClient({
         name: newClientData.name,
         email: newClientData.email,
         phone: newClientData.phone,
@@ -184,7 +188,7 @@ export default function BookingCalendar() {
         medicalRelease: false,
         liabilityWaiver: false,
         aftercareAgreement: false
-      })
+      }, currentUser?.email)
 
       // Also save to database for deposit payments
       try {
@@ -197,7 +201,8 @@ export default function BookingCalendar() {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-user-email': user.email || ''
               },
               body: JSON.stringify({
                 name: newClientData.name,
@@ -222,7 +227,8 @@ export default function BookingCalendar() {
       }
 
       // Refresh clients list
-      setClients(getClients())
+      const updatedClients = await getClients(currentUser?.email)
+      setClients(updatedClients)
     }
 
     if (!client || !client.name) {
