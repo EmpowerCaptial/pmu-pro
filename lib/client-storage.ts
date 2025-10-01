@@ -73,6 +73,11 @@ export interface Client {
   medicalConditions: string[]
   medications: string[]
   allergies: string[]
+  // Database fields
+  userId?: string
+  medicalHistory?: string
+  skinType?: string
+  isActive?: boolean
   skinConditions: string[]
   previousPMU: boolean
   previousPMUDetails?: string
@@ -171,10 +176,15 @@ export async function getClients(userEmail?: string): Promise<Client[]> {
           emergencyContact: dbClient.emergencyContact,
           emergencyPhone: undefined, // Not in database schema
           dateOfBirth: dbClient.dateOfBirth ? new Date(dbClient.dateOfBirth).toISOString() : undefined,
-          medicalConditions: dbClient.medicalHistory ? JSON.parse(dbClient.medicalHistory) : [],
+          medicalConditions: dbClient.medicalHistory ? (typeof dbClient.medicalHistory === 'string' ? JSON.parse(dbClient.medicalHistory) : dbClient.medicalHistory) : [],
           medications: [], // Not in database schema
           allergies: dbClient.allergies ? (typeof dbClient.allergies === 'string' ? JSON.parse(dbClient.allergies) : dbClient.allergies) : [],
-          skinConditions: dbClient.skinType ? JSON.parse(dbClient.skinType) : [],
+          // Database fields
+          userId: dbClient.userId,
+          medicalHistory: dbClient.medicalHistory,
+          skinType: dbClient.skinType,
+          isActive: dbClient.isActive,
+          skinConditions: dbClient.skinType ? (typeof dbClient.skinType === 'string' ? JSON.parse(dbClient.skinType) : dbClient.skinType) : [],
           previousPMU: false, // Not in database schema
           previousPMUDetails: undefined, // Not in database schema
           desiredService: undefined, // Not in database schema

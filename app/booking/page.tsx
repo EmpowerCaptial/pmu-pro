@@ -111,7 +111,9 @@ function BookingCalendarContent() {
   // Load clients and appointments from database
   useEffect(() => {
     const loadClients = async () => {
+      console.log('Loading clients for user:', currentUser?.email)
       const loadedClients = await getClients(currentUser?.email)
+      console.log('Loaded clients:', loadedClients)
       setClients(loadedClients)
       
       // Pre-select client if clientId is in URL
@@ -125,9 +127,8 @@ function BookingCalendarContent() {
       }
     }
     
-    loadClients()
-    
     if (currentUser?.email) {
+      loadClients()
       loadAppointments()
     }
   }, [currentUser, searchParams])
@@ -180,6 +181,10 @@ function BookingCalendarContent() {
     client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(clientSearchTerm.toLowerCase())
   )
+  
+  console.log('Total clients:', clients.length)
+  console.log('Filtered clients:', filteredClients.length)
+  console.log('Search term:', clientSearchTerm)
 
   const handleNewAppointmentClick = () => {
     setShowNewAppointmentModal(true)
