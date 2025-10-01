@@ -258,7 +258,13 @@ export default function ClientsPage() {
   // Handle booking appointment for client
   const handleBookAppointment = (client: Client) => {
     // Navigate to booking page with client pre-selected
-    router.push(`/booking?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`);
+    const params = new URLSearchParams({
+      clientId: client.id,
+      clientName: client.name,
+      clientEmail: client.email || '',
+      clientPhone: client.phone || ''
+    });
+    router.push(`/booking?${params.toString()}`);
   };
 
   // Handle viewing client details

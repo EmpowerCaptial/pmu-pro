@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,6 +64,7 @@ interface Appointment {
 
 export default function BookingCalendar() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -90,9 +91,9 @@ export default function BookingCalendar() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clientSearchTerm, setClientSearchTerm] = useState('')
   const [newClientData, setNewClientData] = useState({
-    name: '',
-    email: '',
-    phone: ''
+    name: searchParams.get('clientName') || '',
+    email: searchParams.get('clientEmail') || '',
+    phone: searchParams.get('clientPhone') || ''
   })
   
   // Time Blocks State
@@ -112,6 +113,16 @@ export default function BookingCalendar() {
     const loadClients = async () => {
       const loadedClients = await getClients(currentUser?.email)
       setClients(loadedClients)
+      
+      // Pre-select client if clientId is in URL
+      const clientId = searchParams.get('clientId')
+      if (clientId && loadedClients.length > 0) {
+        const client = loadedClients.find(c => c.id === clientId)
+        if (client) {
+          setSelectedClient(client)
+          setClientSelectionType('existing')
+        }
+      }
     }
     
     loadClients()
@@ -119,7 +130,7 @@ export default function BookingCalendar() {
     if (currentUser?.email) {
       loadAppointments()
     }
-  }, [currentUser])
+  }, [currentUser, searchParams])
 
   // Load appointments from database API
   const loadAppointments = async () => {
