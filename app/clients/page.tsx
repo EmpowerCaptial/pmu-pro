@@ -43,11 +43,49 @@ export default function ClientsPage() {
   const [isClientDetailOpen, setIsClientDetailOpen] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 
+  // Load avatar from API first, then fallback to localStorage
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  
+  useEffect(() => {
+    const loadAvatar = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          // Try to load from API first
+          const response = await fetch('/api/profile', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.profile?.avatar) {
+              setUserAvatar(data.profile.avatar)
+              return
+            }
+          }
+          
+          // Fallback to localStorage
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        } catch (error) {
+          console.error('Error loading avatar:', error)
+          // Fallback to localStorage on error
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        }
+      }
+    }
+    
+    loadAvatar()
+  }, [currentUser?.email])
+
   // Prepare user object for NavBar
   const user = currentUser ? {
     name: currentUser.name,
     email: currentUser.email,
-    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: userAvatar
   } : {
     name: "PMU Artist",
     email: "artist@pmupro.com",

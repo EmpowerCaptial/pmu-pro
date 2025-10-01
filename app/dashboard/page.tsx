@@ -28,12 +28,39 @@ export default function DashboardPage() {
   const [hasApplication, setHasApplication] = useState(false)
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   
-  // Load avatar from localStorage after component mounts
+  // Load avatar from API first, then fallback to localStorage
   useEffect(() => {
-    if (currentUser?.email && typeof window !== 'undefined') {
-      const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
-      setUserAvatar(avatar || undefined)
+    const loadAvatar = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          // Try to load from API first
+          const response = await fetch('/api/profile', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.profile?.avatar) {
+              setUserAvatar(data.profile.avatar)
+              return
+            }
+          }
+          
+          // Fallback to localStorage
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        } catch (error) {
+          console.error('Error loading avatar:', error)
+          // Fallback to localStorage on error
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        }
+      }
     }
+    
+    loadAvatar()
   }, [currentUser?.email])
   
   // Fallback user if not authenticated
