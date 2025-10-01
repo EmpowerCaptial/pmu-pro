@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Service, getServices } from '@/lib/services-api'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { SubscriptionGate } from '@/components/auth/subscription-gate'
+import { NavBar } from '@/components/ui/navbar'
 import { Package } from 'lucide-react'
 
 function POSContent() {
@@ -22,6 +23,17 @@ function POSContent() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'services' | 'products'>('services')
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
   
   // POS is now active - no longer coming soon
   const isComingSoon = false
@@ -238,7 +250,9 @@ function POSContent() {
 
   return (
     <SubscriptionGate>
-      <div className="min-h-screen bg-white pb-24 md:pb-0">
+      <div className="min-h-screen bg-white">
+        <NavBar currentPath="/pos" user={user} />
+        <div className="pb-24 md:pb-0">
       {/* Mobile POS Interface */}
       {isMobileView ? (
         <div className="min-h-screen bg-gray-50 pb-24">
@@ -666,6 +680,7 @@ function POSContent() {
           </Card>
         </div>
       )}
+        </div>
       </div>
     </SubscriptionGate>
   )

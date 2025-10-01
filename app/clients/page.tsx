@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
 import { SubscriptionGate } from '@/components/auth/subscription-gate';
+import { NavBar } from '@/components/ui/navbar';
 import ClientList, { Client } from '@/src/components/client/ClientList';
 import MessageForm from '@/src/components/client/MessageForm';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,17 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isClientDetailOpen, setIsClientDetailOpen] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
 
   // Form state for adding/editing clients
   const [formData, setFormData] = useState({
@@ -306,7 +318,9 @@ export default function ClientsPage() {
 
   return (
     <SubscriptionGate>
-      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige pb-20 sm:pb-0">
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+        <NavBar currentPath="/clients" user={user} />
+        <div className="pb-20 sm:pb-0">
       {/* Client List Component */}
       <ClientList
         clients={clients}
@@ -705,6 +719,7 @@ export default function ClientsPage() {
           />
         </DialogContent>
       </Dialog>
+        </div>
       </div>
     </SubscriptionGate>
   );

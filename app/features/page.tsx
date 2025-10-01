@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { 
   BookOpen, 
   BarChart3, 
@@ -370,8 +372,20 @@ const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures,
 
 export default function FeaturesPage() {
   const router = useRouter()
+  const { currentUser } = useDemoAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory] = useState('all') // Always show all features
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
 
   const categories = [
     { id: 'all', name: 'All Features', count: allFeatures.length },
@@ -411,7 +425,9 @@ export default function FeaturesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10 p-3 sm:p-4 pb-16 sm:pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
+      <NavBar currentPath="/features" user={user} />
+      <div className="p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
@@ -548,6 +564,7 @@ export default function FeaturesPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

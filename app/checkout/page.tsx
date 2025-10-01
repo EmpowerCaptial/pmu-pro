@@ -19,16 +19,30 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { currentUser } = useDemoAuth()
   
   // Get cart data from URL params or localStorage
   const [cart, setCart] = useState(() => {
     const cartData = searchParams.get('cart')
     return cartData ? JSON.parse(decodeURIComponent(cartData)) : []
   })
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
   
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
   const [tipAmount, setTipAmount] = useState(0)
@@ -280,35 +294,37 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 md:pb-0">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => router.back()}
-                className="border-gray-200 hover:border-gray-300"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
-                <p className="text-sm text-gray-500">Complete your transaction</p>
+    <div className="min-h-screen bg-gray-50">
+      <NavBar currentPath="/checkout" user={user} />
+      <div className="pb-24 md:pb-0">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => router.back()}
+                  className="border-gray-200 hover:border-gray-300"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
+                  <p className="text-sm text-gray-500">Complete your transaction</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge className="bg-lavender text-white px-3 py-1">
-                <Receipt className="h-3 w-3 mr-1" />
-                POS Transaction
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge className="bg-lavender text-white px-3 py-1">
+                  <Receipt className="h-3 w-3 mr-1" />
+                  POS Transaction
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -667,6 +683,7 @@ function CheckoutContent() {
               </Card>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

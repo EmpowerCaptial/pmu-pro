@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { NavBar } from '@/components/ui/navbar'
 import { 
   Plus, 
   Edit, 
@@ -57,6 +58,18 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -231,7 +244,9 @@ export default function ProductsPage() {
 
   return (
     <SubscriptionGate>
-      <div className="container mx-auto px-1 py-2 pb-20 sm:pb-2">
+      <div className="min-h-screen bg-white">
+        <NavBar currentPath="/products" user={user} />
+        <div className="container mx-auto px-1 py-2 pb-20 sm:pb-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
@@ -592,6 +607,7 @@ export default function ProductsPage() {
           })}
         </div>
       )}
+        </div>
       </div>
     </SubscriptionGate>
   )

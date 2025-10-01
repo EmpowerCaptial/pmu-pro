@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { NavBar } from '@/components/ui/navbar'
 import { 
   Plus, 
   Edit, 
@@ -44,6 +45,17 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [newService, setNewService] = useState<Partial<Service>>({
@@ -187,7 +199,9 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 pb-24 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
+      <NavBar currentPath="/services" user={user} />
+      <div className="pb-24 md:pb-0">
       {/* Header (App Bar) */}
       <div className="flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4 bg-white border-b border-gray-200 shadow-sm">
         {/* Left: Back button */}
@@ -492,6 +506,7 @@ export default function ServicesPage() {
             <p className="text-gray-500 text-sm sm:text-base">Try adjusting your search or add a new service.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

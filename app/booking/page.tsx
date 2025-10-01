@@ -17,6 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { 
   Calendar, 
   Clock, 
@@ -107,6 +109,17 @@ function BookingCalendarContent() {
     notes: '',
     paymentMethod: 'online' // 'online' or 'in-person'
   })
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
 
   // Load clients and appointments from database
   useEffect(() => {
@@ -741,8 +754,10 @@ function BookingCalendarContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-3 sm:p-4 pb-16 sm:pb-20">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
+      <NavBar currentPath="/booking" user={user} />
+      <div className="p-3 sm:p-4 pb-16 sm:pb-20">
+        <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
           <div className="min-w-0">
@@ -1052,6 +1067,7 @@ function BookingCalendarContent() {
           </div>
         )}
 
+        </div>
       </div>
 
       {/* New Appointment Modal */}
