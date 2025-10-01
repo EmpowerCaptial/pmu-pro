@@ -37,7 +37,13 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ product })
+    // Parse images from JSON string
+    const productWithParsedImages = {
+      ...product,
+      images: typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+    }
+
+    return NextResponse.json({ product: productWithParsedImages })
 
   } catch (error) {
     console.error('Error fetching product:', error)
@@ -106,7 +112,7 @@ export async function PUT(
         sku,
         stockQuantity,
         isDigital,
-        images,
+        images: JSON.stringify(images || []),
         isActive
       }
     })

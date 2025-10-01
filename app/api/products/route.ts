@@ -38,7 +38,14 @@ export async function GET(request: NextRequest) {
     })
 
     console.log('GET /api/products - products found:', products.length)
-    return NextResponse.json({ products })
+    
+    // Parse images from JSON strings
+    const productsWithParsedImages = products.map(product => ({
+      ...product,
+      images: typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+    }))
+    
+    return NextResponse.json({ products: productsWithParsedImages })
 
   } catch (error) {
     console.error('Error fetching products:', error)
@@ -96,7 +103,7 @@ export async function POST(request: NextRequest) {
         sku,
         stockQuantity: stockQuantity || 0,
         isDigital: isDigital || false,
-        images: images || [],
+        images: JSON.stringify(images || []),
         isActive: isActive !== undefined ? isActive : true
       }
     })

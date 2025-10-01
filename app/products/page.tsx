@@ -168,8 +168,8 @@ export default function ProductsPage() {
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product)
-    // Clean broken images when editing
-    const cleanedImages = cleanBrokenImages(product.images)
+    // Ensure images is an array
+    const productImages = Array.isArray(product.images) ? product.images : []
     setNewProduct({
       name: product.name,
       description: product.description || '',
@@ -178,7 +178,7 @@ export default function ProductsPage() {
       sku: product.sku || '',
       stockQuantity: product.stockQuantity.toString(),
       isDigital: product.isDigital,
-      images: cleanedImages,
+      images: productImages,
       isActive: product.isActive
     })
     setShowAddModal(true)
@@ -213,8 +213,10 @@ export default function ProductsPage() {
            url.length < 10
   }
 
-  const cleanBrokenImages = (images: string[]) => {
-    return images.filter(img => !isBrokenImageUrl(img))
+  const cleanBrokenImages = (images: string[] | string) => {
+    // Handle both array and string formats
+    const imageArray = Array.isArray(images) ? images : (typeof images === 'string' ? JSON.parse(images || '[]') : [])
+    return imageArray.filter((img: string) => !isBrokenImageUrl(img))
   }
 
   if (loading) {
@@ -236,47 +238,6 @@ export default function ProductsPage() {
           <p className="text-gray-600">Manage your products and inventory</p>
         </div>
         
-        {products.length > 0 && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (!currentUser?.email) return
-                
-                // Clean broken images for all products
-                const updatedProducts = products.map(product => ({
-                  ...product,
-                  images: cleanBrokenImages(product.images)
-                }))
-                
-                // Update each product that had broken images
-                for (const product of updatedProducts) {
-                  if (product.images.length !== products.find(p => p.id === product.id)?.images.length) {
-                    try {
-                      await fetch(`/api/products/${product.id}`, {
-                        method: 'PUT',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'x-user-email': currentUser.email
-                        },
-                        body: JSON.stringify(product)
-                      })
-                    } catch (error) {
-                      console.error('Error cleaning images for product:', product.id, error)
-                    }
-                  }
-                }
-                
-                // Reload products
-                await loadProducts()
-              }}
-              className="text-orange-600 hover:text-orange-700"
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Clean Broken Images
-            </Button>
-          </div>
-        )}
         
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
@@ -549,7 +510,7 @@ export default function ProductsPage() {
                 
                 <CardContent className="space-y-4">
                   {/* Product Image */}
-                  {product.images && product.images.length > 0 ? (
+                  {product.images && Array.isArray(product.images) && product.images.length > 0 ? (
                     <div className="relative">
                       <img
                         src={product.images[0]}
