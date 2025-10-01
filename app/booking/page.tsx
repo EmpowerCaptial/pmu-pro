@@ -180,14 +180,18 @@ function BookingCalendarContent() {
   }
 
   // Filter clients based on search term
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(clientSearchTerm.toLowerCase())
-  )
+  const filteredClients = clients.filter(client => {
+    const nameMatch = client.name && client.name.toLowerCase().includes(clientSearchTerm.toLowerCase())
+    const emailMatch = client.email && client.email.toLowerCase().includes(clientSearchTerm.toLowerCase())
+    console.log(`Client ${client.name}: nameMatch=${nameMatch}, emailMatch=${emailMatch}, searchTerm="${clientSearchTerm}"`)
+    return nameMatch || emailMatch
+  })
   
   console.log('Total clients:', clients.length)
   console.log('Filtered clients:', filteredClients.length)
   console.log('Search term:', clientSearchTerm)
+  console.log('Clients data:', clients)
+  console.log('First client:', clients[0])
 
   const handleNewAppointmentClick = () => {
     setShowNewAppointmentModal(true)

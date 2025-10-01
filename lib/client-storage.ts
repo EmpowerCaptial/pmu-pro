@@ -156,9 +156,11 @@ export async function getClients(userEmail?: string): Promise<Client[]> {
       if (response.ok) {
         const data = await response.json()
         const apiClients = data.clients || []
+        console.log('API response data:', data)
+        console.log('API clients:', apiClients)
         
         // Convert database format to Client interface
-        return apiClients.map((dbClient: any) => ({
+        const mappedClients = apiClients.map((dbClient: any) => ({
           id: dbClient.id,
           name: dbClient.name,
           email: dbClient.email || '',
@@ -198,6 +200,9 @@ export async function getClients(userEmail?: string): Promise<Client[]> {
           liabilityWaiver: false, // Not in database schema
           aftercareAgreement: false // Not in database schema
         }))
+        
+        console.log('Mapped clients:', mappedClients)
+        return mappedClients
       }
     }
     
