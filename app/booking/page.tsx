@@ -481,7 +481,15 @@ export default function BookingCalendar() {
   // Appointment Action Handlers
   const handleCheckout = (appointment: Appointment) => {
     // Navigate to POS page with appointment data
-    router.push(`/pos?appointmentId=${appointment.id}&clientName=${encodeURIComponent(appointment.clientName)}&service=${encodeURIComponent(appointment.service)}&price=${appointment.price}`)
+    const params = new URLSearchParams({
+      appointmentId: appointment.id,
+      clientName: appointment.clientName,
+      clientEmail: appointment.clientEmail || '',
+      clientPhone: appointment.clientPhone || '',
+      service: appointment.service,
+      price: appointment.price.toString()
+    })
+    router.push(`/pos?${params.toString()}`)
   }
 
   const handleCancelAppointment = async (appointment: Appointment) => {

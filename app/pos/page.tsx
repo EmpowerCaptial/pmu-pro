@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CreditCard, User, X, Plus } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,8 +10,9 @@ import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { SubscriptionGate } from '@/components/auth/subscription-gate'
 import { Package } from 'lucide-react'
 
-export default function POSPage() {
+function POSContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { currentUser, isAuthenticated } = useDemoAuth()
   const [isMobileView, setIsMobileView] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
@@ -54,6 +55,37 @@ export default function POSPage() {
       loadAppointments()
     }
   }, [isAuthenticated, currentUser])
+
+  // Pre-fill from URL parameters (when coming from appointment checkout)
+  useEffect(() => {
+    const appointmentId = searchParams.get('appointmentId')
+    const clientName = searchParams.get('clientName')
+    const clientEmail = searchParams.get('clientEmail')
+    const clientPhone = searchParams.get('clientPhone')
+    const service = searchParams.get('service')
+    const price = searchParams.get('price')
+
+    if (appointmentId && clientName) {
+      // Set the selected appointment/client with all available info
+      setSelectedAppointment({
+        id: appointmentId,
+        clientName: clientName,
+        email: clientEmail || '',
+        phone: clientPhone || ''
+      })
+
+      // If service and price are provided, add to cart automatically
+      if (service && price) {
+        const serviceItem = {
+          id: service,
+          name: service,
+          price: parseFloat(price) || 0,
+          type: 'service'
+        }
+        setCart([serviceItem])
+      }
+    }
+  }, [searchParams])
   
   // Load services and products from API
   useEffect(() => {
@@ -624,5 +656,20 @@ export default function POSPage() {
       )}
       </div>
     </SubscriptionGate>
+  )
+}
+
+export default function POSPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading POS...</p>
+        </div>
+      </div>
+    }>
+      <POSContent />
+    </Suspense>
   )
 }
