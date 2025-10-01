@@ -198,7 +198,19 @@ function POSContent() {
     
     // Encode cart data for URL
     const cartData = encodeURIComponent(JSON.stringify(cart))
-    router.push(`/checkout?cart=${cartData}`)
+    
+    // Include client information if available
+    const params = new URLSearchParams({
+      cart: cartData
+    })
+    
+    if (selectedAppointment) {
+      if (selectedAppointment.clientName) params.append('clientName', selectedAppointment.clientName)
+      if (selectedAppointment.email) params.append('clientEmail', selectedAppointment.email)
+      if (selectedAppointment.phone) params.append('clientPhone', selectedAppointment.phone)
+    }
+    
+    router.push(`/checkout?${params.toString()}`)
   }
 
   // Show loading state
