@@ -46,7 +46,6 @@ import { getActiveServices, getServiceById } from '@/lib/services-config'
 import { AuthService } from '@/lib/auth'
 import { TimeBlockManager } from '@/components/booking/TimeBlockManager'
 import { TimeBlock } from '@/lib/time-blocks'
-import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 interface Appointment {
   id: string
