@@ -36,7 +36,8 @@ import {
   XCircle,
   RefreshCw,
   Receipt,
-  UserX
+  UserX,
+  Edit
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 import { getActiveServices, getServiceById } from '@/lib/services-config'
@@ -68,6 +69,19 @@ export default function BookingCalendar() {
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Edit Appointment States
+  const [showEditAppointmentModal, setShowEditAppointmentModal] = useState(false)
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    service: '',
+    date: '',
+    time: '',
+    duration: 60,
+    price: 0,
+    notes: ''
+  })
+  const [sendUpdateEmail, setSendUpdateEmail] = useState(false)
   
   // New Appointment Modal States
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false)
@@ -580,6 +594,95 @@ export default function BookingCalendar() {
     }
   }
 
+  const handleEditAppointment = (appointment: Appointment) => {
+    setEditingAppointment(appointment)
+    setEditFormData({
+      service: appointment.service,
+      date: appointment.date,
+      time: appointment.time,
+      duration: appointment.duration,
+      price: appointment.price,
+      notes: appointment.notes || ''
+    })
+    setSendUpdateEmail(false)
+    setShowEditAppointmentModal(true)
+  }
+
+  const handleSaveAppointmentChanges = async () => {
+    if (!editingAppointment) return
+
+    try {
+      const response = await fetch(`/api/appointments/${editingAppointment.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          service: editFormData.service,
+          date: editFormData.date,
+          time: editFormData.time,
+          duration: editFormData.duration,
+          price: editFormData.price,
+          notes: editFormData.notes
+        })
+      })
+
+      if (response.ok) {
+        // Update local state
+        setAppointments(appointments.map(apt => 
+          apt.id === editingAppointment.id 
+            ? { 
+                ...apt, 
+                service: editFormData.service,
+                date: editFormData.date,
+                time: editFormData.time,
+                duration: editFormData.duration,
+                price: editFormData.price,
+                notes: editFormData.notes
+              } 
+            : apt
+        ))
+
+        // Send update email if requested
+        if (sendUpdateEmail && editingAppointment.clientEmail) {
+          try {
+            await fetch('/api/send-booking-confirmation', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                clientEmail: editingAppointment.clientEmail,
+                clientName: editingAppointment.clientName,
+                service: editFormData.service,
+                date: editFormData.date,
+                time: editFormData.time,
+                duration: editFormData.duration,
+                price: editFormData.price,
+                artistName: currentUser?.name || 'PMU Pro',
+                artistEmail: currentUser?.email || '',
+                isUpdate: true
+              })
+            })
+            console.log('✅ Update email sent to client')
+          } catch (emailError) {
+            console.error('Error sending update email:', emailError)
+          }
+        }
+
+        setShowEditAppointmentModal(false)
+        setEditingAppointment(null)
+        alert('Appointment updated successfully' + (sendUpdateEmail ? ' and client notified' : ''))
+      } else {
+        alert('Failed to update appointment')
+      }
+    } catch (error) {
+      console.error('Error updating appointment:', error)
+      alert('Error updating appointment')
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800'
@@ -838,6 +941,13 @@ export default function BookingCalendar() {
                             >
                               <DropdownMenuLabel className="font-semibold text-gray-900">Appointment Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator className="bg-gray-200" />
+                              <DropdownMenuItem 
+                                onClick={() => handleEditAppointment(appointment)}
+                                className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50 text-gray-900"
+                              >
+                                <Edit className="mr-2 h-4 w-4 text-purple-600" />
+                                Edit Appointment
+                              </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleCheckout(appointment)}
                                 className="cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-gray-900"
@@ -1187,6 +1297,144 @@ export default function BookingCalendar() {
                 Create Appointment
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Appointment Modal */}
+      <Dialog open={showEditAppointmentModal} onOpenChange={setShowEditAppointmentModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200 shadow-2xl">
+          <DialogHeader className="bg-gradient-to-r from-purple-100 to-lavender/20 p-4 sm:p-6 -m-4 sm:-m-6 mb-4 sm:mb-6 border-b border-gray-200 rounded-t-lg">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-lg sm:text-xl">
+              <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+              Edit Appointment
+            </DialogTitle>
+            <DialogDescription className="text-gray-700 mt-2 sm:mt-3 text-sm sm:text-base font-medium bg-white/80 p-2 sm:p-3 rounded-lg border border-gray-200">
+              Update appointment details for {editingAppointment?.clientName}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="edit-service" className="text-gray-800 font-bold text-sm sm:text-lg">Service *</Label>
+                <Select 
+                  value={editFormData.service} 
+                  onValueChange={(value) => {
+                    const service = getServiceById(value)
+                    setEditFormData({
+                      ...editFormData, 
+                      service: value,
+                      duration: service?.defaultDuration || editFormData.duration,
+                      price: service?.defaultPrice || editFormData.price
+                    })
+                  }}
+                >
+                  <SelectTrigger id="edit-service" className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
+                    <SelectValue placeholder="Select service" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    {getActiveServices().map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {service.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="edit-date" className="text-gray-800 font-bold text-sm sm:text-lg">Date *</Label>
+                <Input
+                  id="edit-date"
+                  name="edit-date"
+                  type="date"
+                  value={editFormData.date}
+                  onChange={(e) => setEditFormData({...editFormData, date: e.target.value})}
+                  className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
+                />
+              </div>
+
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="edit-time" className="text-gray-800 font-bold text-sm sm:text-lg">Time *</Label>
+                <Input
+                  id="edit-time"
+                  name="edit-time"
+                  type="time"
+                  value={editFormData.time}
+                  onChange={(e) => setEditFormData({...editFormData, time: e.target.value})}
+                  className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
+                />
+              </div>
+              
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="edit-duration" className="text-gray-800 font-bold text-sm sm:text-lg">Duration (minutes)</Label>
+                <Input
+                  id="edit-duration"
+                  name="edit-duration"
+                  type="number"
+                  value={editFormData.duration}
+                  onChange={(e) => setEditFormData({...editFormData, duration: parseInt(e.target.value) || 60})}
+                  className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
+                />
+              </div>
+              
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="edit-price" className="text-gray-800 font-bold text-sm sm:text-lg">Price ($)</Label>
+                <Input
+                  id="edit-price"
+                  name="edit-price"
+                  type="number"
+                  value={editFormData.price}
+                  onChange={(e) => setEditFormData({...editFormData, price: parseFloat(e.target.value) || 0})}
+                  className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2 sm:space-y-3">
+              <Label htmlFor="edit-notes" className="text-gray-800 font-bold text-sm sm:text-lg">Notes</Label>
+              <Input
+                id="edit-notes"
+                name="edit-notes"
+                value={editFormData.notes}
+                onChange={(e) => setEditFormData({...editFormData, notes: e.target.value})}
+                placeholder="Any additional notes..."
+                className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
+              />
+            </div>
+
+            {/* Send Update Email Option */}
+            <div className="flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <input
+                type="checkbox"
+                id="send-update-email"
+                checked={sendUpdateEmail}
+                onChange={(e) => setSendUpdateEmail(e.target.checked)}
+                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <Label htmlFor="send-update-email" className="text-gray-900 font-medium cursor-pointer flex items-center gap-2">
+                <Mail className="h-4 w-4 text-blue-600" />
+                Send update email to client
+              </Label>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200 bg-gray-50 p-3 sm:p-4 -m-4 sm:-m-6 mt-4 sm:mt-6 rounded-b-lg">
+            <Button
+              variant="outline"
+              onClick={() => setShowEditAppointmentModal(false)}
+              className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 text-sm sm:text-base w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveAppointmentChanges}
+              className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
+            >
+              Save Changes
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

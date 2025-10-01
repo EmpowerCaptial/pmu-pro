@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
       duration,
       price,
       artistName,
-      artistEmail
+      artistEmail,
+      isUpdate
     } = body
 
     // Validate required fields
@@ -33,7 +34,9 @@ export async function POST(request: NextRequest) {
     })
 
     // Email content
-    const emailSubject = `Appointment Confirmed - ${service}`
+    const emailSubject = isUpdate 
+      ? `Appointment Updated - ${service}` 
+      : `Appointment Confirmed - ${service}`
     const emailBody = `
 <!DOCTYPE html>
 <html>
@@ -49,19 +52,26 @@ export async function POST(request: NextRequest) {
     .detail-value { color: #111827; }
     .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
     .button { display: inline-block; background: linear-gradient(135deg, #9333ea 0%, #38bdf8 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+    .update-notice { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>✨ Appointment Confirmed!</h1>
-      <p>Your booking has been successfully scheduled</p>
+      <h1>${isUpdate ? '🔄 Appointment Updated!' : '✨ Appointment Confirmed!'}</h1>
+      <p>${isUpdate ? 'Your appointment details have been updated' : 'Your booking has been successfully scheduled'}</p>
     </div>
     
     <div class="content">
       <p>Hi ${clientName},</p>
       
+      ${isUpdate ? `
+      <div class="update-notice">
+        <strong>⚠️ Important:</strong> Your appointment has been updated. Please review the new details below.
+      </div>
+      ` : `
       <p>Great news! Your appointment has been confirmed. We're looking forward to seeing you!</p>
+      `}
       
       <div class="appointment-card">
         <h2 style="color: #9333ea; margin-top: 0;">Appointment Details</h2>
