@@ -42,17 +42,9 @@ export async function POST(request: NextRequest) {
       console.error('Database error:', error)
     }
 
-    // Production fallback for test user if database is not available
-    if (!user && process.env.NODE_ENV === 'production' && email === 'test@example.com') {
-      user = {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        isLicenseVerified: true,
-        hasActiveSubscription: true,
-        stripeCustomerId: null,
-        subscriptionStatus: 'active'
-      }
-      console.log('Using production fallback for test user')
+    // No fallback users in production
+    if (!user && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     if (!user) {

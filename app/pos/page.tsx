@@ -69,7 +69,7 @@ function POSContent() {
     avatar: userAvatar
   } : {
     name: "PMU Artist",
-    email: "artist@pmupro.com",
+    email: "user@pmupro.com",
     initials: "PA",
   }
   

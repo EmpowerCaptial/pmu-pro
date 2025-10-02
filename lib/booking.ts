@@ -48,11 +48,6 @@ export function generateUserHandle(studioName?: string, email?: string): string 
 
 // Map handle back to email (for public booking pages)
 export function getEmailFromHandle(handle: string): string | null {
-  // Handle special demo cases
-  if (handle === 'demo-artist' || handle === 'universalbeautystudioacademy') {
-    return 'universalbeautystudioacademy@gmail.com';
-  }
-  
   // For production, we would query the database to find the user by handle
   // For now, we'll return null to indicate we don't have a mapping
   // This will be handled by the API route which has database access
@@ -62,8 +57,8 @@ export function getEmailFromHandle(handle: string): string | null {
 // Get booking config for a user handle
 export async function getPublicBookingConfig(handle: string, userEmail?: string): Promise<PublicBookingConfig | null> {
   try {
-    // Use the provided user email, or try to map from handle, or fall back to demo email
-    const emailToUse = userEmail || getEmailFromHandle(handle) || 'universalbeautystudioacademy@gmail.com';
+    // Use the provided user email, or try to map from handle
+    const emailToUse = userEmail || getEmailFromHandle(handle);
     
     // Fetch services from the API
     const baseUrl = typeof window !== 'undefined' 

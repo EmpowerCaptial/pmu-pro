@@ -38,7 +38,7 @@ export default function ClientAnalyzePage({ clientId }: ClientAnalyzePageProps) 
     initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
   } : {
     name: "PMU Artist",
-    email: "artist@pmupro.com",
+    email: "user@pmupro.com",
     initials: "PA",
   }
 

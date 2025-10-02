@@ -91,7 +91,7 @@ export default function ServicesPage() {
     avatar: userAvatar
   } : {
     name: "PMU Artist",
-    email: "artist@pmupro.com",
+    email: "user@pmupro.com",
     initials: "PA",
   }
   const [searchTerm, setSearchTerm] = useState('')

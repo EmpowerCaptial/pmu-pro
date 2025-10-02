@@ -85,72 +85,10 @@ const scheduleCCategories: ExpenseCategory[] = [
   { id: 'other', name: 'Other Expenses', description: 'Other business expenses', isDeductible: true, scheduleCLine: 'Line 27a' }
 ]
 
-const mockExpenses: Expense[] = [
-  {
-    id: '1',
-    date: '2024-01-15',
-    description: 'PMU pigments and supplies',
-    category: 'supplies',
-    amount: 245.50,
-    vendor: 'PMU Supply Co',
-    paymentMethod: 'card',
-    isDeductible: true,
-    notes: 'Monthly pigment order',
-    createdAt: '2024-01-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    date: '2024-01-12',
-    description: 'Office rent - January',
-    category: 'rent_other',
-    amount: 1200.00,
-    vendor: 'Downtown Office Space',
-    paymentMethod: 'transfer',
-    isDeductible: true,
-    notes: 'Monthly office rent',
-    createdAt: '2024-01-12T09:00:00Z'
-  },
-  {
-    id: '3',
-    date: '2024-01-10',
-    description: 'Business insurance premium',
-    category: 'insurance',
-    amount: 180.00,
-    vendor: 'Business Insurance Co',
-    paymentMethod: 'card',
-    isDeductible: true,
-    notes: 'Quarterly premium payment',
-    createdAt: '2024-01-10T14:20:00Z'
-  },
-  {
-    id: '4',
-    date: '2024-01-08',
-    description: 'Marketing materials and business cards',
-    category: 'advertising',
-    amount: 85.75,
-    vendor: 'Print Shop Plus',
-    paymentMethod: 'cash',
-    isDeductible: true,
-    notes: 'New business cards and flyers',
-    createdAt: '2024-01-08T16:45:00Z'
-  },
-  {
-    id: '5',
-    date: '2024-01-05',
-    description: 'Professional development course',
-    category: 'other',
-    amount: 350.00,
-    vendor: 'PMU Training Institute',
-    paymentMethod: 'card',
-    isDeductible: true,
-    notes: 'Advanced microblading techniques',
-    createdAt: '2024-01-05T11:15:00Z'
-  }
-]
 
 export default function ExpensesPage() {
   const { currentUser } = useDemoAuth()
-  const [expenses, setExpenses] = useState<Expense[]>(mockExpenses)
+  const [expenses, setExpenses] = useState<Expense[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -166,14 +104,14 @@ export default function ExpensesPage() {
     notes: ''
   })
 
-  // Fallback user if not authenticated
+  // Prepare user object for NavBar
   const user = currentUser ? {
     name: currentUser.name,
     email: currentUser.email,
     initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
   } : {
     name: "PMU Artist",
-    email: "artist@pmupro.com",
+    email: "user@pmupro.com",
     initials: "PA",
   }
 

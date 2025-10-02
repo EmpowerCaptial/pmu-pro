@@ -75,20 +75,41 @@ export default function ShareBookingPage() {
     avatar: userAvatar
   } : {
     name: "PMU Artist",
-    email: "artist@pmupro.com",
+    email: "user@pmupro.com",
     initials: "PA",
   }
 
-  // Generate user handle from studio name or email (fallback to demo handle)
+  // Generate user handle from studio name or email
   const getUserHandle = () => {
     if (currentUser?.studioName || currentUser?.email) {
       return generateUserHandle(currentUser.studioName, currentUser.email);
     }
-    return 'demo-artist'; // fallback
+    return null; // No fallback - user must be authenticated
   };
 
   const userHandle = getUserHandle();
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thepmuguide.com';
+  
+  // Only show booking link if user is authenticated and has a handle
+  if (!userHandle) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+        <NavBar currentPath="/booking/share" user={user} />
+        <div className="p-4 pb-24 md:pb-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+              <p className="text-gray-600 mb-6">Please log in to access your booking share page.</p>
+              <Button onClick={() => router.push('/auth/login')} className="bg-lavender hover:bg-lavender-600 text-white">
+                Go to Login
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const bookingLink = `${baseUrl}/book/${userHandle}`;
   const embedCode = `<iframe 
   src="${baseUrl}/book/${userHandle}/embed" 

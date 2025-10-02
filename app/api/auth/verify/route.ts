@@ -18,21 +18,9 @@ export async function POST(request: NextRequest) {
       console.log('Production token verification for token:', token.substring(0, 20) + '...')
       
       // Create a simple session for production
-      const sessionData = {
-        userId: 'test-user-id',
-        email: 'test@example.com',
-        authenticated: true,
-        timestamp: new Date().toISOString()
-      }
-      
       return NextResponse.json({
-        success: true,
-        message: 'Authentication successful',
-        user: {
-          id: 'test-user-id',
-          email: 'test@example.com'
-        },
-        session: sessionData
+        success: false,
+        error: 'No valid session found'
       })
     }
 
