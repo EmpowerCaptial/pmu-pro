@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,14 +80,12 @@ export default function ShareBookingPage() {
   }
 
   // Generate user handle from studio name or email
-  const getUserHandle = () => {
+  const userHandle = useMemo(() => {
     if (currentUser?.studioName || currentUser?.email) {
       return generateUserHandle(currentUser.studioName, currentUser.email);
     }
     return null; // No fallback - user must be authenticated
-  };
-
-  const userHandle = getUserHandle();
+  }, [currentUser?.studioName, currentUser?.email]);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thepmuguide.com';
   
   // Only show booking link if user is authenticated and has a handle

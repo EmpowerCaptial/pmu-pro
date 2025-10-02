@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -115,31 +115,43 @@ export default function ExpensesPage() {
     initials: "PA",
   }
 
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory
-    const matchesSearch = searchTerm === '' || 
-        expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter(expense => {
+      const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory
+      const matchesSearch = searchTerm === '' || 
+          expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          expense.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+      return matchesCategory && matchesSearch
+    })
+  }, [expenses, selectedCategory, searchTerm])
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0)
-  const deductibleExpenses = expenses.filter(e => e.isDeductible).reduce((sum, expense) => sum + expense.amount, 0)
-  const thisMonthExpenses = expenses.filter(e => {
-    const expenseDate = new Date(e.date)
-    const now = new Date()
-    return expenseDate.getMonth() === now.getMonth() && expenseDate.getFullYear() === now.getFullYear()
-  }).reduce((sum, expense) => sum + expense.amount, 0)
+  const totalExpenses = useMemo(() => {
+    return expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  }, [expenses])
 
-  const categoryTotals = scheduleCCategories.map(category => {
-    const categoryExpenses = expenses.filter(e => e.category === category.id)
-    const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0)
-    return {
-      ...category,
-      total,
-      count: categoryExpenses.length
-    }
-  }).filter(cat => cat.total > 0)
+  const deductibleExpenses = useMemo(() => {
+    return expenses.filter(e => e.isDeductible).reduce((sum, expense) => sum + expense.amount, 0)
+  }, [expenses])
+
+  const thisMonthExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      const expenseDate = new Date(e.date)
+      const now = new Date()
+      return expenseDate.getMonth() === now.getMonth() && expenseDate.getFullYear() === now.getFullYear()
+    }).reduce((sum, expense) => sum + expense.amount, 0)
+  }, [expenses])
+
+  const categoryTotals = useMemo(() => {
+    return scheduleCCategories.map(category => {
+      const categoryExpenses = expenses.filter(e => e.category === category.id)
+      const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+      return {
+        ...category,
+        total,
+        count: categoryExpenses.length
+      }
+    }).filter(cat => cat.total > 0)
+  }, [expenses])
 
   const handleAddExpense = () => {
     if (!newExpense.description || !newExpense.category || newExpense.amount <= 0) {
