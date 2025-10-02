@@ -14,7 +14,6 @@ import { FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { getFormTemplate } from "@/lib/data/consent-form-templates"
 import { ConsentForm, ConsentFormData } from "@/types/consent-forms"
 import { SignaturePad } from "@/components/consent/signature-pad"
-import { useAutoSave } from "@/hooks/use-auto-save"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { FormRecovery } from "@/components/forms/form-recovery"
 
@@ -37,21 +36,22 @@ export default function ClientConsentFormPage() {
 
   const initialFormData: FormFieldData = {}
 
-  const {
-    formData,
-    updateFormData,
-    saveForm,
-    clearDraft,
-    isSaving,
-    lastSaved,
-    hasUnsavedChanges,
-    error: saveError
-  } = useAutoSave(initialFormData, {
-    formType: 'consent_form',
-    clientId,
-    onSave: (data) => console.log('Consent form auto-saved:', data),
-    onError: (error) => console.error('Auto-save error:', error)
-  })
+  // Simple form data state without auto-save for client forms
+  const [formData, setFormData] = useState<FormFieldData>(initialFormData)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  
+  const updateFormData = (updates: Partial<FormFieldData> | ((prev: FormFieldData) => FormFieldData)) => {
+    setFormData(prev => {
+      const newData = typeof updates === 'function' ? updates(prev) : { ...prev, ...updates }
+      setHasUnsavedChanges(true)
+      return newData as FormFieldData
+    })
+  }
+  
+  const clearDraft = async () => {
+    setFormData(initialFormData)
+    setHasUnsavedChanges(false)
+  }
 
   const { uploadFile, isUploading: isUploadingFile } = useFileUpload({
     fileType: 'signature',
@@ -70,8 +70,15 @@ export default function ClientConsentFormPage() {
     try {
       setIsLoading(true)
       
+      // Get localStorage data to pass to API
+      const localStorageData = typeof window !== 'undefined' ? localStorage.getItem("consent-forms") : null
+      
       // Load consent form data from API
-      const response = await fetch(`/api/consent-forms/${clientId}/${token}`)
+      const response = await fetch(`/api/consent-forms/${clientId}/${token}`, {
+        headers: {
+          ...(localStorageData && { 'x-local-storage-data': localStorageData })
+        }
+      })
       
       if (!response.ok) {
         const errorData = await response.json()
@@ -550,16 +557,16 @@ export default function ClientConsentFormPage() {
         </Card>
       </div>
 
-      {/* Form Recovery Component */}
-      <FormRecovery
+      {/* Form Recovery Component - Disabled for client forms */}
+      {/* <FormRecovery
         hasUnsavedChanges={hasUnsavedChanges}
-        isSaving={isSaving}
-        lastSaved={lastSaved}
-        onSave={() => saveForm(formData, false)}
+        isSaving={false}
+        lastSaved={null}
+        onSave={() => {}}
         onDiscard={clearDraft}
         formName="consent form"
         isSubmitting={isSubmitting}
-      />
+      /> */}
     </div>
   )
 }

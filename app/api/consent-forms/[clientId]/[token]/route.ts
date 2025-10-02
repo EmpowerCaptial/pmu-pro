@@ -13,11 +13,31 @@ export async function GET(
     // Try to get form from in-memory storage first
     let form = consentFormsStorage.get(key)
     
-    // If not found in memory, try to reconstruct from demo data
+    // If not found in memory, try to load from localStorage via request headers
     if (!form) {
       console.log(`Form not found in memory for key: ${key}`)
       
-      // Create a demo form for testing purposes
+      // Try to get form data from localStorage (passed via headers)
+      const localStorageData = request.headers.get('x-local-storage-data')
+      if (localStorageData) {
+        try {
+          const allForms = JSON.parse(localStorageData)
+          form = allForms.find((f: any) => f.clientId === clientId && f.token === token)
+          if (form) {
+            // Store in memory for this session
+            consentFormsStorage.set(key, form)
+            console.log(`Loaded form from localStorage for key: ${key}`)
+          }
+        } catch (error) {
+          console.error('Error parsing localStorage data:', error)
+        }
+      }
+    }
+    
+    // If still not found, create a demo form for testing purposes
+    if (!form) {
+      console.log(`Creating demo form for key: ${key}`)
+      
       form = {
         id: `form_${Date.now()}`,
         clientId: clientId,
