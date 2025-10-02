@@ -120,8 +120,16 @@ export function useAutoSave<T extends Record<string, any>>(
   const updateFormData = useCallback((updates: Partial<T> | ((prev: T) => T)) => {
     setFormData(prev => {
       const newData = typeof updates === 'function' ? updates(prev) : { ...prev, ...updates }
-      setHasUnsavedChanges(JSON.stringify(newData) !== lastSavedDataRef.current)
-      debouncedSave(newData)
+      
+      // Special handling for signature fields - don't mark as unsaved changes for signature updates
+      const isSignatureUpdate = typeof updates === 'object' && updates && 
+        Object.keys(updates).some(key => key.toLowerCase().includes('signature'))
+      
+      if (!isSignatureUpdate) {
+        setHasUnsavedChanges(JSON.stringify(newData) !== lastSavedDataRef.current)
+        debouncedSave(newData)
+      }
+      
       return newData
     })
   }, [debouncedSave])

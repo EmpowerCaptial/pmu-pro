@@ -13,6 +13,7 @@ interface FormRecoveryProps {
   onSave: () => void
   onDiscard: () => void
   formName?: string
+  isSubmitting?: boolean
 }
 
 export function FormRecovery({
@@ -21,14 +22,16 @@ export function FormRecovery({
   lastSaved,
   onSave,
   onDiscard,
-  formName = 'form'
+  formName = 'form',
+  isSubmitting = false
 }: FormRecoveryProps) {
   const router = useRouter()
 
   // Warn user before leaving page with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
+      // Don't show warning if form is being submitted
+      if (hasUnsavedChanges && !isSubmitting) {
         e.preventDefault()
         e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
         return e.returnValue
@@ -36,7 +39,8 @@ export function FormRecovery({
     }
 
     const handleRouteChange = () => {
-      if (hasUnsavedChanges) {
+      // Don't show warning if form is being submitted
+      if (hasUnsavedChanges && !isSubmitting) {
         const confirmed = window.confirm(
           'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.'
         )
@@ -56,9 +60,10 @@ export function FormRecovery({
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  }, [hasUnsavedChanges, router])
+  }, [hasUnsavedChanges, isSubmitting, router])
 
-  if (!hasUnsavedChanges && !isSaving) {
+  // Don't show recovery component if form is being submitted
+  if (isSubmitting || (!hasUnsavedChanges && !isSaving)) {
     return null
   }
 

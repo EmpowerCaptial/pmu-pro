@@ -563,6 +563,7 @@ export default function ClientConsentFormPage() {
         onSave={() => saveForm(formData, false)}
         onDiscard={clearDraft}
         formName="consent form"
+        isSubmitting={isSubmitting}
       />
     </div>
   )
