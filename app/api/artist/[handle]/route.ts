@@ -28,9 +28,7 @@ export async function GET(
         address: true,
         businessHours: true,
         specialties: true,
-        experience: true,
-        rating: true,
-        reviewCount: true
+        experience: true
       }
     })
 
@@ -97,7 +95,9 @@ export async function GET(
     return NextResponse.json({
       artist: {
         ...artist,
-        handle: handle
+        handle: handle,
+        rating: 5.0, // Default rating
+        reviewCount: 0 // Default review count
       },
       services,
       products
