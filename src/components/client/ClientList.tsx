@@ -161,7 +161,7 @@ export default function ClientList({
                 return (
                   <li 
                     key={client.id} 
-                    className={`px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-lavender/10 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer ${
+                    className={`px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-lavender/10 border-l-4 border-transparent hover:border-lavender/30 transition-all duration-200 cursor-pointer border-b border-gray-200/50 ${
                       isEven ? 'bg-teal-50' : 'bg-lavender-50'
                     }`}
                     onClick={() => onClientSelect?.(client)}
