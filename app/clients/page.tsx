@@ -168,7 +168,7 @@ export default function ClientsPage() {
     } else {
       console.log('Auth not loaded yet');
     }
-  }, [authLoading, isAuthenticated, currentUser, router]);
+  }, [authLoading, isAuthenticated, currentUser?.email, router]);
 
   // Handle form submission for adding client
   const handleAddClient = async () => {

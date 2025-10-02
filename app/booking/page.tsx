@@ -184,7 +184,7 @@ function BookingCalendarContent() {
     } else {
       console.log('No current user email found')
     }
-  }, [currentUser, searchParams])
+  }, [currentUser?.email, searchParams])
 
   // Load appointments from database API
   const loadAppointments = async () => {

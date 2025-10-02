@@ -63,7 +63,7 @@ export default function ClientProfilePage() {
     if (isAuthenticated && currentUser?.email && clientId) {
       loadClientData()
     }
-  }, [isAuthenticated, currentUser, clientId])
+  }, [isAuthenticated, currentUser?.email, clientId])
 
   const loadClientData = async () => {
     if (!currentUser?.email) return
