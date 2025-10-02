@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -44,6 +44,29 @@ interface NavBarProps {
 export function NavBar({ currentPath, user }: NavBarProps) {
   const router = useRouter()
   const { logout } = useDemoAuth()
+  const [pendingFormsCount, setPendingFormsCount] = useState(0)
+
+  // Load pending consent forms count
+  useEffect(() => {
+    const loadPendingCount = () => {
+      try {
+        const stored = localStorage.getItem("consent-forms")
+        if (stored) {
+          const forms = JSON.parse(stored)
+          const pendingCount = forms.filter((form: any) => form.status === 'sent').length
+          setPendingFormsCount(pendingCount)
+        }
+      } catch (error) {
+        console.error("Error loading pending forms count:", error)
+      }
+    }
+
+    loadPendingCount()
+    
+    // Check for updates every 30 seconds
+    const interval = setInterval(loadPendingCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSignOut = async () => {
     try {
@@ -162,6 +185,17 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     <Link href="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/consent-forms" className="cursor-pointer">
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Consent Forms</span>
+                      {pendingFormsCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                          {pendingFormsCount > 9 ? '9+' : pendingFormsCount}
+                        </span>
+                      )}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="text-white hover:bg-white/20">

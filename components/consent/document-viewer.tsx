@@ -74,9 +74,16 @@ const demoForms = [
   }
 ]
 
-export function DocumentViewer({ clientId }: { clientId?: string }) {
+export function DocumentViewer({ clientId, highlightFormId }: { clientId?: string; highlightFormId?: string | null }) {
   const [forms, setForms] = useState(demoForms)
-  const [selectedForm, setSelectedForm] = useState(demoForms[0] || null)
+  const [selectedForm, setSelectedForm] = useState(() => {
+    // If highlightFormId is provided, find and select that form
+    if (highlightFormId) {
+      const highlightedForm = demoForms.find(form => form.id === highlightFormId)
+      return highlightedForm || demoForms[0] || null
+    }
+    return demoForms[0] || null
+  })
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
