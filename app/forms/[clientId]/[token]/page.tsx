@@ -167,14 +167,6 @@ export default function ClientConsentFormPage() {
     setError(null)
     
     try {
-      // Save form as complete first
-      const success = await saveForm(formData, true)
-      
-      if (!success) {
-        setError("Failed to save form. Please try again.")
-        return
-      }
-
       // Create form submission data with better error handling
       const submissionData: ConsentFormData = {
         clientSignature: formData.clientSignature as string || "",
@@ -242,6 +234,9 @@ export default function ClientConsentFormPage() {
       const result = await response.json()
       setPdfUrl(result.pdfUrl)
       setIsSubmitted(true)
+      
+      // Clear the draft after successful submission
+      await clearDraft()
       
     } catch (error) {
       console.error("Error submitting form:", error)
