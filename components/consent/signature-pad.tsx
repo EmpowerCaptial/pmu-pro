@@ -36,12 +36,14 @@ export function SignaturePad({ onSignature, value, width = 400, height = 200 }: 
     ctx.lineJoin = "round"
 
     setContext(ctx)
+  }, [width, height])
 
-    // Load existing signature if provided
-    if (value) {
+  // Separate effect for loading signature to prevent infinite re-renders
+  useEffect(() => {
+    if (value && context && canvasRef.current) {
       loadSignature(value)
     }
-  }, [width, height, value])
+  }, [value, context])
 
   const loadSignature = (signatureData: string) => {
     if (!context || !canvasRef.current) return
@@ -50,7 +52,8 @@ export function SignaturePad({ onSignature, value, width = 400, height = 200 }: 
     img.onload = () => {
       context.clearRect(0, 0, width, height)
       context.drawImage(img, 0, 0, width, height)
-      setHasSignature(true)
+      // Don't set hasSignature here to prevent re-render loops
+      // setHasSignature(true)
     }
     img.src = signatureData
   }
