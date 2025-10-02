@@ -60,11 +60,16 @@ export async function getPublicBookingConfig(handle: string, userEmail?: string)
     // Use the provided user email, or try to map from handle
     const emailToUse = userEmail || getEmailFromHandle(handle);
     
+    // Return null if no email is available
+    if (!emailToUse) {
+      return null;
+    }
+    
     // Fetch services from the API
     const baseUrl = typeof window !== 'undefined' 
       ? window.location.origin 
       : (process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com');
-    
+
     const response = await fetch(`${baseUrl}/api/services`, {
       method: 'GET',
       headers: {
