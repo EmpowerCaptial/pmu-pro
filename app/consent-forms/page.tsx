@@ -116,7 +116,7 @@ export default function ConsentFormsInbox() {
     }
 
     loadAvatar()
-  }, [currentUser])
+  }, [currentUser?.email])
 
   useEffect(() => {
     loadConsentForms()

@@ -183,7 +183,7 @@ export default function ProfilePage() {
     autoMigrateData().then(() => {
       loadProfile()
     })
-  }, [currentUser])
+  }, [currentUser?.email])
 
   const handleSave = async () => {
     if (currentUser?.email) {

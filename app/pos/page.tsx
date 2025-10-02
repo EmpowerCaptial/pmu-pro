@@ -104,7 +104,7 @@ function POSContent() {
     if (isAuthenticated && currentUser?.email) {
       loadAppointments()
     }
-  }, [isAuthenticated, currentUser])
+  }, [isAuthenticated, currentUser?.email])
 
   // Pre-fill from URL parameters (when coming from appointment checkout)
   useEffect(() => {
@@ -143,7 +143,7 @@ function POSContent() {
       loadServices()
       loadProducts()
     }
-  }, [isAuthenticated, currentUser])
+  }, [isAuthenticated, currentUser?.email])
 
   const loadServices = async () => {
     if (!currentUser?.email) return

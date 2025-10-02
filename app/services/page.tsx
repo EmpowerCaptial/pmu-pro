@@ -112,7 +112,7 @@ export default function ServicesPage() {
     if (isAuthenticated && currentUser?.email) {
       loadServices()
     }
-  }, [isAuthenticated, currentUser])
+  }, [isAuthenticated, currentUser?.email])
 
   const loadServices = async () => {
     if (!currentUser?.email) return

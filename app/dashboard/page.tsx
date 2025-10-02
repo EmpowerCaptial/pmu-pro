@@ -90,7 +90,7 @@ export default function DashboardPage() {
         setShowOnboarding(true)
       }
     }
-  }, [currentUser])
+  }, [currentUser?.email])
 
   const handleOnboardingClose = () => {
     setShowOnboarding(false)

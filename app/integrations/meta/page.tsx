@@ -56,7 +56,7 @@ export default function MetaIntegrationPage() {
     if (isAuthenticated && currentUser) {
       loadConnections();
     }
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser?.email]);
 
   // Handle OAuth callback parameters
   useEffect(() => {

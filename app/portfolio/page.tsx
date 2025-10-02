@@ -92,7 +92,7 @@ export default function PortfolioPage() {
     }
 
     loadPortfolio()
-  }, [currentUser])
+  }, [currentUser?.email])
 
   const handleAddWork = async () => {
     if (!newWork.title || !newWork.description || !newWork.beforeImage || !newWork.afterImage) {

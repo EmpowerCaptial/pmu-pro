@@ -62,7 +62,7 @@ export default function CalendarIntegrationPage() {
     if (isAuthenticated && currentUser) {
       loadIntegrations();
     }
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser?.email]);
 
   const loadIntegrations = async () => {
     try {

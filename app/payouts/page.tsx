@@ -123,7 +123,7 @@ export default function PayoutsPage() {
     if (currentUser?.email) {
       loadPayoutData()
     }
-  }, [currentUser])
+  }, [currentUser?.email])
 
   const loadPayoutData = async () => {
     if (!currentUser?.email) return
