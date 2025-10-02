@@ -846,15 +846,7 @@ function BookingForm({ artist, selectedService, services, onBackToServices, onSe
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBackToServices}
-          className="w-full sm:w-auto"
-        >
-          Back to Services
-        </Button>
+      <div className="flex justify-center">
         <Button
           type="submit"
           disabled={isSubmitting || !formData.clientName || !formData.clientEmail || !formData.service || !formData.date || !formData.time}

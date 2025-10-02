@@ -15,6 +15,56 @@ export async function GET(
 
     // Handle special cases first
     if (handle === 'demo-artist' || handle === 'universalbeautystudioacademy') {
+      // Get services and products for demo artist
+      let demoServices: any[] = []
+      let demoProducts: any[] = []
+      try {
+        const demoUser = await prisma.user.findUnique({
+          where: { email: 'universalbeautystudioacademy@gmail.com' }
+        })
+        
+        if (demoUser) {
+          const services = await prisma.service.findMany({
+            where: {
+              userId: demoUser.id,
+              isActive: true
+            },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              defaultDuration: true,
+              defaultPrice: true,
+              category: true,
+              imageUrl: true
+            }
+          })
+          demoServices = services
+          
+          const products = await prisma.product.findMany({
+            where: {
+              userId: demoUser.id,
+              isActive: true
+            },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              category: true,
+              images: true
+            }
+          })
+          demoProducts = products
+          
+          console.log('Demo user ID:', demoUser.id)
+          console.log('Demo services found:', services.length)
+          console.log('Demo products found:', products.length)
+        }
+      } catch (error) {
+        console.error('Error fetching demo services and products:', error)
+      }
+
       // Return demo artist data
       return NextResponse.json({
         artist: {
@@ -36,7 +86,8 @@ export async function GET(
           reviewCount: 127
         },
         portfolio: [],
-        services: []
+        services: demoServices,
+        products: demoProducts
       })
     }
 
@@ -54,7 +105,7 @@ export async function GET(
     // Find the user whose email matches the handle
     const artist = users.find(user => {
       const emailHandle = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
-      return emailHandle === handle
+      return emailHandle === handle.toLowerCase()
     })
 
     if (!artist) {
@@ -67,6 +118,7 @@ export async function GET(
     // For now, we'll return empty arrays
     const portfolio: any[] = []
     const services: any[] = []
+    const products: any[] = []
 
     // Get artist's services
     try {
@@ -91,6 +143,28 @@ export async function GET(
       console.error('Error fetching services:', error)
     }
 
+    // Get artist's products
+    try {
+      const artistProducts = await prisma.product.findMany({
+        where: {
+          userId: artist.id,
+          isActive: true
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          category: true,
+          images: true
+        }
+      })
+      
+      products.push(...artistProducts)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    }
+
     // For now, return default profile data since localStorage isn't available on server
     // In production, you'd store this profile data in the database
     return NextResponse.json({
@@ -113,7 +187,8 @@ export async function GET(
         reviewCount: 127 // You might want to add this to your User model
       },
       portfolio,
-      services
+      services,
+      products
     })
 
   } catch (error) {

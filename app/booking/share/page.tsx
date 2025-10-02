@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NavBar } from '@/components/ui/navbar';
 import { 
   User, 
   Copy, 
@@ -28,6 +29,55 @@ export default function ShareBookingPage() {
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
+
+  // Load avatar from API first, then fallback to localStorage
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  
+  useEffect(() => {
+    const loadAvatar = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          // Try to load from API first
+          const response = await fetch('/api/profile', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.profile?.avatar) {
+              setUserAvatar(data.profile.avatar)
+              return
+            }
+          }
+          
+          // Fallback to localStorage
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        } catch (error) {
+          console.error('Error loading avatar:', error)
+          // Fallback to localStorage on error
+          const avatar = localStorage.getItem(`profile_photo_${currentUser.email}`)
+          setUserAvatar(avatar || undefined)
+        }
+      }
+    }
+    
+    loadAvatar()
+  }, [currentUser?.email])
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: userAvatar
+  } : {
+    name: "PMU Artist",
+    email: "artist@pmupro.com",
+    initials: "PA",
+  }
 
   // Generate user handle from studio name or email (fallback to demo handle)
   const getUserHandle = () => {
@@ -109,18 +159,12 @@ export default function ShareBookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+      <NavBar currentPath="/booking/share" user={user} />
+      <div className="p-4 pb-24 md:pb-4">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Calendar
-          </Button>
+        <div className="mb-6">
           <div>
             <h1 className="text-3xl font-bold text-ink">Share Your Booking Link</h1>
             <p className="text-muted-text">Share your services with clients and grow your business</p>
@@ -376,6 +420,7 @@ export default function ShareBookingPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
