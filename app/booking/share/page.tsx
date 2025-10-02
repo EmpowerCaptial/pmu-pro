@@ -79,10 +79,15 @@ export default function ShareBookingPage() {
     initials: "PA",
   }
 
-  // Generate user handle from studio name or email
+  // Generate user handle from studio name or email - use stable values to prevent re-renders
   const userHandle = useMemo(() => {
-    if (currentUser?.studioName || currentUser?.email) {
-      return generateUserHandle(currentUser.studioName, currentUser.email);
+    if (!currentUser) return null;
+    
+    const studioName = currentUser.studioName;
+    const email = currentUser.email;
+    
+    if (studioName || email) {
+      return generateUserHandle(studioName, email);
     }
     return null; // No fallback - user must be authenticated
   }, [currentUser?.studioName, currentUser?.email]);
