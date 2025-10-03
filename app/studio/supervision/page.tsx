@@ -101,28 +101,6 @@ export default function StudioSupervisionPage() {
   const [showClientForm, setShowClientForm] = useState(false)
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
   
-  // Mobile pagination state
-  const [currentStep, setCurrentStep] = useState<'instructor' | 'calendar' | 'client'>('instructor')
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Check if mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Handle mobile step progression when time is selected
-  useEffect(() => {
-    if (isMobile && selectedTime && selectedInstructor && selectedDate && currentStep === 'calendar') {
-      console.log('Mobile: Auto-advancing to client step after time selection')
-      setCurrentStep('client')
-      setShowClientForm(true)
-    }
-  }, [selectedTime, selectedInstructor, selectedDate, isMobile, currentStep])
 
   useEffect(() => {
     if (currentUser && !isLoading) {
@@ -166,11 +144,6 @@ export default function StudioSupervisionPage() {
     setSelectedDate('')
     setSelectedTime('')
     setAvailableSlots([])
-    
-    // On mobile, move to calendar step
-    if (isMobile) {
-      setCurrentStep('calendar')
-    }
   }
 
   // Handle date selection
@@ -186,18 +159,6 @@ export default function StudioSupervisionPage() {
   // Handle time selection
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
-    console.log('Time selected:', time, 'Mobile:', isMobile, 'Current step:', currentStep)
-    
-    // Direct mobile step progression - bypass useEffect timing issues
-    if (isMobile && selectedInstructor && selectedDate) {
-      console.log('Mobile: Directly advancing to client step')
-      // Use a small delay to ensure selectedTime state is updated
-      setTimeout(() => {
-        setCurrentStep('client')
-        setShowClientForm(true)
-        console.log('Mobile: State updated to client step')
-      }, 100)
-    }
   }
 
   // Handle initial booking submission (shows client form)
@@ -671,34 +632,8 @@ export default function StudioSupervisionPage() {
 
           <TabsContent value="find">
             <div className="space-y-6">
-              {/* Mobile Step Indicator */}
-              <div className="md:hidden">
-                <div className="flex items-center justify-center space-x-4 mb-6">
-                  <div className={`flex items-center space-x-2 ${currentStep === 'instructor' ? 'text-lavender' : 'text-ink/40'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      currentStep === 'instructor' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>1</div>
-                    <span className="text-sm font-medium">Instructor</span>
-                  </div>
-                  <div className={`w-8 h-0.5 ${currentStep === 'calendar' || currentStep === 'client' ? 'bg-lavender' : 'bg-gray-200'}`}></div>
-                  <div className={`flex items-center space-x-2 ${currentStep === 'calendar' ? 'text-lavender' : 'text-ink/40'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      currentStep === 'calendar' ? 'bg-lavender text-white' : currentStep === 'client' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>2</div>
-                    <span className="text-sm font-medium">Schedule</span>
-                  </div>
-                  <div className={`w-8 h-0.5 ${currentStep === 'client' ? 'bg-lavender' : 'bg-gray-200'}`}></div>
-                  <div className={`flex items-center space-x-2 ${currentStep === 'client' ? 'text-lavender' : 'text-ink/40'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      currentStep === 'client' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>3</div>
-                    <span className="text-sm font-medium">Client Info</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Step 1: Instructor Selection */}
-              {(currentStep === 'instructor' || !isMobile) && (
+              {/* Instructor Selection */}
                 <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                   <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                   <CardHeader className="relative z-10">
@@ -757,10 +692,9 @@ export default function StudioSupervisionPage() {
                   </div>
                 </CardContent>
               </Card>
-              )}
 
-              {/* Step 2: Date and Time Selection */}
-              {selectedInstructor && (currentStep === 'calendar' || !isMobile) && (
+              {/* Date and Time Selection */}
+              {selectedInstructor && (
                 <>
                   {/* Date Selection */}
                   <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
@@ -776,16 +710,6 @@ export default function StudioSupervisionPage() {
                             Click on any available date to book your supervision session
                           </CardDescription>
                         </div>
-                        {isMobile && (
-                          <Button 
-                            onClick={() => setCurrentStep('instructor')}
-                            variant="outline"
-                            size="sm"
-                            className="border-lavender/50 hover:bg-lavender/10"
-                          >
-                            ← Back
-                          </Button>
-                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="relative z-10">
@@ -877,16 +801,6 @@ export default function StudioSupervisionPage() {
                               })}
                             </CardDescription>
                           </div>
-                          {isMobile && (
-                            <Button 
-                              onClick={() => setSelectedDate('')}
-                              variant="outline"
-                              size="sm"
-                              className="border-lavender/50 hover:bg-lavender/10"
-                            >
-                              ← Back
-                            </Button>
-                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="relative z-10">
@@ -913,32 +827,13 @@ export default function StudioSupervisionPage() {
                             
                             {selectedTime && (
                               <div className="mt-6 p-4 bg-lavender/10 rounded-lg border border-lavender/30">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="flex items-center gap-2 text-lavender">
-                                      <CheckCircle className="h-5 w-5" />
-                                      <span className="font-medium">Time Selected: {selectedTime}</span>
-                                    </div>
-                                    <p className="text-sm text-ink/70 mt-1">
-                                      Session duration: 2 hours • Perfect for comprehensive supervision
-                                    </p>
-                                  </div>
-                                  
-                                  {/* Manual progression button for mobile */}
-                                  {isMobile && (
-                                    <Button
-                                      onClick={() => {
-                                        setCurrentStep('client')
-                                        setShowClientForm(true)
-                                        console.log('Manual progression to client step')
-                                      }}
-                                      size="sm"
-                                      className="bg-lavender hover:bg-lavender-600 text-white"
-                                    >
-                                      Continue →
-                                    </Button>
-                                  )}
+                                <div className="flex items-center gap-2 text-lavender">
+                                  <CheckCircle className="h-5 w-5" />
+                                  <span className="font-medium">Time Selected: {selectedTime}</span>
                                 </div>
+                                <p className="text-sm text-ink/70 mt-1">
+                                  Session duration: 2 hours • Perfect for comprehensive supervision
+                                </p>
                               </div>
                             )}
                           </div>
@@ -954,8 +849,8 @@ export default function StudioSupervisionPage() {
                     </Card>
                   )}
 
-                  {/* Step 3: Booking Confirmation */}
-                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && !isMobile && (
+                  {/* Booking Confirmation */}
+                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -1005,20 +900,8 @@ export default function StudioSupervisionPage() {
                     </Card>
                   )}
 
-                  {/* Step 4: Client Information Form */}
-                  {(() => {
-                    const shouldShow = (isMobile && currentStep === 'client') || (!isMobile && showClientForm)
-                    console.log('Client form visibility check:', { 
-                      isMobile, 
-                      currentStep, 
-                      showClientForm, 
-                      selectedTime,
-                      selectedInstructor,
-                      selectedDate,
-                      shouldShow 
-                    })
-                    return shouldShow
-                  })() && (
+                  {/* Client Information Form */}
+                  {showClientForm && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -1032,16 +915,6 @@ export default function StudioSupervisionPage() {
                               Enter client details and select the service for this supervision session
                             </CardDescription>
                           </div>
-                          {isMobile && (
-                            <Button 
-                              onClick={() => setCurrentStep('calendar')}
-                              variant="outline"
-                              size="sm"
-                              className="border-lavender/50 hover:bg-lavender/10"
-                            >
-                              ← Back
-                            </Button>
-                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="relative z-10">
@@ -1138,17 +1011,11 @@ export default function StudioSupervisionPage() {
                           {/* Action Buttons */}
                           <div className="flex gap-4 pt-4 border-t border-lavender/30">
                             <Button 
-                              onClick={() => {
-                                setShowClientForm(false)
-                                if (isMobile) {
-                                  setSelectedTime('')
-                                  setCurrentStep('calendar')
-                                }
-                              }}
+                              onClick={() => setShowClientForm(false)}
                               variant="outline"
                               className="flex-1 border-lavender/50 hover:bg-lavender/10"
                             >
-                              {isMobile ? 'Back to Schedule' : 'Back to Details'}
+                              Back to Details
                             </Button>
                             <Button 
                               onClick={handleClientFormSubmit}
