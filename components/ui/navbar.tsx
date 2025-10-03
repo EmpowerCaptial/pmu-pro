@@ -70,34 +70,14 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     return () => clearInterval(interval)
   }, [])
 
-  // Load notifications count
+  // EMERGENCY FIX: Disable notifications count to stop infinite loop
   useEffect(() => {
-    const loadNotificationsCount = async () => {
-      if (currentUser?.email && typeof window !== 'undefined') {
-        try {
-          const response = await fetch('/api/notifications', {
-            headers: {
-              'x-user-email': currentUser.email
-            }
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            const unreadCount = (data.notifications || []).filter((n: any) => !n.isRead).length
-            setNotificationsCount(unreadCount)
-          }
-        } catch (error) {
-          console.error('Error loading notifications count:', error)
-        }
-      }
+    console.log('🔧 EMERGENCY: Navbar notifications count disabled')
+    setNotificationsCount(0) // Always set to 0
+    return () => {
+      console.log('🔧 Navbar notifications cleanup')
     }
-
-    loadNotificationsCount()
-    
-    // Update count every 30 seconds
-    const interval = setInterval(loadNotificationsCount, 30000)
-    return () => clearInterval(interval)
-  }, [currentUser?.email])
+  }, []) // No dependencies - never re-run
 
   const handleSignOut = async () => {
     try {
