@@ -127,7 +127,7 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
           }
           
           // Show success message
-          alert(`Application approved successfully! User ${data.user?.email || 'unknown'} now has access to the system.`)
+          alert(`Application approved successfully! User ${data.user?.email || 'unknown'} now has access to the system. An approval email has been sent to ${data.user?.email || 'the user'}.`)
         } else {
           const errorData = await response.json()
           console.error('❌ Failed to approve application:', errorData)
