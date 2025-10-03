@@ -45,6 +45,7 @@ export const BILLING_PLANS = {
       'All Professional features',
       'Multi-artist support',
       'Team management',
+      'Supervision scheduling system',
       'Advanced integrations',
       'Dedicated support',
       'Custom onboarding',

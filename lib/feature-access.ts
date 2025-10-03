@@ -32,6 +32,18 @@ export const FEATURES = {
     COLOR_CORRECTION_TOOL: 'color_correction_tool',
     PROCEL_ANALYSIS: 'procel_analysis',
     ADVANCED_CLIENT_TOOLS: 'advanced_client_tools',
+  },
+
+  // Enterprise Studio features (only available to studio plan)
+  ENTERPRISE_STUDIO: {
+    SUPERVISION_SCHEDULING: 'supervision_scheduling',
+    MULTI_ARTIST_MANAGEMENT: 'multi_artist_management',
+    TEAM_COLLABORATION: 'team_collaboration',
+    ADVANCED_TIMECLOCK: 'advanced_timeclock',
+    STAFF_ADMIN_DASHBOARD: 'staff_admin_dashboard',
+    WHITE_LABEL_BRANDING: 'white_label_branding',
+    DEDICATED_SUPPORT: 'dedicated_support',
+    CUSTOM_INTEGRATIONS: 'custom_integrations',
   }
 } as const
 
@@ -138,6 +150,64 @@ export const FEATURE_ACCESS_CONFIG = {
   [FEATURES.PREMIUM.ADVANCED_CLIENT_TOOLS]: {
     basic: false,
     premium: true,
+    trial: false,
+    inactive: false
+  },
+
+  // Enterprise Studio features - ONLY available with Studio subscription
+  [FEATURES.ENTERPRISE_STUDIO.SUPERVISION_SCHEDULING]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.MULTI_ARTIST_MANAGEMENT]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.TEAM_COLLABORATION]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.ADVANCED_TIMECLOCK]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.STAFF_ADMIN_DASHBOARD]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.WHITE_LABEL_BRANDING]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.DEDICATED_SUPPORT]: {
+    basic: false,
+    premium: false,
+    studio: true,
+    trial: false,
+    inactive: false
+  },
+  [FEATURES.ENTERPRISE_STUDIO.CUSTOM_INTEGRATIONS]: {
+    basic: false,
+    premium: false,
+    studio: true,
     trial: false,
     inactive: false
   }
