@@ -240,6 +240,131 @@ export default function StudioSupervisionPage() {
     alert('Procedure logged successfully!')
   }
 
+  // Export procedures to CSV
+  const exportToCSV = () => {
+    if (loggedProcedures.length === 0) {
+      alert('No procedures to export')
+      return
+    }
+
+    const headers = [
+      'Procedure #',
+      'Client Name',
+      'Client DOB',
+      'Procedure Type',
+      'Procedure Date',
+      'Supervisor Name',
+      'Supervisor License #',
+      'Procedure Notes',
+      'Logged By',
+      'Logged Date'
+    ]
+
+    const csvData = loggedProcedures.map((procedure, index) => [
+      index + 1,
+      procedure.clientName,
+      new Date(procedure.clientDOB).toLocaleDateString(),
+      procedure.procedureType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      new Date(procedure.procedureDate).toLocaleDateString(),
+      procedure.supervisorName.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      procedure.supervisorLicense,
+      procedure.procedureNotes || '',
+      procedure.loggedBy,
+      new Date(procedure.loggedAt).toLocaleDateString()
+    ])
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `supervised-procedures-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    alert('CSV file downloaded successfully!')
+  }
+
+  // Generate license report
+  const generateLicenseReport = () => {
+    if (loggedProcedures.length === 0) {
+      alert('No procedures to generate report')
+      return
+    }
+
+    const reportData = {
+      apprenticeName: currentUser?.name || 'Unknown',
+      totalProcedures: loggedProcedures.length,
+      dateRange: {
+        start: new Date(Math.min(...loggedProcedures.map(p => new Date(p.procedureDate).getTime()))).toLocaleDateString(),
+        end: new Date(Math.max(...loggedProcedures.map(p => new Date(p.procedureDate).getTime()))).toLocaleDateString()
+      },
+      procedureTypes: [...new Set(loggedProcedures.map(p => p.procedureType))],
+      supervisors: [...new Set(loggedProcedures.map(p => p.supervisorName))],
+      procedures: loggedProcedures.map((procedure, index) => ({
+        procedureNumber: index + 1,
+        clientName: procedure.clientName,
+        clientDOB: new Date(procedure.clientDOB).toLocaleDateString(),
+        procedureType: procedure.procedureType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+        procedureDate: new Date(procedure.procedureDate).toLocaleDateString(),
+        supervisorName: procedure.supervisorName.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+        supervisorLicense: procedure.supervisorLicense,
+        notes: procedure.procedureNotes || 'None'
+      })),
+      generatedDate: new Date().toLocaleDateString(),
+      readyForLicense: loggedProcedures.length >= 50
+    }
+
+    const reportContent = `
+SUPERVISED PROCEDURE TRAINING REPORT
+Generated: ${reportData.generatedDate}
+
+APPRENTICE INFORMATION:
+Name: ${reportData.apprenticeName}
+Total Procedures Completed: ${reportData.totalProcedures}
+Training Period: ${reportData.dateRange.start} - ${reportData.dateRange.end}
+License Ready: ${reportData.readyForLicense ? 'YES' : 'NO (Need ' + (50 - reportData.totalProcedures) + ' more procedures)'}
+
+PROCEDURE BREAKDOWN:
+${reportData.procedureTypes.map(type => `- ${type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`).join('\n')}
+
+SUPERVISORS:
+${reportData.supervisors.map(supervisor => `- ${supervisor.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`).join('\n')}
+
+DETAILED PROCEDURE RECORDS:
+${reportData.procedures.map(proc => `
+Procedure #${proc.procedureNumber}
+Client: ${proc.clientName}
+DOB: ${proc.clientDOB}
+Procedure: ${proc.procedureType}
+Date: ${proc.procedureDate}
+Supervisor: ${proc.supervisorName}
+License #: ${proc.supervisorLicense}
+Notes: ${proc.notes}
+`).join('\n---\n')}
+
+This report certifies that the above apprentice has completed ${reportData.totalProcedures} supervised procedures under licensed supervisors.
+${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for license application.' : 'The apprentice needs ' + (50 - reportData.totalProcedures) + ' more procedures to meet license requirements.'}
+`
+
+    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `license-training-report-${new Date().toISOString().split('T')[0]}.txt`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    alert('License training report generated successfully!')
+  }
+
   // Handle initial booking submission (shows client form)
   const handleBookingSubmit = () => {
     if (selectedInstructor && selectedDate && selectedTime) {
@@ -459,23 +584,23 @@ export default function StudioSupervisionPage() {
               <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
                 <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <div>
+            <div>
                 <h1 className="text-3xl font-bold text-ink">Instructor Booking</h1>
                 <p className="text-ink/70 mt-1 font-medium">Book supervision sessions with certified instructors</p>
               </div>
             </div>
             <div className="flex items-center justify-center gap-3 mt-4">
               <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender shadow-sm">
-                <Shield className="h-3 w-3 mr-1" />
-                Studio Enterprise
-              </Badge>
+                  <Shield className="h-3 w-3 mr-1" />
+                  Studio Enterprise
+                </Badge>
               <Badge variant="outline" className="bg-white/80 text-ink/80 border-lavender/50 shadow-sm">
-                <Users className="h-3 w-3 mr-1" />
-                {userRole === 'INSTRUCTOR' && 'Supervisor Access'}
-                {userRole === 'APPRENTICE' && 'Apprentice Access'}
-                {userRole === 'ADMIN' && 'Admin Access'}
-              </Badge>
-            </div>
+                  <Users className="h-3 w-3 mr-1" />
+                  {userRole === 'INSTRUCTOR' && 'Supervisor Access'}
+                  {userRole === 'APPRENTICE' && 'Apprentice Access'}
+                  {userRole === 'ADMIN' && 'Admin Access'}
+                </Badge>
+              </div>
           </div>
         </div>
       </div>
@@ -723,7 +848,7 @@ export default function StudioSupervisionPage() {
                     <CardDescription className="text-ink/70 font-medium">
                       Choose from our certified PMU instructors
                     </CardDescription>
-                  </CardHeader>
+              </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {mockInstructors.map((instructor) => (
@@ -912,8 +1037,8 @@ export default function StudioSupervisionPage() {
                                 </div>
                                 <p className="text-sm text-ink/70 mt-1">
                                   Session duration: 2 hours • Perfect for comprehensive supervision
-                                </p>
-                              </div>
+                  </p>
+                </div>
                             )}
                           </div>
                         ) : (
@@ -924,8 +1049,8 @@ export default function StudioSupervisionPage() {
                             <p className="text-ink/50 text-sm">Please select a different date or try another instructor</p>
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
+              </CardContent>
+            </Card>
                   )}
 
                   {/* Booking Confirmation */}
@@ -1153,7 +1278,7 @@ export default function StudioSupervisionPage() {
                   <CardDescription className="text-ink/70 font-medium">
                     Record supervised procedures for license compliance
                   </CardDescription>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-6">
                     {/* Client Information */}
@@ -1291,7 +1416,7 @@ export default function StudioSupervisionPage() {
                 <CardContent className="relative z-10">
                   <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
                     {loggedProcedures.length === 0 ? (
-                      <div className="text-center py-8">
+                <div className="text-center py-8">
                         <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                           <BarChart3 className="h-8 w-8 text-white" />
                         </div>
@@ -1344,31 +1469,224 @@ export default function StudioSupervisionPage() {
                         </div>
                       </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="reports">
-            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold text-ink">Reports & Analytics</CardTitle>
-                <CardDescription className="text-ink/70 font-medium">Export training progress and compliance data</CardDescription>
+            <div className="space-y-6">
+              {/* Training Progress Summary */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <BarChart3 className="h-6 w-6 text-lavender" />
+                    Training Progress Summary
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Overview of your supervised procedure training progress
+                  </CardDescription>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <BarChart3 className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
-                  <p className="text-ink/70 text-lg max-w-md mx-auto">
-                    Advanced reporting and CSV export coming soon.
-                  </p>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    {loggedProcedures.length === 0 ? (
+                <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <BarChart3 className="h-8 w-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-ink mb-2">No Data Available</h3>
+                        <p className="text-ink/70">
+                          Log some procedures to see your training progress summary.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30 text-center">
+                          <div className="text-2xl font-bold text-lavender mb-1">{loggedProcedures.length}</div>
+                          <div className="text-sm text-ink/70">Total Procedures</div>
+                        </div>
+                        <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30 text-center">
+                          <div className="text-2xl font-bold text-lavender mb-1">
+                            {new Set(loggedProcedures.map(p => p.procedureType)).size}
+                          </div>
+                          <div className="text-sm text-ink/70">Procedure Types</div>
+                        </div>
+                        <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30 text-center">
+                          <div className="text-2xl font-bold text-lavender mb-1">
+                            {new Set(loggedProcedures.map(p => p.supervisorName)).size}
+                          </div>
+                          <div className="text-sm text-ink/70">Supervisors</div>
+                        </div>
+                        <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30 text-center">
+                          <div className="text-2xl font-bold text-lavender mb-1">
+                            {Math.round((loggedProcedures.length / 50) * 100)}%
+                          </div>
+                          <div className="text-sm text-ink/70">Progress (50 req.)</div>
+                        </div>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
+
+              {/* Procedure Type Breakdown */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <BookOpen className="h-6 w-6 text-lavender" />
+                    Procedure Type Breakdown
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Distribution of procedures by type for license requirements
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    {loggedProcedures.length === 0 ? (
+                      <div className="text-center py-6">
+                        <p className="text-ink/70">No procedures logged yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {(() => {
+                          const procedureCounts = loggedProcedures.reduce((acc: any, procedure) => {
+                            const type = procedure.procedureType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                            acc[type] = (acc[type] || 0) + 1
+                            return acc
+                          }, {})
+                          
+                          return Object.entries(procedureCounts).map(([type, count]) => (
+                            <div key={type} className="flex items-center justify-between p-3 bg-lavender/10 rounded-lg border border-lavender/30">
+                              <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 bg-lavender rounded-full"></div>
+                                <span className="font-medium text-ink">{type}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lavender font-bold">{count as number}</span>
+                                <span className="text-ink/70 text-sm">procedures</span>
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Supervisor Training Record */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <Users className="h-6 w-6 text-lavender" />
+                    Supervisor Training Record
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Detailed record of training sessions with each supervisor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    {loggedProcedures.length === 0 ? (
+                      <div className="text-center py-6">
+                        <p className="text-ink/70">No training sessions logged yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {(() => {
+                          const supervisorGroups = loggedProcedures.reduce((acc: any, procedure) => {
+                            const supervisor = procedure.supervisorName.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                            if (!acc[supervisor]) {
+                              acc[supervisor] = []
+                            }
+                            acc[supervisor].push(procedure)
+                            return acc
+                          }, {})
+                          
+                          return Object.entries(supervisorGroups).map(([supervisor, procedures]) => (
+                            <div key={supervisor} className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-5 w-5 text-lavender" />
+                                  <span className="font-bold text-ink">{supervisor}</span>
+                                </div>
+                                <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender">
+                                  {(procedures as any[]).length} sessions
+                                </Badge>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                <div><span className="font-medium">License #:</span> {(procedures as any[])[0].supervisorLicense}</div>
+                                <div><span className="font-medium">Last Session:</span> {new Date((procedures as any[]).sort((a, b) => new Date(b.procedureDate).getTime() - new Date(a.procedureDate).getTime())[0].procedureDate).toLocaleDateString()}</div>
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Export & Download */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <CheckCircle className="h-6 w-6 text-lavender" />
+                    Export & Download
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Generate reports for license submission and record keeping
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-ink">Export Options</h3>
+                        <div className="space-y-3">
+                          <Button 
+                            onClick={() => exportToCSV()}
+                            disabled={loggedProcedures.length === 0}
+                            className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            <BookOpen className="h-5 w-5 mr-2" />
+                            Export to CSV
+                          </Button>
+                          <Button 
+                            onClick={() => generateLicenseReport()}
+                            disabled={loggedProcedures.length === 0}
+                            variant="outline"
+                            className="w-full border-lavender/50 hover:bg-lavender/10"
+                          >
+                            <CheckCircle className="h-5 w-5 mr-2" />
+                            Generate License Report
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-ink">Report Info</h3>
+                        <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30 space-y-2 text-sm">
+                          <div><span className="font-medium">Total Records:</span> {loggedProcedures.length}</div>
+                          <div><span className="font-medium">Date Range:</span> {
+                            loggedProcedures.length > 0 
+                              ? `${new Date(Math.min(...loggedProcedures.map(p => new Date(p.procedureDate).getTime()))).toLocaleDateString()} - ${new Date(Math.max(...loggedProcedures.map(p => new Date(p.procedureDate).getTime()))).toLocaleDateString()}`
+                              : 'No data'
+                          }</div>
+                          <div><span className="font-medium">Ready for License:</span> {
+                            loggedProcedures.length >= 50 ? '✅ Yes' : '❌ Need more procedures'
+                          }</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
