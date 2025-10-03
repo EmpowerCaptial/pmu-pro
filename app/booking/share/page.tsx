@@ -67,19 +67,7 @@ export default function ShareBookingPage() {
     loadAvatar()
   }, [currentUser?.email])
 
-  // Prepare user object for NavBar
-  const user = currentUser ? {
-    name: currentUser.name,
-    email: currentUser.email,
-    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
-    avatar: userAvatar
-  } : {
-    name: "PMU Artist",
-    email: "user@pmupro.com",
-    initials: "PA",
-  }
-
-  // Generate user handle from studio name or email - use stable values to prevent re-renders
+  // Generate user handle from studio name or email - MUST be before any early returns
   const userHandle = useMemo(() => {
     if (!currentUser) return null;
     
@@ -92,25 +80,17 @@ export default function ShareBookingPage() {
     return null; // No fallback - user must be authenticated
   }, [currentUser?.studioName, currentUser?.email]);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thepmuguide.com';
-  
-  // Only show booking link if user is authenticated and has a handle
-  if (!userHandle) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
-        <NavBar currentPath="/booking/share" user={user} />
-        <div className="p-4 pb-24 md:pb-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-12">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
-              <p className="text-gray-600 mb-6">Please log in to access your booking share page.</p>
-              <Button onClick={() => router.push('/auth/login')} className="bg-lavender hover:bg-lavender-600 text-white">
-                Go to Login
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: userAvatar
+  } : {
+    name: "PMU Artist",
+    email: "user@pmupro.com",
+    initials: "PA",
   }
   
   const bookingLink = `${baseUrl}/book/${userHandle}`;
@@ -140,6 +120,26 @@ export default function ShareBookingPage() {
       fetchServices();
     }
   }, [userHandle, currentUser?.email]);
+
+  // Early return AFTER all hooks - Rules of Hooks compliance
+  if (!userHandle) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
+        <NavBar currentPath="/booking/share" user={user} />
+        <div className="p-4 pb-24 md:pb-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+              <p className="text-gray-600 mb-6">Please log in to access your booking share page.</p>
+              <Button onClick={() => router.push('/auth/login')} className="bg-lavender hover:bg-lavender-600 text-white">
+                Go to Login
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleCopyLink = async () => {
     try {
