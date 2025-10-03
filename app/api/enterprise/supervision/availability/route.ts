@@ -261,7 +261,7 @@ export async function DELETE(req: NextRequest) {
       AND status IN ('CONFIRMED', 'REQUESTED')
     `
 
-    if (bookings.count > 0) {
+    if ((bookings as any).count > 0) {
       return NextResponse.json({ 
         error: "Cannot delete availability with active bookings"
       }, { status: 400 })
