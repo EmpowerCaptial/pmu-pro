@@ -123,9 +123,20 @@ export default function HomePage() {
               <span className="text-lavender">Smarter Pigment Choices</span>, <br className="hidden sm:block" />
               <span className="text-lavender">Stunning Results</span>.
             </h1>
-            <p className="text-lg sm:text-xl text-ink/70 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
+            <p className="text-lg sm:text-xl text-ink/70 mb-4 md:mb-6 max-w-3xl mx-auto leading-relaxed px-4">
               Built for PMU Artists by PMU Artists with AI Assist — Screen clients, match pigments, and showcase your artistry — all in one platform.
             </p>
+            
+            {/* Studio Enterprise Highlight */}
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg p-4 mb-6 md:mb-8 max-w-4xl mx-auto">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-2xl">🏢</span>
+                <h2 className="text-lg sm:text-xl font-bold">NEW: Enterprise Studio Supervision</h2>
+              </div>
+              <p className="text-sm sm:text-base text-center opacity-90">
+                Perfect for <strong>Tattoo Studios</strong> and <strong>Multi-Artist PMU Studios</strong> — Manage apprentices, track licensure progress, and ensure compliance with built-in supervision scheduling.
+              </p>
+            </div>
             
             {/* Social Proof */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8 md:mb-12 px-4">
@@ -509,6 +520,178 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Studio Enterprise Features Section */}
+        <section className="py-16 px-4 bg-gradient-to-br from-orange-50 to-red-50">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center mb-16">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <span className="text-4xl">🏢</span>
+                <h2 className="text-4xl font-bold text-ink">Enterprise Studio Features</h2>
+              </div>
+              <p className="text-xl text-ink/70 mb-8">
+                Built for tattoo studios and multi-artist PMU studios managing apprentices and compliance
+              </p>
+              <div className="inline-flex items-center space-x-2 bg-orange-100 px-4 py-2 rounded-full">
+                <svg className="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-orange-800 font-medium">Perfect for Tattoo Studios & PMU Training Programs</span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Apprentice Supervision</h3>
+                  <p className="text-ink/70">
+                    Schedule supervision sessions, track apprentice progress, and ensure compliance with licensing requirements
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Licensure Tracking</h3>
+                  <p className="text-ink/70">
+                    Monitor procedure logs, track required hours, and generate compliance reports for licensing boards
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Supervision Scheduling</h3>
+                  <p className="text-ink/70">
+                    Automated scheduling system for supervisor availability with real-time booking and conflict resolution
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Multi-Artist Management</h3>
+                  <p className="text-ink/70">
+                    Manage multiple artists, track individual performance, and coordinate team schedules efficiently
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Compliance Reporting</h3>
+                  <p className="text-ink/70">
+                    Generate detailed reports for licensing boards, insurance companies, and regulatory compliance audits
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg mb-4 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-ink mb-3">HIPAA Compliance</h3>
+                  <p className="text-ink/70">
+                    Enterprise-grade security with encrypted data storage and compliant client management for medical procedures
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Studio Use Cases */}
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h3 className="text-2xl font-bold text-center mb-8">Perfect For:</h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">🎨</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">Tattoo Studios with PMU Services</h4>
+                      <p className="text-ink/70 text-sm">Manage both tattoo artists and PMU specialists with unified supervision and compliance tracking</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">🏫</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">PMU Training Academies</h4>
+                      <p className="text-ink/70 text-sm">Track student progress, manage instructor schedules, and ensure proper supervision ratios</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">💼</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">Multi-Location Studios</h4>
+                      <p className="text-ink/70 text-sm">Centralized management across multiple locations with consistent supervision standards</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">👥</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">Apprenticeship Programs</h4>
+                      <p className="text-ink/70 text-sm">Structured programs with milestone tracking and supervisor certification management</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">🏥</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">Medical Spas & Clinics</h4>
+                      <p className="text-ink/70 text-sm">Compliance-focused environment with detailed procedure logging and audit trails</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-bold text-sm">📋</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-ink">Insurance & Licensing</h4>
+                      <p className="text-ink/70 text-sm">Generate reports for insurance providers and licensing boards with detailed procedure documentation</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-16 px-4 bg-white" id="how-it-works">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center mb-12">
@@ -728,14 +911,19 @@ export default function HomePage() {
               </Card>
 
               {/* Studio Plan */}
-              <Card className="relative border-gray-200 hover:border-lavender/50 transition-all duration-300">
+              <Card className="relative border-orange-300 border-2 shadow-xl scale-105">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-orange-500 text-white px-4 py-1 text-sm rounded-full">
+                    Perfect for Tattoo Studios
+                  </div>
+                </div>
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl font-bold text-gray-900">Studio Enterprise</CardTitle>
                   <div className="space-y-2">
                     <div className="text-4xl font-bold text-gray-900">$99</div>
                     <div className="text-gray-600">per month</div>
                   </div>
-                  <CardDescription className="text-gray-600 mt-4">For multi-artist studios</CardDescription>
+                  <CardDescription className="text-gray-600 mt-4">For tattoo studios & multi-artist PMU studios</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <ul className="space-y-3">
@@ -744,6 +932,24 @@ export default function HomePage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       <span className="text-gray-700">All Professional features</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700 font-semibold">🏢 Apprentice Supervision System</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700 font-semibold">📋 Licensure Progress Tracking</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-orange-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700 font-semibold">⚡ Supervision Scheduling</span>
                     </li>
                     <li className="flex items-start space-x-3">
                       <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -767,6 +973,12 @@ export default function HomePage() {
                       <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
+                      <span className="text-gray-700">Compliance reporting</span>
+                    </li>
+                    <li className="flex items-start space-x-3">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
                       <span className="text-gray-700">White-label options</span>
                     </li>
                     <li className="flex items-start space-x-3">
@@ -783,7 +995,7 @@ export default function HomePage() {
                     </li>
                   </ul>
                   <Link href="/auth/login">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
                       Start Free Trial
                     </Button>
                   </Link>
@@ -939,6 +1151,12 @@ export default function HomePage() {
                     "PMU Guide has revolutionized my consultation process. The AI contraindication screening gives me confidence and my clients peace of mind.",
                   name: "Sarah Chen",
                   title: "Licensed PMU Artist, 8 years experience",
+                },
+                {
+                  quote:
+                    "As a tattoo studio owner, the supervision system is a game-changer. We can now properly track our PMU apprentices and ensure compliance with licensing requirements. It's exactly what the industry needed.",
+                  name: "Mike Rodriguez",
+                  title: "Owner, Ink & Art Tattoo Studio",
                 },
                 {
                   quote:
