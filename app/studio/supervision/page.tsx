@@ -37,7 +37,7 @@ const mockInstructors = [
     specialty: 'Eyebrow Microblading',
     experience: '8 years',
     rating: 4.9,
-    location: 'Downtown Studio',
+    location: 'Universal Beauty Studio',
     phone: '(555) 123-4567',
     email: 'sarah@universalbeautystudio.com',
     avatar: '/images/instructor1.jpg'
@@ -48,7 +48,7 @@ const mockInstructors = [
     specialty: 'Lip Blushing',
     experience: '6 years',
     rating: 4.8,
-    location: 'Midtown Location',
+    location: 'Universal Beauty Studio',
     phone: '(555) 987-6543',
     email: 'michael@universalbeautystudio.com',
     avatar: '/images/instructor2.jpg'
@@ -59,7 +59,7 @@ const mockInstructors = [
     specialty: 'Eyeliner & Lash Enhancement',
     experience: '10 years',
     rating: 5.0,
-    location: 'Westside Studio',
+    location: 'Universal Beauty Studio',
     phone: '(555) 456-7890',
     email: 'emma@universalbeautystudio.com',
     avatar: '/images/instructor3.jpg'
@@ -1022,8 +1022,13 @@ export default function StudioSupervisionPage() {
                               disabled={!clientInfo.name || !clientInfo.phone || !clientInfo.service}
                               className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
                             >
-                              <CheckCircle className="h-5 w-5 mr-2" />
-                              Create Booking & Send Deposit Link
+                              <div className="flex flex-col items-center">
+                                <div className="flex items-center">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  <span className="text-sm font-medium">Create Booking</span>
+                                </div>
+                                <span className="text-xs opacity-90">Send Deposit Link</span>
+                              </div>
                             </Button>
                           </div>
                         </div>
