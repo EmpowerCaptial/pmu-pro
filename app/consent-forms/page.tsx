@@ -126,15 +126,46 @@ export default function ConsentFormsInbox() {
     filterForms()
   }, [consentForms, searchTerm, statusFilter, typeFilter])
 
-  const loadConsentForms = () => {
+  const loadConsentForms = async () => {
     try {
+      // First try to load from localStorage
       const stored = localStorage.getItem("consent-forms")
+      let forms: ConsentForm[] = []
+      
       if (stored) {
-        const forms: ConsentForm[] = JSON.parse(stored)
-        // Sort by creation date (newest first)
-        forms.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        setConsentForms(forms)
+        forms = JSON.parse(stored)
       }
+      
+      // Then try to sync with server data
+      try {
+        const response = await fetch('/api/consent-forms', {
+          headers: {
+            'x-user-email': currentUser?.email || ''
+          }
+        })
+        
+        if (response.ok) {
+          const serverData = await response.json()
+          if (serverData.forms && serverData.forms.length > 0) {
+            // Merge server data with localStorage data, prioritizing server data
+            const serverForms = serverData.forms
+            const localForms = forms.filter(localForm => 
+              !serverForms.some(serverForm => serverForm.id === localForm.id)
+            )
+            forms = [...serverForms, ...localForms]
+            
+            // Update localStorage with merged data
+            localStorage.setItem("consent-forms", JSON.stringify(forms))
+          }
+        }
+      } catch (serverError) {
+        console.error("Error syncing with server:", serverError)
+        // Continue with localStorage data if server fails
+      }
+      
+      // Sort by creation date (newest first)
+      forms.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      setConsentForms(forms)
     } catch (error) {
       console.error("Error loading consent forms:", error)
     } finally {
@@ -246,6 +277,19 @@ export default function ConsentFormsInbox() {
               <p className="text-muted">Manage and track client consent forms</p>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => {
+                  setLoading(true)
+                  loadConsentForms()
+                }}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </Button>
               <Link href="/dashboard/documents">
                 <Button variant="outline" className="gap-2">
                   <FileText className="h-4 w-4" />

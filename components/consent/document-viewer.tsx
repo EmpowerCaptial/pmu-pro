@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,66 +24,80 @@ import {
   Printer
 } from "lucide-react"
 
-// Simple demo data without complex types
-const demoForms = [
-  {
-    id: "demo-form-001",
-    clientId: "demo-client",
-    clientName: "Demo Client",
-    formType: "general-consent",
-    status: "completed",
-    createdAt: "2024-01-01",
-    completedAt: "2024-01-01T12:00:00",
-    expiresAt: "2025-12-31",
-    formData: {
-      clientName: "Demo Client",
-      dateOfBirth: "1990-01-01",
-      emergencyContact: {
-        name: "John Doe",
-        relationship: "Spouse",
-        phone: "555-123-4567"
-      },
-      clientSignature: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
-      consentAcknowledged: true,
-      submittedAt: "2024-01-01T12:00:00"
-    },
-    pdfUrl: "/api/consent-forms/demo-client/demo-token/pdf"
-  },
-  {
-    id: "demo-form-002",
-    clientId: "demo-client-2",
-    clientName: "Sarah Johnson",
-    formType: "medical-history",
-    status: "completed",
-    createdAt: "2024-01-15",
-    completedAt: "2024-01-15T14:30:00",
-    expiresAt: "2025-12-31",
-    formData: {
-      clientName: "Sarah Johnson",
-      dateOfBirth: "1985-05-15",
-      emergencyContact: {
-        name: "Mike Johnson",
-        relationship: "Husband",
-        phone: "555-987-6543"
-      },
-      clientSignature: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
-      consentAcknowledged: true,
-      submittedAt: "2024-01-15T14:30:00"
-    },
-    pdfUrl: "/api/consent-forms/demo-client-2/demo-token-2/pdf"
-  }
-]
-
 export function DocumentViewer({ clientId, highlightFormId }: { clientId?: string; highlightFormId?: string | null }) {
-  const [forms, setForms] = useState(demoForms)
-  const [selectedForm, setSelectedForm] = useState(() => {
-    // If highlightFormId is provided, find and select that form
-    if (highlightFormId) {
-      const highlightedForm = demoForms.find(form => form.id === highlightFormId)
-      return highlightedForm || demoForms[0] || null
+  const [forms, setForms] = useState<any[]>([])
+  const [selectedForm, setSelectedForm] = useState<any | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Load real consent forms data
+  useEffect(() => {
+    const loadForms = async () => {
+      try {
+        // Load from localStorage first
+        const stored = localStorage.getItem("consent-forms")
+        let localForms: any[] = []
+        
+        if (stored) {
+          localForms = JSON.parse(stored)
+        }
+        
+        // Then try to sync with server
+        try {
+          const response = await fetch('/api/consent-forms')
+          if (response.ok) {
+            const serverData = await response.json()
+            if (serverData.forms && serverData.forms.length > 0) {
+              // Merge server data with localStorage, prioritizing server data
+              const serverForms = serverData.forms
+              const mergedForms = localForms.filter(localForm => 
+                !serverForms.some(serverForm => serverForm.id === localForm.id)
+              )
+              const allForms = [...serverForms, ...mergedForms]
+              setForms(allForms)
+              
+              // Update localStorage with merged data
+              localStorage.setItem("consent-forms", JSON.stringify(allForms))
+            } else {
+              setForms(localForms)
+            }
+          } else {
+            setForms(localForms)
+          }
+        } catch (serverError) {
+          console.error("Error syncing with server:", serverError)
+          setForms(localForms)
+        }
+        
+        // Set initial selected form
+        if (highlightFormId) {
+          const highlightedForm = forms.find(form => form.id === highlightFormId)
+          setSelectedForm(highlightedForm || null)
+        } else if (forms.length > 0) {
+          setSelectedForm(forms[0])
+        }
+        
+      } catch (error) {
+        console.error("Error loading forms:", error)
+        setForms([])
+      } finally {
+        setLoading(false)
+      }
     }
-    return demoForms[0] || null
-  })
+
+    loadForms()
+  }, [highlightFormId])
+
+  // Update selected form when forms change
+  useEffect(() => {
+    if (forms.length > 0 && !selectedForm) {
+      if (highlightFormId) {
+        const highlightedForm = forms.find(form => form.id === highlightFormId)
+        setSelectedForm(highlightedForm || forms[0])
+      } else {
+        setSelectedForm(forms[0])
+      }
+    }
+  }, [forms, highlightFormId, selectedForm])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")

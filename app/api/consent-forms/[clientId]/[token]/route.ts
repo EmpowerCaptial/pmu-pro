@@ -34,30 +34,12 @@ export async function GET(
       }
     }
     
-    // If still not found, create a demo form for testing purposes
+    // If form not found, return 404
     if (!form) {
-      console.log(`Creating demo form for key: ${key}`)
-      
-      form = {
-        id: `form_${Date.now()}`,
-        clientId: clientId,
-        clientName: "Demo Client",
-        formType: "general-consent",
-        sendMethod: "email",
-        contactInfo: "demo@example.com",
-        customMessage: "Please complete this consent form",
-        token: token,
-        createdAt: new Date(),
-        sentAt: new Date(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        status: "sent",
-        reminderSent: false
-      }
-      
-      // Store it back in memory for this session
-      consentFormsStorage.set(key, form)
-      
-      console.log(`Created demo form for key: ${key}`)
+      return NextResponse.json(
+        { error: 'Form not found or has expired' },
+        { status: 404 }
+      )
     }
     
     // Check if form has expired
