@@ -187,6 +187,17 @@ export default function StudioSupervisionPage() {
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
     console.log('Time selected:', time, 'Mobile:', isMobile, 'Current step:', currentStep)
+    
+    // Direct mobile step progression - bypass useEffect timing issues
+    if (isMobile && selectedInstructor && selectedDate) {
+      console.log('Mobile: Directly advancing to client step')
+      // Use a small delay to ensure selectedTime state is updated
+      setTimeout(() => {
+        setCurrentStep('client')
+        setShowClientForm(true)
+        console.log('Mobile: State updated to client step')
+      }, 100)
+    }
   }
 
   // Handle initial booking submission (shows client form)
@@ -902,13 +913,32 @@ export default function StudioSupervisionPage() {
                             
                             {selectedTime && (
                               <div className="mt-6 p-4 bg-lavender/10 rounded-lg border border-lavender/30">
-                                <div className="flex items-center gap-2 text-lavender">
-                                  <CheckCircle className="h-5 w-5" />
-                                  <span className="font-medium">Time Selected: {selectedTime}</span>
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="flex items-center gap-2 text-lavender">
+                                      <CheckCircle className="h-5 w-5" />
+                                      <span className="font-medium">Time Selected: {selectedTime}</span>
+                                    </div>
+                                    <p className="text-sm text-ink/70 mt-1">
+                                      Session duration: 2 hours • Perfect for comprehensive supervision
+                                    </p>
+                                  </div>
+                                  
+                                  {/* Manual progression button for mobile */}
+                                  {isMobile && (
+                                    <Button
+                                      onClick={() => {
+                                        setCurrentStep('client')
+                                        setShowClientForm(true)
+                                        console.log('Manual progression to client step')
+                                      }}
+                                      size="sm"
+                                      className="bg-lavender hover:bg-lavender-600 text-white"
+                                    >
+                                      Continue →
+                                    </Button>
+                                  )}
                                 </div>
-                                <p className="text-sm text-ink/70 mt-1">
-                                  Session duration: 2 hours • Perfect for comprehensive supervision
-                                </p>
                               </div>
                             )}
                           </div>
