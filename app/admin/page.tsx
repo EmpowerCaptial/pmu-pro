@@ -464,6 +464,14 @@ export default function AdminDashboardPage() {
                           <Settings className="h-4 w-4 mr-2" />
                           System Status
                         </Button>
+                        <Button 
+                          size="sm" 
+                          className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white" 
+                          onClick={() => window.open('/auth/create-instructor', '_blank')}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Create Instructor
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
