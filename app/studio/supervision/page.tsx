@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Calendar, 
   Users, 
@@ -15,18 +16,71 @@ import {
   BarChart3,
   BookOpen,
   Shield,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
+  Star,
+  MapPin,
+  Phone,
+  Mail
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { checkStudioSupervisionAccess } from '@/lib/studio-supervision-gate'
 import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
+import { NavBar } from '@/components/ui/navbar'
+
+// Mock data for instructors and bookings
+const mockInstructors = [
+  {
+    id: '1',
+    name: 'Sarah Johnson',
+    specialty: 'Eyebrow Microblading',
+    experience: '8 years',
+    rating: 4.9,
+    location: 'Downtown Studio',
+    phone: '(555) 123-4567',
+    email: 'sarah@universalbeautystudio.com',
+    avatar: '/images/instructor1.jpg'
+  },
+  {
+    id: '2', 
+    name: 'Michael Chen',
+    specialty: 'Lip Blushing',
+    experience: '6 years',
+    rating: 4.8,
+    location: 'Midtown Location',
+    phone: '(555) 987-6543',
+    email: 'michael@universalbeautystudio.com',
+    avatar: '/images/instructor2.jpg'
+  },
+  {
+    id: '3',
+    name: 'Emma Rodriguez',
+    specialty: 'Eyeliner & Lash Enhancement',
+    experience: '10 years',
+    rating: 5.0,
+    location: 'Westside Studio',
+    phone: '(555) 456-7890',
+    email: 'emma@universalbeautystudio.com',
+    avatar: '/images/instructor3.jpg'
+  }
+]
+
+const timeSlots = ['9:30 AM', '1:00 PM', '4:00 PM']
 
 export default function StudioSupervisionPage() {
   const { currentUser, isLoading } = useDemoAuth()
   const router = useRouter()
   const [supervisionAccess, setSupervisionAccess] = useState<any>(null)
   const [userRole, setUserRole] = useState<'INSTRUCTOR' | 'APPRENTICE' | 'ADMIN' | 'NONE'>('NONE')
+  
+  // Booking system state
+  const [selectedInstructor, setSelectedInstructor] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedTime, setSelectedTime] = useState<string>('')
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [bookings, setBookings] = useState<any[]>([])
+  const [showBookingModal, setShowBookingModal] = useState(false)
 
   useEffect(() => {
     if (currentUser && !isLoading) {
@@ -44,6 +98,96 @@ export default function StudioSupervisionPage() {
       setUserRole(accessCheck.userRole)
     }
   }, [currentUser, isLoading])
+
+  // Load existing bookings from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedBookings = localStorage.getItem('supervision-bookings')
+      if (storedBookings) {
+        setBookings(JSON.parse(storedBookings))
+      }
+    }
+  }, [])
+
+  // Get available time slots for selected instructor and date
+  const getAvailableSlots = (instructorId: string, date: string) => {
+    const existingBookings = bookings.filter(
+      booking => booking.instructorId === instructorId && booking.date === date
+    )
+    const bookedTimes = existingBookings.map(booking => booking.time)
+    return timeSlots.filter(time => !bookedTimes.includes(time))
+  }
+
+  // Handle instructor selection
+  const handleInstructorSelect = (instructorId: string) => {
+    setSelectedInstructor(instructorId)
+    setSelectedDate('')
+    setSelectedTime('')
+    setAvailableSlots([])
+  }
+
+  // Handle date selection
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date)
+    setSelectedTime('')
+    if (selectedInstructor) {
+      const slots = getAvailableSlots(selectedInstructor, date)
+      setAvailableSlots(slots)
+    }
+  }
+
+  // Handle booking submission
+  const handleBookingSubmit = () => {
+    if (selectedInstructor && selectedDate && selectedTime) {
+      const instructor = mockInstructors.find(i => i.id === selectedInstructor)
+      const newBooking = {
+        id: Date.now().toString(),
+        instructorId: selectedInstructor,
+        instructorName: instructor?.name,
+        date: selectedDate,
+        time: selectedTime,
+        apprenticeName: currentUser?.name || 'Apprentice',
+        apprenticeEmail: currentUser?.email,
+        status: 'confirmed',
+        createdAt: new Date().toISOString()
+      }
+
+      const updatedBookings = [...bookings, newBooking]
+      setBookings(updatedBookings)
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+      }
+
+      // Reset form
+      setSelectedInstructor('')
+      setSelectedDate('')
+      setSelectedTime('')
+      setAvailableSlots([])
+      setShowBookingModal(false)
+
+      alert(`Booking confirmed with ${instructor?.name} on ${selectedDate} at ${selectedTime}`)
+    }
+  }
+
+  // Generate calendar dates (next 30 days)
+  const generateCalendarDates = () => {
+    const dates = []
+    const today = new Date()
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      dates.push({
+        date: date.toISOString().split('T')[0],
+        display: date.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        })
+      })
+    }
+    return dates
+  }
 
   if (isLoading) {
     return (
@@ -68,7 +212,18 @@ export default function StudioSupervisionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
-      {/* Header */}
+      {/* Navigation Header */}
+      <NavBar 
+        currentPath="/studio/supervision"
+        user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+          avatar: undefined
+        } : undefined}
+      />
+
+      {/* Page Header */}
       <div className="relative overflow-hidden bg-gradient-to-r from-lavender/30 to-lavender/10 border-b border-lavender/40">
         <div className="absolute inset-0 bg-gradient-to-r from-lavender/10 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-4 py-8">
@@ -337,24 +492,193 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="find">
-            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold text-ink">Find Supervisors</CardTitle>
-                <CardDescription className="text-ink/70 font-medium">Book supervised training sessions</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <Users className="h-10 w-10 text-white" />
+            <div className="space-y-6">
+              {/* Instructor Selection */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <Users className="h-6 w-6 text-lavender" />
+                    Select Your Instructor
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Choose from our certified PMU instructors
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {mockInstructors.map((instructor) => (
+                      <Card 
+                        key={instructor.id}
+                        className={`cursor-pointer transition-all duration-300 border-2 ${
+                          selectedInstructor === instructor.id 
+                            ? 'border-lavender bg-lavender/10 shadow-lg' 
+                            : 'border-gray-200 hover:border-lavender/50 hover:shadow-md'
+                        }`}
+                        onClick={() => handleInstructorSelect(instructor.id)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-12 h-12 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                              {instructor.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-ink">{instructor.name}</h3>
+                              <p className="text-sm text-ink/70">{instructor.specialty}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2 text-ink/70">
+                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                              <span>{instructor.rating} ({instructor.experience})</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-ink/70">
+                              <MapPin className="h-4 w-4 text-lavender" />
+                              <span>{instructor.location}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-ink/70">
+                              <Phone className="h-4 w-4 text-lavender" />
+                              <span>{instructor.phone}</span>
+                            </div>
+                          </div>
+                          {selectedInstructor === instructor.id && (
+                            <div className="mt-3 p-2 bg-lavender/20 rounded-lg">
+                              <p className="text-sm font-medium text-lavender">Selected ✓</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
-                  <p className="text-ink/70 text-lg max-w-md mx-auto">
-                    Supervisor search and booking calendar coming soon.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Date and Time Selection */}
+              {selectedInstructor && (
+                <>
+                  {/* Date Selection */}
+                  <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                    <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                    <CardHeader className="relative z-10">
+                      <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                        <Calendar className="h-6 w-6 text-lavender" />
+                        Select Date
+                      </CardTitle>
+                      <CardDescription className="text-ink/70 font-medium">
+                        Choose from available dates in the next 30 days
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-3">
+                        {generateCalendarDates().map((dateInfo) => (
+                          <Button
+                            key={dateInfo.date}
+                            variant={selectedDate === dateInfo.date ? "default" : "outline"}
+                            className={`h-16 flex-col p-2 ${
+                              selectedDate === dateInfo.date 
+                                ? 'bg-lavender hover:bg-lavender-600 text-white' 
+                                : 'hover:bg-lavender/10'
+                            }`}
+                            onClick={() => handleDateSelect(dateInfo.date)}
+                          >
+                            <span className="text-xs font-medium">{dateInfo.display}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Time Selection */}
+                  {selectedDate && (
+                    <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                      <CardHeader className="relative z-10">
+                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                          <Clock className="h-6 w-6 text-lavender" />
+                          Select Time
+                        </CardTitle>
+                        <CardDescription className="text-ink/70 font-medium">
+                          Available time slots for {selectedDate}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative z-10">
+                        {availableSlots.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {availableSlots.map((time) => (
+                              <Button
+                                key={time}
+                                variant={selectedTime === time ? "default" : "outline"}
+                                className={`h-16 text-lg font-medium ${
+                                  selectedTime === time 
+                                    ? 'bg-lavender hover:bg-lavender-600 text-white' 
+                                    : 'hover:bg-lavender/10'
+                                }`}
+                                onClick={() => setSelectedTime(time)}
+                              >
+                                {time}
+                              </Button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                            <p className="text-ink/70 text-lg">No available time slots for this date</p>
+                            <p className="text-ink/50 text-sm mt-2">Please select a different date</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Booking Confirmation */}
+                  {selectedInstructor && selectedDate && selectedTime && (
+                    <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                      <CardHeader className="relative z-10">
+                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                          <CheckCircle className="h-6 w-6 text-green-600" />
+                          Confirm Booking
+                        </CardTitle>
+                        <CardDescription className="text-ink/70 font-medium">
+                          Review your supervision session details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative z-10">
+                        <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-ink">Instructor:</span>
+                              <span className="text-ink/80">{mockInstructors.find(i => i.id === selectedInstructor)?.name}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-ink">Date:</span>
+                              <span className="text-ink/80">{selectedDate}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-ink">Time:</span>
+                              <span className="text-ink/80">{selectedTime}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-ink">Duration:</span>
+                              <span className="text-ink/80">2 hours</span>
+                            </div>
+                          </div>
+                          <div className="mt-6 pt-4 border-t border-lavender/30">
+                            <Button 
+                              onClick={handleBookingSubmit}
+                              className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                            >
+                              <CheckCircle className="h-5 w-5 mr-2" />
+                              Confirm Booking
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="bookings">
