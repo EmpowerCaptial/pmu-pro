@@ -67,10 +67,57 @@ export default function DashboardPage() {
     loadAvatar()
   }, [currentUser?.email])
 
-  // Load notifications - TEMPORARILY DISABLED TO STOP INFINITE LOOP
+  // Load notifications with error handling to prevent infinite loops
   useEffect(() => {
-    console.log('Notifications loading disabled - investigating 500 error')
-    setNotifications([]) // Set empty array to prevent undefined state
+    const loadNotifications = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          const response = await fetch('/api/notifications', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setNotifications(data.notifications || [])
+          } else if (response.status === 404) {
+            // User not found in database - normal for new users
+            setNotifications([])
+            console.log('User not found in notifications database - normal for new users')
+          } else {
+            // Other errors - don't retry immediately
+            console.error('Notifications API error:', response.status, response.statusText)
+            setNotifications([])
+          }
+        } catch (error) {
+          console.error('Error loading notifications:', error)
+          setNotifications([]) // Always set array to prevent undefined state
+        }
+      }
+    }
+    
+    loadNotifications()
+    
+    // Refresh notifications every 30 seconds - but only if initial load succeeded
+    let interval: NodeJS.Timeout | undefined
+    const setupInterval = () => {
+      if (interval) clearInterval(interval)
+      interval = setInterval(async () => {
+        // Check if initial load was successful before setting up poll
+        try {
+          await loadNotifications()
+        } catch (error) {
+          console.log('Skipping notification poll due to error')
+          if (interval) clearInterval(interval)
+        }
+      }, 30000)
+    }
+    
+    setupInterval()
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [currentUser?.email])
 
   // Mark notification as read
