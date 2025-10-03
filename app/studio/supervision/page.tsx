@@ -103,6 +103,28 @@ export default function StudioSupervisionPage() {
   const [showClientForm, setShowClientForm] = useState(false)
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
   
+  // Procedure logging state
+  const [procedureForm, setProcedureForm] = useState({
+    clientName: '',
+    clientDOB: '',
+    procedureDate: '',
+    procedureType: '',
+    supervisorName: '',
+    supervisorLicense: '',
+    procedureNotes: ''
+  })
+  const [loggedProcedures, setLoggedProcedures] = useState<any[]>([])
+  
+
+  // Load logged procedures from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedProcedures = localStorage.getItem('logged-procedures')
+      if (savedProcedures) {
+        setLoggedProcedures(JSON.parse(savedProcedures))
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (currentUser && !isLoading) {
@@ -161,6 +183,61 @@ export default function StudioSupervisionPage() {
   // Handle time selection
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
+  }
+
+  // Handle procedure form input changes
+  const handleProcedureFormChange = (field: string, value: string) => {
+    setProcedureForm(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  // Handle procedure logging
+  const handleLogProcedure = () => {
+    // Validate required fields
+    if (!procedureForm.clientName || !procedureForm.clientDOB || !procedureForm.procedureDate || 
+        !procedureForm.procedureType || !procedureForm.supervisorName || !procedureForm.supervisorLicense) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    // Create new procedure record
+    const newProcedure = {
+      id: Date.now().toString(),
+      clientName: procedureForm.clientName,
+      clientDOB: procedureForm.clientDOB,
+      procedureDate: procedureForm.procedureDate,
+      procedureType: procedureForm.procedureType,
+      supervisorName: procedureForm.supervisorName,
+      supervisorLicense: procedureForm.supervisorLicense,
+      procedureNotes: procedureForm.procedureNotes,
+      loggedBy: currentUser?.name || 'Unknown',
+      loggedAt: new Date().toISOString(),
+      status: 'completed'
+    }
+
+    // Add to procedures list
+    const updatedProcedures = [...loggedProcedures, newProcedure]
+    setLoggedProcedures(updatedProcedures)
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('logged-procedures', JSON.stringify(updatedProcedures))
+    }
+
+    // Reset form
+    setProcedureForm({
+      clientName: '',
+      clientDOB: '',
+      procedureDate: '',
+      procedureType: '',
+      supervisorName: '',
+      supervisorLicense: '',
+      procedureNotes: ''
+    })
+
+    alert('Procedure logged successfully!')
   }
 
   // Handle initial booking submission (shows client form)
@@ -1088,6 +1165,8 @@ export default function StudioSupervisionPage() {
                           <Input
                             id="clientName"
                             placeholder="Enter client's full name"
+                            value={procedureForm.clientName}
+                            onChange={(e) => handleProcedureFormChange('clientName', e.target.value)}
                             className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
                           />
                         </div>
@@ -1096,6 +1175,8 @@ export default function StudioSupervisionPage() {
                           <Input
                             id="clientDOB"
                             type="date"
+                            value={procedureForm.clientDOB}
+                            onChange={(e) => handleProcedureFormChange('clientDOB', e.target.value)}
                             className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
                           />
                         </div>
@@ -1111,12 +1192,14 @@ export default function StudioSupervisionPage() {
                           <Input
                             id="procedureDate"
                             type="date"
+                            value={procedureForm.procedureDate}
+                            onChange={(e) => handleProcedureFormChange('procedureDate', e.target.value)}
                             className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
                           />
                         </div>
                         <div>
                           <Label htmlFor="procedureType" className="text-ink font-medium">Procedure Type *</Label>
-                          <Select>
+                          <Select value={procedureForm.procedureType} onValueChange={(value) => handleProcedureFormChange('procedureType', value)}>
                             <SelectTrigger className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20">
                               <SelectValue placeholder="Select procedure type" />
                             </SelectTrigger>
@@ -1139,7 +1222,7 @@ export default function StudioSupervisionPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="supervisorName" className="text-ink font-medium">Supervisor Name *</Label>
-                          <Select>
+                          <Select value={procedureForm.supervisorName} onValueChange={(value) => handleProcedureFormChange('supervisorName', value)}>
                             <SelectTrigger className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20">
                               <SelectValue placeholder="Select supervisor" />
                             </SelectTrigger>
@@ -1155,6 +1238,8 @@ export default function StudioSupervisionPage() {
                           <Input
                             id="supervisorLicense"
                             placeholder="Enter supervisor's license number"
+                            value={procedureForm.supervisorLicense}
+                            onChange={(e) => handleProcedureFormChange('supervisorLicense', e.target.value)}
                             className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
                           />
                         </div>
@@ -1170,6 +1255,8 @@ export default function StudioSupervisionPage() {
                           id="procedureNotes"
                           rows={4}
                           placeholder="Any additional notes about the procedure, complications, or special circumstances..."
+                          value={procedureForm.procedureNotes}
+                          onChange={(e) => handleProcedureFormChange('procedureNotes', e.target.value)}
                           className="mt-1 w-full px-3 py-2 border border-lavender/50 rounded-md focus:border-lavender focus:ring-lavender/20 resize-none"
                         />
                       </div>
@@ -1177,7 +1264,10 @@ export default function StudioSupervisionPage() {
 
                     {/* Submit Button */}
                     <div className="pt-4 border-t border-lavender/30">
-                      <Button className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                      <Button 
+                        onClick={handleLogProcedure}
+                        className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
                         <BookOpen className="h-5 w-5 mr-2" />
                         Log Procedure
                       </Button>
@@ -1200,15 +1290,60 @@ export default function StudioSupervisionPage() {
                 </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <BarChart3 className="h-8 w-8 text-white" />
+                    {loggedProcedures.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <BarChart3 className="h-8 w-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-ink mb-2">No Procedures Logged Yet</h3>
+                        <p className="text-ink/70">
+                          Start logging your supervised procedures above to build your training history.
+                        </p>
                       </div>
-                      <h3 className="text-lg font-bold text-ink mb-2">No Procedures Logged Yet</h3>
-                      <p className="text-ink/70">
-                        Start logging your supervised procedures above to build your training history.
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-bold text-ink">Logged Procedures ({loggedProcedures.length})</h3>
+                          <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender">
+                            Ready for License Submission
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {loggedProcedures.map((procedure, index) => (
+                            <div key={procedure.id} className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                    <span className="font-medium text-ink">Procedure #{loggedProcedures.length - index}</span>
+                                  </div>
+                                  <div className="space-y-1 text-sm">
+                                    <div><span className="font-medium">Client:</span> {procedure.clientName}</div>
+                                    <div><span className="font-medium">DOB:</span> {new Date(procedure.clientDOB).toLocaleDateString()}</div>
+                                    <div><span className="font-medium">Procedure:</span> {procedure.procedureType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</div>
+                                    <div><span className="font-medium">Date:</span> {new Date(procedure.procedureDate).toLocaleDateString()}</div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="space-y-1 text-sm">
+                                    <div><span className="font-medium">Supervisor:</span> {procedure.supervisorName.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</div>
+                                    <div><span className="font-medium">License #:</span> {procedure.supervisorLicense}</div>
+                                    <div><span className="font-medium">Logged:</span> {new Date(procedure.loggedAt).toLocaleDateString()}</div>
+                                    <div><span className="font-medium">By:</span> {procedure.loggedBy}</div>
+                                  </div>
+                                  {procedure.procedureNotes && (
+                                    <div className="mt-2 p-2 bg-white/50 rounded text-xs">
+                                      <span className="font-medium">Notes:</span> {procedure.procedureNotes}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
