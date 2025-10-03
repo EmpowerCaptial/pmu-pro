@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { 
   Calendar, 
   Users, 
@@ -1062,24 +1064,155 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold text-ink">Training History</CardTitle>
-                <CardDescription className="text-ink/70 font-medium">View your completed supervised procedures</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <CheckCircle className="h-10 w-10 text-white" />
+            <div className="space-y-6">
+              {/* Procedure Logging Form */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <BookOpen className="h-6 w-6 text-lavender" />
+                    Log New Procedure
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Record supervised procedures for license compliance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-6">
+                    {/* Client Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-ink border-b border-lavender/30 pb-2">Client Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="clientName" className="text-ink font-medium">Client Full Name *</Label>
+                          <Input
+                            id="clientName"
+                            placeholder="Enter client's full name"
+                            className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientDOB" className="text-ink font-medium">Date of Birth *</Label>
+                          <Input
+                            id="clientDOB"
+                            type="date"
+                            className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Procedure Details */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-ink border-b border-lavender/30 pb-2">Procedure Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="procedureDate" className="text-ink font-medium">Date of Procedure *</Label>
+                          <Input
+                            id="procedureDate"
+                            type="date"
+                            className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="procedureType" className="text-ink font-medium">Procedure Type *</Label>
+                          <Select>
+                            <SelectTrigger className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20">
+                              <SelectValue placeholder="Select procedure type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="eyebrow-microblading">Eyebrow Microblading</SelectItem>
+                              <SelectItem value="eyebrow-powder-brows">Eyebrow Powder Brows</SelectItem>
+                              <SelectItem value="lip-blushing">Lip Blushing</SelectItem>
+                              <SelectItem value="eyeliner">Eyeliner</SelectItem>
+                              <SelectItem value="lash-enhancement">Lash Enhancement</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Supervision Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-ink border-b border-lavender/30 pb-2">Supervision Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="supervisorName" className="text-ink font-medium">Supervisor Name *</Label>
+                          <Select>
+                            <SelectTrigger className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20">
+                              <SelectValue placeholder="Select supervisor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sarah-johnson">Sarah Johnson</SelectItem>
+                              <SelectItem value="michael-chen">Michael Chen</SelectItem>
+                              <SelectItem value="emma-rodriguez">Emma Rodriguez</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="supervisorLicense" className="text-ink font-medium">Supervisor License # *</Label>
+                          <Input
+                            id="supervisorLicense"
+                            placeholder="Enter supervisor's license number"
+                            className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Notes */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-ink border-b border-lavender/30 pb-2">Additional Information</h3>
+                      <div>
+                        <Label htmlFor="procedureNotes" className="text-ink font-medium">Procedure Notes</Label>
+                        <textarea
+                          id="procedureNotes"
+                          rows={4}
+                          placeholder="Any additional notes about the procedure, complications, or special circumstances..."
+                          className="mt-1 w-full px-3 py-2 border border-lavender/50 rounded-md focus:border-lavender focus:ring-lavender/20 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-4 border-t border-lavender/30">
+                      <Button className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                        <BookOpen className="h-5 w-5 mr-2" />
+                        Log Procedure
+                      </Button>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
-                  <p className="text-ink/70 text-lg max-w-md mx-auto">
-                    Procedure logging system coming soon.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Procedure History */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <BarChart3 className="h-6 w-6 text-lavender" />
+                    Procedure History
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    View all logged procedures for license submission
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <BarChart3 className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-ink mb-2">No Procedures Logged Yet</h3>
+                      <p className="text-ink/70">
+                        Start logging your supervised procedures above to build your training history.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="reports">
