@@ -110,6 +110,11 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
         const data = await response.json()
         let artistData = data.artist
 
+        // Ensure specialties is always an array (fixes t.specialties.map is not a function)
+        if (!Array.isArray(artistData.specialties)) {
+          artistData.specialties = artistData.specialties ? [artistData.specialties] : []
+        }
+
         // Load profile data from localStorage (client-side only)
         if (typeof window !== 'undefined' && artistData.email) {
           try {
@@ -132,7 +137,7 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                 instagram: profileData.instagram || artistData.instagram,
                 address: profileData.address || artistData.address,
                 businessHours: profileData.businessHours || artistData.businessHours,
-                specialties: profileData.specialties || artistData.specialties,
+                specialties: profileData.specialties || artistData.specialties || [],
                 experience: profileData.experience || artistData.experience
               }
             }
@@ -266,11 +271,11 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                 </div>
 
                 <div className="flex flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
-                  {artist.specialties.map((specialty) => (
+                  {artist.specialties && Array.isArray(artist.specialties) ? artist.specialties.map((specialty) => (
                     <Badge key={specialty} variant="secondary" className="bg-lavender/20 text-lavender text-xs">
                       {specialty}
                     </Badge>
-                  ))}
+                  )) : null}
                 </div>
               </div>
 
