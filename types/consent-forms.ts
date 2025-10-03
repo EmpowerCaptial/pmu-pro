@@ -4,6 +4,7 @@ export interface ConsentForm {
   id: string
   clientId: string
   clientName: string
+  artistEmail: string
   formType: ConsentFormType
   sendMethod: "email" | "sms"
   contactInfo: string

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge"
 import { Send, Mail, MessageSquare, FileText, X, CheckCircle } from "lucide-react"
 import { getTemplateNames } from "@/lib/data/consent-form-templates"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 interface ConsentFormModalProps {
   isOpen: boolean
@@ -22,6 +23,7 @@ interface ConsentFormModalProps {
 const formTemplates = getTemplateNames()
 
 export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: ConsentFormModalProps) {
+  const { currentUser } = useDemoAuth()
   const [selectedForm, setSelectedForm] = useState("")
   const [sendMethod, setSendMethod] = useState<"email" | "sms">("email")
   const [email, setEmail] = useState("")
@@ -57,6 +59,7 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
         id: `form_${Date.now()}`,
         clientId: clientId || "new-client",
         clientName: clientName || "New Client",
+        artistEmail: currentUser?.email || 'artist@example.com',
         formType: selectedForm,
         sendMethod,
         contactInfo: sendMethod === "email" ? email : phone,

@@ -23,8 +23,10 @@ import {
   History,
   Printer
 } from "lucide-react"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function DocumentViewer({ clientId, highlightFormId }: { clientId?: string; highlightFormId?: string | null }) {
+  const { currentUser } = useDemoAuth()
   const [forms, setForms] = useState<any[]>([])
   const [selectedForm, setSelectedForm] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
@@ -43,7 +45,11 @@ export function DocumentViewer({ clientId, highlightFormId }: { clientId?: strin
         
         // Then try to sync with server
         try {
-          const response = await fetch('/api/consent-forms')
+          const response = await fetch('/api/consent-forms', {
+            headers: {
+              'x-user-email': currentUser?.email || ''
+            }
+          })
           if (response.ok) {
             const serverData = await response.json()
             if (serverData.forms && serverData.forms.length > 0) {

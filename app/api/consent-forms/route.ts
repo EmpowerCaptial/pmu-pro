@@ -12,8 +12,16 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
     const artistId = searchParams.get('artistId') || 'default-artist'
     
+    // Get user email from headers
+    const userEmail = request.headers.get('x-user-email')
+    
     // Get all forms (in production, this would be a database query with filters)
-    const allForms: ConsentForm[] = Array.from(consentFormsStorage.values())
+    let allForms: ConsentForm[] = Array.from(consentFormsStorage.values())
+    
+    // Filter by user email if provided
+    if (userEmail) {
+      allForms = allForms.filter(form => form.artistEmail === userEmail)
+    }
     
     // Apply filters
     let filteredForms = allForms

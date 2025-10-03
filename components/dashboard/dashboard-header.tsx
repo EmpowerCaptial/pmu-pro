@@ -14,9 +14,11 @@ import {
 import { LogOut, Settings, User, Target } from "lucide-react"
 import Link from "next/link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function DashboardHeader() {
   const router = useRouter()
+  const { currentUser } = useDemoAuth()
 
   const handleSignOut = async () => {
     try {
@@ -59,15 +61,21 @@ export function DashboardHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">PA</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {currentUser?.name?.split(' ').map(n => n[0]).join('') || currentUser?.email?.charAt(0).toUpperCase() || 'PA'}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">PMU Artist</p>
-                    <p className="text-xs leading-none text-muted-foreground">artist@example.com</p>
+                    <p className="text-sm font-medium leading-none">
+                      {currentUser?.name || 'PMU Artist'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {currentUser?.email || 'artist@example.com'}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
