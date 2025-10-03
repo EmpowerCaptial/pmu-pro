@@ -68,6 +68,15 @@ const mockInstructors = [
 
 const timeSlots = ['9:30 AM', '1:00 PM', '4:00 PM']
 
+const supervisionServices = [
+  { id: 'microblading', name: 'Eyebrow Microblading', duration: '2 hours', deposit: 150, total: 400 },
+  { id: 'powder-brows', name: 'Powder Brows', duration: '2 hours', deposit: 150, total: 400 },
+  { id: 'lip-blushing', name: 'Lip Blushing', duration: '2 hours', deposit: 150, total: 400 },
+  { id: 'eyeliner', name: 'Eyeliner', duration: '2 hours', deposit: 150, total: 400 },
+  { id: 'lash-enhancement', name: 'Lash Enhancement', duration: '2 hours', deposit: 150, total: 400 },
+  { id: 'color-correction', name: 'Color Correction', duration: '2 hours', deposit: 150, total: 400 }
+]
+
 export default function StudioSupervisionPage() {
   const { currentUser, isLoading } = useDemoAuth()
   const router = useRouter()
@@ -81,6 +90,16 @@ export default function StudioSupervisionPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [bookings, setBookings] = useState<any[]>([])
   const [showBookingModal, setShowBookingModal] = useState(false)
+  
+  // Client information state
+  const [clientInfo, setClientInfo] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    service: ''
+  })
+  const [showClientForm, setShowClientForm] = useState(false)
+  const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
 
   useEffect(() => {
     if (currentUser && !isLoading) {
@@ -136,11 +155,26 @@ export default function StudioSupervisionPage() {
     }
   }
 
-  // Handle booking submission
+  // Handle initial booking submission (shows client form)
   const handleBookingSubmit = () => {
     if (selectedInstructor && selectedDate && selectedTime) {
+      setShowClientForm(true)
+    }
+  }
+
+  // Handle client form submission and deposit generation
+  const handleClientFormSubmit = async () => {
+    if (!clientInfo.name || !clientInfo.phone || !clientInfo.service) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    try {
       const instructor = mockInstructors.find(i => i.id === selectedInstructor)
-      const newBooking = {
+      const service = supervisionServices.find(s => s.id === clientInfo.service)
+      
+      // Create booking with pending status
+      const newBooking: any = {
         id: Date.now().toString(),
         instructorId: selectedInstructor,
         instructorName: instructor?.name,
@@ -148,10 +182,14 @@ export default function StudioSupervisionPage() {
         time: selectedTime,
         apprenticeName: currentUser?.name || 'Apprentice',
         apprenticeEmail: currentUser?.email,
-        status: 'confirmed',
+        clientInfo: clientInfo,
+        service: service,
+        status: 'pending-deposit',
+        depositSent: false,
         createdAt: new Date().toISOString()
       }
 
+      // Save booking locally
       const updatedBookings = [...bookings, newBooking]
       setBookings(updatedBookings)
       
@@ -159,14 +197,87 @@ export default function StudioSupervisionPage() {
         localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
       }
 
+      // Create client in database
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        try {
+          const clientResponse = await fetch('/api/clients', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'x-user-email': currentUser?.email || ''
+            },
+            body: JSON.stringify({
+              name: clientInfo.name,
+              email: clientInfo.email || '',
+              phone: clientInfo.phone,
+              notes: `Supervision session with ${instructor?.name} - ${service?.name}`
+            })
+          })
+
+          if (clientResponse.ok) {
+            const dbClient = await clientResponse.json()
+            
+            // Generate deposit payment link
+            const depositResponse = await fetch('/api/deposit-payments', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                clientId: dbClient.id,
+                appointmentId: newBooking.id,
+                amount: service?.deposit || 150,
+                totalAmount: service?.total || 400,
+                currency: 'USD',
+                notes: `Supervision session deposit - ${service?.name} with ${instructor?.name}`,
+                linkExpirationDays: 7
+              })
+            })
+
+            if (depositResponse.ok) {
+              const depositData = await depositResponse.json()
+              
+              // Update booking with deposit link
+              newBooking.depositLink = depositData.depositLink
+              newBooking.depositSent = true
+              newBooking.status = 'deposit-sent'
+              
+              // Update local storage
+              const updatedBookingsWithDeposit = bookings.map(b => 
+                b.id === newBooking.id ? newBooking : b
+              )
+              setBookings(updatedBookingsWithDeposit)
+              localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookingsWithDeposit))
+              
+              setBookingStatus('deposit-sent')
+              
+              alert(`Booking created! Deposit link has been sent to ${clientInfo.email || 'the client'}. Check the booking details for the deposit link.`)
+            } else {
+              console.error('Failed to create deposit payment')
+              alert('Booking created but failed to generate deposit link. Please contact support.')
+            }
+          }
+        } catch (error) {
+          console.error('Error creating client or deposit:', error)
+          alert('Booking created but there was an error with client setup. Please contact support.')
+        }
+      }
+
       // Reset form
       setSelectedInstructor('')
       setSelectedDate('')
       setSelectedTime('')
       setAvailableSlots([])
-      setShowBookingModal(false)
+      setShowClientForm(false)
+      setClientInfo({ name: '', phone: '', email: '', service: '' })
+      setBookingStatus('pending')
 
-      alert(`Booking confirmed with ${instructor?.name} on ${selectedDate} at ${selectedTime}`)
+    } catch (error) {
+      console.error('Error creating booking:', error)
+      alert('Failed to create booking. Please try again.')
     }
   }
 
@@ -733,7 +844,7 @@ export default function StudioSupervisionPage() {
                   )}
 
                   {/* Booking Confirmation */}
-                  {selectedInstructor && selectedDate && selectedTime && (
+                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -754,7 +865,11 @@ export default function StudioSupervisionPage() {
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-ink">Date:</span>
-                              <span className="text-ink/80">{selectedDate}</span>
+                              <span className="text-ink/80">{new Date(selectedDate).toLocaleDateString('en-US', { 
+                                weekday: 'long', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-ink">Time:</span>
@@ -770,8 +885,135 @@ export default function StudioSupervisionPage() {
                               onClick={handleBookingSubmit}
                               className="w-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
                             >
+                              <Users className="h-5 w-5 mr-2" />
+                              Continue to Client Information
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Client Information Form */}
+                  {showClientForm && (
+                    <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                      <CardHeader className="relative z-10">
+                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                          <Users className="h-6 w-6 text-lavender" />
+                          Client Information
+                        </CardTitle>
+                        <CardDescription className="text-ink/70 font-medium">
+                          Enter client details and select the service for this supervision session
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative z-10">
+                        <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-6">
+                          {/* Session Summary */}
+                          <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
+                            <h3 className="font-bold text-ink mb-2">Session Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                              <div><span className="font-medium">Instructor:</span> {mockInstructors.find(i => i.id === selectedInstructor)?.name}</div>
+                              <div><span className="font-medium">Date:</span> {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+                              <div><span className="font-medium">Time:</span> {selectedTime}</div>
+                              <div><span className="font-medium">Duration:</span> 2 hours</div>
+                            </div>
+                          </div>
+
+                          {/* Client Form */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-ink mb-2">Client Name *</label>
+                              <input
+                                type="text"
+                                value={clientInfo.name}
+                                onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                placeholder="Enter client's full name"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-ink mb-2">Phone Number *</label>
+                              <input
+                                type="tel"
+                                value={clientInfo.phone}
+                                onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                placeholder="(555) 123-4567"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-ink mb-2">Email Address</label>
+                              <input
+                                type="email"
+                                value={clientInfo.email}
+                                onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                placeholder="client@example.com"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-ink mb-2">Service *</label>
+                              <select
+                                value={clientInfo.service}
+                                onChange={(e) => setClientInfo({...clientInfo, service: e.target.value})}
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                required
+                              >
+                                <option value="">Select a service</option>
+                                {supervisionServices.map((service) => (
+                                  <option key={service.id} value={service.id}>
+                                    {service.name} - ${service.total} (${service.deposit} deposit)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Selected Service Details */}
+                          {clientInfo.service && (
+                            <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
+                              <h3 className="font-bold text-ink mb-2">Service Details</h3>
+                              {(() => {
+                                const service = supervisionServices.find(s => s.id === clientInfo.service)
+                                return service ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                      <span className="font-medium">Service:</span><br/>
+                                      {service.name}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Total Cost:</span><br/>
+                                      ${service.total}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Deposit Required:</span><br/>
+                                      ${service.deposit}
+                                    </div>
+                                  </div>
+                                ) : null
+                              })()}
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-4 pt-4 border-t border-lavender/30">
+                            <Button 
+                              onClick={() => setShowClientForm(false)}
+                              variant="outline"
+                              className="flex-1 border-lavender/50 hover:bg-lavender/10"
+                            >
+                              Back to Details
+                            </Button>
+                            <Button 
+                              onClick={handleClientFormSubmit}
+                              disabled={!clientInfo.name || !clientInfo.phone || !clientInfo.service}
+                              className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                            >
                               <CheckCircle className="h-5 w-5 mr-2" />
-                              Confirm Booking
+                              Create Booking & Send Deposit Link
                             </Button>
                           </div>
                         </div>
