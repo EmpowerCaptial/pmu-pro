@@ -2,28 +2,52 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const hashedPassword = await bcrypt.hash('Tyronej22!', 10)
+    const body = await request.json()
+    const { 
+      email, 
+      name, 
+      businessName, 
+      licenseNumber, 
+      licenseState, 
+      password, 
+      role, 
+      selectedPlan 
+    } = body
+
+    // Validate required fields
+    if (!email || !name || !password) {
+      return NextResponse.json({ 
+        error: 'Missing required fields',
+        details: 'Email, name, and password are required'
+      }, { status: 400 })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
     
     const user = await prisma.user.upsert({
-      where: { email: 'admin@universalbeautystudio.com' },
+      where: { email },
       update: {
         password: hashedPassword,
-        selectedPlan: 'studio',
+        name,
+        businessName,
+        licenseNumber,
+        licenseState,
+        selectedPlan,
         hasActiveSubscription: true,
         isLicenseVerified: true,
-        role: 'artist'
+        role: role || 'artist'
       },
       create: {
-        email: 'admin@universalbeautystudio.com',
-        name: 'Universal Beauty Studio Admin',
+        email,
+        name,
         password: hashedPassword,
-        businessName: 'Universal Beauty Studio',
-        licenseNumber: 'UBS001',
-        licenseState: 'CA',
-        role: 'artist',
-        selectedPlan: 'studio',
+        businessName: businessName || '',
+        licenseNumber: licenseNumber || '',
+        licenseState: licenseState || '',
+        role: role || 'artist',
+        selectedPlan: selectedPlan || 'studio',
         hasActiveSubscription: true,
         isLicenseVerified: true,
         subscriptionStatus: 'active'
