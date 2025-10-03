@@ -59,7 +59,7 @@ export function useAutoSave<T extends Record<string, any>>(
     }
 
     loadDraft()
-  }, [currentUser?.email, formType, clientId, onError])
+  }, [currentUser?.email, formType, clientId])
 
   // Auto-save function
   const saveDraft = useCallback(async (data: T) => {

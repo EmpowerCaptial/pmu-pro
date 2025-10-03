@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
 
 interface MetaConnection {
@@ -17,7 +17,7 @@ export function useMetaConnections() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadConnections = async () => {
+  const loadConnections = useCallback(async () => {
     if (!isAuthenticated || !currentUser) return;
     
     setIsLoading(true);
@@ -46,7 +46,7 @@ export function useMetaConnections() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isAuthenticated, currentUser]);
 
   const refreshConnections = () => {
     loadConnections();
@@ -54,7 +54,7 @@ export function useMetaConnections() {
 
   useEffect(() => {
     loadConnections();
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser, loadConnections]);
 
   return {
     connections,

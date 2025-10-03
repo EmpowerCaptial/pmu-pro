@@ -60,9 +60,9 @@ export default function PerformanceMonitor() {
       const interval = setInterval(updateMetrics, 2000)
       return () => clearInterval(interval)
     }
-  }, [isMonitoring])
+  }, [isMonitoring, updateMetrics])
 
-  const updateMetrics = async () => {
+  const updateMetrics = useCallback(async () => {
     try {
       // Simulate performance metrics (since we can't access Undici on client-side)
       const newMetrics: PerformanceMetrics = {
@@ -81,7 +81,7 @@ export default function PerformanceMonitor() {
     } catch (error) {
       console.error('Failed to update metrics:', error)
     }
-  }
+  }, [])
 
   const startMonitoring = () => {
     setIsMonitoring(true)
