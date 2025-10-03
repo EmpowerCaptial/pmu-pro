@@ -81,6 +81,9 @@ interface UserAccount {
   lastLogin: string;
   createdAt: string;
   subscriptionStatus: string;
+  hasActiveSubscription?: boolean;
+  isLicenseVerified?: boolean;
+  selectedPlan?: string;
 }
 
 interface Ticket {
@@ -406,6 +409,19 @@ export default function StaffAdminDashboardPage() {
 
   const handleUserStatusUpdate = async (userId: string, newStatus: string) => {
     try {
+      // Prepare updates based on the new status
+      const updates: any = {
+        subscriptionStatus: newStatus,
+        hasActiveSubscription: newStatus === 'active'
+      }
+
+      // If approving a user, also set license verification
+      if (newStatus === 'active' || newStatus === 'approved') {
+        updates.isLicenseVerified = true
+      }
+
+      console.log('🔄 Updating user status:', { userId, newStatus, updates })
+
       const response = await fetch('/api/admin/users', {
         method: 'PUT',
         headers: {
@@ -413,31 +429,44 @@ export default function StaffAdminDashboardPage() {
         },
         body: JSON.stringify({
           userId,
-          updates: {
-            subscriptionStatus: newStatus,
-            hasActiveSubscription: newStatus === 'active'
-          }
+          updates
         })
       })
 
       if (response.ok) {
-        // Update the local state
+        const responseData = await response.json()
+        console.log('✅ User status updated successfully:', responseData.data)
+        
+        // Update the local state with all the updated fields
         setUserAccounts(prev => 
           prev.map(user => 
             user.id === userId 
-              ? { ...user, status: newStatus, subscriptionStatus: newStatus }
+              ? { 
+                  ...user, 
+                  status: newStatus, 
+                  subscriptionStatus: newStatus,
+                  hasActiveSubscription: newStatus === 'active',
+                  isLicenseVerified: updates.isLicenseVerified || user.isLicenseVerified
+                }
               : user
           )
         )
+
+        // Show success message
+        alert(`User status updated to ${newStatus} successfully!`)
+        
+        // Reload data to ensure we have the latest from database
+        setTimeout(() => {
+          loadData()
+        }, 1000)
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to update user status')
-        }
+        const errorData = await response.json()
+        console.error('❌ Failed to update user status:', errorData)
+        alert(`Failed to update user status: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error updating user status:', error)
-      }
+      console.error('❌ Error updating user status:', error)
+      alert(`Error updating user status: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
