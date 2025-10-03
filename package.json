@@ -70,6 +70,7 @@
     "react-day-picker": "^9.11.0",
     "react-dom": "^18",
     "react-pdf": "^10.1.0",
+    "sqlite3": "^5.1.7",
     "stripe": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

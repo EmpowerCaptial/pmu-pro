@@ -8,90 +8,90 @@ datasource db {
 }
 
 model User {
-  id                    String   @id @default(cuid())
-  name                  String
-  email                 String   @unique
-  password              String
-  businessName          String
-  phone                 String?
-  licenseNumber         String
-  licenseState          String
-  yearsExperience       String?
-  selectedPlan          String   @default("pro")
-  licenseFile           String?
-  insuranceFile         String?
-  hasActiveSubscription Boolean  @default(false)
-  isLicenseVerified     Boolean  @default(false)
-  role                  String   @default("artist")
-  stripeId              String?  @unique
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
-  stripeConnectAccountId String? @unique
-  subscriptionStatus    String   @default("inactive")
-  // Profile fields (migrated from localStorage)
-  avatar                String?  // URL to avatar image stored in Vercel Blob
-  bio                   String?
-  studioName            String?
-  website               String?
-  instagram             String?
-  address               String?  // JSON string for address object
-  businessHours         String?  // JSON string for business hours
-  specialties           String?  // JSON string array
-  experience            String?
-  certifications        String?  // JSON string array
-  venmoUsername         String?
-  cashAppUsername       String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  clients               Client[]
-  appointments          Appointment[]
-  services              Service[]
-  procedures            Procedure[]
-  consentForms          ConsentForm[]
-  invoices              Invoice[]
-  magicLinkTokens       MagicLinkToken[]
-  metaConnections       MetaConnection[]
-  calendarIntegrations  CalendarIntegration[]
-  depositPayments       DepositPayment[]
-  supportTickets        SupportTicket[]
-  complaints            Complaint[]
-  products              Product[]
-  orders                Order[]
-  portfolios            Portfolio[]
-  formDrafts            FormDraft[]
-  fileUploads           FileUpload[]
+  id                     String                @id @default(cuid())
+  name                   String
+  email                  String                @unique
+  password               String
+  businessName           String
+  phone                  String?
+  licenseNumber          String
+  licenseState           String
+  yearsExperience        String?
+  selectedPlan           String                @default("pro")
+  licenseFile            String?
+  insuranceFile          String?
+  hasActiveSubscription  Boolean               @default(false)
+  isLicenseVerified      Boolean               @default(false)
+  role                   String                @default("artist")
+  stripeId               String?               @unique
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  subscriptionStatus     String                @default("inactive")
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  address                String?
+  avatar                 String?
+  bio                    String?
+  businessHours          String?
+  cashAppUsername        String?
+  certifications         String?
+  experience             String?
+  instagram              String?
+  specialties            String?
+  stripeConnectAccountId String?               @unique
+  studioName             String?
+  venmoUsername          String?
+  website                String?
+  appointments           Appointment[]
+  calendarIntegrations   CalendarIntegration[]
+  clients                Client[]
+  complaints             Complaint[]
+  consentForms           ConsentForm[]
+  depositPayments        DepositPayment[]
+  fileUploads            FileUpload[]
+  formDrafts             FormDraft[]
+  invoices               Invoice[]
+  magicLinkTokens        MagicLinkToken[]
+  metaConnections        MetaConnection[]
+  orders                 Order[]
+  portfolios             Portfolio[]
+  procedures             Procedure[]
+  products               Product[]
+  services               Service[]
+  supportTickets         SupportTicket[]
+  notifications          Notification[]
 
   @@map("users")
 }
 
 model Client {
-  id                String      @id @default(cuid())
-  userId            String
-  name              String
-  email             String?
-  phone             String?
-  dateOfBirth       DateTime?   // Client's date of birth
-  emergencyContact  String?     // Emergency contact information
-  medicalHistory    String?     // Medical history notes
-  allergies         String?     // Known allergies
-  skinType          String?     // Fitzpatrick skin type
-  notes             String?
-  isActive          Boolean     @default(true) // Whether client is still active
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  analyses   Analysis[]
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  intakes    Intake[]
-  photos     Photo[]
-  documents  Document[]
-  procedures Procedure[]
-  appointments Appointment[]
-  consentForms ConsentForm[]
-  depositPayments DepositPayment[]
-  orders Order[]
-  formDrafts FormDraft[]
-  fileUploads FileUpload[]
-  invoices Invoice[]
+  id               String           @id @default(cuid())
+  userId           String
+  name             String
+  email            String?
+  phone            String?
+  dateOfBirth      DateTime?
+  emergencyContact String?
+  medicalHistory   String?
+  allergies        String?
+  skinType         String?
+  notes            String?
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  analyses         Analysis[]
+  appointments     Appointment[]
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentForms     ConsentForm[]
+  depositPayments  DepositPayment[]
+  documents        Document[]
+  fileUploads      FileUpload[]
+  formDrafts       FormDraft[]
+  intakes          Intake[]
+  invoices         Invoice[]
+  orders           Order[]
+  photos           Photo[]
+  procedures       Procedure[]
 
   @@map("clients")
 }
@@ -137,8 +137,8 @@ model Analysis {
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  photo          Photo?   @relation(fields: [photoId], references: [id])
   client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photo          Photo?   @relation(fields: [photoId], references: [id])
 
   @@map("analyses")
 }
@@ -176,53 +176,53 @@ model MagicLinkToken {
 }
 
 model Document {
-  id          String   @id @default(cuid())
-  clientId    String
-  type        DocumentType
-  fileUrl     String
-  filename    String?
-  fileSize    Int?     // File size in bytes
-  mimeType    String?  // MIME type of the file
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id        String       @id @default(cuid())
+  clientId  String
+  type      DocumentType
+  fileUrl   String
+  filename  String?
+  fileSize  Int?
+  mimeType  String?
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  client    Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("documents")
 }
 
 model Procedure {
-  id                  String   @id @default(cuid())
-  userId              String?
+  id                  String       @id @default(cuid())
   clientId            String
-  serviceId           String?
+  procedureType       String
+  voltage             Float?
+  needleConfiguration String
+  pigmentBrand        String
+  pigmentColor        String
+  lotNumber           String?
+  depth               String?
+  duration            Int?
+  areaTreated         String?
+  notes               String?
+  procedureDate       DateTime     @default(now())
+  followUpDate        DateTime?
+  isCompleted         Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  afterPhotos         String?
   appointmentId       String?
-  procedureType       String   // Type of procedure (e.g., "Microblading", "Powder Brows", "Eyeliner")
-  voltage             Float?   // Voltage used during procedure
-  needleConfiguration String   // Needle configuration details
-  needleSize          String?  // Needle size used
-  pigmentBrand        String   // Brand of pigment used
-  pigmentColor        String   // Color of pigment used
-  lotNumber           String?  // Lot number of the pigment
-  depth               String?  // Depth of pigment placement
-  technique           String?  // Technique used
-  duration            Int?     // Duration of procedure in minutes
-  areaTreated         String?  // Specific area treated
-  notes               String?  // Additional notes about the procedure
-  beforePhotos        String?  // JSON string of before photo URLs
-  afterPhotos         String?  // JSON string of after photo URLs
-  healingProgress     String?  // Healing progress notes
-  procedureDate       DateTime @default(now()) // When the procedure was performed
-  followUpDate        DateTime? // Scheduled follow-up date
-  touchUpScheduled    Boolean  @default(false) // Whether touch-up is scheduled
-  touchUpDate         DateTime? // Touch-up appointment date
-  isCompleted         Boolean  @default(false) // Whether procedure is completed
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  service             Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  appointment         Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  beforePhotos        String?
+  healingProgress     String?
+  needleSize          String?
+  serviceId           String?
+  technique           String?
+  touchUpDate         DateTime?
+  touchUpScheduled    Boolean      @default(false)
+  userId              String?
+  appointment         Appointment? @relation(fields: [appointmentId], references: [id])
+  client              Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service             Service?     @relation(fields: [serviceId], references: [id])
+  user                User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([clientId])
@@ -231,19 +231,8 @@ model Procedure {
   @@map("procedures")
 }
 
-enum DocumentType {
-  ID_DOCUMENT
-  CONSENT_FORM
-  WAIVER
-  INTAKE_FORM
-  CONTRAINDICATION_FORM
-  ANALYSIS_REPORT
-  PHOTO
-  OTHER
-}
-
 model MetaConnection {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   userId             String
   pageId             String
   pageName           String
@@ -251,9 +240,9 @@ model MetaConnection {
   pageTokenExpiresAt DateTime?
   igUserId           String?
   igUsername         String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, pageId])
   @@index([userId])
@@ -261,67 +250,51 @@ model MetaConnection {
 }
 
 model CalendarIntegration {
-  id                    String   @id @default(cuid())
-  userId                String
-  provider              CalendarProvider
-  providerName          String   // e.g., "Calendly", "Acuity Scheduling"
-  apiKey                String?  // API key or access token
-  webhookUrl            String?  // Webhook URL for real-time sync
-  calendarId            String?  // External calendar ID
-  calendarName          String?  // External calendar name
-  isActive              Boolean  @default(true)
-  syncDirection         SyncDirection @default(BIDIRECTIONAL)
-  lastSyncAt            DateTime?
-  syncFrequency         Int      @default(15) // Minutes between syncs
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String           @id @default(cuid())
+  userId        String
+  provider      CalendarProvider
+  providerName  String
+  apiKey        String?
+  webhookUrl    String?
+  calendarId    String?
+  calendarName  String?
+  isActive      Boolean          @default(true)
+  syncDirection SyncDirection    @default(BIDIRECTIONAL)
+  lastSyncAt    DateTime?
+  syncFrequency Int              @default(15)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider, calendarId])
   @@index([userId])
   @@map("calendar_integrations")
 }
 
-enum CalendarProvider {
-  CALENDLY
-  ACUITY_SCHEDULING
-  GOOGLE_CALENDAR
-  OUTLOOK_CALENDAR
-  BOOKLY
-  SIMPLYBOOK_ME
-  CUSTOM
-}
-
-enum SyncDirection {
-  IMPORT_ONLY    // Only import from external calendar
-  EXPORT_ONLY    // Only export to external calendar
-  BIDIRECTIONAL  // Two-way sync
-}
-
 model DepositPayment {
-  id                    String   @id @default(cuid())
-  clientId             String
-  appointmentId        String?  // Optional - can be created before appointment
-  userId               String   // PMU Pro user (artist)
-  amount               Decimal @db.Decimal(10,2)  // Deposit amount
-  totalAmount          Decimal @db.Decimal(10,2)  // Total procedure cost
-  remainingAmount      Decimal @db.Decimal(10,2)  // Amount due on procedure day
-  currency             String   @default("USD")
-  status               DepositStatus @default(PENDING)
-  paymentMethod        String?  // Stripe payment method ID
-  stripePaymentIntentId String? // Stripe payment intent ID
-  stripeSessionId      String?  // Stripe checkout session ID
-  depositLink          String   @unique // Unique link for client to pay
-  depositLinkExpiresAt DateTime // Link expiration
-  paidAt               DateTime?
-  refundedAt           DateTime?
-  refundAmount         Decimal? @db.Decimal(10,2)
-  refundReason         String?
-  notes                String?  // Additional notes
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  client               Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String        @id @default(cuid())
+  clientId              String
+  appointmentId         String?
+  userId                String
+  amount                Decimal       @db.Decimal(10, 2)
+  totalAmount           Decimal       @db.Decimal(10, 2)
+  remainingAmount       Decimal       @db.Decimal(10, 2)
+  currency              String        @default("USD")
+  status                DepositStatus @default(PENDING)
+  paymentMethod         String?
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  depositLink           String        @unique
+  depositLinkExpiresAt  DateTime
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?      @db.Decimal(10, 2)
+  refundReason          String?
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  client                Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([userId])
@@ -330,46 +303,31 @@ model DepositPayment {
   @@map("deposit_payments")
 }
 
-enum DepositStatus {
-  PENDING     // Deposit link created, awaiting payment
-  PAID        // Deposit paid successfully
-  EXPIRED     // Deposit link expired
-  REFUNDED    // Deposit refunded
-  CANCELLED   // Deposit cancelled
-}
-
 model DataDeletionRequest {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   email       String
   reason      String?
   status      DeletionStatus @default(PENDING)
-  requestedAt DateTime @default(now())
+  requestedAt DateTime       @default(now())
   completedAt DateTime?
   notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([email])
   @@index([status])
   @@map("data_deletion_requests")
 }
 
-enum DeletionStatus {
-  PENDING     // Request submitted, awaiting processing
-  PROCESSING  // Request is being processed
-  COMPLETED   // Data deletion completed
-  FAILED      // Deletion failed, manual review required
-}
-
 model MarketingConnection {
   id            String   @id @default(cuid())
   userId        String
-  platform      String   // 'google' | 'meta'
-  accountId     String?  // e.g. Google customer ID or Meta ad account ID
+  platform      String
+  accountId     String?
   accountName   String?
-  accessToken   String   // encrypted
-  refreshToken  String?  // encrypted
-  tokenMetaJson String?  // encrypted JSON (expiry, scopes)
+  accessToken   String
+  refreshToken  String?
+  tokenMetaJson String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -384,11 +342,11 @@ model MarketingLead {
   name      String?
   phone     String?
   company   String?
-  plan      String   // 'self_serve' | 'optimized'
+  plan      String
   notes     String?
-  source    String   @default("website") // 'website' | 'google' | 'meta' | 'referral'
-  status    String   @default("new") // 'new' | 'contacted' | 'qualified' | 'converted' | 'lost'
   createdAt DateTime @default(now())
+  source    String   @default("website")
+  status    String   @default("new")
 
   @@index([email])
   @@index([status])
@@ -398,8 +356,8 @@ model MarketingLead {
 
 model MarketingSync {
   id        String   @id @default(cuid())
-  platform  String   // 'meta' | 'google' | 'both'
-  status    String   // 'configured' | 'syncing' | 'completed' | 'failed'
+  platform  String
+  status    String
   lastSync  DateTime
   notes     String?
   createdAt DateTime @default(now())
@@ -410,28 +368,27 @@ model MarketingSync {
 }
 
 model Appointment {
-  id             String    @id @default(cuid())
-  userId         String
-  clientId       String
-  title          String
-  serviceType    String
-  duration       Int       // Duration in minutes
-  startTime      DateTime
-  endTime        DateTime
-  status         String    @default("scheduled") // scheduled, confirmed, completed, cancelled, no-show
-  price          Float?
-  deposit        Float?
-  paymentStatus  String    @default("pending") // pending, partial, paid, refunded
-  source         String    @default("booking") // booking, manual, client_management
-  bookingUrl     String?
-  notes          String?
-  reminderSent   Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  procedures Procedure[]
+  id            String      @id @default(cuid())
+  userId        String
+  clientId      String
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  bookingUrl    String?
+  deposit       Float?
+  duration      Int
+  endTime       DateTime
+  paymentStatus String      @default("pending")
+  price         Float?
+  reminderSent  Boolean     @default(false)
+  serviceType   String
+  source        String      @default("booking")
+  startTime     DateTime
+  title         String
+  status        String      @default("scheduled")
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  procedures    Procedure[]
 
   @@index([userId])
   @@index([clientId])
@@ -441,21 +398,20 @@ model Appointment {
 }
 
 model Service {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   userId          String
   name            String
   description     String?
-  defaultDuration Int      // in minutes
+  defaultDuration Int
   defaultPrice    Float
-  category        String   // eyebrows, lips, eyeliner, consultation, touch-up, other
-  isActive        Boolean  @default(true)
-  imageUrl        String?  // URL for service icon/image
-  isCustomImage   Boolean  @default(false) // Whether image was uploaded by user
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  procedures Procedure[]
+  category        String
+  imageUrl        String?
+  isActive        Boolean     @default(true)
+  isCustomImage   Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  procedures      Procedure[]
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([category])
@@ -463,32 +419,30 @@ model Service {
   @@map("services")
 }
 
-
 model ConsentForm {
-  id                    String   @id @default(cuid())
-  userId                String?
-  clientId              String
-  procedureType         String   // Type of procedure
-  clientSignature       String   // Base64 signature data
-  clientSignatureDate   DateTime @default(now())
-  artistSignature       String   // Artist signature
-  artistSignatureDate   DateTime @default(now())
-  medicalHistory        String?  // Medical history disclosed
-  allergies             String?  // Allergies disclosed
-  medications           String?  // Current medications
-  skinConditions        String?  // Skin conditions
-  previousProcedures    String?  // Previous PMU procedures
-  consentGiven          Boolean  @default(true)
-  photographyConsent    Boolean  @default(false)
-  marketingConsent      Boolean  @default(false)
-  emergencyContact      String?  // Emergency contact info
-  additionalNotes       String?  // Any additional notes
-  formVersion           String   @default("1.0")
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id                  String   @id @default(cuid())
+  userId              String?
+  clientId            String
+  procedureType       String
+  clientSignature     String
+  clientSignatureDate DateTime @default(now())
+  artistSignature     String
+  artistSignatureDate DateTime @default(now())
+  medicalHistory      String?
+  allergies           String?
+  medications         String?
+  skinConditions      String?
+  previousProcedures  String?
+  consentGiven        Boolean  @default(true)
+  photographyConsent  Boolean  @default(false)
+  marketingConsent    Boolean  @default(false)
+  emergencyContact    String?
+  additionalNotes     String?
+  formVersion         String   @default("1.0")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([clientId])
@@ -499,20 +453,19 @@ model ConsentForm {
 
 model SupportTicket {
   id          String   @id @default(cuid())
-  title       String
-  description String
-  status      String   @default("open") // open, in_progress, resolved, closed
-  priority    String   @default("medium") // low, medium, high, urgent
-  category    String   @default("general") // general, technical, billing, feature_request
-  userId      String?  // User who created the ticket
-  createdBy   String   // Email of person who created the ticket
-  assignedTo  String?  // Staff member assigned to the ticket
-  resolution  String?  // Resolution notes
-  notes       String?  // Additional notes
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignedTo  String?
+  category    String   @default("general")
+  createdBy   String
+  description String
+  notes       String?
+  resolution  String?
+  title       String
+  userId      String?
+  status      String   @default("open")
+  priority    String   @default("medium")
+  user        User?    @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([priority])
@@ -525,18 +478,17 @@ model Complaint {
   id          String   @id @default(cuid())
   subject     String
   description String
-  status      String   @default("new") // new, investigating, resolved, closed
-  priority    String   @default("medium") // low, medium, high, urgent
-  category    String   @default("general") // general, technical, billing, service
-  userId      String?  // User who reported the complaint
-  reportedBy  String   // Email of person who reported the complaint
-  assignedTo  String?  // Staff member assigned to the complaint
-  resolution  String?  // Resolution notes
-  notes       String?  // Additional notes
+  status      String   @default("new")
+  priority    String   @default("medium")
+  category    String   @default("general")
+  userId      String?
+  reportedBy  String
+  assignedTo  String?
+  resolution  String?
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user        User?    @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([priority])
@@ -548,18 +500,18 @@ model Complaint {
 model InventoryItem {
   id           String   @id @default(cuid())
   name         String
-  category     String   // Tools, Pigments, Consumables, Anesthetics, Aftercare
+  category     String
   brand        String?
-  sku          String?  // Stock Keeping Unit
+  sku          String?
   currentStock Int      @default(0)
-  minStock     Int?     // Minimum stock level
-  maxStock     Int?     // Maximum stock level
+  minStock     Int?
+  maxStock     Int?
   unitCost     Float    @default(0)
-  totalValue   Float    @default(0) // currentStock * unitCost
-  status       String   @default("in_stock") // in_stock, low_stock, out_of_stock
+  totalValue   Float    @default(0)
+  status       String   @default("in_stock")
   description  String?
-  location     String?  // Storage location
-  supplier     String?  // Supplier information
+  location     String?
+  supplier     String?
   lastUpdated  DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -577,6 +529,212 @@ model Meta {
   @@map("meta")
 }
 
+model Product {
+  id            String      @id @default(cuid())
+  sku           String?
+  name          String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  category      String?
+  description   String?
+  images        String      @default("[]")
+  isActive      Boolean     @default(true)
+  isDigital     Boolean     @default(false)
+  price         Float
+  stockQuantity Int         @default(0)
+  userId        String
+  orderItems    OrderItem[]
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
+  @@map("products")
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  clientId          String?
+  clientEmail       String?
+  clientName        String?
+  clientPhone       String?
+  totalAmount       Float
+  fulfillmentMethod String      @default("pickup")
+  shippingAddress   String?
+  status            String      @default("pending")
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  orderItems        OrderItem[]
+  client            Client?     @relation(fields: [clientId], references: [id])
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  description String?
+  beforeImage String?
+  afterImage  String?
+  isPublic    Boolean  @default(true)
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isPublic])
+  @@map("portfolios")
+}
+
+model FormDraft {
+  id         String   @id @default(cuid())
+  userId     String?
+  clientId   String?
+  formType   String
+  formData   String
+  isComplete Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  client     Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([formType])
+  @@map("form_drafts")
+}
+
+model FileUpload {
+  id          String   @id @default(cuid())
+  userId      String?
+  clientId    String?
+  fileName    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  mimeType    String
+  isTemporary Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([fileType])
+  @@index([isTemporary])
+  @@map("file_uploads")
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  userId          String
+  clientId        String?
+  invoiceNumber   String        @unique
+  title           String
+  providerName    String
+  memo            String?
+  subtotal        Float         @default(0)
+  taxRate         Float         @default(0)
+  taxAmount       Float         @default(0)
+  total           Float         @default(0)
+  status          String        @default("draft")
+  dueDate         DateTime?
+  paymentSchedule String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  items           InvoiceItem[]
+  client          Client?       @relation(fields: [clientId], references: [id])
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  type        String
+  name        String
+  description String?
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+enum DocumentType {
+  ID_DOCUMENT
+  CONSENT_FORM
+  WAIVER
+  INTAKE_FORM
+  CONTRAINDICATION_FORM
+  ANALYSIS_REPORT
+  PHOTO
+  OTHER
+}
+
+enum CalendarProvider {
+  CALENDLY
+  ACUITY_SCHEDULING
+  GOOGLE_CALENDAR
+  OUTLOOK_CALENDAR
+  BOOKLY
+  SIMPLYBOOK_ME
+  CUSTOM
+}
+
+enum SyncDirection {
+  IMPORT_ONLY
+  EXPORT_ONLY
+  BIDIRECTIONAL
+}
+
+enum DepositStatus {
+  PENDING
+  PAID
+  EXPIRED
+  REFUNDED
+  CANCELLED
+}
+
+enum DeletionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 enum FulfillmentMethod {
   pickup
   delivery
@@ -592,174 +750,20 @@ enum OrderStatus {
   cancelled
 }
 
-model Product {
-  id            String   @id @default(cuid())
-  userId        String
-  name          String
-  description   String?
-  price         Float
-  category      String?
-  sku           String?
-  stockQuantity Int      @default(0)
-  isDigital     Boolean  @default(false)
-  images        String   @default("[]")
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems OrderItem[]
-
-  @@index([userId])
-  @@index([category])
-  @@index([isActive])
-  @@map("products")
-}
-
-model Order {
-  id                String           @id @default(cuid())
+model Notification {
+  id                String   @id @default(cuid())
   userId            String
-  clientId          String?
-  clientEmail       String?
-  clientName        String?
-  clientPhone       String?
-  totalAmount       Float
-  fulfillmentMethod String           @default("pickup")
-  shippingAddress   String?
-  status            String           @default("pending")
-  notes             String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client     Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  orderItems OrderItem[]
-
-  @@index([userId])
-  @@index([status])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId String
-  quantity  Int
-  price     Float
-  createdAt DateTime @default(now())
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@index([orderId])
-  @@index([productId])
-  @@map("order_items")
-}
-
-model Portfolio {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String   // 'eyebrows' | 'lips' | 'eyeliner'
-  title       String
-  description String?
-  beforeImage String?  // URL to before image stored in Vercel Blob
-  afterImage  String?  // URL to after image stored in Vercel Blob
-  isPublic    Boolean  @default(true)
-  date        DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([isPublic])
-  @@map("portfolios")
-}
-
-model FormDraft {
-  id          String   @id @default(cuid())
-  userId      String?
-  clientId    String?
-  formType    String   // 'client_intake', 'consent_form', 'credit_application', 'artist_signup', 'skin_analysis'
-  formData    String   // Store form data as JSON string
-  isComplete  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([clientId])
-  @@index([formType])
-  @@map("form_drafts")
-}
-
-model FileUpload {
-  id          String   @id @default(cuid())
-  userId      String?
-  clientId    String?
-  fileName    String
-  fileUrl     String   // URL to file stored in Vercel Blob
-  fileType    String   // 'image', 'document', 'signature', 'id_document'
-  fileSize    Int      // File size in bytes
-  mimeType    String   // MIME type of the file
-  isTemporary Boolean  @default(false) // Mark temporary uploads for cleanup
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([clientId])
-  @@index([fileType])
-  @@index([isTemporary])
-  @@map("file_uploads")
-}
-
-model Invoice {
-  id              String   @id @default(cuid())
-  userId          String
-  clientId        String?
-  invoiceNumber   String   @unique
-  title           String
-  providerName    String
-  memo            String?
-  subtotal        Float    @default(0)
-  taxRate         Float    @default(0)
-  taxAmount       Float    @default(0)
-  total           Float    @default(0)
-  status          String   @default("draft") // draft, sent, paid, overdue, cancelled
-  dueDate         DateTime?
-  paymentSchedule String?  // JSON string for payment schedule
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  items  InvoiceItem[]
-
-  @@index([userId])
-  @@index([clientId])
-  @@index([status])
-  @@map("invoices")
-}
-
-model InvoiceItem {
-  id          String  @id @default(cuid())
-  invoiceId   String
-  type        String  // 'service', 'product', 'package', 'custom'
-  name        String
-  description String?
-  quantity    Int     @default(1)
-  unitPrice   Float
-  total       Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@map("invoice_items")
+  type              String
+  title             String
+  message           String
+  isRead            Boolean  @default(false)
+  priority          String   @default("medium") // low, medium, high
+  actionRequired    Boolean  @default(false)
+  metadata          Json?    // Additional data like formId, clientId, etc.
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
 }

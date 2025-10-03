@@ -161,25 +161,37 @@ export async function POST(
     
     // Create notification for the artist
     try {
-      const notification = {
-        id: `form-completed-${form.id}-${Date.now()}`,
+      // Get the artist's email from the form or use a default
+      const artistEmail = form.artistEmail || 'tyronejackboy@gmail.com'
+      
+      const notificationData = {
         type: 'form-completed',
-        clientId: form.clientId,
-        clientName: form.clientName,
-        formType: form.formType,
-        formId: form.id,
+        title: 'Consent Form Completed',
         message: `${form.clientName} has completed their ${form.formType} consent form`,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-        actionRequired: false,
         priority: 'medium',
-        pdfUrl: pdfUrl
+        actionRequired: false,
+        metadata: {
+          clientId: form.clientId,
+          clientName: form.clientName,
+          formType: form.formType,
+          formId: form.id,
+          pdfUrl: pdfUrl
+        }
       }
       
-      // In a real app, you'd get the artist ID from the form or user context
-      const artistId = 'default-artist' // This should come from the form or user context
+      // Create notification in database
+      const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': artistEmail
+        },
+        body: JSON.stringify(notificationData)
+      })
       
-      createNotification(artistId, notification)
+      if (!response.ok) {
+        console.error('Failed to create notification:', await response.text())
+      }
     } catch (notificationError) {
       console.error('Error creating notification:', notificationError)
       // Don't fail the form submission if notification fails

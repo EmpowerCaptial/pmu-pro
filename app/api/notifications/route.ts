@@ -1,22 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { notificationsStorage } from '@/lib/shared-storage'
+import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
+
+export const dynamic = "force-dynamic"
+
+// GET /api/notifications - Get notifications for a user
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const artistId = searchParams.get('artistId')
+    const userEmail = request.headers.get('x-user-email')
     
-    if (!artistId) {
-      return NextResponse.json(
-        { error: 'Artist ID required' },
-        { status: 400 }
-      )
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
     }
-    
-    const notifications = notificationsStorage.get(artistId) || []
-    
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get notifications for this user
+    const notifications = await prisma.notification.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50 // Limit to last 50 notifications
+    })
+
     return NextResponse.json({ notifications })
-    
+
   } catch (error) {
     console.error('Error retrieving notifications:', error)
     return NextResponse.json(
@@ -26,33 +41,52 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/notifications - Create a new notification
 export async function POST(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
     const body = await request.json()
-    const { artistId, notification } = body
+    const { type, title, message, priority = 'medium', actionRequired = false, metadata } = body
     
-    if (!artistId || !notification) {
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
+    }
+
+    if (!type || !title || !message) {
       return NextResponse.json(
-        { error: 'Artist ID and notification required' },
+        { error: 'Type, title, and message are required' },
         { status: 400 }
       )
     }
-    
-    const existingNotifications = notificationsStorage.get(artistId) || []
-    existingNotifications.unshift(notification) // Add to beginning
-    
-    // Keep only last 50 notifications
-    if (existingNotifications.length > 50) {
-      existingNotifications.splice(50)
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-    
-    notificationsStorage.set(artistId, existingNotifications)
-    
+
+    // Create notification
+    const notification = await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type,
+        title,
+        message,
+        priority,
+        actionRequired,
+        metadata: metadata || {}
+      }
+    })
+
     return NextResponse.json({ 
       success: true, 
+      notification,
       message: 'Notification created successfully' 
     })
-    
+
   } catch (error) {
     console.error('Error creating notification:', error)
     return NextResponse.json(
@@ -62,36 +96,54 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT /api/notifications - Mark notification as read
 export async function PUT(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
     const body = await request.json()
-    const { artistId, notificationId, updates } = body
+    const { notificationId, isRead = true } = body
     
-    if (!artistId || !notificationId) {
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
+    }
+
+    if (!notificationId) {
       return NextResponse.json(
-        { error: 'Artist ID and notification ID required' },
+        { error: 'Notification ID is required' },
         { status: 400 }
       )
     }
-    
-    const notifications = notificationsStorage.get(artistId) || []
-    const notificationIndex = notifications.findIndex(n => n.id === notificationId)
-    
-    if (notificationIndex === -1) {
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Update notification
+    const notification = await prisma.notification.updateMany({
+      where: { 
+        id: notificationId,
+        userId: user.id // Ensure user can only update their own notifications
+      },
+      data: { isRead }
+    })
+
+    if (notification.count === 0) {
       return NextResponse.json(
         { error: 'Notification not found' },
         { status: 404 }
       )
     }
-    
-    notifications[notificationIndex] = { ...notifications[notificationIndex], ...updates }
-    notificationsStorage.set(artistId, notifications)
-    
+
     return NextResponse.json({ 
       success: true, 
       message: 'Notification updated successfully' 
     })
-    
+
   } catch (error) {
     console.error('Error updating notification:', error)
     return NextResponse.json(

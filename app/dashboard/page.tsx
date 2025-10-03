@@ -7,7 +7,7 @@ import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
 import { BlogSection } from "@/components/dashboard/blog-section"
 import { NavBar } from "@/components/ui/navbar"
 import { Button } from "@/components/ui/button"
-import { Home, Download, Smartphone, CreditCard, Package } from "lucide-react"
+import { Home, Download, Smartphone, CreditCard, Package, Bell, X } from "lucide-react"
 import Link from "next/link"
 import ArtistViewWrapper from "@/components/staff/artist-view-wrapper"
 import InstallPrompt from "@/components/pwa/install-prompt"
@@ -21,12 +21,16 @@ import { TrialOnboarding } from "@/components/trial/trial-onboarding"
 import { ApplicationStatusCard } from "@/components/trial/application-status-card"
 import { ArtistApplicationService } from "@/lib/artist-application-service"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
 export default function DashboardPage() {
   const { currentUser, isLoading, isProductionUser, isDemoUser } = useDemoAuth()
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [hasApplication, setHasApplication] = useState(false)
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [showNotifications, setShowNotifications] = useState(false)
   
   // Load avatar from API first, then fallback to localStorage
   useEffect(() => {
@@ -62,6 +66,57 @@ export default function DashboardPage() {
     
     loadAvatar()
   }, [currentUser?.email])
+
+  // Load notifications
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          const response = await fetch('/api/notifications', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setNotifications(data.notifications || [])
+          }
+        } catch (error) {
+          console.error('Error loading notifications:', error)
+        }
+      }
+    }
+    
+    loadNotifications()
+    
+    // Refresh notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [currentUser?.email])
+
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    if (!currentUser?.email) return
+    
+    try {
+      await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({ notificationId, isRead: true })
+      })
+      
+      // Update local state
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+      )
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+    }
+  }
   
   // Fallback user if not authenticated
   const user = currentUser ? {
@@ -158,12 +213,77 @@ export default function DashboardPage() {
               />
             )}
             
+            {/* Notifications Panel */}
+            {showNotifications && (
+              <Card className="mb-6">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Recent Notifications</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {notifications.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No notifications yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {notifications.slice(0, 5).map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-3 rounded-lg border ${
+                            notification.isRead ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="text-sm font-medium">{notification.title}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(notification.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                            {!notification.isRead && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => markAsRead(notification.id)}
+                                className="ml-2"
+                              >
+                                Mark as read
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Mobile Header */}
             <div className="md:hidden mb-6 sm:mb-8">
               <div className="text-center mb-4 sm:mb-6">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
                   <h1 className="text-xl sm:text-2xl font-bold text-foreground font-serif">Dashboard</h1>
+                  {notifications.filter(n => !n.isRead).length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className="relative"
+                    >
+                      <Bell className="h-5 w-5" />
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                        {notifications.filter(n => !n.isRead).length}
+                      </Badge>
+                    </Button>
+                  )}
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground px-4">Manage your PMU consultations and analysis</p>
               </div>
@@ -199,6 +319,19 @@ export default function DashboardPage() {
                   <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-serif mb-1 lg:mb-2">Dashboard</h1>
                   <p className="text-sm lg:text-base text-muted-foreground">Manage your PMU consultations and analysis</p>
                 </div>
+                {notifications.filter(n => !n.isRead).length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative"
+                  >
+                    <Bell className="h-5 w-5" />
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                      {notifications.filter(n => !n.isRead).length}
+                    </Badge>
+                  </Button>
+                )}
               </div>
               <div className="flex items-center gap-2 lg:gap-3">
                 <Button

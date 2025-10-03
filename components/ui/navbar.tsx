@@ -27,6 +27,7 @@ import {
   BarChart3,
   Crown,
   Package,
+  Bell,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
@@ -43,8 +44,9 @@ interface NavBarProps {
 
 export function NavBar({ currentPath, user }: NavBarProps) {
   const router = useRouter()
-  const { logout } = useDemoAuth()
+  const { logout, currentUser } = useDemoAuth()
   const [pendingFormsCount, setPendingFormsCount] = useState(0)
+  const [notificationsCount, setNotificationsCount] = useState(0)
 
   // Load pending consent forms count
   useEffect(() => {
@@ -67,6 +69,35 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     const interval = setInterval(loadPendingCount, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  // Load notifications count
+  useEffect(() => {
+    const loadNotificationsCount = async () => {
+      if (currentUser?.email && typeof window !== 'undefined') {
+        try {
+          const response = await fetch('/api/notifications', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            const unreadCount = (data.notifications || []).filter((n: any) => !n.isRead).length
+            setNotificationsCount(unreadCount)
+          }
+        } catch (error) {
+          console.error('Error loading notifications count:', error)
+        }
+      }
+    }
+
+    loadNotificationsCount()
+    
+    // Update count every 30 seconds
+    const interval = setInterval(loadNotificationsCount, 30000)
+    return () => clearInterval(interval)
+  }, [currentUser?.email])
 
   const handleSignOut = async () => {
     try {
@@ -194,6 +225,17 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       {pendingFormsCount > 0 && (
                         <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
                           {pendingFormsCount > 9 ? '9+' : pendingFormsCount}
+                        </span>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/dashboard" className="cursor-pointer">
+                      <Bell className="mr-2 h-4 w-4" />
+                      <span>Notifications</span>
+                      {notificationsCount > 0 && (
+                        <span className="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                          {notificationsCount > 9 ? '9+' : notificationsCount}
                         </span>
                       )}
                     </Link>

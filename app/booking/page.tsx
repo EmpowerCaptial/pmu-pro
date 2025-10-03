@@ -178,6 +178,48 @@ function BookingCalendarContent() {
       }
     }
     
+    const loadAppointments = async () => {
+      if (!currentUser?.email) return
+      
+      try {
+        setLoading(true)
+        const response = await fetch('/api/appointments', {
+          headers: {
+            'x-user-email': currentUser.email,
+            'Accept': 'application/json'
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // Convert database appointments to booking page format
+          const formattedAppointments = data.appointments?.map((apt: any) => ({
+            id: apt.id,
+            clientName: apt.clientName,
+            clientEmail: apt.clientEmail,
+            clientPhone: '', // Not available in current API response
+            service: apt.service,
+            date: apt.date,
+            time: apt.time,
+            duration: apt.duration,
+            price: apt.price,
+            status: apt.status === 'scheduled' ? 'scheduled' : apt.status === 'completed' ? 'completed' : 'scheduled',
+            notes: ''
+          })) || []
+          
+          setAppointments(formattedAppointments)
+        } else {
+          console.error('Failed to load appointments:', response.statusText)
+          setAppointments([])
+        }
+      } catch (error) {
+        console.error('Error loading appointments:', error)
+        setAppointments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    
     if (currentUser?.email) {
       loadClients()
       loadAppointments()
@@ -185,49 +227,6 @@ function BookingCalendarContent() {
       console.log('No current user email found')
     }
   }, [currentUser?.email, searchParams])
-
-  // Load appointments from database API
-  const loadAppointments = async () => {
-    if (!currentUser?.email) return
-    
-    try {
-      setLoading(true)
-      const response = await fetch('/api/appointments', {
-        headers: {
-          'x-user-email': currentUser.email,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        // Convert database appointments to booking page format
-        const formattedAppointments = data.appointments?.map((apt: any) => ({
-          id: apt.id,
-          clientName: apt.clientName,
-          clientEmail: apt.clientEmail,
-          clientPhone: '', // Not available in current API response
-          service: apt.service,
-          date: apt.date,
-          time: apt.time,
-          duration: apt.duration,
-          price: apt.price,
-          status: apt.status === 'scheduled' ? 'scheduled' : apt.status === 'completed' ? 'completed' : 'scheduled',
-          notes: ''
-        })) || []
-        
-        setAppointments(formattedAppointments)
-      } else {
-        console.error('Failed to load appointments:', response.statusText)
-        setAppointments([])
-      }
-    } catch (error) {
-      console.error('Error loading appointments:', error)
-      setAppointments([])
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Filter clients based on search term
   const filteredClients = clients.filter(client => {
