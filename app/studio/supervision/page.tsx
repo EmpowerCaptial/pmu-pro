@@ -100,6 +100,20 @@ export default function StudioSupervisionPage() {
   })
   const [showClientForm, setShowClientForm] = useState(false)
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
+  
+  // Mobile pagination state
+  const [currentStep, setCurrentStep] = useState<'instructor' | 'calendar' | 'client'>('instructor')
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     if (currentUser && !isLoading) {
@@ -143,6 +157,11 @@ export default function StudioSupervisionPage() {
     setSelectedDate('')
     setSelectedTime('')
     setAvailableSlots([])
+    
+    // On mobile, move to calendar step
+    if (isMobile) {
+      setCurrentStep('calendar')
+    }
   }
 
   // Handle date selection
@@ -152,6 +171,16 @@ export default function StudioSupervisionPage() {
     if (selectedInstructor) {
       const slots = getAvailableSlots(selectedInstructor, date)
       setAvailableSlots(slots)
+    }
+  }
+
+  // Handle time selection
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time)
+    
+    // On mobile, move to client info step
+    if (isMobile) {
+      setCurrentStep('client')
     }
   }
 
@@ -368,38 +397,29 @@ export default function StudioSupervisionPage() {
       {/* Page Header */}
       <div className="relative overflow-hidden bg-gradient-to-r from-lavender/30 to-lavender/10 border-b border-lavender/40">
         <div className="absolute inset-0 bg-gradient-to-r from-lavender/10 to-transparent"></div>
-        <div className="relative max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-ink">Enterprise Studio Supervision</h1>
-                  <p className="text-ink/70 mt-1 font-medium">Professional apprentice training & supervision system</p>
-                </div>
+        <div className="relative max-w-7xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
+                <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <div className="flex items-center gap-3 mt-4">
-                <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender shadow-sm">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Studio Enterprise
-                </Badge>
-                <Badge variant="outline" className="bg-white/80 text-ink/80 border-lavender/50 shadow-sm">
-                  <Users className="h-3 w-3 mr-1" />
-                  {userRole === 'INSTRUCTOR' && 'Supervisor Access'}
-                  {userRole === 'APPRENTICE' && 'Apprentice Access'}
-                  {userRole === 'ADMIN' && 'Admin Access'}
-                </Badge>
+              <div>
+                <h1 className="text-3xl font-bold text-ink">Instructor Booking</h1>
+                <p className="text-ink/70 mt-1 font-medium">Book supervision sessions with certified instructors</p>
               </div>
             </div>
-            <Button 
-              onClick={() => router.push('/dashboard')}
-              variant="outline"
-              className="bg-white/90 hover:bg-white border-lavender/50 text-ink hover:text-ink shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Back to Dashboard
-            </Button>
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender shadow-sm">
+                <Shield className="h-3 w-3 mr-1" />
+                Studio Enterprise
+              </Badge>
+              <Badge variant="outline" className="bg-white/80 text-ink/80 border-lavender/50 shadow-sm">
+                <Users className="h-3 w-3 mr-1" />
+                {userRole === 'INSTRUCTOR' && 'Supervisor Access'}
+                {userRole === 'APPRENTICE' && 'Apprentice Access'}
+                {userRole === 'ADMIN' && 'Admin Access'}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -418,7 +438,7 @@ export default function StudioSupervisionPage() {
               value={userRole === 'INSTRUCTOR' ? 'availability' : 'find'}
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
-              {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Find Supervisors'}
+              {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Book Instructor'}
             </TabsTrigger>
             <TabsTrigger 
               value={userRole === 'INSTRUCTOR' ? 'bookings' : 'history'}
@@ -635,18 +655,45 @@ export default function StudioSupervisionPage() {
 
           <TabsContent value="find">
             <div className="space-y-6">
-              {/* Instructor Selection */}
-              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-                <CardHeader className="relative z-10">
-                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
-                    <Users className="h-6 w-6 text-lavender" />
-                    Select Your Instructor
-                  </CardTitle>
-                  <CardDescription className="text-ink/70 font-medium">
-                    Choose from our certified PMU instructors
-                  </CardDescription>
-                </CardHeader>
+              {/* Mobile Step Indicator */}
+              <div className="md:hidden">
+                <div className="flex items-center justify-center space-x-4 mb-6">
+                  <div className={`flex items-center space-x-2 ${currentStep === 'instructor' ? 'text-lavender' : 'text-ink/40'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      currentStep === 'instructor' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
+                    }`}>1</div>
+                    <span className="text-sm font-medium">Instructor</span>
+                  </div>
+                  <div className={`w-8 h-0.5 ${currentStep === 'calendar' || currentStep === 'client' ? 'bg-lavender' : 'bg-gray-200'}`}></div>
+                  <div className={`flex items-center space-x-2 ${currentStep === 'calendar' ? 'text-lavender' : 'text-ink/40'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      currentStep === 'calendar' ? 'bg-lavender text-white' : currentStep === 'client' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
+                    }`}>2</div>
+                    <span className="text-sm font-medium">Schedule</span>
+                  </div>
+                  <div className={`w-8 h-0.5 ${currentStep === 'client' ? 'bg-lavender' : 'bg-gray-200'}`}></div>
+                  <div className={`flex items-center space-x-2 ${currentStep === 'client' ? 'text-lavender' : 'text-ink/40'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      currentStep === 'client' ? 'bg-lavender text-white' : 'bg-gray-200 text-gray-600'
+                    }`}>3</div>
+                    <span className="text-sm font-medium">Client Info</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 1: Instructor Selection */}
+              {(currentStep === 'instructor' || !isMobile) && (
+                <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                      <Users className="h-6 w-6 text-lavender" />
+                      Select Your Instructor
+                    </CardTitle>
+                    <CardDescription className="text-ink/70 font-medium">
+                      Choose from our certified PMU instructors
+                    </CardDescription>
+                  </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {mockInstructors.map((instructor) => (
@@ -694,21 +741,36 @@ export default function StudioSupervisionPage() {
                   </div>
                 </CardContent>
               </Card>
+              )}
 
-              {/* Date and Time Selection */}
-              {selectedInstructor && (
+              {/* Step 2: Date and Time Selection */}
+              {selectedInstructor && (currentStep === 'calendar' || !isMobile) && (
                 <>
                   {/* Date Selection */}
                   <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                     <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                     <CardHeader className="relative z-10">
-                      <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
-                        <Calendar className="h-6 w-6 text-lavender" />
-                        Select Date
-                      </CardTitle>
-                      <CardDescription className="text-ink/70 font-medium">
-                        Click on any available date to book your supervision session
-                      </CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                            <Calendar className="h-6 w-6 text-lavender" />
+                            Select Date
+                          </CardTitle>
+                          <CardDescription className="text-ink/70 font-medium">
+                            Click on any available date to book your supervision session
+                          </CardDescription>
+                        </div>
+                        {isMobile && (
+                          <Button 
+                            onClick={() => setCurrentStep('instructor')}
+                            variant="outline"
+                            size="sm"
+                            className="border-lavender/50 hover:bg-lavender/10"
+                          >
+                            ← Back
+                          </Button>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <div className="bg-white/80 rounded-xl p-4 border border-lavender/30">
@@ -785,17 +847,31 @@ export default function StudioSupervisionPage() {
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
-                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
-                          <Clock className="h-6 w-6 text-lavender" />
-                          Select Time Slot
-                        </CardTitle>
-                        <CardDescription className="text-ink/70 font-medium">
-                          Available supervision sessions for {new Date(selectedDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                        </CardDescription>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                              <Clock className="h-6 w-6 text-lavender" />
+                              Select Time Slot
+                            </CardTitle>
+                            <CardDescription className="text-ink/70 font-medium">
+                              Available supervision sessions for {new Date(selectedDate).toLocaleDateString('en-US', { 
+                                weekday: 'long', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </CardDescription>
+                          </div>
+                          {isMobile && (
+                            <Button 
+                              onClick={() => setSelectedDate('')}
+                              variant="outline"
+                              size="sm"
+                              className="border-lavender/50 hover:bg-lavender/10"
+                            >
+                              ← Back
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent className="relative z-10">
                         {availableSlots.length > 0 ? (
@@ -810,7 +886,7 @@ export default function StudioSupervisionPage() {
                                       ? 'bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg' 
                                       : 'hover:bg-lavender/10 hover:border-lavender/50 hover:shadow-md border-lavender/30'
                                   }`}
-                                  onClick={() => setSelectedTime(time)}
+                                  onClick={() => handleTimeSelect(time)}
                                 >
                                   <Clock className="h-6 w-6" />
                                   <span>{time}</span>
@@ -843,8 +919,8 @@ export default function StudioSupervisionPage() {
                     </Card>
                   )}
 
-                  {/* Booking Confirmation */}
-                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && (
+                  {/* Step 3: Booking Confirmation */}
+                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && (currentStep === 'client' || !isMobile) && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -894,8 +970,8 @@ export default function StudioSupervisionPage() {
                     </Card>
                   )}
 
-                  {/* Client Information Form */}
-                  {showClientForm && (
+                  {/* Step 4: Client Information Form */}
+                  {showClientForm && (currentStep === 'client' || !isMobile) && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -1001,11 +1077,16 @@ export default function StudioSupervisionPage() {
                           {/* Action Buttons */}
                           <div className="flex gap-4 pt-4 border-t border-lavender/30">
                             <Button 
-                              onClick={() => setShowClientForm(false)}
+                              onClick={() => {
+                                setShowClientForm(false)
+                                if (isMobile) {
+                                  setCurrentStep('calendar')
+                                }
+                              }}
                               variant="outline"
                               className="flex-1 border-lavender/50 hover:bg-lavender/10"
                             >
-                              Back to Details
+                              {isMobile ? 'Back to Schedule' : 'Back to Details'}
                             </Button>
                             <Button 
                               onClick={handleClientFormSubmit}
