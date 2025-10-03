@@ -67,32 +67,10 @@ export default function DashboardPage() {
     loadAvatar()
   }, [currentUser?.email])
 
-  // Load notifications
+  // Load notifications - TEMPORARILY DISABLED TO STOP INFINITE LOOP
   useEffect(() => {
-    const loadNotifications = async () => {
-      if (currentUser?.email && typeof window !== 'undefined') {
-        try {
-          const response = await fetch('/api/notifications', {
-            headers: {
-              'x-user-email': currentUser.email
-            }
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            setNotifications(data.notifications || [])
-          }
-        } catch (error) {
-          console.error('Error loading notifications:', error)
-        }
-      }
-    }
-    
-    loadNotifications()
-    
-    // Refresh notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
+    console.log('Notifications loading disabled - investigating 500 error')
+    setNotifications([]) // Set empty array to prevent undefined state
   }, [currentUser?.email])
 
   // Mark notification as read
