@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
-  Shield
+  Shield,
+  GraduationCap
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { checkStudioSupervisionAccess } from '@/lib/studio-supervision-gate'
@@ -66,28 +67,28 @@ export default function StudioSupervisionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50/30 via-lavender/20 to-purple-100/40">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-beige/30 to-ivory">
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600/10 via-purple-500/5 to-lavender/10 border-b border-purple-200/30">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-transparent"></div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-lavender/30 to-lavender/10 border-b border-lavender/40">
+        <div className="absolute inset-0 bg-gradient-to-r from-lavender/10 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
                   <GraduationCap className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Enterprise Studio Supervision</h1>
-                  <p className="text-purple-700/80 mt-1 font-medium">Professional apprentice training & supervision system</p>
+                  <h1 className="text-3xl font-bold text-ink">Enterprise Studio Supervision</h1>
+                  <p className="text-ink/70 mt-1 font-medium">Professional apprentice training & supervision system</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300 shadow-sm">
+                <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender shadow-sm">
                   <Shield className="h-3 w-3 mr-1" />
                   Studio Enterprise
                 </Badge>
-                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 shadow-sm">
+                <Badge variant="outline" className="bg-white/80 text-ink/80 border-lavender/50 shadow-sm">
                   <Users className="h-3 w-3 mr-1" />
                   {userRole === 'INSTRUCTOR' && 'Supervisor Access'}
                   {userRole === 'APPRENTICE' && 'Apprentice Access'}
@@ -98,7 +99,7 @@ export default function StudioSupervisionPage() {
             <Button 
               onClick={() => router.push('/dashboard')}
               variant="outline"
-              className="bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-white/90 hover:bg-white border-lavender/50 text-ink hover:text-ink shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Back to Dashboard
             </Button>
@@ -109,28 +110,28 @@ export default function StudioSupervisionPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue={userRole === 'INSTRUCTOR' ? 'availability' : userRole === 'APPRENTICE' ? 'find' : 'overview'} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/80 backdrop-blur-sm border border-purple-200/50 shadow-lg rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
             <TabsTrigger 
               value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value={userRole === 'INSTRUCTOR' ? 'availability' : 'find'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
               {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Find Supervisors'}
             </TabsTrigger>
             <TabsTrigger 
               value={userRole === 'INSTRUCTOR' ? 'bookings' : 'history'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
               {userRole === 'INSTRUCTOR' ? 'My Bookings' : 'My History'}
             </TabsTrigger>
             <TabsTrigger 
               value="reports"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
               Reports
             </TabsTrigger>
@@ -139,27 +140,27 @@ export default function StudioSupervisionPage() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="relative overflow-hidden border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-50/80 to-white backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+              <Card className="relative overflow-hidden border-lavender/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-lavender/20 to-white backdrop-blur-sm">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-lavender/30 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                  <CardTitle className="text-sm font-bold text-purple-800">Training Hours</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center shadow-md">
+                  <CardTitle className="text-sm font-bold text-ink">Training Hours</CardTitle>
+                  <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
                     <BookOpen className="h-5 w-5 text-white" />
                   </div>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  <div className="text-3xl font-bold text-purple-900">24</div>
-                  <p className="text-sm text-purple-600 font-medium">
+                  <div className="text-3xl font-bold text-ink">24</div>
+                  <p className="text-sm text-lavender-600 font-medium">
                     +12% from last month
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="relative overflow-hidden border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-50/80 to-white backdrop-blur-sm">
+              <Card className="relative overflow-hidden border-green-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50/80 to-white backdrop-blur-sm">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                   <CardTitle className="text-sm font-bold text-green-800">Completed Procedures</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-5 w-5 text-white" />
                   </div>
                 </CardHeader>
@@ -171,11 +172,11 @@ export default function StudioSupervisionPage() {
                 </CardContent>
               </Card>
 
-              <Card className="relative overflow-hidden border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50/80 to-white backdrop-blur-sm">
+              <Card className="relative overflow-hidden border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50/80 to-white backdrop-blur-sm">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                   <CardTitle className="text-sm font-bold text-blue-800">Active Bookings</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
                     <Calendar className="h-5 w-5 text-white" />
                   </div>
                 </CardHeader>
@@ -188,11 +189,11 @@ export default function StudioSupervisionPage() {
               </Card>
             </div>
 
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Quick Actions</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">
+                <CardTitle className="text-xl font-bold text-ink">Quick Actions</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">
                   Common actions for your role
                 </CardDescription>
               </CardHeader>
@@ -201,36 +202,36 @@ export default function StudioSupervisionPage() {
                   {userRole === 'INSTRUCTOR' && (
                     <>
                       <Button 
-                        className="h-auto p-6 flex-col bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 rounded-xl"
+                        className="h-auto p-6 flex-col bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 rounded-xl"
                         onClick={() => router.push('/studio/supervision/availability')}
                       >
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
                           <Calendar className="h-6 w-6" />
                         </div>
                         <span className="font-bold text-lg">Set Availability</span>
-                        <span className="text-purple-100 text-sm mt-1">Schedule supervision blocks</span>
+                        <span className="text-white/90 text-sm mt-1">Schedule supervision blocks</span>
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-purple-200 bg-white/80 hover:bg-purple-50 text-purple-700 hover:text-purple-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-lavender/50 bg-white/90 hover:bg-lavender/10 text-ink hover:text-ink shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/studio/supervision/bookings')}
                       >
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
-                          <Users className="h-6 w-6 text-purple-600" />
+                        <div className="w-12 h-12 bg-lavender/20 rounded-full flex items-center justify-center mb-3">
+                          <Users className="h-6 w-6 text-lavender" />
                         </div>
                         <span className="font-bold text-lg">Review Bookings</span>
-                        <span className="text-purple-600 text-sm mt-1">Manage apprentice sessions</span>
+                        <span className="text-ink/70 text-sm mt-1">Manage apprentice sessions</span>
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-purple-200 bg-white/80 hover:bg-purple-50 text-purple-700 hover:text-purple-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-lavender/50 bg-white/90 hover:bg-lavender/10 text-ink hover:text-ink shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/studio/supervision/procedure-logs')}
                       >
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
-                          <CheckCircle className="h-6 w-6 text-purple-600" />
+                        <div className="w-12 h-12 bg-lavender/20 rounded-full flex items-center justify-center mb-3">
+                          <CheckCircle className="h-6 w-6 text-lavender" />
                         </div>
                         <span className="font-bold text-lg">Log Procedures</span>
-                        <span className="text-purple-600 text-sm mt-1">Track completed work</span>
+                        <span className="text-ink/70 text-sm mt-1">Track completed work</span>
                       </Button>
                     </>
                   )}
@@ -238,7 +239,7 @@ export default function StudioSupervisionPage() {
                   {userRole === 'APPRENTICE' && (
                     <>
                       <Button 
-                        className="h-auto p-6 flex-col bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 rounded-xl"
+                        className="h-auto p-6 flex-col bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 rounded-xl"
                         onClick={() => router.push('/studio/supervision/find')}
                       >
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
@@ -249,7 +250,7 @@ export default function StudioSupervisionPage() {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-blue-200 bg-white/80 hover:bg-blue-50 text-blue-700 hover:text-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-blue-200/50 bg-white/90 hover:bg-blue-50/80 text-blue-700 hover:text-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/studio/supervision/history')}
                       >
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
@@ -260,7 +261,7 @@ export default function StudioSupervisionPage() {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-blue-200 bg-white/80 hover:bg-blue-50 text-blue-700 hover:text-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-blue-200/50 bg-white/90 hover:bg-blue-50/80 text-blue-700 hover:text-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/studio/supervision/progress')}
                       >
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
@@ -275,7 +276,7 @@ export default function StudioSupervisionPage() {
                   {userRole === 'ADMIN' && (
                     <>
                       <Button 
-                        className="h-auto p-6 flex-col bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 rounded-xl"
+                        className="h-auto p-6 flex-col bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 rounded-xl"
                         onClick={() => router.push('/studio/supervision/overview')}
                       >
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
@@ -286,7 +287,7 @@ export default function StudioSupervisionPage() {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-emerald-200 bg-white/80 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-emerald-200/50 bg-white/90 hover:bg-emerald-50/80 text-emerald-700 hover:text-emerald-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/studio/supervision/reports')}
                       >
                         <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
@@ -297,7 +298,7 @@ export default function StudioSupervisionPage() {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="h-auto p-6 flex-col border-emerald-200 bg-white/80 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                        className="h-auto p-6 flex-col border-emerald-200/50 bg-white/90 hover:bg-emerald-50/80 text-emerald-700 hover:text-emerald-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
                         onClick={() => router.push('/enterprise/staff')}
                       >
                         <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
@@ -315,19 +316,19 @@ export default function StudioSupervisionPage() {
 
           {/* Feature Coming Soon Placeholders */}
           <TabsContent value="availability">
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Set Availability</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">Schedule your supervision blocks</CardDescription>
+                <CardTitle className="text-2xl font-bold text-ink">Set Availability</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">Schedule your supervision blocks</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <Calendar className="h-10 w-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-3">Feature Under Development</h3>
-                  <p className="text-purple-600/80 text-lg max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
+                  <p className="text-ink/70 text-lg max-w-md mx-auto">
                     Supervisor availability calendar coming soon in the next release.
                   </p>
                 </div>
@@ -336,19 +337,19 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="find">
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Find Supervisors</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">Book supervised training sessions</CardDescription>
+                <CardTitle className="text-2xl font-bold text-ink">Find Supervisors</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">Book supervised training sessions</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <Users className="h-10 w-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-3">Feature Under Development</h3>
-                  <p className="text-purple-600/80 text-lg max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
+                  <p className="text-ink/70 text-lg max-w-md mx-auto">
                     Supervisor search and booking calendar coming soon.
                   </p>
                 </div>
@@ -357,19 +358,19 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="bookings">
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">My Bookings</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">Manage your supervision bookings</CardDescription>
+                <CardTitle className="text-2xl font-bold text-ink">My Bookings</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">Manage your supervision bookings</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <Clock className="h-10 w-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-3">Feature Under Development</h3>
-                  <p className="text-purple-600/80 text-lg max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
+                  <p className="text-ink/70 text-lg max-w-md mx-auto">
                     Booking management dashboard coming soon.
                   </p>
                 </div>
@@ -378,19 +379,19 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Training History</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">View your completed supervised procedures</CardDescription>
+                <CardTitle className="text-2xl font-bold text-ink">Training History</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">View your completed supervised procedures</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <CheckCircle className="h-10 w-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-3">Feature Under Development</h3>
-                  <p className="text-purple-600/80 text-lg max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
+                  <p className="text-ink/70 text-lg max-w-md mx-auto">
                     Procedure logging system coming soon.
                   </p>
                 </div>
@@ -399,19 +400,19 @@ export default function StudioSupervisionPage() {
           </TabsContent>
 
           <TabsContent value="reports">
-            <Card className="relative overflow-hidden border-purple-200/50 shadow-xl bg-gradient-to-br from-white/90 to-purple-50/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent"></div>
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent">Reports & Analytics</CardTitle>
-                <CardDescription className="text-purple-700/80 font-medium">Export training progress and compliance data</CardDescription>
+                <CardTitle className="text-2xl font-bold text-ink">Reports & Analytics</CardTitle>
+                <CardDescription className="text-ink/70 font-medium">Export training progress and compliance data</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <BarChart3 className="h-10 w-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-3">Feature Under Development</h3>
-                  <p className="text-purple-600/80 text-lg max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
+                  <p className="text-ink/70 text-lg max-w-md mx-auto">
                     Advanced reporting and CSV export coming soon.
                   </p>
                 </div>
