@@ -178,9 +178,11 @@ export default function StudioSupervisionPage() {
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
     
-    // On mobile, move to client info step
+    // On mobile, move to client info step and show client form
     if (isMobile) {
+      console.log('Mobile: Moving to client step after time selection')
       setCurrentStep('client')
+      setShowClientForm(true)
     }
   }
 
@@ -920,7 +922,7 @@ export default function StudioSupervisionPage() {
                   )}
 
                   {/* Step 3: Booking Confirmation */}
-                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && (currentStep === 'client' || !isMobile) && (
+                  {selectedInstructor && selectedDate && selectedTime && !showClientForm && !isMobile && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
@@ -971,17 +973,35 @@ export default function StudioSupervisionPage() {
                   )}
 
                   {/* Step 4: Client Information Form */}
-                  {showClientForm && (currentStep === 'client' || !isMobile) && (
+                  {(() => {
+                    const shouldShow = (isMobile && currentStep === 'client') || (!isMobile && showClientForm)
+                    console.log('Client form visibility check:', { isMobile, currentStep, showClientForm, shouldShow })
+                    return shouldShow
+                  })() && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                       <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                       <CardHeader className="relative z-10">
-                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
-                          <Users className="h-6 w-6 text-lavender" />
-                          Client Information
-                        </CardTitle>
-                        <CardDescription className="text-ink/70 font-medium">
-                          Enter client details and select the service for this supervision session
-                        </CardDescription>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                              <Users className="h-6 w-6 text-lavender" />
+                              Client Information
+                            </CardTitle>
+                            <CardDescription className="text-ink/70 font-medium">
+                              Enter client details and select the service for this supervision session
+                            </CardDescription>
+                          </div>
+                          {isMobile && (
+                            <Button 
+                              onClick={() => setCurrentStep('calendar')}
+                              variant="outline"
+                              size="sm"
+                              className="border-lavender/50 hover:bg-lavender/10"
+                            >
+                              ← Back
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent className="relative z-10">
                         <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-6">
@@ -1080,6 +1100,7 @@ export default function StudioSupervisionPage() {
                               onClick={() => {
                                 setShowClientForm(false)
                                 if (isMobile) {
+                                  setSelectedTime('')
                                   setCurrentStep('calendar')
                                 }
                               }}
