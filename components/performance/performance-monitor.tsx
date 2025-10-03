@@ -55,13 +55,6 @@ export default function PerformanceMonitor() {
     improvement: number
   } | null>(null)
 
-  useEffect(() => {
-    if (isMonitoring) {
-      const interval = setInterval(updateMetrics, 2000)
-      return () => clearInterval(interval)
-    }
-  }, [isMonitoring, updateMetrics])
-
   const updateMetrics = useCallback(async () => {
     try {
       // Simulate performance metrics (since we can't access Undici on client-side)
@@ -82,6 +75,13 @@ export default function PerformanceMonitor() {
       console.error('Failed to update metrics:', error)
     }
   }, [])
+
+  useEffect(() => {
+    if (isMonitoring) {
+      const interval = setInterval(updateMetrics, 2000)
+      return () => clearInterval(interval)
+    }
+  }, [isMonitoring, updateMetrics])
 
   const startMonitoring = () => {
     setIsMonitoring(true)
