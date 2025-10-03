@@ -97,13 +97,55 @@ export default function ApplicationReview({ currentStaffMember }: ApplicationRev
     }
   }
 
-  const handleStatusUpdate = (applicationId: string, newStatus: ArtistApplication['status'], notes?: string) => {
-    const updated = updateApplicationStatus(applicationId, newStatus, currentStaffMember.username, notes)
-    if (updated) {
-      loadApplications()
-      if (selectedApplication?.id === applicationId) {
-        setSelectedApplication(updated)
+  const handleStatusUpdate = async (applicationId: string, newStatus: ArtistApplication['status'], notes?: string) => {
+    try {
+      // For approved applications, use the new API endpoint that updates both application and user database
+      if (newStatus === 'approved') {
+        const response = await fetch('/api/admin/approve-application', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            applicationId,
+            status: newStatus,
+            reviewedBy: currentStaffMember.username,
+            notes
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('✅ Application approved and user database updated:', data)
+          
+          // Reload applications to show updated status
+          loadApplications()
+          
+          // Update selected application if it's the one being updated
+          if (selectedApplication?.id === applicationId) {
+            setSelectedApplication(data.application)
+          }
+          
+          // Show success message
+          alert(`Application approved successfully! User ${data.user?.email || 'unknown'} now has access to the system.`)
+        } else {
+          const errorData = await response.json()
+          console.error('❌ Failed to approve application:', errorData)
+          alert(`Failed to approve application: ${errorData.error}`)
+        }
+      } else {
+        // For other statuses (denied, needs_info), use the existing localStorage method
+        const updated = updateApplicationStatus(applicationId, newStatus, currentStaffMember.username, notes)
+        if (updated) {
+          loadApplications()
+          if (selectedApplication?.id === applicationId) {
+            setSelectedApplication(updated)
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error updating application status:', error)
+      alert(`Error updating application: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
