@@ -106,7 +106,7 @@ export default function ShareBookingPage() {
     const fetchServices = async () => {
       try {
         setLoadingServices(true);
-        const config = await getPublicBookingConfig(userHandle, currentUser?.email);
+        const config = await getPublicBookingConfig(userHandle!, currentUser?.email);
         setServices(config?.services || []);
       } catch (error) {
         console.error('Error fetching services:', error);
