@@ -170,15 +170,36 @@ export default function StudioSupervisionPage() {
     }
   }
 
-  // Generate calendar dates (next 30 days)
-  const generateCalendarDates = () => {
-    const dates = []
+  // Generate calendar grid for current month
+  const generateCalendarGrid = () => {
     const today = new Date()
-    for (let i = 1; i <= 30; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
-      dates.push({
-        date: date.toISOString().split('T')[0],
+    const currentMonth = today.getMonth()
+    const currentYear = today.getFullYear()
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1)
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0)
+    const firstDayWeekday = firstDayOfMonth.getDay()
+    const daysInMonth = lastDayOfMonth.getDate()
+    
+    const calendar = []
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayWeekday; i++) {
+      calendar.push({ type: 'empty', date: null })
+    }
+    
+    // Add all days of the current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day)
+      const dateString = date.toISOString().split('T')[0]
+      const isPast = date < today
+      const isToday = date.toDateString() === today.toDateString()
+      
+      calendar.push({
+        type: 'day',
+        date: dateString,
+        day: day,
+        isPast: isPast,
+        isToday: isToday,
         display: date.toLocaleDateString('en-US', { 
           weekday: 'short', 
           month: 'short', 
@@ -186,7 +207,17 @@ export default function StudioSupervisionPage() {
         })
       })
     }
-    return dates
+    
+    return calendar
+  }
+
+  // Get month name for header
+  const getMonthName = () => {
+    const today = new Date()
+    return today.toLocaleDateString('en-US', { 
+      month: 'long', 
+      year: 'numeric' 
+    })
   }
 
   if (isLoading) {
@@ -565,25 +596,75 @@ export default function StudioSupervisionPage() {
                         Select Date
                       </CardTitle>
                       <CardDescription className="text-ink/70 font-medium">
-                        Choose from available dates in the next 30 days
+                        Click on any available date to book your supervision session
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                      <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-3">
-                        {generateCalendarDates().map((dateInfo) => (
-                          <Button
-                            key={dateInfo.date}
-                            variant={selectedDate === dateInfo.date ? "default" : "outline"}
-                            className={`h-16 flex-col p-2 ${
-                              selectedDate === dateInfo.date 
-                                ? 'bg-lavender hover:bg-lavender-600 text-white' 
-                                : 'hover:bg-lavender/10'
-                            }`}
-                            onClick={() => handleDateSelect(dateInfo.date)}
-                          >
-                            <span className="text-xs font-medium">{dateInfo.display}</span>
-                          </Button>
-                        ))}
+                      <div className="bg-white/80 rounded-xl p-4 border border-lavender/30">
+                        {/* Calendar Header */}
+                        <div className="text-center mb-4">
+                          <h3 className="text-xl font-bold text-ink">{getMonthName()}</h3>
+                        </div>
+                        
+                        {/* Day Headers */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                            <div key={day} className="text-center text-sm font-medium text-ink/60 py-2">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Calendar Grid */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {generateCalendarGrid().map((dayInfo, index) => {
+                            if (dayInfo.type === 'empty') {
+                              return <div key={index} className="h-10"></div>
+                            }
+                            
+                            const isSelected = selectedDate === dayInfo.date
+                            const isDisabled = dayInfo.isPast
+                            
+                            return (
+                              <Button
+                                key={dayInfo.date}
+                                variant="ghost"
+                                disabled={isDisabled}
+                                className={`h-10 p-0 text-sm font-medium relative ${
+                                  isSelected 
+                                    ? 'bg-lavender text-white hover:bg-lavender-600 shadow-lg' 
+                                    : isDisabled
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : dayInfo.isToday
+                                    ? 'bg-lavender/20 text-ink hover:bg-lavender/30 border border-lavender/50'
+                                    : 'text-ink hover:bg-lavender/20 hover:text-ink'
+                                }`}
+                                onClick={() => !isDisabled && dayInfo.date && handleDateSelect(dayInfo.date)}
+                              >
+                                <span>{dayInfo.day}</span>
+                                {dayInfo.isToday && !isSelected && (
+                                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-lavender rounded-full"></div>
+                                )}
+                              </Button>
+                            )
+                          })}
+                        </div>
+                        
+                        {/* Legend */}
+                        <div className="flex items-center justify-center gap-6 mt-4 text-xs text-ink/60">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-lavender/20 border border-lavender/50 rounded"></div>
+                            <span>Today</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-lavender rounded"></div>
+                            <span>Selected</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                            <span>Unavailable</span>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -595,35 +676,56 @@ export default function StudioSupervisionPage() {
                       <CardHeader className="relative z-10">
                         <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
                           <Clock className="h-6 w-6 text-lavender" />
-                          Select Time
+                          Select Time Slot
                         </CardTitle>
                         <CardDescription className="text-ink/70 font-medium">
-                          Available time slots for {selectedDate}
+                          Available supervision sessions for {new Date(selectedDate).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="relative z-10">
                         {availableSlots.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {availableSlots.map((time) => (
-                              <Button
-                                key={time}
-                                variant={selectedTime === time ? "default" : "outline"}
-                                className={`h-16 text-lg font-medium ${
-                                  selectedTime === time 
-                                    ? 'bg-lavender hover:bg-lavender-600 text-white' 
-                                    : 'hover:bg-lavender/10'
-                                }`}
-                                onClick={() => setSelectedTime(time)}
-                              >
-                                {time}
-                              </Button>
-                            ))}
+                          <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {availableSlots.map((time) => (
+                                <Button
+                                  key={time}
+                                  variant={selectedTime === time ? "default" : "outline"}
+                                  className={`h-20 text-xl font-bold flex flex-col gap-2 transition-all duration-300 ${
+                                    selectedTime === time 
+                                      ? 'bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg' 
+                                      : 'hover:bg-lavender/10 hover:border-lavender/50 hover:shadow-md border-lavender/30'
+                                  }`}
+                                  onClick={() => setSelectedTime(time)}
+                                >
+                                  <Clock className="h-6 w-6" />
+                                  <span>{time}</span>
+                                  <span className="text-sm font-normal opacity-80">2 hours</span>
+                                </Button>
+                              ))}
+                            </div>
+                            
+                            {selectedTime && (
+                              <div className="mt-6 p-4 bg-lavender/10 rounded-lg border border-lavender/30">
+                                <div className="flex items-center gap-2 text-lavender">
+                                  <CheckCircle className="h-5 w-5" />
+                                  <span className="font-medium">Time Selected: {selectedTime}</span>
+                                </div>
+                                <p className="text-sm text-ink/70 mt-1">
+                                  Session duration: 2 hours • Perfect for comprehensive supervision
+                                </p>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <div className="text-center py-8">
-                            <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-                            <p className="text-ink/70 text-lg">No available time slots for this date</p>
-                            <p className="text-ink/50 text-sm mt-2">Please select a different date</p>
+                          <div className="text-center py-12 bg-white/80 rounded-xl border border-lavender/30">
+                            <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-6" />
+                            <h3 className="text-xl font-bold text-ink mb-2">No Available Time Slots</h3>
+                            <p className="text-ink/70 text-lg mb-4">All supervision sessions are booked for this date</p>
+                            <p className="text-ink/50 text-sm">Please select a different date or try another instructor</p>
                           </div>
                         )}
                       </CardContent>
