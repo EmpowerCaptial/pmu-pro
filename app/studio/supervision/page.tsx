@@ -115,6 +115,15 @@ export default function StudioSupervisionPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Handle mobile step progression when time is selected
+  useEffect(() => {
+    if (isMobile && selectedTime && selectedInstructor && selectedDate && currentStep === 'calendar') {
+      console.log('Mobile: Auto-advancing to client step after time selection')
+      setCurrentStep('client')
+      setShowClientForm(true)
+    }
+  }, [selectedTime, selectedInstructor, selectedDate, isMobile, currentStep])
+
   useEffect(() => {
     if (currentUser && !isLoading) {
       // Check Enterprise Studio access
@@ -177,13 +186,7 @@ export default function StudioSupervisionPage() {
   // Handle time selection
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time)
-    
-    // On mobile, move to client info step and show client form
-    if (isMobile) {
-      console.log('Mobile: Moving to client step after time selection')
-      setCurrentStep('client')
-      setShowClientForm(true)
-    }
+    console.log('Time selected:', time, 'Mobile:', isMobile, 'Current step:', currentStep)
   }
 
   // Handle initial booking submission (shows client form)
@@ -975,7 +978,15 @@ export default function StudioSupervisionPage() {
                   {/* Step 4: Client Information Form */}
                   {(() => {
                     const shouldShow = (isMobile && currentStep === 'client') || (!isMobile && showClientForm)
-                    console.log('Client form visibility check:', { isMobile, currentStep, showClientForm, shouldShow })
+                    console.log('Client form visibility check:', { 
+                      isMobile, 
+                      currentStep, 
+                      showClientForm, 
+                      selectedTime,
+                      selectedInstructor,
+                      selectedDate,
+                      shouldShow 
+                    })
                     return shouldShow
                   })() && (
                     <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
