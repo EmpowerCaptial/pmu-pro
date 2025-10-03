@@ -150,7 +150,7 @@ export default function ConsentFormsInbox() {
             // Merge server data with localStorage data, prioritizing server data
             const serverForms = serverData.forms
             const localForms = forms.filter(localForm => 
-              !serverForms.some(serverForm => serverForm.id === localForm.id)
+              !serverForms.some((serverForm: any) => serverForm.id === localForm.id)
             )
             forms = [...serverForms, ...localForms]
             
