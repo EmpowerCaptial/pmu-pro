@@ -50,7 +50,7 @@ export function DocumentViewer({ clientId, highlightFormId }: { clientId?: strin
               // Merge server data with localStorage, prioritizing server data
               const serverForms = serverData.forms
               const mergedForms = localForms.filter(localForm => 
-                !serverForms.some(serverForm => serverForm.id === localForm.id)
+                !serverForms.some((serverForm: any) => serverForm.id === localForm.id)
               )
               const allForms = [...serverForms, ...mergedForms]
               setForms(allForms)
