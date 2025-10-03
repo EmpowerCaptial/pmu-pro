@@ -55,6 +55,7 @@ export async function POST(req: Request) {
         selectedPlan: userWithoutPassword.selectedPlan,
         hasActiveSubscription: userWithoutPassword.hasActiveSubscription,
         subscriptionStatus: userWithoutPassword.subscriptionStatus,
+        isLicenseVerified: userWithoutPassword.isLicenseVerified,
         role: userWithoutPassword.role,
         createdAt: userWithoutPassword.createdAt,
         studios: [{
