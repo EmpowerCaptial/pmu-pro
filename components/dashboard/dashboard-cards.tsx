@@ -52,14 +52,25 @@ export function DashboardCards() {
   // Check studio supervision access for instructors
   useEffect(() => {
     if (currentUser) {
+      console.log('🔍 Dashboard Cards - Current User:', currentUser)
+      console.log('🔍 Dashboard Cards - User Properties:', {
+        selectedPlan: (currentUser as any).selectedPlan,
+        subscription: currentUser.subscription,
+        hasActiveSubscription: (currentUser as any).hasActiveSubscription,
+        isLicenseVerified: (currentUser as any).isLicenseVerified,
+        role: currentUser.role
+      })
+      
       const accessCheck = checkStudioSupervisionAccess({
         id: currentUser.id,
         email: currentUser.email,
         role: currentUser.role || 'artist',
-        selectedPlan: currentUser.subscription || 'starter',
+        selectedPlan: (currentUser as any).selectedPlan || currentUser.subscription || 'starter',
         isLicenseVerified: (currentUser as any).isLicenseVerified || false,
         hasActiveSubscription: (currentUser as any).hasActiveSubscription || false
       })
+      
+      console.log('🔍 Dashboard Cards - Access Check Result:', accessCheck)
       setSupervisionAccess(accessCheck)
     }
   }, [currentUser])
