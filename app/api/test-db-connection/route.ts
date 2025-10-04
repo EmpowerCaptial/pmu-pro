@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       );
     `;
     
-    console.log('📊 emailNotifications column exists:', columnExists[0].exists)
+    console.log('📊 emailNotifications column exists:', (columnExists as any)[0].exists)
     
     // Test 3: Try to create a test user
     const testUser = await prisma.user.create({
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       message: 'Database connection test successful',
-      emailNotificationsColumnExists: columnExists[0].exists,
+      emailNotificationsColumnExists: (columnExists as any)[0].exists,
       testUserCreated: true
     })
 
