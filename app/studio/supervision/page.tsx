@@ -24,7 +24,9 @@ import {
   MapPin,
   Phone,
   Mail,
-  X
+  X,
+  RefreshCw,
+  Info
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { getServices, Service } from '@/lib/services-api'
@@ -135,6 +137,7 @@ export default function StudioSupervisionPage() {
 
   // Instructor availability state
   const [instructorAvailability, setInstructorAvailability] = useState<any>({})
+  const [instructorBookings, setInstructorBookings] = useState<any>({}) // Real appointments from booking page
   const [showAvailabilityManager, setShowAvailabilityManager] = useState(false)
   const [selectedInstructorForAvailability, setSelectedInstructorForAvailability] = useState<string>('')
   const [newAvailability, setNewAvailability] = useState({
@@ -158,6 +161,12 @@ export default function StudioSupervisionPage() {
       if (savedAvailability) {
         setInstructorAvailability(JSON.parse(savedAvailability))
       }
+
+      // Load instructor bookings from localStorage (cached real appointments)
+      const savedBookings = localStorage.getItem('instructor-bookings')
+      if (savedBookings) {
+        setInstructorBookings(JSON.parse(savedBookings))
+      }
     }
   }, [])
 
@@ -169,6 +178,43 @@ export default function StudioSupervisionPage() {
     deposit: Math.round(apiService.defaultPrice * 0.3), // 30% deposit
     total: apiService.defaultPrice
   })
+
+  // Fetch instructor bookings from API
+  const fetchInstructorBookings = async (instructorEmail: string, date?: string) => {
+    try {
+      const url = `/api/studio/instructor-availability?instructorEmail=${encodeURIComponent(instructorEmail)}${date ? `&date=${date}` : ''}`
+      const response = await fetch(url)
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Store in state
+        const updatedBookings = {
+          ...instructorBookings,
+          [instructorEmail]: {
+            blockedTimes: data.blockedTimes,
+            lastUpdated: data.summary.lastUpdated,
+            totalAppointments: data.summary.totalAppointments
+          }
+        }
+        
+        setInstructorBookings(updatedBookings)
+        
+        // Cache in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('instructor-bookings', JSON.stringify(updatedBookings))
+        }
+        
+        return data.blockedTimes
+      } else {
+        console.error('Failed to fetch instructor bookings:', response.statusText)
+        return []
+      }
+    } catch (error) {
+      console.error('Error fetching instructor bookings:', error)
+      return []
+    }
+  }
 
   // Load services from API
   useEffect(() => {
@@ -248,13 +294,45 @@ export default function StudioSupervisionPage() {
     )
     const bookedTimes = existingBookings.map(booking => booking.time)
     
+    // Find the instructor to get their email
+    const instructor = mockInstructors.find(i => i.id === instructorId)
+    const instructorEmail = instructor?.email
+    
+    // Get real bookings from the booking page (client appointments)
+    const realBookings = instructorEmail ? instructorBookings[instructorEmail]?.blockedTimes || [] : []
+    const realBookedTimes = realBookings
+      .filter((booking: any) => booking.date === date)
+      .map((booking: any) => {
+        // Convert 24-hour format to 12-hour format to match our time slots
+        const time = booking.startTime
+        const [hours, minutes] = time.split(':').map(Number)
+        
+        if (hours === 9 && minutes === 30) return '9:30 AM'
+        if (hours === 13) return '1:00 PM' // 1:00 PM
+        if (hours === 16) return '4:00 PM' // 4:00 PM
+        
+        // For other times, we need to check if they overlap with our slots
+        const bookingStart = hours * 60 + minutes
+        const bookingEnd = bookingStart + booking.duration
+        
+        // Check overlap with our predefined slots
+        if (bookingStart <= 570 && bookingEnd > 570) return '9:30 AM' // 9:30 AM = 570 minutes
+        if (bookingStart <= 780 && bookingEnd > 780) return '1:00 PM' // 1:00 PM = 780 minutes  
+        if (bookingStart <= 960 && bookingEnd > 960) return '4:00 PM' // 4:00 PM = 960 minutes
+        
+        return null
+      })
+      .filter(Boolean)
+    
     return timeSlots.filter(time => {
-      // Check if time slot is blocked by availability settings
-      const isBlocked = !isTimeSlotAvailable(instructorId, date, time)
-      // Check if time slot is already booked
-      const isBooked = bookedTimes.includes(time)
+      // Check if time slot is blocked by manual availability settings
+      const isBlockedByAvailability = !isTimeSlotAvailable(instructorId, date, time)
+      // Check if time slot is already booked for supervision
+      const isBookedForSupervision = bookedTimes.includes(time)
+      // Check if time slot is booked for regular client appointments
+      const isBookedForClients = realBookedTimes.includes(time)
       
-      return !isBlocked && !isBooked
+      return !isBlockedByAvailability && !isBookedForSupervision && !isBookedForClients
     })
   }
 
@@ -264,12 +342,25 @@ export default function StudioSupervisionPage() {
     setSelectedDate('')
     setSelectedTime('')
     setAvailableSlots([])
+    
+    // Fetch instructor bookings when instructor is selected
+    const instructor = mockInstructors.find(i => i.id === instructorId)
+    if (instructor?.email) {
+      fetchInstructorBookings(instructor.email)
+    }
   }
 
   // Handle date selection
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
     setSelectedTime('')
+    
+    // Fetch instructor bookings for specific date when date is selected
+    const instructor = mockInstructors.find(i => i.id === selectedInstructor)
+    if (instructor?.email) {
+      fetchInstructorBookings(instructor.email, date)
+    }
+    
     if (selectedInstructor) {
       const slots = getAvailableSlots(selectedInstructor, date)
       setAvailableSlots(slots)
@@ -1094,24 +1185,129 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
           {/* Feature Coming Soon Placeholders */}
           <TabsContent value="availability">
-            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold text-ink">Set Availability</CardTitle>
-                <CardDescription className="text-ink/70 font-medium">Schedule your supervision blocks</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <Calendar className="h-10 w-10 text-white" />
+            <div className="space-y-6">
+              {/* Current Client Bookings */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                    <Calendar className="h-6 w-6 text-lavender" />
+                    My Client Bookings
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Your scheduled client appointments automatically block supervision times
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  {currentUser?.email && instructorBookings[currentUser.email] ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-green-800">Real-time Integration Active</p>
+                            <p className="text-sm text-green-600">
+                              {instructorBookings[currentUser.email].totalAppointments} client appointments synced
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            const instructor = mockInstructors.find(i => i.email === currentUser.email)
+                            if (instructor?.email) {
+                              fetchInstructorBookings(instructor.email)
+                            }
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700 hover:bg-green-100"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Refresh
+                        </Button>
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        {instructorBookings[currentUser.email].blockedTimes.length > 0 ? (
+                          instructorBookings[currentUser.email].blockedTimes.slice(0, 5).map((booking: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-white border border-lavender/30 rounded-lg">
+                              <div>
+                                <p className="font-medium text-ink">{booking.clientName}</p>
+                                <p className="text-sm text-ink/70">{booking.service}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium text-ink">{booking.date}</p>
+                                <p className="text-sm text-ink/70">{booking.startTime} - {booking.endTime}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600">No client bookings found</p>
+                            <p className="text-sm text-gray-500">Your client appointments will appear here</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {instructorBookings[currentUser.email].blockedTimes.length > 5 && (
+                        <p className="text-sm text-ink/70 text-center">
+                          Showing 5 of {instructorBookings[currentUser.email].blockedTimes.length} appointments
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-2">Loading your bookings...</p>
+                      <Button
+                        onClick={() => {
+                          if (currentUser?.email) {
+                            fetchInstructorBookings(currentUser.email)
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Load Bookings
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Manual Availability Settings */}
+              <Card className="relative overflow-hidden border-green-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-green-50 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                    <Clock className="h-6 w-6 text-green-600" />
+                    Manual Availability Blocks
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Block additional times for personal reasons or breaks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+                      <Calendar className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-ink mb-2">Block Additional Times</h3>
+                    <p className="text-ink/70 mb-4">
+                      Use the "Manage Availability" button on instructor cards to block specific times for personal reasons, breaks, or other commitments.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 px-4 py-2 rounded-lg">
+                      <Info className="h-4 w-4" />
+                      <span>Manual blocks work alongside your client bookings</span>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
-                  <p className="text-ink/70 text-lg max-w-md mx-auto">
-                    Supervisor availability calendar coming soon in the next release.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="find">
