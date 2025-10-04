@@ -32,7 +32,7 @@ async function validateSchemaSync() {
       'subscriptionStatus', 'createdAt', 'updatedAt', 'address', 'avatar',
       'bio', 'businessHours', 'cashAppUsername', 'certifications',
       'experience', 'instagram', 'specialties', 'stripeConnectAccountId',
-      'studioName', 'venmoUsername', 'website', 'emailNotifications'
+      'studioName', 'venmoUsername', 'website'
     ]
     
     let missingFields = []
