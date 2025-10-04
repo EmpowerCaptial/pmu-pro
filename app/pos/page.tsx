@@ -30,6 +30,51 @@ function POSContent() {
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   
   useEffect(() => {
+    // Handle URL parameters for pre-filled data
+    const supervisionParam = searchParams.get('supervision')
+    const appointmentParam = searchParams.get('appointment')
+    
+    if (supervisionParam) {
+      try {
+        const supervisionData = JSON.parse(decodeURIComponent(supervisionParam))
+        // Pre-fill cart with supervision session
+        setCart([{
+          id: `supervision-${Date.now()}`,
+          name: supervisionData.service,
+          type: 'service',
+          price: supervisionData.total,
+          quantity: 1,
+          deposit: supervisionData.deposit
+        }])
+        // Set client info if available
+        if (supervisionData.clientName) {
+          // You could set client info here if you have state for it
+          console.log('Pre-filling supervision session:', supervisionData)
+        }
+      } catch (error) {
+        console.error('Error parsing supervision parameter:', error)
+      }
+    }
+    
+    if (appointmentParam) {
+      try {
+        const appointmentData = JSON.parse(decodeURIComponent(appointmentParam))
+        // Pre-fill cart with appointment data
+        setCart([{
+          id: `appointment-${appointmentData.appointmentId || Date.now()}`,
+          name: appointmentData.service,
+          type: 'service',
+          price: 0, // Will be filled from service data
+          quantity: 1
+        }])
+        console.log('Pre-filling appointment:', appointmentData)
+      } catch (error) {
+        console.error('Error parsing appointment parameter:', error)
+      }
+    }
+  }, [searchParams])
+
+  useEffect(() => {
     const loadAvatar = async () => {
       if (currentUser?.email && typeof window !== 'undefined') {
         try {

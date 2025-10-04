@@ -1759,24 +1759,260 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           </TabsContent>
 
           <TabsContent value="bookings">
-            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-2xl font-bold text-ink">My Bookings</CardTitle>
-                <CardDescription className="text-ink/70 font-medium">Manage your supervision bookings</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <Clock className="h-10 w-10 text-white" />
+            <div className="space-y-6">
+              {/* Supervision Bookings */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                    <GraduationCap className="h-6 w-6 text-lavender" />
+                    Supervision Sessions
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Manage your apprentice supervision bookings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="space-y-4">
+                    {bookings.filter(booking => booking.instructorId === currentUser?.id).length > 0 ? (
+                      bookings
+                        .filter(booking => booking.instructorId === currentUser?.id)
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map((booking) => (
+                          <div key={booking.id} className="flex items-center justify-between p-4 bg-white border border-lavender/30 rounded-lg shadow-sm">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="w-8 h-8 bg-lavender/20 rounded-full flex items-center justify-center">
+                                  <Users className="h-4 w-4 text-lavender" />
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-ink">{booking.clientName}</p>
+                                  <p className="text-sm text-ink/70">Apprentice Session</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-sm text-ink/70">
+                                <div>
+                                  <span className="font-medium">Date:</span> {new Date(booking.date).toLocaleDateString()}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Time:</span> {booking.time}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Service:</span> {booking.service}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Status:</span> 
+                                  <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'} className="ml-1">
+                                    {booking.status}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to cancel this supervision session?')) {
+                                    const updatedBookings = bookings.filter(b => b.id !== booking.id)
+                                    setBookings(updatedBookings)
+                                    if (typeof window !== 'undefined') {
+                                      localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+                                    }
+                                  }
+                                }}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-lavender hover:bg-lavender-600 text-white"
+                                onClick={() => {
+                                  // Navigate to POS with pre-filled supervision session
+                                  const posUrl = `/pos?supervision=${encodeURIComponent(JSON.stringify({
+                                    clientName: booking.clientName,
+                                    clientEmail: booking.clientEmail,
+                                    clientPhone: booking.clientPhone,
+                                    service: booking.service,
+                                    deposit: booking.deposit,
+                                    total: booking.total
+                                  }))}`
+                                  window.open(posUrl, '_blank')
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Checkout
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-2">No supervision sessions scheduled</p>
+                        <p className="text-sm text-gray-500">Apprentice bookings will appear here</p>
+                      </div>
+                    )}
                   </div>
-                  <h3 className="text-2xl font-bold text-ink mb-3">Feature Under Development</h3>
-                  <p className="text-ink/70 text-lg max-w-md mx-auto">
-                    Booking management dashboard coming soon.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Client Appointments */}
+              <Card className="relative overflow-hidden border-green-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-green-50 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                    <Calendar className="h-6 w-6 text-green-600" />
+                    Client Appointments
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Manage your regular client bookings from the main booking page
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="space-y-4">
+                    {currentUser?.email && instructorBookings[currentUser.email]?.blockedTimes?.length > 0 ? (
+                      instructorBookings[currentUser.email].blockedTimes
+                        .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map((appointment: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-4 bg-white border border-green-200 rounded-lg shadow-sm">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <Calendar className="h-4 w-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-ink">{appointment.clientName}</p>
+                                  <p className="text-sm text-ink/70">Client Appointment</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-sm text-ink/70">
+                                <div>
+                                  <span className="font-medium">Date:</span> {new Date(appointment.date).toLocaleDateString()}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Time:</span> {appointment.startTime} - {appointment.endTime}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Service:</span> {appointment.service}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Status:</span> 
+                                  <Badge variant={appointment.status === 'confirmed' ? 'default' : 'secondary'} className="ml-1">
+                                    {appointment.status}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to cancel this client appointment?')) {
+                                    // This would typically call an API to cancel the appointment
+                                    alert('Appointment cancellation would be handled via the main booking system')
+                                  }
+                                }}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={() => {
+                                  // Navigate to POS with pre-filled client appointment
+                                  const posUrl = `/pos?appointment=${encodeURIComponent(JSON.stringify({
+                                    clientName: appointment.clientName,
+                                    service: appointment.service,
+                                    appointmentId: appointment.id
+                                  }))}`
+                                  window.open(posUrl, '_blank')
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Checkout
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-2">No client appointments found</p>
+                        <p className="text-sm text-gray-500">Your client bookings will appear here</p>
+                        <Button
+                          onClick={() => {
+                            if (currentUser?.email) {
+                              fetchInstructorBookings(currentUser.email)
+                            }
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Refresh Appointments
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card className="relative overflow-hidden border-blue-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-blue-50 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                    <BarChart3 className="h-6 w-6 text-blue-600" />
+                    Quick Actions
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Manage your bookings and access tools
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col border-lavender/50 bg-white/90 hover:bg-lavender/10 text-ink hover:text-ink"
+                      onClick={() => window.open('/booking', '_blank')}
+                    >
+                      <Calendar className="h-6 w-6 mb-2 text-lavender" />
+                      <span className="font-semibold">View Full Calendar</span>
+                      <span className="text-xs text-ink/70">See all appointments</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col border-green-300 bg-white/90 hover:bg-green-50 text-ink hover:text-ink"
+                      onClick={() => window.open('/pos', '_blank')}
+                    >
+                      <CheckCircle className="h-6 w-6 mb-2 text-green-600" />
+                      <span className="font-semibold">Open POS</span>
+                      <span className="text-xs text-ink/70">Process payments</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col border-blue-300 bg-white/90 hover:bg-blue-50 text-ink hover:text-ink"
+                      onClick={() => {
+                        if (currentUser?.email) {
+                          fetchInstructorBookings(currentUser.email)
+                        }
+                      }}
+                    >
+                      <RefreshCw className="h-6 w-6 mb-2 text-blue-600" />
+                      <span className="font-semibold">Refresh All</span>
+                      <span className="text-xs text-ink/70">Sync latest bookings</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="history">
