@@ -66,6 +66,15 @@ export class PaymentVerificationService {
         }
       }
 
+      // Allow manually activated Enterprise Studio users (admin-activated subscriptions)
+      if (user.hasActiveSubscription && user.subscriptionStatus === 'active' && 
+          (user.selectedPlan === 'studio' || user.selectedPlan === 'enterprise')) {
+        return {
+          hasAccess: true,
+          subscriptionStatus: 'active'
+        }
+      }
+
       // If no Stripe customer ID, redirect to pricing
       if (!user.stripeCustomerId) {
         return {
