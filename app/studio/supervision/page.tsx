@@ -115,6 +115,16 @@ export default function StudioSupervisionPage() {
   })
   const [loggedProcedures, setLoggedProcedures] = useState<any[]>([])
   
+  // Messaging system state
+  const [messages, setMessages] = useState<any[]>([])
+  const [showMessageComposer, setShowMessageComposer] = useState(false)
+  const [selectedInstructorForMessage, setSelectedInstructorForMessage] = useState<string>('')
+  const [newMessage, setNewMessage] = useState({
+    to: '',
+    subject: '',
+    content: ''
+  })
+  
 
   // Load logged procedures from localStorage
   useEffect(() => {
@@ -122,6 +132,16 @@ export default function StudioSupervisionPage() {
       const savedProcedures = localStorage.getItem('logged-procedures')
       if (savedProcedures) {
         setLoggedProcedures(JSON.parse(savedProcedures))
+      }
+    }
+  }, [])
+
+  // Load messages from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMessages = localStorage.getItem('supervision-messages')
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages))
       }
     }
   }, [])
@@ -363,6 +383,66 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
     document.body.removeChild(link)
 
     alert('License training report generated successfully!')
+  }
+
+  // Handle opening message composer
+  const handleMessageInstructor = (instructorId: string) => {
+    const instructor = mockInstructors.find(i => i.id === instructorId)
+    if (instructor) {
+      setSelectedInstructorForMessage(instructorId)
+      setNewMessage({
+        to: instructor.name,
+        subject: '',
+        content: ''
+      })
+      setShowMessageComposer(true)
+    }
+  }
+
+  // Handle sending a message
+  const handleSendMessage = () => {
+    if (!newMessage.subject || !newMessage.content) {
+      alert('Please fill in both subject and message content')
+      return
+    }
+
+    const message = {
+      id: Date.now().toString(),
+      from: currentUser?.name || 'Unknown',
+      fromEmail: currentUser?.email || '',
+      to: newMessage.to,
+      toId: selectedInstructorForMessage,
+      subject: newMessage.subject,
+      content: newMessage.content,
+      sentAt: new Date().toISOString(),
+      read: false,
+      type: 'sent'
+    }
+
+    const updatedMessages = [...messages, message]
+    setMessages(updatedMessages)
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('supervision-messages', JSON.stringify(updatedMessages))
+    }
+
+    // Reset form and close composer
+    setNewMessage({ to: '', subject: '', content: '' })
+    setShowMessageComposer(false)
+    setSelectedInstructorForMessage('')
+
+    alert('Message sent successfully!')
+  }
+
+  // Handle replying to a message
+  const handleReplyMessage = (originalMessage: any) => {
+    setSelectedInstructorForMessage(originalMessage.fromId || originalMessage.toId)
+    setNewMessage({
+      to: originalMessage.from,
+      subject: `Re: ${originalMessage.subject}`,
+      content: ''
+    })
+    setShowMessageComposer(true)
   }
 
   // Handle initial booking submission (shows client form)
@@ -608,7 +688,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue={userRole === 'INSTRUCTOR' ? 'availability' : userRole === 'APPRENTICE' ? 'find' : 'overview'} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
             <TabsTrigger 
               value="overview"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
@@ -626,6 +706,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
             >
               {userRole === 'INSTRUCTOR' ? 'My Bookings' : 'My History'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="inbox"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+            >
+              <Users className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Inbox</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports"
@@ -881,15 +968,32 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               <span>{instructor.location}</span>
                             </div>
                             <div className="flex items-center gap-2 text-ink/70">
-                              <Phone className="h-4 w-4 text-lavender" />
-                              <span>{instructor.phone}</span>
+                              <Users className="h-4 w-4 text-lavender" />
+                              <span>Available for supervision</span>
                             </div>
                           </div>
-                          {selectedInstructor === instructor.id && (
-                            <div className="mt-3 p-2 bg-lavender/20 rounded-lg">
-                              <p className="text-sm font-medium text-lavender">Selected ✓</p>
-                            </div>
-                          )}
+                          <div className="mt-4 flex gap-2">
+                            <Button
+                              onClick={() => handleInstructorSelect(instructor.id)}
+                              variant={selectedInstructor === instructor.id ? "default" : "outline"}
+                              className={`flex-1 ${
+                                selectedInstructor === instructor.id 
+                                  ? 'bg-gradient-to-r from-lavender to-lavender-600 text-white' 
+                                  : 'border-lavender/50 hover:bg-lavender/10'
+                              }`}
+                            >
+                              {selectedInstructor === instructor.id ? 'Selected' : 'Select'}
+                            </Button>
+                            <Button
+                              onClick={() => handleMessageInstructor(instructor.id)}
+                              variant="outline"
+                              size="sm"
+                              className="border-lavender/50 hover:bg-lavender/10"
+                            >
+                              <Users className="h-4 w-4 mr-1" />
+                              Message
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
@@ -1683,6 +1787,155 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                         </div>
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="inbox">
+            <div className="space-y-6">
+              {/* Message Composer Modal */}
+              {showMessageComposer && (
+                <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                  <CardHeader className="relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                          <Users className="h-6 w-6 text-lavender" />
+                          Send Message
+                        </CardTitle>
+                        <CardDescription className="text-ink/70 font-medium">
+                          Message to: {newMessage.to}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => setShowMessageComposer(false)}
+                        variant="outline"
+                        size="sm"
+                        className="border-lavender/50 hover:bg-lavender/10"
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-4">
+                      <div>
+                        <Label htmlFor="messageSubject" className="text-ink font-medium">Subject *</Label>
+                        <Input
+                          id="messageSubject"
+                          placeholder="Enter message subject"
+                          value={newMessage.subject}
+                          onChange={(e) => setNewMessage(prev => ({ ...prev, subject: e.target.value }))}
+                          className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="messageContent" className="text-ink font-medium">Message *</Label>
+                        <textarea
+                          id="messageContent"
+                          rows={6}
+                          placeholder="Type your message here..."
+                          value={newMessage.content}
+                          onChange={(e) => setNewMessage(prev => ({ ...prev, content: e.target.value }))}
+                          className="mt-1 w-full px-3 py-2 border border-lavender/50 rounded-md focus:border-lavender focus:ring-lavender/20 resize-none"
+                        />
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <Button
+                          onClick={() => setShowMessageComposer(false)}
+                          variant="outline"
+                          className="flex-1 border-lavender/50 hover:bg-lavender/10"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSendMessage}
+                          className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
+                          <Users className="h-5 w-5 mr-2" />
+                          Send Message
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Messages List */}
+              <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                    <Users className="h-6 w-6 text-lavender" />
+                    Messages
+                  </CardTitle>
+                  <CardDescription className="text-ink/70 font-medium">
+                    Communicate with instructors and receive responses
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    {messages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <Users className="h-8 w-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-ink mb-2">No Messages Yet</h3>
+                        <p className="text-ink/70 mb-4">
+                          Start a conversation with an instructor by clicking the "Message" button on their profile.
+                        </p>
+                        <Button
+                          onClick={() => setShowMessageComposer(true)}
+                          className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
+                          <Users className="h-5 w-5 mr-2" />
+                          Compose Message
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {messages.map((message) => (
+                          <div key={message.id} className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-bold text-ink">{message.subject}</span>
+                                  {!message.read && <div className="w-2 h-2 bg-lavender rounded-full"></div>}
+                                </div>
+                                <div className="text-sm text-ink/70">
+                                  {message.type === 'sent' ? `To: ${message.to}` : `From: ${message.from}`}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm text-ink/70">
+                                  {new Date(message.sentAt).toLocaleDateString()}
+                                </div>
+                                <div className="text-xs text-ink/50">
+                                  {new Date(message.sentAt).toLocaleTimeString()}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-ink/80 mb-3 whitespace-pre-wrap">
+                              {message.content}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleReplyMessage(message)}
+                                variant="outline"
+                                size="sm"
+                                className="border-lavender/50 hover:bg-lavender/10"
+                              >
+                                <Users className="h-4 w-4 mr-1" />
+                                Reply
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
