@@ -593,14 +593,19 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       return
     }
 
-    const availabilityKey = `${selectedInstructorForAvailability}-${newAvailability.date}`
+    if (!currentUser?.id) {
+      alert('User not found. Please refresh and try again.')
+      return
+    }
+
+    const availabilityKey = `${currentUser.id}-${newAvailability.date}`
     const updatedAvailability = {
       ...instructorAvailability,
       [availabilityKey]: {
-        instructorId: selectedInstructorForAvailability,
+        instructorId: currentUser.id,
         date: newAvailability.date,
         timeSlots: newAvailability.timeSlots,
-        isBlocked: newAvailability.isBlocked,
+        isBlocked: true,
         reason: newAvailability.reason,
         createdAt: new Date().toISOString()
       }
@@ -613,17 +618,15 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       localStorage.setItem('instructor-availability', JSON.stringify(updatedAvailability))
     }
 
-    // Reset form and close manager
+    // Reset form
     setNewAvailability({
       date: '',
       timeSlots: [],
       isBlocked: false,
       reason: ''
     })
-    setShowAvailabilityManager(false)
-    setSelectedInstructorForAvailability('')
 
-    alert('Availability updated successfully!')
+    alert('Time slots blocked successfully!')
   }
 
   // Check if a time slot is available for an instructor
@@ -1285,21 +1288,144 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                 <CardHeader className="relative z-10">
                   <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
                     <Clock className="h-6 w-6 text-green-600" />
-                    Manual Availability Blocks
+                    Block Time Slots
                   </CardTitle>
                   <CardDescription className="text-ink/70 font-medium">
-                    Block additional times for personal reasons or breaks
+                    Block specific time slots for personal reasons, breaks, or other commitments
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
-                      <Calendar className="h-8 w-8 text-white" />
+                  <div className="space-y-6">
+                    {/* Block Time Form */}
+                    <div className="bg-white border border-green-200 rounded-lg p-6">
+                      <h3 className="text-lg font-semibold text-ink mb-4">Block a Time Slot</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <Label htmlFor="block-date" className="text-ink font-medium">Date</Label>
+                          <Input
+                            id="block-date"
+                            type="date"
+                            value={newAvailability.date}
+                            onChange={(e) => setNewAvailability({
+                              ...newAvailability,
+                              date: e.target.value
+                            })}
+                            className="mt-1"
+                            min={new Date().toISOString().split('T')[0]}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-ink font-medium">Time Slots</Label>
+                          <div className="mt-1 space-y-2">
+                            {['9:30 AM', '1:00 PM', '4:00 PM'].map((slot) => (
+                              <div key={slot} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`slot-${slot}`}
+                                  checked={newAvailability.timeSlots.includes(slot)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setNewAvailability({
+                                        ...newAvailability,
+                                        timeSlots: [...newAvailability.timeSlots, slot]
+                                      })
+                                    } else {
+                                      setNewAvailability({
+                                        ...newAvailability,
+                                        timeSlots: newAvailability.timeSlots.filter(t => t !== slot)
+                                      })
+                                    }
+                                  }}
+                                  className="rounded border-green-300 text-green-600 focus:ring-green-500"
+                                />
+                                <Label htmlFor={`slot-${slot}`} className="text-sm text-ink">
+                                  {slot}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <Label htmlFor="block-reason" className="text-ink font-medium">Reason (Optional)</Label>
+                        <Input
+                          id="block-reason"
+                          type="text"
+                          placeholder="e.g., Personal break, Training session, etc."
+                          value={newAvailability.reason}
+                          onChange={(e) => setNewAvailability({
+                            ...newAvailability,
+                            reason: e.target.value
+                          })}
+                          className="mt-1"
+                        />
+                      </div>
+                      
+                      <Button
+                        onClick={handleSaveAvailability}
+                        disabled={!newAvailability.date || newAvailability.timeSlots.length === 0}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Clock className="h-4 w-4 mr-2" />
+                        Block Selected Times
+                      </Button>
                     </div>
-                    <h3 className="text-xl font-bold text-ink mb-2">Block Additional Times</h3>
-                    <p className="text-ink/70 mb-4">
-                      Use the "Manage Availability" button on instructor cards to block specific times for personal reasons, breaks, or other commitments.
-                    </p>
+
+                    {/* Current Blocks */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-ink mb-4">Current Time Blocks</h3>
+                      
+                      {Object.keys(instructorAvailability).length > 0 ? (
+                        <div className="space-y-3">
+                          {Object.entries(instructorAvailability)
+                            .filter(([key]) => key.startsWith(currentUser?.id || ''))
+                            .map(([key, availability]: [string, any]) => (
+                              <div key={key} className="flex items-center justify-between p-4 bg-white border border-green-200 rounded-lg">
+                                <div>
+                                  <p className="font-medium text-ink">
+                                    {new Date(availability.date).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-sm text-ink/70">
+                                    {availability.timeSlots.join(', ')}
+                                  </p>
+                                  {availability.reason && (
+                                    <p className="text-sm text-green-600 mt-1">
+                                      {availability.reason}
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-red-300 text-red-700 hover:bg-red-50"
+                                  onClick={() => {
+                                    const updatedAvailability = { ...instructorAvailability }
+                                    delete updatedAvailability[key]
+                                    setInstructorAvailability(updatedAvailability)
+                                    
+                                    if (typeof window !== 'undefined') {
+                                      localStorage.setItem('instructor-availability', JSON.stringify(updatedAvailability))
+                                    }
+                                  }}
+                                >
+                                  <X className="h-4 w-4 mr-1" />
+                                  Remove
+                                </Button>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-white border border-green-200 rounded-lg">
+                          <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600 mb-2">No time blocks set</p>
+                          <p className="text-sm text-gray-500">Block time slots above to prevent bookings</p>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 px-4 py-2 rounded-lg">
                       <Info className="h-4 w-4" />
                       <span>Manual blocks work alongside your client bookings</span>
