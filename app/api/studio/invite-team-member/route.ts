@@ -65,15 +65,16 @@ export async function POST(request: NextRequest) {
     }
 
     const getInvitationLink = (role: string) => {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://thepmuguide.com'
       switch (role) {
         case 'student':
-          return `${process.env.NEXT_PUBLIC_BASE_URL}/studio/supervision?tab=find`
+          return `${baseUrl}/studio/supervision?tab=find`
         case 'licensed':
-          return `${process.env.NEXT_PUBLIC_BASE_URL}/booking`
+          return `${baseUrl}/booking`
         case 'instructor':
-          return `${process.env.NEXT_PUBLIC_BASE_URL}/studio/supervision?tab=availability`
+          return `${baseUrl}/studio/supervision?tab=availability`
         default:
-          return `${process.env.NEXT_PUBLIC_BASE_URL}/auth/signup`
+          return `${baseUrl}/auth/signup`
       }
     }
 
@@ -150,10 +151,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error sending team member invitation:', error)
-    return NextResponse.json(
-      { error: 'Failed to send invitation' },
-      { status: 500 }
-    )
+    
+    // Provide more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorDetails = {
+      error: 'Failed to send invitation',
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }
+    
+    return NextResponse.json(errorDetails, { status: 500 })
   } finally {
     await prisma.$disconnect()
   }
