@@ -43,6 +43,8 @@ export async function POST(request: NextRequest) {
         isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor', // Licensed roles are pre-verified
         businessName: studioName,
         studioName: studioName,
+        licenseNumber: memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : '',
+        licenseState: memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : '',
         createdAt: new Date(),
         updatedAt: new Date()
       }
