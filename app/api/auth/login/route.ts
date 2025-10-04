@@ -16,9 +16,25 @@ export async function POST(req: Request) {
     // No hardcoded credentials for production security
 
     // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            businessName: true,
+            licenseNumber: true,
+            licenseState: true,
+            selectedPlan: true,
+            hasActiveSubscription: true,
+            subscriptionStatus: true,
+            isLicenseVerified: true,
+            role: true,
+            createdAt: true,
+            // Don't select emailNotifications to avoid schema issues
+          }
+        });
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
