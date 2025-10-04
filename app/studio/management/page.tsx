@@ -69,7 +69,7 @@ export default function StudioManagementPage() {
         body: JSON.stringify({
           instructorEmail: inviteEmail,
           instructorName: inviteName,
-          studioName: currentUser?.businessName || currentUser?.name || 'Your Studio',
+          studioName: (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
           studioOwnerName: currentUser?.name || 'Studio Owner'
         }),
       })
