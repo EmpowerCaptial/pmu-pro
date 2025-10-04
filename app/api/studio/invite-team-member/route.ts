@@ -53,6 +53,17 @@ export async function POST(request: NextRequest) {
         licenseState: memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : '',
         createdAt: new Date(),
         updatedAt: new Date()
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        selectedPlan: true,
+        hasActiveSubscription: true,
+        isLicenseVerified: true,
+        businessName: true,
+        studioName: true
       }
     })
 
