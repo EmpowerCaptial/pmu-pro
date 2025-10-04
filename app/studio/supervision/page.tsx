@@ -46,7 +46,8 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 123-4567',
     email: 'sarah@universalbeautystudio.com',
-    avatar: '/images/instructor1.jpg'
+    avatar: '/images/instructor1.jpg',
+    licenseNumber: 'PMU-2024-001'
   },
   {
     id: '2', 
@@ -57,7 +58,8 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 987-6543',
     email: 'michael@universalbeautystudio.com',
-    avatar: '/images/instructor2.jpg'
+    avatar: '/images/instructor2.jpg',
+    licenseNumber: 'PMU-2024-002'
   },
   {
     id: '3',
@@ -68,7 +70,8 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 456-7890',
     email: 'emma@universalbeautystudio.com',
-    avatar: '/images/instructor3.jpg'
+    avatar: '/images/instructor3.jpg',
+    licenseNumber: 'PMU-2024-003'
   }
 ]
 
@@ -450,6 +453,80 @@ export default function StudioSupervisionPage() {
     })
 
     alert('Procedure logged successfully!')
+  }
+
+  // Auto-log procedure when supervision booking is completed
+  const autoLogProcedureFromBooking = (booking: any) => {
+    // Check if this booking already has a logged procedure
+    const existingProcedure = loggedProcedures.find(p => 
+      p.clientName === booking.clientInfo.name && 
+      p.procedureDate === booking.date &&
+      p.supervisorName === booking.instructorName
+    )
+
+    if (existingProcedure) {
+      console.log('Procedure already logged for this booking')
+      return
+    }
+
+    // Find the instructor details
+    const instructor = mockInstructors.find(i => i.id === booking.instructorId)
+    
+    // Create procedure entry from booking data
+    const autoProcedure = {
+      id: `auto-${booking.id}`,
+      clientName: booking.clientInfo.name,
+      clientDOB: booking.clientInfo.dob || new Date().toISOString().split('T')[0], // Use booking date as fallback
+      procedureDate: booking.date,
+      procedureType: booking.service.toLowerCase().replace(/\s+/g, '-'),
+      supervisorName: booking.instructorName || instructor?.name || 'Unknown Instructor',
+      supervisorLicense: instructor?.licenseNumber || 'PENDING',
+      procedureNotes: `Auto-logged from supervision booking. Client: ${booking.clientInfo.name}, Service: ${booking.service}, Time: ${booking.time}`,
+      loggedAt: new Date().toISOString(),
+      loggedBy: currentUser?.name || 'System',
+      source: 'supervision-booking' // Mark as auto-generated
+    }
+
+    // Add to procedures list
+    const updatedProcedures = [...loggedProcedures, autoProcedure]
+    setLoggedProcedures(updatedProcedures)
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('logged-procedures', JSON.stringify(updatedProcedures))
+    }
+
+    console.log('✅ Auto-logged procedure from completed supervision booking:', autoProcedure)
+  }
+
+  // Handle booking status change (including completion)
+  const handleBookingStatusChange = (bookingId: string, newStatus: string) => {
+    const updatedBookings = bookings.map(booking => {
+      if (booking.id === bookingId) {
+        const updatedBooking = { ...booking, status: newStatus }
+        
+        // Auto-log procedure when booking is marked as completed
+        if (newStatus === 'completed') {
+          autoLogProcedureFromBooking(updatedBooking)
+        }
+        
+        return updatedBooking
+      }
+      return booking
+    })
+
+    setBookings(updatedBookings)
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+    }
+
+    // Show success message
+    const booking = bookings.find(b => b.id === bookingId)
+    if (newStatus === 'completed' && booking) {
+      alert(`✅ Supervision session completed and automatically logged in procedure history!\n\nClient: ${booking.clientInfo.name}\nService: ${booking.service}\nDate: ${booking.date}`)
+    }
   }
 
   // Export procedures to CSV
@@ -2013,30 +2090,54 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 </div>
                                 <div>
                                   <span className="font-medium">Status:</span> 
-                                  <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'} className="ml-1">
+                                  <Badge variant={
+                                    booking.status === 'completed' ? 'default' :
+                                    booking.status === 'confirmed' ? 'secondary' : 'outline'
+                                  } className="ml-1">
                                     {booking.status}
                                   </Badge>
                                 </div>
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-red-300 text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm('Are you sure you want to cancel this supervision session?')) {
-                                    const updatedBookings = bookings.filter(b => b.id !== booking.id)
-                                    setBookings(updatedBookings)
-                                    if (typeof window !== 'undefined') {
-                                      localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+                              {booking.status !== 'completed' && (
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => {
+                                    if (confirm(`Mark supervision session with ${booking.clientName} as completed?\n\nThis will automatically log the procedure in the history.`)) {
+                                      handleBookingStatusChange(booking.id, 'completed')
                                     }
-                                  }
-                                }}
-                              >
-                                <X className="h-4 w-4 mr-1" />
-                                Cancel
-                              </Button>
+                                  }}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Complete
+                                </Button>
+                              )}
+                              {booking.status !== 'completed' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-red-300 text-red-700 hover:bg-red-50"
+                                  onClick={() => {
+                                    if (confirm('Are you sure you want to cancel this supervision session?')) {
+                                      const updatedBookings = bookings.filter(b => b.id !== booking.id)
+                                      setBookings(updatedBookings)
+                                      if (typeof window !== 'undefined') {
+                                        localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <X className="h-4 w-4 mr-1" />
+                                  Cancel
+                                </Button>
+                              )}
+                              {booking.status === 'completed' && (
+                                <div className="text-green-600 text-sm font-medium">
+                                  ✅ Completed & Logged
+                                </div>
+                              )}
                               <Button
                                 size="sm"
                                 className="bg-lavender hover:bg-lavender-600 text-white"
