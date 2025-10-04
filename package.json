@@ -23,7 +23,10 @@
     "db:studio": "prisma studio",
     "health:check": "node scripts/health-check.js",
     "pre-deploy": "node scripts/pre-deploy-check.js",
-    "build:prod": "npm run pre-deploy && npm run build"
+    "validate-schema": "node scripts/validate-schema-sync.js",
+    "build:prod": "npm run validate-schema && npm run pre-deploy && npm run build",
+    "emergency-schema-recovery": "node scripts/emergency-schema-recovery.js",
+    "deploy-safe": "npm run validate-schema && npm run build && git push origin main"
   },
   "dependencies": {
     "@ai-sdk/groq": "latest",
