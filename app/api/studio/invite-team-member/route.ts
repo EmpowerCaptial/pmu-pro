@@ -37,35 +37,34 @@ export async function POST(request: NextRequest) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(memberPassword, 12)
 
-    // Create the user account
-    const newUser = await prisma.user.create({
-      data: {
-        email: memberEmail,
-        name: memberName,
-        password: hashedPassword,
-        role: memberRole,
-        selectedPlan: 'studio', // Team members get studio access
-        hasActiveSubscription: true, // Inherit studio access from owner
-        isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor', // Licensed roles are pre-verified
-        businessName: studioName,
-        studioName: studioName,
-        licenseNumber: memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : '',
-        licenseState: memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : '',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        selectedPlan: true,
-        hasActiveSubscription: true,
-        isLicenseVerified: true,
-        businessName: true,
-        studioName: true
-      }
-    })
+    // Create the user account using raw SQL to avoid Prisma schema issues
+    const userId = `cmg${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+    
+    await prisma.$executeRaw`
+      INSERT INTO "users" (
+        "id", "email", "name", "password", "role", "selectedPlan", 
+        "hasActiveSubscription", "isLicenseVerified", "businessName", "studioName",
+        "licenseNumber", "licenseState", "createdAt", "updatedAt"
+      ) VALUES (
+        ${userId}, ${memberEmail}, ${memberName}, ${hashedPassword}, ${memberRole}, 'studio',
+        true, ${memberRole === 'licensed' || memberRole === 'instructor'}, ${studioName}, ${studioName},
+        ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''}, 
+        ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''},
+        NOW(), NOW()
+      )
+    `
+    
+    const newUser = {
+      id: userId,
+      email: memberEmail,
+      name: memberName,
+      role: memberRole,
+      selectedPlan: 'studio',
+      hasActiveSubscription: true,
+      isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor',
+      businessName: studioName,
+      studioName: studioName
+    }
 
     // Create invitation email content based on role
     const getRoleDescription = (role: string) => {
