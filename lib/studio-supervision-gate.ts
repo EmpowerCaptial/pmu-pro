@@ -117,6 +117,11 @@ export function canBookSupervision(user: SupervisionUser): boolean {
  * Check if user should use regular booking system (licensed artists)
  */
 export function shouldUseRegularBooking(user: SupervisionUser): boolean {
+  // Owners and managers always use regular booking
+  if (user.role === 'owner' || user.role === 'manager' || user.role === 'director') {
+    return true
+  }
+  
   // Licensed artists use regular booking system
   if (user.role === 'licensed') {
     return true
