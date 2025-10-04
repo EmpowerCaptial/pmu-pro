@@ -861,7 +861,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <Tabs defaultValue={userRole === 'INSTRUCTOR' ? 'availability' : userRole === 'APPRENTICE' ? 'find' : 'overview'} className="space-y-8">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
             <TabsTrigger 
@@ -2089,7 +2089,6 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
         </div>
 
         {/* Message Composer Modal */}
-        {console.log('showMessageComposer state:', showMessageComposer)}
         {showMessageComposer && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
