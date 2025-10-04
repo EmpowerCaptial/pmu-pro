@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { EmailService } from '@/lib/email-service'
 
 const prisma = new PrismaClient()
 
@@ -191,6 +192,17 @@ export async function POST(request: NextRequest) {
         )
     }
 
+    // Get user info before update for email notification
+    const userBeforeUpdate = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        email: true,
+        selectedPlan: true,
+        subscriptionStatus: true
+      }
+    })
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -206,6 +218,90 @@ export async function POST(request: NextRequest) {
         updatedAt: true
       }
     })
+
+    // Send email notification for subscription changes
+    try {
+      if (userBeforeUpdate && userBeforeUpdate.email) {
+        const getFeaturesForPlan = (plan: string) => {
+          switch (plan) {
+            case 'starter':
+              return [
+                'Basic client management',
+                'Appointment scheduling',
+                'Standard consent forms',
+                'Basic reporting'
+              ]
+            case 'pro':
+              return [
+                'Advanced client management',
+                'Appointment scheduling',
+                'Digital consent forms',
+                'AI skin analysis',
+                'Portfolio management',
+                'Advanced reporting',
+                'Email marketing'
+              ]
+            case 'studio':
+              return [
+                'Enterprise client management',
+                'Advanced appointment scheduling',
+                'Digital consent forms',
+                'AI skin analysis',
+                'Portfolio management',
+                'Advanced reporting',
+                'Email marketing',
+                'Staff management',
+                'Instructor booking system',
+                'Enterprise supervision features',
+                'Multi-location support',
+                'Priority support'
+              ]
+            default:
+              return []
+          }
+        }
+
+        let changeType: 'upgrade' | 'downgrade' | 'activation' | 'suspension' = 'activation'
+        let message = ''
+
+        switch (action) {
+          case 'approve':
+            changeType = 'activation'
+            message = `Your ${updatedUser.selectedPlan} subscription has been activated! You now have full access to all premium features.`
+            break
+          case 'upgrade':
+            changeType = 'upgrade'
+            message = `Congratulations! Your subscription has been upgraded to ${updatedUser.selectedPlan}. Enjoy your new features!`
+            break
+          case 'downgrade':
+            changeType = 'downgrade'
+            message = `Your subscription has been updated to ${updatedUser.selectedPlan}.`
+            break
+          case 'suspend':
+            changeType = 'suspension'
+            message = `Your subscription has been suspended. Please contact support to reactivate your account.`
+            break
+          default:
+            changeType = 'activation'
+            message = `Your subscription has been updated to ${updatedUser.selectedPlan}.`
+        }
+
+        await EmailService.sendSubscriptionUpdateEmail({
+          to: userBeforeUpdate.email,
+          userName: userBeforeUpdate.name,
+          changeType,
+          oldPlan: userBeforeUpdate.selectedPlan,
+          newPlan: updatedUser.selectedPlan,
+          features: getFeaturesForPlan(updatedUser.selectedPlan),
+          message
+        })
+
+        console.log(`📧 Subscription notification email sent to: ${userBeforeUpdate.email}`)
+      }
+    } catch (emailError) {
+      console.error('❌ Failed to send subscription notification email:', emailError)
+      // Don't fail the entire request if email fails
+    }
 
     // Log the action (would integrate with activity logging)
     console.log(`Admin action: ${action} for user ${userId}`, {

@@ -92,6 +92,46 @@ export class EmailService {
   }
 
   /**
+   * Send subscription update email
+   */
+  static async sendSubscriptionUpdateEmail(options: {
+    to: string
+    userName: string
+    changeType: 'upgrade' | 'downgrade' | 'activation' | 'suspension' | 'payment_success' | 'payment_failed'
+    oldPlan?: string
+    newPlan: string
+    features?: string[]
+    message?: string
+  }): Promise<void> {
+    const subject = `Subscription Update - ${this.getSubscriptionSubject(options.changeType)}`
+    const html = this.generateSubscriptionUpdateEmailHTML(options)
+    const text = this.generateSubscriptionUpdateEmailText(options)
+
+    await this.sendEmail({
+      to: options.to,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com',
+      subject,
+      html,
+      text
+    })
+  }
+
+  /**
+   * Get appropriate subject line for subscription changes
+   */
+  private static getSubscriptionSubject(changeType: string): string {
+    switch (changeType) {
+      case 'upgrade': return 'Plan Upgraded Successfully'
+      case 'downgrade': return 'Plan Updated'
+      case 'activation': return 'Subscription Activated'
+      case 'suspension': return 'Subscription Suspended'
+      case 'payment_success': return 'Payment Successful'
+      case 'payment_failed': return 'Payment Failed'
+      default: return 'Subscription Update'
+    }
+  }
+
+  /**
    * Generate HTML email content for magic link
    */
   private static generateMagicLinkEmailHTML(magicLinkUrl: string, userName?: string): string {
@@ -325,6 +365,227 @@ ${options.signatureUrl}
 Important: This signature link will expire in 7 days for security purposes.
 
 If you have any questions, please contact ${options.artistName} directly.
+
+Best regards,
+The PMU Pro Team
+
+© 2024 PMU Pro. All rights reserved.
+This is an automated email, please do not reply.
+    `.trim()
+  }
+
+  /**
+   * Generate HTML email content for subscription updates
+   */
+  private static generateSubscriptionUpdateEmailHTML(options: {
+    userName: string
+    changeType: 'upgrade' | 'downgrade' | 'activation' | 'suspension' | 'payment_success' | 'payment_failed'
+    oldPlan?: string
+    newPlan: string
+    features?: string[]
+    message?: string
+  }): string {
+    const getHeaderColor = () => {
+      switch (options.changeType) {
+        case 'upgrade': return 'linear-gradient(135deg, #10B981, #059669)'
+        case 'activation': return 'linear-gradient(135deg, #10B981, #059669)'
+        case 'payment_success': return 'linear-gradient(135deg, #10B981, #059669)'
+        case 'downgrade': return 'linear-gradient(135deg, #F59E0B, #D97706)'
+        case 'suspension': return 'linear-gradient(135deg, #EF4444, #DC2626)'
+        case 'payment_failed': return 'linear-gradient(135deg, #EF4444, #DC2626)'
+        default: return 'linear-gradient(135deg, #8B5CF6, #A855F7)'
+      }
+    }
+
+    const getIcon = () => {
+      switch (options.changeType) {
+        case 'upgrade': return '📈'
+        case 'activation': return '🎉'
+        case 'payment_success': return '✅'
+        case 'downgrade': return '📉'
+        case 'suspension': return '⏸️'
+        case 'payment_failed': return '❌'
+        default: return '📋'
+      }
+    }
+
+    const getTitle = () => {
+      switch (options.changeType) {
+        case 'upgrade': return 'Plan Upgraded Successfully!'
+        case 'activation': return 'Subscription Activated!'
+        case 'payment_success': return 'Payment Successful!'
+        case 'downgrade': return 'Plan Updated'
+        case 'suspension': return 'Subscription Suspended'
+        case 'payment_failed': return 'Payment Failed'
+        default: return 'Subscription Update'
+      }
+    }
+
+    const getMessage = () => {
+      switch (options.changeType) {
+        case 'upgrade':
+          return options.message || `Congratulations! Your subscription has been upgraded from ${options.oldPlan || 'your previous plan'} to ${options.newPlan}.`
+        case 'activation':
+          return options.message || `Your ${options.newPlan} subscription has been activated and you now have full access to all features.`
+        case 'payment_success':
+          return options.message || `Your payment has been processed successfully. Your ${options.newPlan} subscription is active.`
+        case 'downgrade':
+          return options.message || `Your subscription has been updated to ${options.newPlan}.`
+        case 'suspension':
+          return options.message || `Your subscription has been suspended. Please contact support to reactivate.`
+        case 'payment_failed':
+          return options.message || `Your payment could not be processed. Please update your payment method to continue your ${options.newPlan} subscription.`
+        default:
+          return options.message || 'Your subscription has been updated.'
+      }
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Subscription Update</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: ${getHeaderColor()}; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .feature-list { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #8B5CF6; }
+          .feature-list ul { margin: 0; padding-left: 20px; }
+          .feature-list li { margin: 8px 0; }
+          .plan-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e0e0e0; }
+          .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #8B5CF6, #A855F7); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+          .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${getIcon()} PMU Pro</h1>
+            <p>${getTitle()}</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hello ${options.userName}!</h2>
+            <p>${getMessage()}</p>
+            
+            <div class="plan-info">
+              <h3>Current Plan: ${options.newPlan}</h3>
+              ${options.oldPlan ? `<p><strong>Previous Plan:</strong> ${options.oldPlan}</p>` : ''}
+            </div>
+            
+            ${options.features && options.features.length > 0 ? `
+            <div class="feature-list">
+              <h3>Your Plan Includes:</h3>
+              <ul>
+                ${options.features.map(feature => `<li>${feature}</li>`).join('')}
+              </ul>
+            </div>
+            ` : ''}
+            
+            ${options.changeType === 'payment_failed' ? `
+            <div class="warning">
+              <strong>Action Required:</strong> Please update your payment method to avoid service interruption.
+            </div>
+            ` : ''}
+            
+            ${options.changeType === 'activation' || options.changeType === 'upgrade' ? `
+            <div class="success">
+              <strong>You're all set!</strong> Start exploring your new features and make the most of your PMU Pro subscription.
+            </div>
+            ` : ''}
+            
+            <div style="text-align: center;">
+              <a href="https://thepmuguide.com/dashboard" class="button">Access Your Dashboard</a>
+            </div>
+            
+            <p>If you have any questions about your subscription, please don't hesitate to contact our support team.</p>
+            
+            <p>Best regards,<br>The PMU Pro Team</p>
+          </div>
+          
+          <div class="footer">
+            <p>© 2024 PMU Pro. All rights reserved.</p>
+            <p>This is an automated email, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }
+
+  /**
+   * Generate plain text email content for subscription updates
+   */
+  private static generateSubscriptionUpdateEmailText(options: {
+    userName: string
+    changeType: 'upgrade' | 'downgrade' | 'activation' | 'suspension' | 'payment_success' | 'payment_failed'
+    oldPlan?: string
+    newPlan: string
+    features?: string[]
+    message?: string
+  }): string {
+    const getTitle = () => {
+      switch (options.changeType) {
+        case 'upgrade': return 'Plan Upgraded Successfully!'
+        case 'activation': return 'Subscription Activated!'
+        case 'payment_success': return 'Payment Successful!'
+        case 'downgrade': return 'Plan Updated'
+        case 'suspension': return 'Subscription Suspended'
+        case 'payment_failed': return 'Payment Failed'
+        default: return 'Subscription Update'
+      }
+    }
+
+    const getMessage = () => {
+      switch (options.changeType) {
+        case 'upgrade':
+          return options.message || `Congratulations! Your subscription has been upgraded from ${options.oldPlan || 'your previous plan'} to ${options.newPlan}.`
+        case 'activation':
+          return options.message || `Your ${options.newPlan} subscription has been activated and you now have full access to all features.`
+        case 'payment_success':
+          return options.message || `Your payment has been processed successfully. Your ${options.newPlan} subscription is active.`
+        case 'downgrade':
+          return options.message || `Your subscription has been updated to ${options.newPlan}.`
+        case 'suspension':
+          return options.message || `Your subscription has been suspended. Please contact support to reactivate.`
+        case 'payment_failed':
+          return options.message || `Your payment could not be processed. Please update your payment method to continue your ${options.newPlan} subscription.`
+        default:
+          return options.message || 'Your subscription has been updated.'
+      }
+    }
+
+    return `
+${getTitle()}
+
+Hello ${options.userName}!
+
+${getMessage()}
+
+Current Plan: ${options.newPlan}
+${options.oldPlan ? `Previous Plan: ${options.oldPlan}` : ''}
+
+${options.features && options.features.length > 0 ? `
+Your Plan Includes:
+${options.features.map(feature => `- ${feature}`).join('\n')}
+` : ''}
+
+${options.changeType === 'payment_failed' ? `
+ACTION REQUIRED: Please update your payment method to avoid service interruption.
+` : ''}
+
+${options.changeType === 'activation' || options.changeType === 'upgrade' ? `
+You're all set! Start exploring your new features and make the most of your PMU Pro subscription.
+` : ''}
+
+Access your dashboard: https://thepmuguide.com/dashboard
+
+If you have any questions about your subscription, please don't hesitate to contact our support team.
 
 Best regards,
 The PMU Pro Team
