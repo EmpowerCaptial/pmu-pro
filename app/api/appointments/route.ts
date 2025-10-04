@@ -13,7 +13,18 @@ export async function POST(request: NextRequest) {
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        selectedPlan: true,
+        hasActiveSubscription: true,
+        isLicenseVerified: true,
+        businessName: true,
+        studioName: true,
+        role: true
+      }
     });
 
     if (!user) {
@@ -115,7 +126,18 @@ export async function GET(request: NextRequest) {
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        selectedPlan: true,
+        hasActiveSubscription: true,
+        isLicenseVerified: true,
+        businessName: true,
+        studioName: true,
+        role: true
+      }
     });
 
     if (!user) {
