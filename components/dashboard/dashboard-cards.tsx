@@ -52,6 +52,7 @@ export function DashboardCards() {
   // Check studio supervision access for instructors
   useEffect(() => {
     if (currentUser) {
+      console.log('🔍 Dashboard Cards - Current User:', currentUser)
       const accessCheck = checkStudioSupervisionAccess({
         id: currentUser.id,
         email: currentUser.email,
@@ -61,6 +62,7 @@ export function DashboardCards() {
         hasActiveSubscription: (currentUser as any).hasActiveSubscription || false
       })
       
+      console.log('🔍 Dashboard Cards - Supervision Access Check:', accessCheck)
       setSupervisionAccess(accessCheck)
     }
   }, [currentUser])
@@ -187,6 +189,7 @@ export function DashboardCards() {
       </div>
 
       {/* Studio Supervision - Mobile (for instructors only) */}
+      {console.log('🔍 Mobile Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
       {supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR' && (
         <div className="lg:hidden mb-4 sm:mb-6">
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40">
@@ -369,6 +372,7 @@ export function DashboardCards() {
         </Card>
 
         {/* Studio Supervision - Desktop (for instructors only) */}
+        {console.log('🔍 Desktop Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
         {supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR' && (
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40 col-span-2">
             <CardHeader className="pb-4 p-6">
