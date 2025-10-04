@@ -371,12 +371,36 @@ const professionalFeatures = [
 // All features combined
 const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures, ...professionalFeatures]
 
+// Filter features based on user's plan
+const getFilteredFeatures = (userPlan: string) => {
+  return allFeatures.filter(feature => {
+    // Team feature is only available for Studio and Enterprise plans
+    if (feature.id === 'team') {
+      return userPlan === 'studio' || userPlan === 'enterprise'
+    }
+    
+    // Time Clock feature is Enterprise only
+    if (feature.id === 'time-clock') {
+      return userPlan === 'enterprise'
+    }
+    
+    // All other features are available to all plans
+    return true
+  })
+}
+
 export default function FeaturesPage() {
   const router = useRouter()
   const { currentUser } = useDemoAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [showTeamChoiceModal, setShowTeamChoiceModal] = useState(false)
   const [selectedCategory] = useState('all') // Always show all features
+  
+  // Get user's plan for feature filtering
+  const userPlan = (currentUser as any)?.selectedPlan || (currentUser as any)?.subscription || 'starter'
+  
+  // Get filtered features based on user's plan
+  const filteredFeatures = getFilteredFeatures(userPlan)
 
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
@@ -428,14 +452,14 @@ export default function FeaturesPage() {
   }
 
   const categories = [
-    { id: 'all', name: 'All Features', count: allFeatures.length },
+    { id: 'all', name: 'All Features', count: filteredFeatures.length },
     { id: 'core', name: 'Core', count: coreFeatures.length },
     { id: 'business', name: 'Business', count: businessFeatures.length },
     { id: 'marketing', name: 'Marketing', count: marketingFeatures.length },
     { id: 'professional', name: 'Professional', count: professionalFeatures.length }
   ]
 
-  const filteredFeatures = allFeatures.filter(feature => {
+  const searchFilteredFeatures = filteredFeatures.filter(feature => {
     const matchesSearch = feature.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          feature.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || feature.category === selectedCategory
@@ -511,7 +535,7 @@ export default function FeaturesPage() {
 
         {/* Features Grid - 75x75px buttons with 4 rows evenly spaced */}
         <div className="grid grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
-          {filteredFeatures.map((feature) => (
+          {searchFilteredFeatures.map((feature) => (
             <div
               key={feature.id}
               className="flex flex-col items-center justify-center space-y-2"
@@ -565,7 +589,7 @@ export default function FeaturesPage() {
           <Card className="border-blue-100 bg-gradient-to-br from-green-50 to-emerald-50">
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                {allFeatures.filter(f => f.status === 'active').length}
+                {filteredFeatures.filter(f => f.status === 'active').length}
               </div>
               <div className="text-xs sm:text-sm text-gray-700">Active Features</div>
             </CardContent>
@@ -573,7 +597,7 @@ export default function FeaturesPage() {
           <Card className="border-blue-100 bg-gradient-to-br from-amber-50 to-yellow-50">
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="text-xl sm:text-2xl font-bold text-amber-600 mb-1">
-                {allFeatures.filter(f => f.status === 'coming-soon').length}
+                {filteredFeatures.filter(f => f.status === 'coming-soon').length}
               </div>
               <div className="text-xs sm:text-sm text-gray-700">Coming Soon</div>
             </CardContent>
@@ -581,7 +605,7 @@ export default function FeaturesPage() {
           <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
-                {allFeatures.length}
+                {filteredFeatures.length}
               </div>
               <div className="text-xs sm:text-sm text-gray-700">Total Features</div>
             </CardContent>
