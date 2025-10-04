@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { useFreshUserData } from '@/hooks/use-fresh-user-data'
 import { 
   Calendar, 
   Clock, 
@@ -69,6 +70,7 @@ function BookingCalendarContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
+  const { freshUserData, isRefreshing } = useFreshUserData()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -779,25 +781,27 @@ function BookingCalendarContent() {
   const days = getDaysInMonth(currentDate)
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
 
-  // Check if user should have access to regular booking
-  const userData = {
-    id: currentUser?.id || '',
-    email: currentUser?.email || '',
-    role: currentUser?.role || 'artist',
-    selectedPlan: (currentUser as any)?.selectedPlan || currentUser?.subscription || 'starter',
-    isLicenseVerified: (currentUser as any)?.isLicenseVerified || false,
-    hasActiveSubscription: (currentUser as any)?.hasActiveSubscription || false
-  }
+  // Use fresh user data to avoid caching issues
+  const canUseRegularBooking = shouldUseRegularBooking(freshUserData)
+  
+  // Debug logging
+  console.log('Booking Page Debug:', {
+    currentUserRole: currentUser?.role,
+    freshUserRole: freshUserData.role,
+    freshUserPlan: freshUserData.selectedPlan,
+    freshUserActive: freshUserData.hasActiveSubscription,
+    canUseRegularBooking
+  })
 
-  const canUseRegularBooking = shouldUseRegularBooking(userData)
-
-  // Show loading state while fetching appointments
-  if (loading) {
+  // Show loading state while fetching appointments or refreshing user data
+  if (loading || isRefreshing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading appointments...</p>
+          <p className="text-gray-600">
+            {isRefreshing ? 'Refreshing user data...' : 'Loading appointments...'}
+          </p>
         </div>
       </div>
     )
