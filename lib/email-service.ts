@@ -117,6 +117,28 @@ export class EmailService {
   }
 
   /**
+   * Send instructor invitation email
+   */
+  static async sendInstructorInvitation(options: {
+    to: string
+    instructorName: string
+    studioName: string
+    studioOwnerName: string
+  }): Promise<void> {
+    const subject = `Instructor Invitation - Join ${options.studioName} on PMU Pro`
+    const html = this.generateInstructorInvitationHTML(options)
+    const text = this.generateInstructorInvitationText(options)
+
+    await this.sendEmail({
+      to: options.to,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com',
+      subject,
+      html,
+      text
+    })
+  }
+
+  /**
    * Get appropriate subject line for subscription changes
    */
   private static getSubscriptionSubject(changeType: string): string {
@@ -592,6 +614,127 @@ The PMU Pro Team
 
 © 2024 PMU Pro. All rights reserved.
 This is an automated email, please do not reply.
+    `.trim()
+  }
+
+  /**
+   * Generate HTML content for instructor invitation email
+   */
+  private static generateInstructorInvitationHTML(options: {
+    instructorName: string
+    studioName: string
+    studioOwnerName: string
+  }): string {
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Instructor Invitation - ${options.studioName}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: white; padding: 30px; border: 1px solid #e5e7eb; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 14px; color: #6b7280; }
+        .button { display: inline-block; background: #8b5cf6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+        .highlight { background: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>🎓 Instructor Invitation</h1>
+        <p>Join ${options.studioName} on PMU Pro</p>
+      </div>
+      
+      <div class="content">
+        <h2>Hello ${options.instructorName}!</h2>
+        
+        <p><strong>${options.studioOwnerName}</strong> from <strong>${options.studioName}</strong> has invited you to join their studio as an instructor on PMU Pro.</p>
+        
+        <div class="highlight">
+          <h3>What This Means:</h3>
+          <ul>
+            <li>✅ Access to Enterprise Studio Supervision features</li>
+            <li>✅ Ability to manage apprentice training sessions</li>
+            <li>✅ Set your availability for supervision bookings</li>
+            <li>✅ Access to advanced studio management tools</li>
+            <li>✅ Collaborate with other instructors in the studio</li>
+          </ul>
+        </div>
+        
+        <h3>Next Steps:</h3>
+        <ol>
+          <li><strong>Create your account</strong> (if you don't have one already)</li>
+          <li><strong>Complete your instructor profile</strong> with your license information</li>
+          <li><strong>Start managing apprentices</strong> and setting your availability</li>
+        </ol>
+        
+        <div style="text-align: center;">
+          <a href="https://thepmuguide.com/auth/signup?invitation=instructor&studio=${encodeURIComponent(options.studioName)}" class="button">
+            Accept Invitation & Join Studio
+          </a>
+        </div>
+        
+        <p>If you have any questions about this invitation or need help getting started, please don't hesitate to reach out.</p>
+        
+        <p>Welcome to the PMU Pro community!</p>
+        
+        <p>Best regards,<br>
+        The PMU Pro Team</p>
+      </div>
+      
+      <div class="footer">
+        <p>This invitation was sent by ${options.studioOwnerName} from ${options.studioName}</p>
+        <p>© 2024 PMU Pro. All rights reserved.</p>
+        <p>If you did not expect this invitation, you can safely ignore this email.</p>
+      </div>
+    </body>
+    </html>
+    `.trim()
+  }
+
+  /**
+   * Generate text content for instructor invitation email
+   */
+  private static generateInstructorInvitationText(options: {
+    instructorName: string
+    studioName: string
+    studioOwnerName: string
+  }): string {
+    return `
+INSTRUCTOR INVITATION - Join ${options.studioName} on PMU Pro
+
+Hello ${options.instructorName}!
+
+${options.studioOwnerName} from ${options.studioName} has invited you to join their studio as an instructor on PMU Pro.
+
+WHAT THIS MEANS:
+✅ Access to Enterprise Studio Supervision features
+✅ Ability to manage apprentice training sessions  
+✅ Set your availability for supervision bookings
+✅ Access to advanced studio management tools
+✅ Collaborate with other instructors in the studio
+
+NEXT STEPS:
+1. Create your account (if you don't have one already)
+2. Complete your instructor profile with your license information
+3. Start managing apprentices and setting your availability
+
+ACCEPT INVITATION:
+Visit: https://thepmuguide.com/auth/signup?invitation=instructor&studio=${encodeURIComponent(options.studioName)}
+
+If you have any questions about this invitation or need help getting started, please don't hesitate to reach out.
+
+Welcome to the PMU Pro community!
+
+Best regards,
+The PMU Pro Team
+
+---
+This invitation was sent by ${options.studioOwnerName} from ${options.studioName}
+© 2024 PMU Pro. All rights reserved.
+If you did not expect this invitation, you can safely ignore this email.
     `.trim()
   }
 }

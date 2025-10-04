@@ -18,6 +18,7 @@ import {
   Zap,
   Activity,
   MessageSquare,
+  Building2,
   Settings,
   BarChart3,
   Send,
@@ -233,6 +234,50 @@ export function DashboardCards() {
         </div>
       )}
 
+      {/* Studio Management - Mobile (for studio owners only) */}
+      {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
+        (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
+        <div className="lg:hidden mb-4 sm:mb-6">
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40">
+            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <CardTitle className="text-base sm:text-lg font-bold text-blue-800">Studio Management</CardTitle>
+              </div>
+              <CardDescription className="text-sm sm:text-base text-blue-700">
+                Manage instructors and studio access permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Users className="h-3 w-3 mr-1" />
+                  Instructor Management
+                </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  Studio Owner
+                </Badge>
+              </div>
+              <Link href="/studio/management" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                      🏢 Manage Studio
+                    </span>
+                    <p className="text-blue-100 text-xs mt-1">
+                      Invite & manage instructors
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Unified Client Onboarding - Mobile */}
       <div className="lg:hidden mb-4 sm:mb-6">
         <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-lavender/10 to-lavender/20 backdrop-blur-sm border-lavender/40">
@@ -407,6 +452,48 @@ export function DashboardCards() {
                     </span>
                     <p className="text-purple-100 text-xs xl:text-sm mt-1">
                       Set availability & manage apprentices
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Studio Management - Desktop (for studio owners only) */}
+        {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
+          (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40 col-span-2">
+            <CardHeader className="pb-4 p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Management</CardTitle>
+              </div>
+              <CardDescription className="text-sm xl:text-base text-blue-700">
+                Manage instructors and studio access permissions for your enterprise
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Users className="h-3 w-3 mr-1" />
+                  Instructor Management
+                </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  Studio Owner
+                </Badge>
+              </div>
+              <Link href="/studio/management" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
+                    <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
+                      🏢 Manage Studio
+                    </span>
+                    <p className="text-blue-100 text-xs xl:text-sm mt-1">
+                      Invite & manage instructors
                     </p>
                   </div>
                 </div>
