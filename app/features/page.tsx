@@ -49,6 +49,7 @@ import {
   Brain,
   Microscope,
   Award,
+  GraduationCap,
   Globe,
   Lock,
   Smartphone,
@@ -169,12 +170,13 @@ const businessFeatures = [
   {
     id: 'team',
     title: 'Team',
-    description: 'Manage studio team members',
+    description: 'Manage team members & staff',
     icon: Users2,
-    href: '/studio/team',
+    href: '#', // Will be handled by modal
     color: 'bg-gradient-to-br from-violet-500 to-violet-600',
     status: 'active',
-    category: 'business'
+    category: 'business',
+    hasModal: true // Flag to indicate this opens a modal
   },
   {
     id: 'reports',
@@ -185,17 +187,6 @@ const businessFeatures = [
     color: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
     status: 'active',
     category: 'business'
-  },
-  {
-    id: 'enterprise-staff',
-    title: 'Team',
-    description: 'Manage team roles & permissions (Studio Enterprise)',
-    icon: ShieldCheck,
-    href: '/enterprise/staff',
-    color: 'bg-gradient-to-br from-orange-500 to-orange-600',
-    status: 'active',
-    category: 'business',
-    enterprise: true
   },
   {
     id: 'time-clock',
@@ -384,6 +375,7 @@ export default function FeaturesPage() {
   const router = useRouter()
   const { currentUser } = useDemoAuth()
   const [searchTerm, setSearchTerm] = useState('')
+  const [showTeamChoiceModal, setShowTeamChoiceModal] = useState(false)
   const [selectedCategory] = useState('all') // Always show all features
 
   // Load avatar from API first, then fallback to localStorage
@@ -464,11 +456,22 @@ export default function FeaturesPage() {
   }
 
   const handleFeatureClick = (feature: any) => {
-    if (feature.status === 'active') {
+    if (feature.hasModal && feature.id === 'team') {
+      setShowTeamChoiceModal(true)
+    } else if (feature.status === 'active' && feature.href && feature.href !== '#') {
       router.push(feature.href)
-    } else {
+    } else if (feature.status !== 'active') {
       // Show coming soon message
       alert(`${feature.title} is coming soon! Stay tuned for updates.`)
+    }
+  }
+
+  const handleTeamChoice = (choice: 'artist' | 'staff') => {
+    setShowTeamChoiceModal(false)
+    if (choice === 'artist') {
+      router.push('/studio/team')
+    } else if (choice === 'staff') {
+      router.push('/enterprise/staff')
     }
   }
 
@@ -612,8 +615,66 @@ export default function FeaturesPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
-      </div>
+
+      {/* Team Choice Modal */}
+      {showTeamChoiceModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-violet-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users2 className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Team Management</h2>
+              <p className="text-gray-600">Select the type of team management you need</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Artist Management Option */}
+              <button
+                onClick={() => handleTeamChoice('artist')}
+                className="w-full p-4 border-2 border-violet-200 rounded-lg hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 text-left group"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <GraduationCap className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Artist Management</h3>
+                    <p className="text-sm text-gray-600">Manage students, licensed artists & instructors</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Staff Management Option */}
+              <button
+                onClick={() => handleTeamChoice('staff')}
+                className="w-full p-4 border-2 border-orange-200 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 text-left group"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <ShieldCheck className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Staff Management</h3>
+                    <p className="text-sm text-gray-600">Manage staff roles & permissions (Enterprise)</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowTeamChoiceModal(false)}
+                className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
