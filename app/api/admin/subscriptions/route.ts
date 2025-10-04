@@ -199,7 +199,8 @@ export async function POST(request: NextRequest) {
         name: true,
         email: true,
         selectedPlan: true,
-        subscriptionStatus: true
+        subscriptionStatus: true,
+        emailNotifications: true
       }
     })
 
@@ -222,6 +223,18 @@ export async function POST(request: NextRequest) {
     // Send email notification for subscription changes
     try {
       if (userBeforeUpdate && userBeforeUpdate.email) {
+        // Check if user wants subscription notifications
+        const emailPrefs = userBeforeUpdate.emailNotifications as any || { subscription: true, payments: true, settings: true }
+        const shouldSendNotification = emailPrefs.subscription !== false
+        
+        if (!shouldSendNotification) {
+          console.log(`📧 Subscription notifications disabled for user: ${userBeforeUpdate.email}`)
+          return NextResponse.json({
+            success: true,
+            data: updatedUser,
+            message: `User ${action} successfully (email notification skipped)`
+          })
+        }
         const getFeaturesForPlan = (plan: string) => {
           switch (plan) {
             case 'starter':
