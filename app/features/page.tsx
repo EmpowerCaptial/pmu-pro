@@ -374,17 +374,37 @@ const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures,
 // Filter features based on user's plan
 const getFilteredFeatures = (userPlan: string) => {
   return allFeatures.filter(feature => {
-    // Team feature is only available for Studio and Enterprise plans
+    // Team feature is only available for Studio plans
     if (feature.id === 'team') {
       return userPlan === 'studio' || userPlan === 'enterprise'
     }
     
-    // Time Clock feature is Enterprise only
+    // Time Clock feature is Studio/Enterprise only
     if (feature.id === 'time-clock') {
-      return userPlan === 'enterprise'
+      return userPlan === 'studio' || userPlan === 'enterprise'
     }
     
-    // All other features are available to all plans
+    // Advanced analytics/reports - Studio only
+    if (feature.id === 'reports') {
+      return userPlan === 'studio' || userPlan === 'enterprise'
+    }
+    
+    // Advanced marketing features - Professional and Studio
+    if (feature.id === 'marketing' || feature.id === 'email-marketing') {
+      return userPlan === 'professional' || userPlan === 'studio' || userPlan === 'enterprise'
+    }
+    
+    // Advanced professional tools - Professional and Studio
+    if (feature.id === 'analysis' || feature.id === 'pigment-library' || feature.id === 'aftercare') {
+      return userPlan === 'professional' || userPlan === 'studio' || userPlan === 'enterprise'
+    }
+    
+    // Portfolio sharing - Professional and Studio
+    if (feature.id === 'portfolio') {
+      return userPlan === 'professional' || userPlan === 'studio' || userPlan === 'enterprise'
+    }
+    
+    // Core features available to all plans
     return true
   })
 }

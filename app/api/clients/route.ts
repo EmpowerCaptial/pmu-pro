@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
+import { ClientLimitService } from '@/lib/client-limit-service'
 
 const prisma = new PrismaClient()
 
@@ -75,6 +76,28 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Check client limit before creating new client
+    const currentClientCount = await prisma.client.count({
+      where: { userId: user.id, isActive: true }
+    })
+
+    const userPlan = user.selectedPlan || 'starter'
+    const canAddClient = ClientLimitService.canAddClient(userPlan, currentClientCount)
+
+    if (!canAddClient) {
+      const upgradeMessage = ClientLimitService.getUpgradeMessage(userPlan, currentClientCount)
+      const planComparison = ClientLimitService.getPlanComparison(userPlan)
+      
+      return NextResponse.json({ 
+        error: 'Client limit reached',
+        message: upgradeMessage,
+        upgradeRequired: true,
+        planComparison,
+        currentClientCount,
+        maxAllowed: ClientLimitService.getMaxClientsForPlan(userPlan)
+      }, { status: 403 })
     }
 
     const body = await request.json()

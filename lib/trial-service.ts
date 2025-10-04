@@ -39,10 +39,10 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'professional',
     name: 'Professional',
     price: 49,
-    maxClients: -1, // Unlimited
+    maxClients: 200, // Limited to drive Studio upgrades
     description: 'For established PMU artists',
     features: [
-      'Unlimited clients',
+      'Up to 200 clients',
       'All Starter features',
       'Advanced analytics',
       'Custom branding',
@@ -59,11 +59,13 @@ export const PRICING_PLANS: PricingPlan[] = [
     maxClients: -1, // Unlimited
     description: 'For multi-artist studios',
     features: [
+      'Unlimited clients',
       'All Professional features',
-      'Multi-artist management',
-      'Team collaboration tools',
-      'Advanced scheduling',
-      'White-label options',
+      'Team management (Artist/Student roles)',
+      'Multi-artist scheduling',
+      'Staff management & permissions',
+      'Advanced analytics & reporting',
+      'White-label branding',
       'Dedicated account manager',
       'Custom integrations'
     ]
