@@ -23,6 +23,7 @@ import { ArtistApplicationService } from "@/lib/artist-application-service"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ClockIndicator } from "@/components/dashboard/clock-indicator"
 
 export default function DashboardPage() {
   const { currentUser, isLoading, isProductionUser, isDemoUser } = useDemoAuth()
@@ -251,7 +252,10 @@ export default function DashboardPage() {
               <div className="text-center mb-4 sm:mb-6">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                  <h1 className="text-xl sm:text-2xl font-bold text-foreground font-serif">Dashboard</h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground font-serif">Dashboard</h1>
+                    <ClockIndicator />
+                  </div>
                   {notifications.filter(n => !n.isRead).length > 0 && (
                     <Button
                       variant="ghost"
@@ -296,9 +300,12 @@ export default function DashboardPage() {
             <div className="hidden md:flex items-center justify-between mb-6 lg:mb-8">
               <div className="flex items-center gap-3 lg:gap-4">
                 <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 lg:w-10 lg:h-10 object-contain" />
-                <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-serif mb-1 lg:mb-2">Dashboard</h1>
-                  <p className="text-sm lg:text-base text-muted-foreground">Manage your PMU consultations and analysis</p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-serif mb-1 lg:mb-2">Dashboard</h1>
+                    <p className="text-sm lg:text-base text-muted-foreground">Manage your PMU consultations and analysis</p>
+                  </div>
+                  <ClockIndicator />
                 </div>
                 {notifications.filter(n => !n.isRead).length > 0 && (
                   <Button
