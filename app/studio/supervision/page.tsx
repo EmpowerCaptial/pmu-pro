@@ -621,12 +621,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       }
 
       // Also create appointment in database for booking page integration
+      // Create appointment for the INSTRUCTOR to see on their booking page
       try {
         const appointmentResponse = await fetch('/api/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-email': currentUser?.email || ''
+            'x-user-email': instructor?.email || currentUser?.email || ''
           },
           body: JSON.stringify({
             clientName: clientInfo.name,
@@ -2069,7 +2070,26 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           </TabsContent>
         </Tabs>
 
+        {/* Test Message Modal Button */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={() => {
+              console.log('Test button clicked, setting showMessageComposer to true')
+              setShowMessageComposer(true)
+              setNewMessage({
+                to: 'Test Instructor',
+                subject: 'Test Subject',
+                content: ''
+              })
+            }}
+            className="bg-red-500 hover:bg-red-600"
+          >
+            Test Modal
+          </Button>
+        </div>
+
         {/* Message Composer Modal */}
+        {console.log('showMessageComposer state:', showMessageComposer)}
         {showMessageComposer && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
