@@ -39,11 +39,13 @@ import {
   RefreshCw,
   Receipt,
   UserX,
-  Edit
+  Edit,
+  GraduationCap
 } from 'lucide-react'
 import { getClients, Client, addClient, addClientProcedure } from '@/lib/client-storage'
 import { getActiveServices, getServiceById } from '@/lib/services-config'
 import { AuthService } from '@/lib/auth'
+import { shouldUseRegularBooking } from '@/lib/studio-supervision-gate'
 import { TimeBlockManager } from '@/components/booking/TimeBlockManager'
 import { TimeBlock } from '@/lib/time-blocks'
 
@@ -777,6 +779,18 @@ function BookingCalendarContent() {
   const days = getDaysInMonth(currentDate)
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
 
+  // Check if user should have access to regular booking
+  const userData = {
+    id: currentUser?.id || '',
+    email: currentUser?.email || '',
+    role: currentUser?.role || 'artist',
+    selectedPlan: (currentUser as any)?.selectedPlan || currentUser?.subscription || 'starter',
+    isLicenseVerified: (currentUser as any)?.isLicenseVerified || false,
+    hasActiveSubscription: (currentUser as any)?.hasActiveSubscription || false
+  }
+
+  const canUseRegularBooking = shouldUseRegularBooking(userData)
+
   // Show loading state while fetching appointments
   if (loading) {
     return (
@@ -784,6 +798,43 @@ function BookingCalendarContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
           <p className="text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show access denied message for students
+  if (!canUseRegularBooking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
+        <NavBar currentPath="/booking" user={user} />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <GraduationCap className="h-10 w-10 text-purple-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-ink mb-4">Access Restricted</h1>
+            <p className="text-ink/70 mb-6">
+              As a student/apprentice, you need to use the supervision booking system for all client procedures.
+            </p>
+            <div className="space-y-3">
+              <p className="text-sm text-ink/60">
+                <strong>Students must:</strong>
+              </p>
+              <ul className="text-sm text-ink/60 space-y-1 text-left">
+                <li>• Book supervised sessions with instructors</li>
+                <li>• Have instructor oversight for all procedures</li>
+                <li>• Use the supervision booking system</li>
+              </ul>
+            </div>
+            <Button 
+              onClick={() => router.push('/studio/supervision')}
+              className="mt-6 bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <GraduationCap className="h-4 w-4 mr-2" />
+              Go to Supervision Booking
+            </Button>
+          </div>
         </div>
       </div>
     )

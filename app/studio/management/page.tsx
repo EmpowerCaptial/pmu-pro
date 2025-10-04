@@ -30,6 +30,7 @@ interface Instructor {
   joinedAt?: string
   licenseNumber?: string
   licenseState?: string
+  role: 'licensed' | 'student'
 }
 
 export default function StudioManagementPage() {
@@ -38,6 +39,7 @@ export default function StudioManagementPage() {
   const [showInviteForm, setShowInviteForm] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
+  const [inviteRole, setInviteRole] = useState<'licensed' | 'student'>('student')
   const [isInviting, setIsInviting] = useState(false)
 
   // Load instructors from localStorage
@@ -84,7 +86,8 @@ export default function StudioManagementPage() {
         name: inviteName,
         email: inviteEmail,
         status: 'pending',
-        invitedAt: new Date().toISOString()
+        invitedAt: new Date().toISOString(),
+        role: inviteRole
       }
 
       const updatedInstructors = [...instructors, newInstructor]
@@ -93,6 +96,7 @@ export default function StudioManagementPage() {
       // Reset form
       setInviteEmail('')
       setInviteName('')
+      setInviteRole('student')
       setShowInviteForm(false)
       setIsInviting(false)
 
@@ -109,6 +113,21 @@ export default function StudioManagementPage() {
       const updatedInstructors = instructors.filter(inst => inst.id !== instructorId)
       saveInstructors(updatedInstructors)
     }
+  }
+
+  const handleUpgradeInstructorRole = (instructorId: string, newRole: 'licensed' | 'student') => {
+    const instructor = instructors.find(i => i.id === instructorId)
+    if (!instructor) return
+    
+    const updatedInstructors = instructors.map(instructor => 
+      instructor.id === instructorId 
+        ? { ...instructor, role: newRole }
+        : instructor
+    )
+    saveInstructors(updatedInstructors)
+    
+    const roleText = newRole === 'licensed' ? 'Licensed Artist' : 'Student'
+    alert(`${instructor.name} has been ${newRole === 'licensed' ? 'upgraded to' : 'changed to'} ${roleText} status!`)
   }
 
   const handleApproveInstructor = (instructorId: string) => {
@@ -273,6 +292,25 @@ export default function StudioManagementPage() {
                 </div>
               </div>
               
+              <div className="mt-4">
+                <Label htmlFor="instructor-role">Role</Label>
+                <select
+                  id="instructor-role"
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as 'licensed' | 'student')}
+                  className="w-full mt-1 p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                >
+                  <option value="student">Student/Apprentice - Uses supervision booking system</option>
+                  <option value="licensed">Licensed Artist - Uses regular booking system</option>
+                </select>
+                <p className="text-sm text-ink/70 mt-2">
+                  {inviteRole === 'student' 
+                    ? 'Students will use the supervision booking system and require instructor oversight for all procedures.'
+                    : 'Licensed artists will use the regular booking system and can work independently with clients.'
+                  }
+                </p>
+              </div>
+              
               <div className="flex justify-end space-x-3 mt-6">
                 <Button 
                   variant="outline" 
@@ -343,6 +381,14 @@ export default function StudioManagementPage() {
                     <div className="flex items-center space-x-3">
                       {getStatusBadge(instructor.status)}
                       
+                      <Badge variant="outline" className={
+                        instructor.role === 'licensed' 
+                          ? 'text-blue-600 border-blue-600 bg-blue-50' 
+                          : 'text-purple-600 border-purple-600 bg-purple-50'
+                      }>
+                        {instructor.role === 'licensed' ? 'Licensed Artist' : 'Student/Apprentice'}
+                      </Badge>
+                      
                       <div className="flex space-x-2">
                         {instructor.status === 'pending' && (
                           <Button
@@ -373,6 +419,33 @@ export default function StudioManagementPage() {
                           >
                             Reactivate
                           </Button>
+                        )}
+                        
+                        {instructor.status === 'active' && (
+                          <>
+                            {instructor.role === 'student' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              >
+                                <GraduationCap className="h-4 w-4 mr-1" />
+                                Upgrade to Licensed
+                              </Button>
+                            )}
+                            {instructor.role === 'licensed' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                              >
+                                <Users className="h-4 w-4 mr-1" />
+                                Change to Student
+                              </Button>
+                            )}
+                          </>
                         )}
                         
                         <Button

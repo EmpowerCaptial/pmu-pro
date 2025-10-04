@@ -30,7 +30,7 @@ import {
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { getServices, Service } from '@/lib/services-api'
-import { checkStudioSupervisionAccess } from '@/lib/studio-supervision-gate'
+import { checkStudioSupervisionAccess, shouldUseSupervisionBooking } from '@/lib/studio-supervision-gate'
 import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
 import { NavBar } from '@/components/ui/navbar'
@@ -925,6 +925,63 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           userPlan={(currentUser?.subscription === 'studio' ? 'studio' : 'basic') as any}
           children={null}
         />
+      </div>
+    )
+  }
+
+  // Check if user should have access to supervision booking
+  const userData = {
+    id: currentUser?.id || '',
+    email: currentUser?.email || '',
+    role: currentUser?.role || 'artist',
+    selectedPlan: (currentUser as any)?.selectedPlan || currentUser?.subscription || 'starter',
+    isLicenseVerified: (currentUser as any)?.isLicenseVerified || false,
+    hasActiveSubscription: (currentUser as any)?.hasActiveSubscription || false
+  }
+
+  const canUseSupervisionBooking = shouldUseSupervisionBooking(userData)
+  const isInstructor = supervisionAccess?.userRole === 'INSTRUCTOR'
+
+  // Show access denied message for licensed artists (unless they're instructors)
+  if (!canUseSupervisionBooking && !isInstructor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory">
+        <NavBar 
+          currentPath="/studio/supervision"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            avatar: (currentUser as any).avatar
+          } : undefined}
+        />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-ink mb-4">Access Restricted</h1>
+            <p className="text-ink/70 mb-6">
+              As a licensed artist, you should use the regular booking system for your client appointments.
+            </p>
+            <div className="space-y-3">
+              <p className="text-sm text-ink/60">
+                <strong>Licensed artists should:</strong>
+              </p>
+              <ul className="text-sm text-ink/60 space-y-1 text-left">
+                <li>• Work independently with clients</li>
+                <li>• Use the regular booking system</li>
+                <li>• Manage their own appointment calendar</li>
+              </ul>
+            </div>
+            <Button 
+              onClick={() => router.push('/booking')}
+              className="mt-6 bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Go to Regular Booking
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }

@@ -48,13 +48,13 @@ export function checkStudioSupervisionAccess(user: SupervisionUser): Supervision
   // 3. Determine user role for supervision system
   let supervisionRole: 'INSTRUCTOR' | 'APPRENTICE' | 'ADMIN' | 'NONE' = 'NONE'
   
-  // Map your existing roles to supervision roles
+  // Map roles to supervision roles
   switch (user.role) {
     case 'admin':
     case 'staff':
       supervisionRole = 'ADMIN'
       break
-    case 'artist':
+    case 'licensed':
       // Licensed artists with studio subscription can be instructors
       if (isEnterpriseStudio && user.isLicenseVerified) {
         supervisionRole = 'INSTRUCTOR'
@@ -62,7 +62,19 @@ export function checkStudioSupervisionAccess(user: SupervisionUser): Supervision
         supervisionRole = 'NONE'
       }
       break
+    case 'student':
+      supervisionRole = 'APPRENTICE'
+      break
+    case 'artist':
+      // Legacy role - map to licensed if license verified, otherwise student
+      if (user.isLicenseVerified) {
+        supervisionRole = 'INSTRUCTOR'
+      } else {
+        supervisionRole = 'APPRENTICE'
+      }
+      break
     case 'apprentice':
+      // Legacy role - map to student
       supervisionRole = 'APPRENTICE'
       break
     default:
@@ -99,6 +111,45 @@ export function canPublishAvailability(user: SupervisionUser): boolean {
 export function canBookSupervision(user: SupervisionUser): boolean {
   const result = checkStudioSupervisionAccess(user)
   return result.canAccess && (result.userRole === 'APPRENTICE' || result.userRole === 'ADMIN')
+}
+
+/**
+ * Check if user should use regular booking system (licensed artists)
+ */
+export function shouldUseRegularBooking(user: SupervisionUser): boolean {
+  // Licensed artists use regular booking system
+  if (user.role === 'licensed') {
+    return true
+  }
+  
+  // Legacy: artists with verified licenses use regular booking
+  if (user.role === 'artist' && user.isLicenseVerified) {
+    return true
+  }
+  
+  return false
+}
+
+/**
+ * Check if user should use supervision booking system (students)
+ */
+export function shouldUseSupervisionBooking(user: SupervisionUser): boolean {
+  // Students use supervision booking system
+  if (user.role === 'student') {
+    return true
+  }
+  
+  // Legacy: apprentices use supervision booking
+  if (user.role === 'apprentice') {
+    return true
+  }
+  
+  // Legacy: artists without verified licenses use supervision booking
+  if (user.role === 'artist' && !user.isLicenseVerified) {
+    return true
+  }
+  
+  return false
 }
 
 /**

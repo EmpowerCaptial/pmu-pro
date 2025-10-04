@@ -25,6 +25,7 @@ import {
   CreditCard,
   GraduationCap,
   Shield,
+  Calendar,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -33,13 +34,22 @@ import { ConsentFormModal } from "@/components/consent/consent-form-modal"
 import { ConsentNotifications } from "@/components/consent/consent-notifications"
 import { consentReminderService } from "@/lib/services/consent-reminder-service"
 import { WeeklyBalanceCard, DailyBalanceCard } from "@/components/dashboard/financial-dashboard"
-import { checkStudioSupervisionAccess } from "@/lib/studio-supervision-gate"
+import { checkStudioSupervisionAccess, shouldUseRegularBooking, shouldUseSupervisionBooking } from "@/lib/studio-supervision-gate"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export function DashboardCards() {
   const [showConsentFormModal, setShowConsentFormModal] = useState(false)
   const { currentUser } = useDemoAuth()
   const [supervisionAccess, setSupervisionAccess] = useState<any>(null)
+  const [bookingSystemAccess, setBookingSystemAccess] = useState<{
+    canUseRegularBooking: boolean
+    canUseSupervisionBooking: boolean
+    userRole: string
+  }>({
+    canUseRegularBooking: false,
+    canUseSupervisionBooking: false,
+    userRole: ''
+  })
   
   // Initialize consent reminder service
   useEffect(() => {
@@ -50,21 +60,39 @@ export function DashboardCards() {
     }
   }, [])
 
-  // Check studio supervision access for instructors
+  // Check studio supervision access and booking system access
   useEffect(() => {
     if (currentUser) {
       console.log('🔍 Dashboard Cards - Current User:', currentUser)
-      const accessCheck = checkStudioSupervisionAccess({
+      
+      const userData = {
         id: currentUser.id,
         email: currentUser.email,
         role: currentUser.role || 'artist',
         selectedPlan: (currentUser as any).selectedPlan || currentUser.subscription || 'starter',
         isLicenseVerified: (currentUser as any).isLicenseVerified || false,
         hasActiveSubscription: (currentUser as any).hasActiveSubscription || false
-      })
+      }
       
+      const accessCheck = checkStudioSupervisionAccess(userData)
       console.log('🔍 Dashboard Cards - Supervision Access Check:', accessCheck)
       setSupervisionAccess(accessCheck)
+      
+      // Check which booking system the user should use
+      const canUseRegularBooking = shouldUseRegularBooking(userData)
+      const canUseSupervisionBooking = shouldUseSupervisionBooking(userData)
+      
+      console.log('🔍 Dashboard Cards - Booking System Access:', {
+        canUseRegularBooking,
+        canUseSupervisionBooking,
+        userRole: currentUser.role
+      })
+      
+      setBookingSystemAccess({
+        canUseRegularBooking,
+        canUseSupervisionBooking,
+        userRole: currentUser.role || 'artist'
+      })
     }
   }, [currentUser])
   
@@ -188,6 +216,92 @@ export function DashboardCards() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Regular Booking - Mobile (for licensed artists) */}
+      {bookingSystemAccess.canUseRegularBooking && (
+        <div className="lg:hidden mb-4 sm:mb-6">
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-500/10 to-green-600/20 backdrop-blur-sm border-green-400/40">
+            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600 rounded-full flex items-center justify-center">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <CardTitle className="text-base sm:text-lg font-bold text-green-800">Client Booking</CardTitle>
+              </div>
+              <CardDescription className="text-sm sm:text-base text-green-700">
+                Schedule and manage your client appointments
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  Licensed Artist
+                </Badge>
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                  Independent Work
+                </Badge>
+              </div>
+              <Link href="/booking" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                      📅 Access Booking System
+                    </span>
+                    <p className="text-green-100 text-xs mt-1">
+                      Schedule client appointments
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Studio Supervision - Mobile (for students/apprentices) */}
+      {bookingSystemAccess.canUseSupervisionBooking && (
+        <div className="lg:hidden mb-4 sm:mb-6">
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40">
+            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                  <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <CardTitle className="text-base sm:text-lg font-bold text-purple-800">Supervision Booking</CardTitle>
+              </div>
+              <CardDescription className="text-sm sm:text-base text-purple-700">
+                Book supervised training sessions with instructors
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">
+                  <GraduationCap className="h-3 w-3 mr-1" />
+                  Student/Apprentice
+                </Badge>
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">
+                  Supervised Work
+                </Badge>
+              </div>
+              <Link href="/studio/supervision" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                      🎓 Book Supervision
+                    </span>
+                    <p className="text-purple-100 text-xs mt-1">
+                      Find instructors & schedule sessions
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Studio Supervision - Mobile (for instructors only) */}
       {console.log('🔍 Mobile Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
@@ -416,6 +530,88 @@ export function DashboardCards() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Regular Booking - Desktop (for licensed artists) */}
+        {bookingSystemAccess.canUseRegularBooking && (
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-500/10 to-green-600/20 backdrop-blur-sm border-green-400/40 col-span-2">
+            <CardHeader className="pb-4 p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-lg xl:text-xl font-bold text-green-800">Client Booking System</CardTitle>
+              </div>
+              <CardDescription className="text-sm xl:text-base text-green-700">
+                Schedule and manage your client appointments independently
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  Licensed Artist
+                </Badge>
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                  Independent Work
+                </Badge>
+              </div>
+              <Link href="/booking" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
+                    <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
+                      📅 Access Booking Calendar
+                    </span>
+                    <p className="text-green-100 text-xs xl:text-sm mt-1">
+                      Schedule client appointments & manage calendar
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Supervision Booking - Desktop (for students/apprentices) */}
+        {bookingSystemAccess.canUseSupervisionBooking && (
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40 col-span-2">
+            <CardHeader className="pb-4 p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                  <GraduationCap className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-lg xl:text-xl font-bold text-purple-800">Supervision Booking System</CardTitle>
+              </div>
+              <CardDescription className="text-sm xl:text-base text-purple-700">
+                Book supervised training sessions with certified instructors
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">
+                  <GraduationCap className="h-3 w-3 mr-1" />
+                  Student/Apprentice
+                </Badge>
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">
+                  Supervised Work
+                </Badge>
+              </div>
+              <Link href="/studio/supervision" className="w-full">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
+                    <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
+                      🎓 Book Supervision Sessions
+                    </span>
+                    <p className="text-purple-100 text-xs xl:text-sm mt-1">
+                      Find instructors & schedule supervised training
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Studio Supervision - Desktop (for instructors only) */}
         {console.log('🔍 Desktop Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
