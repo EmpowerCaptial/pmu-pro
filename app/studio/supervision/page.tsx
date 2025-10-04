@@ -1057,7 +1057,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
+            <TabsList className={`grid w-full ${userRole === 'INSTRUCTOR' ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'} bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1`}>
             <TabsTrigger 
               value="overview"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
@@ -1083,12 +1083,15 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               <Users className="h-4 w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Inbox</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="reports"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
-            >
-              Reports
-            </TabsTrigger>
+            {/* Reports tab - Instructor only */}
+            {userRole === 'INSTRUCTOR' && (
+              <TabsTrigger 
+                value="reports"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+              >
+                Reports
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Overview Tab */}
