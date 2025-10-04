@@ -13,14 +13,49 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For production, accept any token (simplified verification)
+    // For production, use full verification (same as development)
     if (process.env.NODE_ENV === 'production') {
       console.log('Production token verification for token:', token.substring(0, 20) + '...')
       
-      // Create a simple session for production
+      // Use the same verification logic as development
+      const verification = await MagicLinkService.verifyToken(token)
+
+      if (!verification) {
+        return NextResponse.json(
+          { error: 'Invalid or expired token. Please request a new magic link.' },
+          { status: 400 }
+        )
+      }
+
+      // Check if user still has access (payment verification)
+      const paymentVerification = await PaymentVerificationService.verifyUserAccess(verification.userId)
+
+      if (!paymentVerification.hasAccess) {
+        return NextResponse.json(
+          { 
+            error: paymentVerification.message || 'Access denied',
+            redirectTo: paymentVerification.redirectTo
+          },
+          { status: 403 }
+        )
+      }
+
+      // Token is valid and user has access - create session
+      const sessionData = {
+        userId: verification.userId,
+        email: verification.email,
+        authenticated: true,
+        timestamp: new Date().toISOString()
+      }
+      
       return NextResponse.json({
-        success: false,
-        error: 'No valid session found'
+        success: true,
+        message: 'Authentication successful',
+        user: {
+          id: verification.userId,
+          email: verification.email
+        },
+        session: sessionData
       })
     }
 
