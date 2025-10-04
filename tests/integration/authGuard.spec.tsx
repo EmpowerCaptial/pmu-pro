@@ -14,7 +14,7 @@ vi.mock("next/navigation", () => ({
 
 // Mock auth context
 const mockAuthContext = {
-  user: null,
+  user: null as any,
   isLoading: false,
   login: vi.fn(),
   logout: vi.fn(),

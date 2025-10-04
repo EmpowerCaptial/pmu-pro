@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import user from "@testing-library/user-event"
-import { UIButton } from "@/components/ui/Button"
+import { UIButton } from "@/components/ui/button"
 import { describe, it, expect, vi } from "vitest"
 
 describe("UIButton", () => {

@@ -195,13 +195,12 @@ export async function POST(request: NextRequest) {
     // Get user info before update for email notification
     const userBeforeUpdate = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        name: true,
-        email: true,
-        selectedPlan: true,
-        subscriptionStatus: true,
-        emailNotifications: true
-      }
+        select: {
+          name: true,
+          email: true,
+          selectedPlan: true,
+          subscriptionStatus: true
+        }
     })
 
     const updatedUser = await prisma.user.update({
@@ -223,9 +222,8 @@ export async function POST(request: NextRequest) {
     // Send email notification for subscription changes
     try {
       if (userBeforeUpdate && userBeforeUpdate.email) {
-        // Check if user wants subscription notifications
-        const emailPrefs = userBeforeUpdate.emailNotifications as any || { subscription: true, payments: true, settings: true }
-        const shouldSendNotification = emailPrefs.subscription !== false
+        // Check if user wants subscription notifications (default to true for now)
+        const shouldSendNotification = true
         
         if (!shouldSendNotification) {
           console.log(`📧 Subscription notifications disabled for user: ${userBeforeUpdate.email}`)

@@ -27,7 +27,8 @@ export class PaymentVerificationService {
           subscriptionStatus: true,
           hasActiveSubscription: true,
           isLicenseVerified: true,
-          role: true
+          role: true,
+          selectedPlan: true
         }
       })
 
