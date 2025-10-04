@@ -387,8 +387,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Handle opening message composer
   const handleMessageInstructor = (instructorId: string) => {
+    console.log('Message button clicked for instructor:', instructorId)
     const instructor = mockInstructors.find(i => i.id === instructorId)
     if (instructor) {
+      console.log('Found instructor:', instructor.name)
       setSelectedInstructorForMessage(instructorId)
       setNewMessage({
         to: instructor.name,
@@ -396,6 +398,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
         content: ''
       })
       setShowMessageComposer(true)
+      console.log('Message composer should be open now')
+    } else {
+      console.log('Instructor not found!')
     }
   }
 
@@ -941,12 +946,11 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                     {mockInstructors.map((instructor) => (
                       <Card 
                         key={instructor.id}
-                        className={`cursor-pointer transition-all duration-300 border-2 ${
+                        className={`transition-all duration-300 border-2 ${
                           selectedInstructor === instructor.id 
                             ? 'border-lavender bg-lavender/10 shadow-lg' 
                             : 'border-gray-200 hover:border-lavender/50 hover:shadow-md'
                         }`}
-                        onClick={() => handleInstructorSelect(instructor.id)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3 mb-3">
@@ -974,7 +978,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                           </div>
                           <div className="mt-4 flex gap-2">
                             <Button
-                              onClick={() => handleInstructorSelect(instructor.id)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleInstructorSelect(instructor.id)
+                              }}
                               variant={selectedInstructor === instructor.id ? "default" : "outline"}
                               className={`flex-1 ${
                                 selectedInstructor === instructor.id 
@@ -985,7 +992,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               {selectedInstructor === instructor.id ? 'Selected' : 'Select'}
                             </Button>
                             <Button
-                              onClick={() => handleMessageInstructor(instructor.id)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleMessageInstructor(instructor.id)
+                              }}
                               variant="outline"
                               size="sm"
                               className="border-lavender/50 hover:bg-lavender/10"
