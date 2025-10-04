@@ -23,9 +23,11 @@ import {
   Star,
   MapPin,
   Phone,
-  Mail
+  Mail,
+  X
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { getServices, Service } from '@/lib/services-api'
 import { checkStudioSupervisionAccess } from '@/lib/studio-supervision-gate'
 import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
@@ -70,7 +72,8 @@ const mockInstructors = [
 
 const timeSlots = ['9:30 AM', '1:00 PM', '4:00 PM']
 
-const supervisionServices = [
+// Default supervision services (fallback if no services loaded)
+const defaultSupervisionServices = [
   { id: 'microblading', name: 'Eyebrow Microblading', duration: '2 hours', deposit: 150, total: 400 },
   { id: 'powder-brows', name: 'Powder Brows', duration: '2 hours', deposit: 150, total: 400 },
   { id: 'lip-blushing', name: 'Lip Blushing', duration: '2 hours', deposit: 150, total: 400 },
@@ -124,6 +127,21 @@ export default function StudioSupervisionPage() {
     subject: '',
     content: ''
   })
+
+  // Dynamic services state
+  const [availableServices, setAvailableServices] = useState<Service[]>([])
+  const [servicesLoading, setServicesLoading] = useState(false)
+
+  // Instructor availability state
+  const [instructorAvailability, setInstructorAvailability] = useState<any>({})
+  const [showAvailabilityManager, setShowAvailabilityManager] = useState(false)
+  const [selectedInstructorForAvailability, setSelectedInstructorForAvailability] = useState<string>('')
+  const [newAvailability, setNewAvailability] = useState({
+    date: '',
+    timeSlots: [] as string[],
+    isBlocked: false,
+    reason: ''
+  })
   
 
   // Load logged procedures from localStorage
@@ -133,8 +151,47 @@ export default function StudioSupervisionPage() {
       if (savedProcedures) {
         setLoggedProcedures(JSON.parse(savedProcedures))
       }
+
+      // Load instructor availability from localStorage
+      const savedAvailability = localStorage.getItem('instructor-availability')
+      if (savedAvailability) {
+        setInstructorAvailability(JSON.parse(savedAvailability))
+      }
     }
   }, [])
+
+  // Map API services to supervision service format
+  const mapApiServiceToSupervisionService = (apiService: Service) => ({
+    id: apiService.id,
+    name: apiService.name,
+    duration: `${Math.floor(apiService.defaultDuration / 60)}h ${apiService.defaultDuration % 60}m`,
+    deposit: Math.round(apiService.defaultPrice * 0.3), // 30% deposit
+    total: apiService.defaultPrice
+  })
+
+  // Load services from API
+  useEffect(() => {
+    const loadServices = async () => {
+      if (!currentUser?.email) return
+      
+      setServicesLoading(true)
+      try {
+        const services = await getServices(currentUser.email)
+        const activeServices = services.filter(service => service.isActive)
+        const mappedServices = activeServices.map(mapApiServiceToSupervisionService)
+        setAvailableServices(mappedServices as any)
+        console.log('Loaded services:', mappedServices)
+      } catch (error) {
+        console.error('Error loading services:', error)
+        // Fallback to default services
+        setAvailableServices([])
+      } finally {
+        setServicesLoading(false)
+      }
+    }
+
+    loadServices()
+  }, [currentUser?.email])
 
   // Load messages from localStorage
   useEffect(() => {
@@ -179,7 +236,15 @@ export default function StudioSupervisionPage() {
       booking => booking.instructorId === instructorId && booking.date === date
     )
     const bookedTimes = existingBookings.map(booking => booking.time)
-    return timeSlots.filter(time => !bookedTimes.includes(time))
+    
+    return timeSlots.filter(time => {
+      // Check if time slot is blocked by availability settings
+      const isBlocked = !isTimeSlotAvailable(instructorId, date, time)
+      // Check if time slot is already booked
+      const isBooked = bookedTimes.includes(time)
+      
+      return !isBlocked && !isBooked
+    })
   }
 
   // Handle instructor selection
@@ -404,6 +469,76 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
     }
   }
 
+  // Handle opening availability manager
+  const handleManageAvailability = (instructorId: string) => {
+    const instructor = mockInstructors.find(i => i.id === instructorId)
+    if (instructor) {
+      setSelectedInstructorForAvailability(instructorId)
+      setNewAvailability({
+        date: '',
+        timeSlots: [],
+        isBlocked: false,
+        reason: ''
+      })
+      setShowAvailabilityManager(true)
+    }
+  }
+
+  // Handle saving availability
+  const handleSaveAvailability = () => {
+    if (!newAvailability.date || newAvailability.timeSlots.length === 0) {
+      alert('Please select a date and at least one time slot')
+      return
+    }
+
+    const availabilityKey = `${selectedInstructorForAvailability}-${newAvailability.date}`
+    const updatedAvailability = {
+      ...instructorAvailability,
+      [availabilityKey]: {
+        instructorId: selectedInstructorForAvailability,
+        date: newAvailability.date,
+        timeSlots: newAvailability.timeSlots,
+        isBlocked: newAvailability.isBlocked,
+        reason: newAvailability.reason,
+        createdAt: new Date().toISOString()
+      }
+    }
+
+    setInstructorAvailability(updatedAvailability)
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('instructor-availability', JSON.stringify(updatedAvailability))
+    }
+
+    // Reset form and close manager
+    setNewAvailability({
+      date: '',
+      timeSlots: [],
+      isBlocked: false,
+      reason: ''
+    })
+    setShowAvailabilityManager(false)
+    setSelectedInstructorForAvailability('')
+
+    alert('Availability updated successfully!')
+  }
+
+  // Check if a time slot is available for an instructor
+  const isTimeSlotAvailable = (instructorId: string, date: string, timeSlot: string) => {
+    const availabilityKey = `${instructorId}-${date}`
+    const availability = instructorAvailability[availabilityKey]
+    
+    if (!availability) return true // No restrictions
+    
+    // Check if this specific time slot is blocked
+    if (availability.timeSlots.includes(timeSlot)) {
+      return false // Blocked
+    }
+    
+    return true // Available
+  }
+
   // Handle sending a message
   const handleSendMessage = () => {
     if (!newMessage.subject || !newMessage.content) {
@@ -466,7 +601,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
     try {
       const instructor = mockInstructors.find(i => i.id === selectedInstructor)
-      const service = supervisionServices.find(s => s.id === clientInfo.service)
+      const service = (availableServices.length > 0 ? availableServices : defaultSupervisionServices).find((s: any) => s.id === clientInfo.service) as any
       
       // Create booking with pending status
       const newBooking: any = {
@@ -524,8 +659,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               body: JSON.stringify({
                 clientId: dbClient.id,
                 appointmentId: newBooking.id,
-                amount: service?.deposit || 150,
-                totalAmount: service?.total || 400,
+                amount: (service as any)?.deposit || 150,
+                totalAmount: (service as any)?.total || 400,
                 currency: 'USD',
                 notes: `Supervision session deposit - ${service?.name} with ${instructor?.name}`,
                 linkExpirationDays: 7
@@ -1004,6 +1139,22 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               Message
                             </Button>
                           </div>
+                          {userRole === 'INSTRUCTOR' && instructor.id === currentUser?.id && (
+                            <div className="mt-2">
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleManageAvailability(instructor.id)
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-green-500/50 hover:bg-green-50 text-green-700"
+                              >
+                                <Clock className="h-4 w-4 mr-1" />
+                                Manage Availability
+                              </Button>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
@@ -1291,7 +1442,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 required
                               >
                                 <option value="">Select a service</option>
-                                {supervisionServices.map((service) => (
+                                {(availableServices.length > 0 ? availableServices : defaultSupervisionServices).map((service: any) => (
                                   <option key={service.id} value={service.id}>
                                     {service.name} - ${service.total} (${service.deposit} deposit)
                                   </option>
@@ -1305,7 +1456,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
                               <h3 className="font-bold text-ink mb-2">Service Details</h3>
                               {(() => {
-                                const service = supervisionServices.find(s => s.id === clientInfo.service)
+                                const service = (availableServices.length > 0 ? availableServices : defaultSupervisionServices).find((s: any) => s.id === clientInfo.service) as any
                                 return service ? (
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div>
@@ -1314,11 +1465,11 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                     </div>
                                     <div>
                                       <span className="font-medium">Total Cost:</span><br/>
-                                      ${service.total}
+                                      ${(service as any).total}
                                     </div>
                                     <div>
                                       <span className="font-medium">Deposit Required:</span><br/>
-                                      ${service.deposit}
+                                      ${(service as any).deposit}
                                     </div>
                                   </div>
                                 ) : null
@@ -1952,6 +2103,117 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Availability Manager Modal */}
+        {showAvailabilityManager && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="relative overflow-hidden border-green-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-green-50 backdrop-blur-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent"></div>
+              <CardHeader className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-ink">Manage Availability</CardTitle>
+                    <CardDescription className="text-ink/70">
+                      Block time slots when you have clients or are unavailable
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => setShowAvailabilityManager(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-ink/50 hover:text-ink"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="availability-date">Date</Label>
+                      <Input
+                        id="availability-date"
+                        type="date"
+                        value={newAvailability.date}
+                        onChange={(e) => setNewAvailability({ ...newAvailability, date: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Time Slots to Block</Label>
+                      <div className="space-y-2 mt-2">
+                        {timeSlots.map((slot) => (
+                          <label key={slot} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={newAvailability.timeSlots.includes(slot)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setNewAvailability({
+                                    ...newAvailability,
+                                    timeSlots: [...newAvailability.timeSlots, slot]
+                                  })
+                                } else {
+                                  setNewAvailability({
+                                    ...newAvailability,
+                                    timeSlots: newAvailability.timeSlots.filter(t => t !== slot)
+                                  })
+                                }
+                              }}
+                              className="rounded border-lavender/50"
+                            />
+                            <span className="text-sm text-ink">{slot}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="availability-reason">Reason (Optional)</Label>
+                      <Input
+                        id="availability-reason"
+                        value={newAvailability.reason}
+                        onChange={(e) => setNewAvailability({ ...newAvailability, reason: e.target.value })}
+                        placeholder="e.g., Client appointment, Personal time"
+                      />
+                    </div>
+                    
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <h4 className="font-medium text-green-800 mb-2">Instructions</h4>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        <li>• Select the date you want to block</li>
+                        <li>• Choose which time slots to block</li>
+                        <li>• Add a reason for your reference</li>
+                        <li>• Students won't be able to book blocked times</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-3 pt-4 border-t border-green-200/50">
+                  <Button
+                    onClick={() => setShowAvailabilityManager(false)}
+                    variant="outline"
+                    className="border-green-500/50 hover:bg-green-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveAvailability}
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Save Availability
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )
