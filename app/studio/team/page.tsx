@@ -179,28 +179,28 @@ export default function StudioTeamPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-600 text-xs"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
       case 'active':
-        return <Badge variant="outline" className="text-green-600 border-green-600"><CheckCircle className="h-3 w-3 mr-1" />Active</Badge>
+        return <Badge variant="outline" className="text-green-600 border-green-600 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Active</Badge>
       case 'suspended':
-        return <Badge variant="outline" className="text-red-600 border-red-600"><AlertTriangle className="h-3 w-3 mr-1" />Suspended</Badge>
+        return <Badge variant="outline" className="text-red-600 border-red-600 text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Suspended</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="text-xs">{status}</Badge>
     }
   }
 
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'owner':
-        return <Badge className="bg-purple-100 text-purple-800 border-purple-300"><Crown className="h-3 w-3 mr-1" />Studio Owner</Badge>
+        return <Badge className="bg-purple-100 text-purple-800 border-purple-300 text-xs"><Crown className="h-3 w-3 mr-1" />Studio Owner</Badge>
       case 'instructor':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-300"><GraduationCap className="h-3 w-3 mr-1" />Instructor</Badge>
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-xs"><GraduationCap className="h-3 w-3 mr-1" />Instructor</Badge>
       case 'licensed':
-        return <Badge className="bg-green-100 text-green-800 border-green-300"><CheckCircle className="h-3 w-3 mr-1" />Licensed Artist</Badge>
+        return <Badge className="bg-green-100 text-green-800 border-green-300 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Licensed Artist</Badge>
       case 'student':
-        return <Badge className="bg-orange-100 text-orange-800 border-orange-300"><User className="h-3 w-3 mr-1" />Student</Badge>
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-xs"><User className="h-3 w-3 mr-1" />Student</Badge>
       default:
-        return <Badge variant="outline">{role}</Badge>
+        return <Badge variant="outline" className="text-xs">{role}</Badge>
     }
   }
 
@@ -223,7 +223,7 @@ export default function StudioTeamPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
         <NavBar />
-        <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
@@ -239,79 +239,79 @@ export default function StudioTeamPage() {
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
       <NavBar />
       
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center">
-              <Users className="h-6 w-6 text-white" />
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-start space-x-3 mb-4">
+            <div className="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <Users className="h-5 w-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Studio Team Management</h1>
-              <p className="text-gray-600">Manage your studio's team members and their roles</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-words">Studio Team Management</h1>
+              <p className="text-sm md:text-base text-gray-600 mt-1">Manage your studio's team members and their roles</p>
             </div>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center">
-                  <Users className="h-5 w-5 text-violet-600" />
+            <CardContent className="p-3 md:p-6">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{teamMembers.length}</p>
-                  <p className="text-sm text-gray-600">Total Members</p>
+                <div className="min-w-0">
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">{teamMembers.length}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Total Members</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardContent className="p-3 md:p-6">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">
                     {teamMembers.filter(member => member.status === 'active').length}
                   </p>
-                  <p className="text-sm text-gray-600">Active Members</p>
+                  <p className="text-xs md:text-sm text-gray-600">Active Members</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-orange-600" />
+            <CardContent className="p-3 md:p-6">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="h-4 w-4 md:h-5 md:w-5 text-orange-600" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">
                     {teamMembers.filter(member => member.role === 'student').length}
                   </p>
-                  <p className="text-sm text-gray-600">Students</p>
+                  <p className="text-xs md:text-sm text-gray-600">Students</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
+            <CardContent className="p-3 md:p-6">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">
                     {teamMembers.filter(member => ['instructor', 'licensed'].includes(member.role)).length}
                   </p>
-                  <p className="text-sm text-gray-600">Licensed Artists</p>
+                  <p className="text-xs md:text-sm text-gray-600">Licensed Artists</p>
                 </div>
               </div>
             </CardContent>
@@ -319,21 +319,22 @@ export default function StudioTeamPage() {
         </div>
 
         {/* Invite New Team Member */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card className="mb-6 md:mb-8">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <CardTitle className="flex items-center space-x-2">
-                  <UserPlus className="h-5 w-5 text-violet-600" />
+                <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                  <UserPlus className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
                   <span>Invite Team Member</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm md:text-base mt-1">
                   Add students, licensed artists, or instructors to your studio team
                 </CardDescription>
               </div>
               <Button 
                 onClick={() => setShowInviteForm(!showInviteForm)}
-                className="bg-violet-600 hover:bg-violet-700"
+                className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
+                size="sm"
               >
                 {showInviteForm ? 'Cancel' : 'Invite Team Member'}
               </Button>
@@ -341,76 +342,79 @@ export default function StudioTeamPage() {
           </CardHeader>
           
           {showInviteForm && (
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="member-name">Full Name</Label>
+                  <Label htmlFor="member-name" className="text-sm font-medium">Full Name</Label>
                   <Input
                     id="member-name"
                     value={inviteName}
                     onChange={(e) => setInviteName(e.target.value)}
                     placeholder="Enter team member's full name"
-                    className="mt-1"
+                    className="mt-1 text-sm"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="member-email">Email Address</Label>
+                  <Label htmlFor="member-email" className="text-sm font-medium">Email Address</Label>
                   <Input
                     id="member-email"
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="Enter team member's email"
-                    className="mt-1"
+                    className="mt-1 text-sm"
                   />
                 </div>
               </div>
               
               <div className="mt-4">
-                <Label htmlFor="member-password">Initial Password</Label>
+                <Label htmlFor="member-password" className="text-sm font-medium">Initial Password</Label>
                 <Input
                   id="member-password"
                   type="password"
                   value={invitePassword}
                   onChange={(e) => setInvitePassword(e.target.value)}
                   placeholder="Create initial password for team member"
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-xs text-gray-600 mt-2">
                   The team member will use this password to log in. They can change it after their first login.
                 </p>
               </div>
               
               <div className="mt-4">
-                <Label htmlFor="member-role">Role</Label>
+                <Label htmlFor="member-role" className="text-sm font-medium">Role</Label>
                 <select
                   id="member-role"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as 'student' | 'licensed' | 'instructor')}
-                  className="w-full mt-1 p-3 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full mt-1 p-3 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm"
                 >
                   <option value="student">Student/Apprentice - Requires supervision for all procedures</option>
                   <option value="licensed">Licensed Artist - Independent client work</option>
                   <option value="instructor">Instructor - Can supervise students and manage availability</option>
                 </select>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-xs text-gray-600 mt-2">
                   {inviteRole === 'student' && 'Students will use the supervision booking system and require instructor oversight for all procedures.'}
                   {inviteRole === 'licensed' && 'Licensed artists will use the regular booking system and can work independently with clients.'}
                   {inviteRole === 'instructor' && 'Instructors can supervise students, manage their availability, and access instructor management features.'}
                 </p>
               </div>
               
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex flex-col space-y-3 md:flex-row md:justify-end md:space-y-0 md:space-x-3 mt-6">
                 <Button 
                   variant="outline" 
                   onClick={() => setShowInviteForm(false)}
+                  className="w-full md:w-auto"
+                  size="sm"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleInviteTeamMember}
                   disabled={!inviteName || !inviteEmail || !invitePassword || isInviting}
-                  className="bg-violet-600 hover:bg-violet-700"
+                  className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
+                  size="sm"
                 >
                   {isInviting ? 'Sending...' : 'Send Invitation'}
                 </Button>
@@ -421,12 +425,12 @@ export default function StudioTeamPage() {
 
         {/* Team Members List */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Building2 className="h-5 w-5 text-violet-600" />
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+              <Building2 className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
               <span>Studio Team Members</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm md:text-base">
               Manage your studio's team members and their access levels
             </CardDescription>
           </CardHeader>
@@ -436,10 +440,11 @@ export default function StudioTeamPage() {
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No team members yet</h3>
-                <p className="text-gray-600 mb-4">Invite your first team member to get started</p>
+                <p className="text-gray-600 mb-4 text-sm">Invite your first team member to get started</p>
                 <Button 
                   onClick={() => setShowInviteForm(true)}
                   className="bg-violet-600 hover:bg-violet-700"
+                  size="sm"
                 >
                   Invite Team Member
                 </Button>
@@ -447,87 +452,91 @@ export default function StudioTeamPage() {
             ) : (
               <div className="space-y-4">
                 {teamMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
-                            {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-gray-900">{member.name}</h3>
-                          <p className="text-sm text-gray-600">{member.email}</p>
-                          {member.licenseNumber && (
-                            <p className="text-xs text-gray-500">
-                              License: {member.licenseNumber} ({member.licenseState})
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-500">{getRoleDescription(member.role)}</p>
+                  <div key={member.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-medium text-gray-600">
+                              {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-gray-900 text-sm md:text-base break-words">{member.name}</h3>
+                            <p className="text-xs md:text-sm text-gray-600 break-words">{member.email}</p>
+                            {member.licenseNumber && (
+                              <p className="text-xs text-gray-500">
+                                License: {member.licenseNumber} ({member.licenseState})
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-500">{getRoleDescription(member.role)}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      {getStatusBadge(member.status)}
-                      {getRoleBadge(member.role)}
                       
-                      <div className="flex space-x-2">
-                        {member.role !== 'owner' && (
-                          <>
-                            {member.status === 'pending' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleApproveTeamMember(member.id)}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                Approve
-                              </Button>
-                            )}
-                            
-                            {member.status === 'active' && (
+                      <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-3">
+                        <div className="flex flex-wrap gap-2">
+                          {getStatusBadge(member.status)}
+                          {getRoleBadge(member.role)}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {member.role !== 'owner' && (
+                            <>
+                              {member.status === 'pending' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApproveTeamMember(member.id)}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-7"
+                                >
+                                  Approve
+                                </Button>
+                              )}
+                              
+                              {member.status === 'active' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleSuspendTeamMember(member.id)}
+                                  className="text-red-600 border-red-600 hover:bg-red-50 text-xs px-2 py-1 h-7"
+                                >
+                                  Suspend
+                                </Button>
+                              )}
+                              
+                              {member.status === 'suspended' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApproveTeamMember(member.id)}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-7"
+                                >
+                                  Reactivate
+                                </Button>
+                              )}
+                              
+                              {member.status === 'active' && (
+                                <select
+                                  value={member.role}
+                                  onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
+                                  className="text-xs border border-gray-300 rounded px-2 py-1 h-7"
+                                >
+                                  <option value="student">Student</option>
+                                  <option value="licensed">Licensed</option>
+                                  <option value="instructor">Instructor</option>
+                                </select>
+                              )}
+                              
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleSuspendTeamMember(member.id)}
-                                className="text-red-600 border-red-600 hover:bg-red-50"
+                                onClick={() => handleRemoveTeamMember(member.id)}
+                                className="text-red-600 border-red-600 hover:bg-red-50 text-xs px-2 py-1 h-7"
                               >
-                                Suspend
+                                <Trash2 className="h-3 w-3" />
                               </Button>
-                            )}
-                            
-                            {member.status === 'suspended' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleApproveTeamMember(member.id)}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                Reactivate
-                              </Button>
-                            )}
-                            
-                            {member.status === 'active' && (
-                              <select
-                                value={member.role}
-                                onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
-                                className="text-xs border border-gray-300 rounded px-2 py-1"
-                              >
-                                <option value="student">Student</option>
-                                <option value="licensed">Licensed</option>
-                                <option value="instructor">Instructor</option>
-                              </select>
-                            )}
-                            
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRemoveTeamMember(member.id)}
-                              className="text-red-600 border-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
