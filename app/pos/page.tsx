@@ -23,6 +23,8 @@ function POSContent() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'services' | 'products'>('services')
+  const [showCustomItems, setShowCustomItems] = useState(false)
+  const [customItems, setCustomItems] = useState<Array<{id: string, name: string, quantity: number, price: number}>>([])
 
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
@@ -243,6 +245,44 @@ function POSContent() {
     return cart.reduce((sum, item) => sum + Number(item.price || 0), 0)
   }
 
+  // Custom item functions
+  const addCustomItem = () => {
+    const newItem = {
+      id: `custom-${Date.now()}`,
+      name: '',
+      quantity: 1,
+      price: 0
+    }
+    setCustomItems([...customItems, newItem])
+  }
+
+  const updateCustomItem = (id: string, field: string, value: string | number) => {
+    setCustomItems(customItems.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const removeCustomItem = (id: string) => {
+    setCustomItems(customItems.filter(item => item.id !== id))
+  }
+
+  const addCustomItemsToCart = () => {
+    const validItems = customItems.filter(item => item.name.trim() && item.price > 0)
+    if (validItems.length === 0) return
+
+    const cartItems = validItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: item.price * item.quantity,
+      quantity: item.quantity,
+      type: activeTab === 'services' ? 'custom-service' : 'custom-product'
+    }))
+
+    setCart([...cart, ...cartItems])
+    setCustomItems([])
+    setShowCustomItems(false)
+  }
+
   const handleCheckout = () => {
     if (cart.length === 0) return
     
@@ -407,6 +447,22 @@ function POSContent() {
                     </div>
                   )
                 })}
+                
+                {/* Other Service Button */}
+                <div className="relative">
+                  <button
+                    className="w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-lavender bg-gray-50 hover:bg-lavender/5 transition-colors relative overflow-hidden"
+                    onClick={() => {
+                      setCustomItems([{ id: `custom-${Date.now()}`, name: '', quantity: 1, price: 0 }])
+                      setShowCustomItems(true)
+                    }}
+                  >
+                    <div className="w-full h-full flex flex-col items-center justify-center">
+                      <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mb-1" />
+                      <span className="text-gray-500 text-xs text-center px-1">Other</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -453,6 +509,22 @@ function POSContent() {
                     </div>
                   )
                 })}
+                
+                {/* Other Product Button */}
+                <div className="relative">
+                  <button
+                    className="w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-lavender bg-gray-50 hover:bg-lavender/5 transition-colors relative overflow-hidden"
+                    onClick={() => {
+                      setCustomItems([{ id: `custom-${Date.now()}`, name: '', quantity: 1, price: 0 }])
+                      setShowCustomItems(true)
+                    }}
+                  >
+                    <div className="w-full h-full flex flex-col items-center justify-center">
+                      <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mb-1" />
+                      <span className="text-gray-500 text-xs text-center px-1">Other</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -563,6 +635,25 @@ function POSContent() {
                             </button>
                           )
                         })}
+                        
+                        {/* Other Service Button - Desktop */}
+                        <button
+                          className="p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-lavender bg-gray-50 hover:bg-lavender/5 transition-colors text-left"
+                          onClick={() => {
+                            setCustomItems([{ id: `custom-${Date.now()}`, name: '', quantity: 1, price: 0 }])
+                            setShowCustomItems(true)
+                          }}
+                        >
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center">
+                              <Plus className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-xs sm:text-sm">Other Service</h4>
+                              <p className="text-xs opacity-75">Custom item</p>
+                            </div>
+                          </div>
+                        </button>
                       </div>
                     )}
 
@@ -604,6 +695,25 @@ function POSContent() {
                             </button>
                           )
                         })}
+                        
+                        {/* Other Product Button - Desktop */}
+                        <button
+                          className="p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-lavender bg-gray-50 hover:bg-lavender/5 transition-colors text-left"
+                          onClick={() => {
+                            setCustomItems([{ id: `custom-${Date.now()}`, name: '', quantity: 1, price: 0 }])
+                            setShowCustomItems(true)
+                          }}
+                        >
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center">
+                              <Plus className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-xs sm:text-sm">Other Product</h4>
+                              <p className="text-xs opacity-75">Custom item</p>
+                            </div>
+                          </div>
+                        </button>
                       </div>
                     )}
                   </CardContent>
@@ -713,6 +823,108 @@ function POSContent() {
                   <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   Cancel
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Custom Items Modal */}
+      {showCustomItems && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4">
+          <Card className="w-full max-w-2xl border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="border-b border-gray-100 p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+                Add Custom {activeTab === 'services' ? 'Service' : 'Product'}
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Add items not listed in your catalog
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-4">
+                {customItems.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => updateCustomItem(item.id, 'name', e.target.value)}
+                        placeholder="Enter item name"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-lavender focus:border-lavender text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateCustomItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-lavender focus:border-lavender text-sm"
+                      />
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price Each</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.price}
+                          onChange={(e) => updateCustomItem(item.id, 'price', parseFloat(e.target.value) || 0)}
+                          placeholder="0.00"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-lavender focus:border-lavender text-sm"
+                        />
+                      </div>
+                      {customItems.length > 1 && (
+                        <button
+                          onClick={() => removeCustomItem(item.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="sm:col-span-4 flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
+                        Total: ${(item.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    onClick={addCustomItem}
+                    className="border-lavender text-lavender hover:bg-lavender hover:text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Item
+                  </Button>
+                  
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowCustomItems(false)
+                        setCustomItems([])
+                      }}
+                      className="border-gray-200 hover:border-gray-300"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={addCustomItemsToCart}
+                      className="bg-lavender hover:bg-lavender-600 text-white"
+                    >
+                      Add to Cart
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
