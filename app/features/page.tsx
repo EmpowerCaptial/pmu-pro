@@ -167,6 +167,16 @@ const coreFeatures = [
 // Business Management Features
 const businessFeatures = [
   {
+    id: 'team',
+    title: 'Team',
+    description: 'Manage studio team members',
+    icon: Users2,
+    href: '/studio/team',
+    color: 'bg-gradient-to-br from-violet-500 to-violet-600',
+    status: 'active',
+    category: 'business'
+  },
+  {
     id: 'reports',
     title: 'Reports',
     description: 'Business analytics',
