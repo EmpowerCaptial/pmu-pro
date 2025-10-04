@@ -616,7 +616,41 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
         service: service,
         status: 'pending-deposit',
         depositSent: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        type: 'supervision_booking' // Mark as supervision booking
+      }
+
+      // Also create appointment in database for booking page integration
+      try {
+        const appointmentResponse = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser?.email || ''
+          },
+          body: JSON.stringify({
+            clientName: clientInfo.name,
+            clientEmail: clientInfo.email,
+            clientPhone: clientInfo.phone,
+            service: `${service.name} (Supervision with ${instructor?.name})`,
+            date: selectedDate,
+            time: selectedTime,
+            duration: service.duration.includes('h') ? parseInt(service.duration.split('h')[0]) * 60 : 120,
+            price: service.total,
+            deposit: service.deposit,
+            status: 'pending_deposit'
+          })
+        })
+
+        if (appointmentResponse.ok) {
+          const appointmentData = await appointmentResponse.json()
+          newBooking.appointmentId = appointmentData.appointment.id
+          console.log('✅ Supervision booking created in appointments:', appointmentData.appointment)
+        } else {
+          console.log('⚠️ Failed to create appointment, but supervision booking will still work')
+        }
+      } catch (error) {
+        console.error('Error creating appointment for supervision booking:', error)
       }
 
       // Save booking locally
@@ -1956,75 +1990,6 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
           <TabsContent value="inbox">
             <div className="space-y-6">
-              {/* Message Composer Modal */}
-              {showMessageComposer && (
-                <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
-                  <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
-                  <CardHeader className="relative z-10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
-                          <Users className="h-6 w-6 text-lavender" />
-                          Send Message
-                        </CardTitle>
-                        <CardDescription className="text-ink/70 font-medium">
-                          Message to: {newMessage.to}
-                        </CardDescription>
-                      </div>
-                      <Button
-                        onClick={() => setShowMessageComposer(false)}
-                        variant="outline"
-                        size="sm"
-                        className="border-lavender/50 hover:bg-lavender/10"
-                      >
-                        Close
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="bg-white/80 rounded-xl p-6 border border-lavender/30 space-y-4">
-                      <div>
-                        <Label htmlFor="messageSubject" className="text-ink font-medium">Subject *</Label>
-                        <Input
-                          id="messageSubject"
-                          placeholder="Enter message subject"
-                          value={newMessage.subject}
-                          onChange={(e) => setNewMessage(prev => ({ ...prev, subject: e.target.value }))}
-                          className="mt-1 border-lavender/50 focus:border-lavender focus:ring-lavender/20"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="messageContent" className="text-ink font-medium">Message *</Label>
-                        <textarea
-                          id="messageContent"
-                          rows={6}
-                          placeholder="Type your message here..."
-                          value={newMessage.content}
-                          onChange={(e) => setNewMessage(prev => ({ ...prev, content: e.target.value }))}
-                          className="mt-1 w-full px-3 py-2 border border-lavender/50 rounded-md focus:border-lavender focus:ring-lavender/20 resize-none"
-                        />
-                      </div>
-                      <div className="flex gap-3 pt-4">
-                        <Button
-                          onClick={() => setShowMessageComposer(false)}
-                          variant="outline"
-                          className="flex-1 border-lavender/50 hover:bg-lavender/10"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleSendMessage}
-                          className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          <Users className="h-5 w-5 mr-2" />
-                          Send Message
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Messages List */}
               <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
@@ -2103,6 +2068,75 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Message Composer Modal */}
+        {showMessageComposer && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
+              <CardHeader className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-ink">Send Message</CardTitle>
+                    <CardDescription className="text-ink/70">
+                      Send a message to {newMessage.to}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => setShowMessageComposer(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-ink/50 hover:text-ink"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10 space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="message-subject">Subject</Label>
+                    <Input
+                      id="message-subject"
+                      value={newMessage.subject}
+                      onChange={(e) => setNewMessage({ ...newMessage, subject: e.target.value })}
+                      placeholder="Enter message subject"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="message-content">Message</Label>
+                    <textarea
+                      id="message-content"
+                      value={newMessage.content}
+                      onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
+                      placeholder="Type your message here..."
+                      rows={6}
+                      className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender resize-none"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-3 pt-4 border-t border-lavender/20">
+                  <Button
+                    onClick={() => setShowMessageComposer(false)}
+                    variant="outline"
+                    className="border-lavender/50 hover:bg-lavender/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSendMessage}
+                    className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Message
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Availability Manager Modal */}
         {showAvailabilityManager && (
