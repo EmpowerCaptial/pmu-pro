@@ -216,8 +216,18 @@ export default function StudioSupervisionPage() {
         hasActiveSubscription: (currentUser as any).hasActiveSubscription || false
       })
 
-      setSupervisionAccess(accessCheck)
-      setUserRole(accessCheck.userRole)
+      // Temporary fix for Tyrone - allow access regardless of access check
+      if (currentUser.email?.toLowerCase() === 'tyronejackboy@gmail.com') {
+        setSupervisionAccess({
+          canAccess: true,
+          isEnterpriseStudio: true,
+          userRole: 'INSTRUCTOR'
+        })
+        setUserRole('INSTRUCTOR')
+      } else {
+        setSupervisionAccess(accessCheck)
+        setUserRole(accessCheck.userRole)
+      }
     }
   }, [currentUser, isLoading])
 

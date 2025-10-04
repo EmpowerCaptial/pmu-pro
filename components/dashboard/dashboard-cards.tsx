@@ -190,7 +190,8 @@ export function DashboardCards() {
 
       {/* Studio Supervision - Mobile (for instructors only) */}
       {console.log('🔍 Mobile Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
-      {supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR' && (
+      {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
+        (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
         <div className="lg:hidden mb-4 sm:mb-6">
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40">
             <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
@@ -373,7 +374,8 @@ export function DashboardCards() {
 
         {/* Studio Supervision - Desktop (for instructors only) */}
         {console.log('🔍 Desktop Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
-        {supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR' && (
+        {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
+          (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-500/10 to-purple-600/20 backdrop-blur-sm border-purple-400/40 col-span-2">
             <CardHeader className="pb-4 p-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
