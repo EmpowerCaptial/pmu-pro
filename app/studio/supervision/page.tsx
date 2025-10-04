@@ -622,23 +622,24 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       }
 
       // Also create appointment in database for booking page integration
-      // Create appointment for the INSTRUCTOR to see on their booking page
+      // Create appointment for the CURRENT USER to see on their booking page
       try {
-        const instructorEmail = instructor?.email || currentUser?.email || ''
-        console.log('Creating appointment with user email:', instructorEmail)
+        const userEmail = currentUser?.email || ''
+        console.log('Creating appointment with current user email:', userEmail)
         console.log('Instructor data:', instructor)
+        console.log('Note: Appointment will be visible to current user, not instructor')
         
         const appointmentResponse = await fetch('/api/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-email': instructorEmail
+            'x-user-email': userEmail
           },
           body: JSON.stringify({
             clientName: clientInfo.name,
             clientEmail: clientInfo.email,
             clientPhone: clientInfo.phone,
-            service: `${service.name} (Supervision with ${instructor?.name})`,
+            service: `Supervision Session: ${service.name} with ${instructor?.name}`,
             date: selectedDate,
             time: selectedTime,
             duration: service.duration.includes('h') ? parseInt(service.duration.split('h')[0]) * 60 : 120,
