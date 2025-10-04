@@ -1,16 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email-service'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    const { memberEmail, memberName, memberRole, studioName, studioOwnerName } = await request.json()
+    const { memberEmail, memberName, memberPassword, memberRole, studioName, studioOwnerName } = await request.json()
 
-    if (!memberEmail || !memberName) {
+    if (!memberEmail || !memberName || !memberPassword) {
       return NextResponse.json(
-        { error: 'Email and name are required' },
+        { error: 'Email, name, and password are required' },
         { status: 400 }
       )
     }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: memberEmail }
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'A user with this email already exists' },
+        { status: 409 }
+      )
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(memberPassword, 12)
+
+    // Create the user account
+    const newUser = await prisma.user.create({
+      data: {
+        email: memberEmail,
+        name: memberName,
+        password: hashedPassword,
+        role: memberRole,
+        selectedPlan: 'studio', // Team members get studio access
+        hasActiveSubscription: true, // Inherit studio access from owner
+        isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor', // Licensed roles are pre-verified
+        businessName: studioName,
+        studioName: studioName,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    })
 
     // Create invitation email content based on role
     const getRoleDescription = (role: string) => {
@@ -66,15 +102,25 @@ export async function POST(request: NextRequest) {
               </p>
             </div>
             
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin-top: 0;">Your Login Credentials</h3>
+              <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin-bottom: 10px;">
+                <strong>Email:</strong> ${memberEmail}
+              </p>
+              <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin-bottom: 0;">
+                <strong>Password:</strong> ${memberPassword}
+              </p>
+            </div>
+            
             <div style="text-align: center; margin: 30px 0;">
               <a href="${getInvitationLink(memberRole)}" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                Accept Invitation
+                Log In Now
               </a>
             </div>
             
             <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-              If you don't have an account yet, you'll be prompted to create one when you click the link above.
+              You can now log in using the credentials above. We recommend changing your password after your first login for security.
             </p>
             
             <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
@@ -96,7 +142,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Team member invitation sent successfully' 
+      message: 'Team member invitation sent successfully',
+      userId: newUser.id
     })
 
   } catch (error) {
@@ -105,5 +152,7 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to send invitation' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

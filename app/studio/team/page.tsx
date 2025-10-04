@@ -41,6 +41,7 @@ export default function StudioTeamPage() {
   const [showInviteForm, setShowInviteForm] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
+  const [invitePassword, setInvitePassword] = useState('')
   const [inviteRole, setInviteRole] = useState<'student' | 'licensed' | 'instructor'>('student')
   const [isInviting, setIsInviting] = useState(false)
 
@@ -74,7 +75,7 @@ export default function StudioTeamPage() {
   }
 
   const handleInviteTeamMember = async () => {
-    if (!inviteEmail || !inviteName) return
+    if (!inviteEmail || !inviteName || !invitePassword) return
 
     setIsInviting(true)
     
@@ -88,6 +89,7 @@ export default function StudioTeamPage() {
         body: JSON.stringify({
           memberEmail: inviteEmail,
           memberName: inviteName,
+          memberPassword: invitePassword,
           memberRole: inviteRole,
           studioName: (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
           studioOwnerName: currentUser?.name || 'Studio Owner'
@@ -114,6 +116,7 @@ export default function StudioTeamPage() {
       // Reset form
       setInviteEmail('')
       setInviteName('')
+      setInvitePassword('')
       setInviteRole('student')
       setShowInviteForm(false)
       setIsInviting(false)
@@ -358,6 +361,21 @@ export default function StudioTeamPage() {
               </div>
               
               <div className="mt-4">
+                <Label htmlFor="member-password">Initial Password</Label>
+                <Input
+                  id="member-password"
+                  type="password"
+                  value={invitePassword}
+                  onChange={(e) => setInvitePassword(e.target.value)}
+                  placeholder="Create initial password for team member"
+                  className="mt-1"
+                />
+                <p className="text-sm text-gray-600 mt-2">
+                  The team member will use this password to log in. They can change it after their first login.
+                </p>
+              </div>
+              
+              <div className="mt-4">
                 <Label htmlFor="member-role">Role</Label>
                 <select
                   id="member-role"
@@ -385,7 +403,7 @@ export default function StudioTeamPage() {
                 </Button>
                 <Button 
                   onClick={handleInviteTeamMember}
-                  disabled={!inviteName || !inviteEmail || isInviting}
+                  disabled={!inviteName || !inviteEmail || !invitePassword || isInviting}
                   className="bg-violet-600 hover:bg-violet-700"
                 >
                   {isInviting ? 'Sending...' : 'Send Invitation'}
