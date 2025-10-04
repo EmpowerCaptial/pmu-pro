@@ -87,6 +87,7 @@ export default function StudioSupervisionPage() {
   const router = useRouter()
   const [supervisionAccess, setSupervisionAccess] = useState<any>(null)
   const [userRole, setUserRole] = useState<'INSTRUCTOR' | 'APPRENTICE' | 'ADMIN' | 'NONE'>('NONE')
+  const [activeTab, setActiveTab] = useState<string>('overview')
   
   // Booking system state
   const [selectedInstructor, setSelectedInstructor] = useState<string>('')
@@ -623,11 +624,15 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       // Also create appointment in database for booking page integration
       // Create appointment for the INSTRUCTOR to see on their booking page
       try {
+        const instructorEmail = instructor?.email || currentUser?.email || ''
+        console.log('Creating appointment with user email:', instructorEmail)
+        console.log('Instructor data:', instructor)
+        
         const appointmentResponse = await fetch('/api/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-email': instructor?.email || currentUser?.email || ''
+            'x-user-email': instructorEmail
           },
           body: JSON.stringify({
             clientName: clientInfo.name,
@@ -648,7 +653,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           newBooking.appointmentId = appointmentData.appointment.id
           console.log('✅ Supervision booking created in appointments:', appointmentData.appointment)
         } else {
-          console.log('⚠️ Failed to create appointment, but supervision booking will still work')
+          const errorData = await appointmentResponse.json().catch(() => ({ error: 'Unknown error' }))
+          console.log('⚠️ Failed to create appointment:', errorData)
+          console.log('⚠️ Response status:', appointmentResponse.status)
         }
       } catch (error) {
         console.error('Error creating appointment for supervision booking:', error)
@@ -862,7 +869,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
-        <Tabs defaultValue={userRole === 'INSTRUCTOR' ? 'availability' : userRole === 'APPRENTICE' ? 'find' : 'overview'} className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1">
             <TabsTrigger 
               value="overview"
@@ -963,7 +970,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                     <>
                       <Button 
                         className="h-auto p-6 flex-col bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/availability')}
+                        onClick={() => setActiveTab('availability')}
                       >
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
                           <Calendar className="h-6 w-6" />
@@ -974,7 +981,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       <Button 
                         variant="outline" 
                         className="h-auto p-6 flex-col border-lavender/50 bg-white/90 hover:bg-lavender/10 text-ink hover:text-ink shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/bookings')}
+                        onClick={() => setActiveTab('find')}
                       >
                         <div className="w-12 h-12 bg-lavender/20 rounded-full flex items-center justify-center mb-3">
                           <Users className="h-6 w-6 text-lavender" />
@@ -985,7 +992,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       <Button 
                         variant="outline" 
                         className="h-auto p-6 flex-col border-lavender/50 bg-white/90 hover:bg-lavender/10 text-ink hover:text-ink shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/procedure-logs')}
+                        onClick={() => setActiveTab('history')}
                       >
                         <div className="w-12 h-12 bg-lavender/20 rounded-full flex items-center justify-center mb-3">
                           <CheckCircle className="h-6 w-6 text-lavender" />
@@ -1000,7 +1007,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                     <>
                       <Button 
                         className="h-auto p-6 flex-col bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 border-0 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/find')}
+                        onClick={() => setActiveTab('find')}
                       >
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
                           <Calendar className="h-6 w-6" />
@@ -1011,7 +1018,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       <Button 
                         variant="outline" 
                         className="h-auto p-6 flex-col border-blue-200/50 bg-white/90 hover:bg-blue-50/80 text-blue-700 hover:text-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/history')}
+                        onClick={() => setActiveTab('history')}
                       >
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
                           <Clock className="h-6 w-6 text-blue-600" />
@@ -1022,7 +1029,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       <Button 
                         variant="outline" 
                         className="h-auto p-6 flex-col border-blue-200/50 bg-white/90 hover:bg-blue-50/80 text-blue-700 hover:text-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
-                        onClick={() => router.push('/studio/supervision/progress')}
+                        onClick={() => setActiveTab('reports')}
                       >
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
                           <BarChart3 className="h-6 w-6 text-blue-600" />
