@@ -285,7 +285,7 @@ export function DashboardCards() {
                   Supervised Work
                 </Badge>
               </div>
-              <Link href="/studio/supervision" className="w-full">
+              <Link href="/studio/supervision?tab=find" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
@@ -330,7 +330,7 @@ export function DashboardCards() {
                   Studio Enterprise
                 </Badge>
               </div>
-              <Link href="/studio/supervision" className="w-full">
+              <Link href="/studio/supervision?tab=availability" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
@@ -596,7 +596,7 @@ export function DashboardCards() {
                   Supervised Work
                 </Badge>
               </div>
-              <Link href="/studio/supervision" className="w-full">
+              <Link href="/studio/supervision?tab=find" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
@@ -639,7 +639,7 @@ export function DashboardCards() {
                   Studio Enterprise
                 </Badge>
               </div>
-              <Link href="/studio/supervision" className="w-full">
+              <Link href="/studio/supervision?tab=availability" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">

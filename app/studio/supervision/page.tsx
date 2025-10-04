@@ -277,6 +277,31 @@ export default function StudioSupervisionPage() {
     }
   }, [currentUser, isLoading])
 
+  // Set default tab based on user role and URL parameters
+  useEffect(() => {
+    if (userRole !== 'NONE') {
+      // Check for URL parameter first
+      const urlParams = new URLSearchParams(window.location.search)
+      const tabParam = urlParams.get('tab')
+      
+      if (tabParam && ['overview', 'find', 'availability', 'history', 'reports'].includes(tabParam)) {
+        setActiveTab(tabParam)
+      } else {
+        // Set default based on role
+        if (userRole === 'APPRENTICE') {
+          // Students should start on the booking tab
+          setActiveTab('find')
+        } else if (userRole === 'INSTRUCTOR') {
+          // Instructors should start on the availability tab
+          setActiveTab('availability')
+        } else {
+          // Admins start on overview
+          setActiveTab('overview')
+        }
+      }
+    }
+  }, [userRole])
+
   // Load existing bookings from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
