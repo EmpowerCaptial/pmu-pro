@@ -28,8 +28,8 @@ export function useFreshUserData() {
       
       setIsRefreshing(true)
       try {
-        // Try to get fresh user data from verify endpoint
-        const response = await fetch('/api/auth/verify', {
+        // Try to get fresh user data from user-data endpoint
+        const response = await fetch('/api/auth/user-data', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export function useFreshUserData() {
     
     setIsRefreshing(true)
     try {
-      const response = await fetch('/api/auth/verify', {
+      const response = await fetch('/api/auth/user-data', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
