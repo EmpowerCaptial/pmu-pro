@@ -14,9 +14,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
     }
 
-    // Find user by email
+    // Find user by email with minimal fields
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true
+      }
     })
 
     if (!user) {
@@ -36,7 +40,7 @@ export async function GET(request: NextRequest) {
     endOfWeek.setDate(startOfWeek.getDate() + 6)
     endOfWeek.setHours(23, 59, 59, 999)
 
-    // Get appointments for this week
+    // Get appointments for this week with minimal fields
     const appointments = await prisma.appointment.findMany({
       where: {
         userId: user.id,
@@ -48,8 +52,11 @@ export async function GET(request: NextRequest) {
           in: ['completed', 'confirmed']
         }
       },
-      include: {
-        procedures: true
+      select: {
+        id: true,
+        price: true,
+        serviceType: true,
+        status: true
       }
     })
 
@@ -89,6 +96,10 @@ export async function GET(request: NextRequest) {
         status: {
           in: ['completed', 'confirmed']
         }
+      },
+      select: {
+        id: true,
+        price: true
       }
     })
 
@@ -112,8 +123,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching weekly financial data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch weekly financial data' },
+      { 
+        error: 'Failed to fetch weekly financial data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

@@ -20,9 +20,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
     }
 
-    // Find user by email
+    // Find user by email with minimal fields
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        stripeId: true,
+        stripeConnectAccountId: true
+      }
     })
 
     if (!user) {
@@ -37,7 +43,7 @@ export async function GET(request: NextRequest) {
     const endOfDay = new Date(now)
     endOfDay.setHours(23, 59, 59, 999)
 
-    // Get today's appointments
+    // Get today's appointments with minimal fields
     const todaysAppointments = await prisma.appointment.findMany({
       where: {
         userId: user.id,
@@ -48,6 +54,11 @@ export async function GET(request: NextRequest) {
         status: {
           in: ['completed', 'confirmed']
         }
+      },
+      select: {
+        id: true,
+        price: true,
+        status: true
       }
     })
 
@@ -63,10 +74,10 @@ export async function GET(request: NextRequest) {
     let canPayout = false
     
     try {
-      if (user.stripeId && stripe) {
+      if (user.stripeConnectAccountId && stripe) {
         // Get Stripe Connect account balance
         const balance = await stripe.balance.retrieve({
-          stripeAccount: user.stripeId
+          stripeAccount: user.stripeConnectAccountId
         })
         
         // Calculate available balance (immediately available)
@@ -98,9 +109,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching daily financial data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch daily financial data' },
+      { 
+        error: 'Failed to fetch daily financial data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 
@@ -115,20 +131,25 @@ export async function POST(request: NextRequest) {
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        stripeConnectAccountId: true
+      }
     })
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (!user.stripeId || !stripe) {
+    if (!user.stripeConnectAccountId || !stripe) {
       return NextResponse.json({ error: 'Stripe Connect account not set up' }, { status: 400 })
     }
 
     // Get current Stripe balance
     const balance = await stripe.balance.retrieve({
-      stripeAccount: user.stripeId
+      stripeAccount: user.stripeConnectAccountId
     })
 
     const availableBalance = balance.available.reduce((sum, item) => {
@@ -143,10 +164,10 @@ export async function POST(request: NextRequest) {
     const payout = await stripe.transfers.create({
       amount: availableBalance,
       currency: 'usd',
-      destination: user.stripeId,
+      destination: user.stripeConnectAccountId,
       transfer_group: `payout_${Date.now()}`
     }, {
-      stripeAccount: user.stripeId
+      stripeAccount: user.stripeConnectAccountId
     })
 
     return NextResponse.json({
@@ -159,8 +180,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error processing payout:', error)
     return NextResponse.json(
-      { error: 'Failed to process payout' },
+      { 
+        error: 'Failed to process payout',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
