@@ -27,7 +27,8 @@ import {
   MoreVertical,
   Filter,
   Search,
-  BarChart3
+  BarChart3,
+  AlertTriangle
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -35,8 +36,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { NavBar } from '@/components/ui/navbar'
 
 interface Expense {
   id: string
@@ -87,7 +88,7 @@ const scheduleCCategories: ExpenseCategory[] = [
 
 
 export default function ExpensesPage() {
-  const { currentUser } = useDemoAuth()
+  const { currentUser, isLoading } = useDemoAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddExpense, setShowAddExpense] = useState(false)
@@ -103,6 +104,13 @@ export default function ExpensesPage() {
     isDeductible: true,
     notes: ''
   })
+
+  // Check if user has permission to access expenses
+  const hasExpensesAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio'
 
   // Prepare user object for NavBar
   const user = currentUser ? {
@@ -204,6 +212,48 @@ export default function ExpensesPage() {
       default:
         return '💳'
     }
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for unauthorized users
+  if (!hasExpensesAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+              <p className="text-gray-600 mb-4">
+                Expense tracking is only available to studio owners, managers, and directors.
+              </p>
+              <p className="text-sm text-gray-500">
+                Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

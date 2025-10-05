@@ -117,7 +117,7 @@ const mockInventory: InventoryItem[] = [
 ]
 
 export default function InventoryPage() {
-  const { currentUser } = useDemoAuth()
+  const { currentUser, isLoading } = useDemoAuth()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -125,6 +125,13 @@ export default function InventoryPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Check if user has permission to access inventory
+  const hasInventoryAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio'
   
   const [newItem, setNewItem] = useState({
     name: '',
@@ -276,6 +283,48 @@ export default function InventoryPage() {
     if (confirm('Are you sure you want to delete this item?')) {
       setInventory(inventory.filter(item => item.id !== id))
     }
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for unauthorized users
+  if (!hasInventoryAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+              <p className="text-gray-600 mb-4">
+                Inventory management is only available to studio owners, managers, and directors.
+              </p>
+              <p className="text-sm text-gray-500">
+                Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

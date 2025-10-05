@@ -25,10 +25,12 @@ export function UxTimeClock({ userId }: { userId?: string }) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Check if user has Enterprise access
-  const hasEnterpriseAccess = currentUser?.subscription === 'enterprise' || 
-                              currentUser?.features?.includes('all') ||
-                              currentUser?.role === 'owner';
+  // Check if user has permission to access time clock
+  const hasTimeClockAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio';
 
   async function load() {
     setError(null);
@@ -41,10 +43,10 @@ export function UxTimeClock({ userId }: { userId?: string }) {
   }
 
   React.useEffect(() => { 
-    if (hasEnterpriseAccess) {
+    if (hasTimeClockAccess) {
       load(); 
     }
-  }, [hasEnterpriseAccess]);
+  }, [hasTimeClockAccess]);
 
   async function doAction(action: "clockIn" | "startBreak" | "endBreak" | "clockOut") {
     if (loading) return;
@@ -74,8 +76,8 @@ export function UxTimeClock({ userId }: { userId?: string }) {
     }
   }
 
-  // Show upgrade prompt for non-Enterprise users
-  if (!hasEnterpriseAccess) {
+  // Show access denied for unauthorized users
+  if (!hasTimeClockAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4">
         <div className="max-w-md mx-auto">
@@ -98,24 +100,19 @@ export function UxTimeClock({ userId }: { userId?: string }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Enterprise Feature</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Restricted</h2>
             <p className="text-gray-600 mb-4">
-              Time Clock is available for Enterprise subscription users only.
+              Time clock is only available to studio owners, managers, and directors.
             </p>
-            <div className="space-y-3">
-              <button 
-                onClick={() => router.push('/billing')}
-                className="w-full bg-lavender hover:bg-lavender-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-              >
-                Upgrade to Enterprise
-              </button>
-              <button 
-                onClick={() => router.back()}
-                className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                Go Back
-              </button>
-            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+            </p>
+            <button 
+              onClick={() => router.back()}
+              className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              Go Back
+            </button>
           </div>
         </div>
       </div>
