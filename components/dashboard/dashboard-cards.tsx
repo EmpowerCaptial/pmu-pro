@@ -735,7 +735,7 @@ export function DashboardCards() {
           </Card>
         )}
 
-        {/* Studio Management - Desktop (for studio owners only) */}
+        {/* Studio Management & Settings - Desktop (for studio owners only) */}
         {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
           (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40 col-span-2">
@@ -744,31 +744,59 @@ export function DashboardCards() {
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <Building2 className="h-5 w-5 text-white" />
                 </div>
-                <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Management</CardTitle>
+                <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Management & Settings</CardTitle>
               </div>
               <CardDescription className="text-sm xl:text-base text-blue-700">
-                Manage instructors and studio access permissions for your enterprise
+                Manage your studio, team members, settings, and enterprise features
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
                   <Users className="h-3 w-3 mr-1" />
-                  Instructor Management
-                </Badge>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
                   Studio Owner
                 </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Settings className="h-3 w-3 mr-1" />
+                  Management Hub
+                </Badge>
               </div>
+              
+              {/* Management Options Grid */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <Link href="/studio/team" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 px-3 text-center">
+                      <span className="text-white font-semibold text-xs">
+                        👥 Team
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="/studio/service-assignments" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 px-3 text-center">
+                      <span className="text-white font-semibold text-xs">
+                        🎯 Services
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+              
+              {/* Main Action Button */}
               <Link href="/studio/management" className="w-full">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 py-3 xl:py-4 px-4 xl:px-6 text-center">
                     <span className="text-white font-bold text-sm xl:text-lg text-shadow-lg shadow-black/50">
-                      🏢 Manage Studio
+                      🏢 Studio Management
                     </span>
                     <p className="text-blue-100 text-xs xl:text-sm mt-1">
-                      Invite & manage instructors
+                      Full studio administration
                     </p>
                   </div>
                 </div>
