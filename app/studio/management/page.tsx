@@ -261,7 +261,7 @@ export default function StudioManagementPage() {
                 onClick={() => setShowInviteForm(!showInviteForm)}
                 className="bg-lavender hover:bg-lavender-600"
               >
-                {showInviteForm ? 'Cancel' : 'Invite Instructor'}
+                {showInviteForm ? 'Cancel' : 'Add New Instructor'}
               </Button>
             </div>
           </CardHeader>
@@ -347,13 +347,11 @@ export default function StudioManagementPage() {
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No instructors yet</h3>
-                <p className="text-gray-600 mb-4">Invite your first instructor to get started</p>
-                <Button 
-                  onClick={() => setShowInviteForm(true)}
-                  className="bg-lavender hover:bg-lavender-600"
-                >
-                  Invite Instructor
-                </Button>
+                <p className="text-gray-600 mb-4">Use the "Invite New Instructor" section above to invite your first instructor</p>
+                <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <UserPlus className="h-4 w-4 text-blue-600 mr-2" />
+                  <span className="text-blue-700 text-sm font-medium">Invite form is above ↑</span>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
