@@ -16,7 +16,8 @@ import {
   GraduationCap,
   Award,
   Save,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -177,6 +178,13 @@ export default function ServiceAssignmentsPage() {
       .slice(0, 2)
   }
 
+  // Check if user has permission to access service assignments
+  const hasServiceAssignmentAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio'
+
   if (isLoading || isLoadingData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
@@ -186,6 +194,31 @@ export default function ServiceAssignmentsPage() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
               <p className="text-gray-600">Loading service assignments...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for unauthorized users
+  if (!hasServiceAssignmentAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
+        <NavBar />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+              <p className="text-gray-600 mb-4">
+                Service assignments are only available to studio owners, managers, and directors.
+              </p>
+              <p className="text-sm text-gray-500">
+                Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+              </p>
             </div>
           </div>
         </div>

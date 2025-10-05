@@ -263,6 +263,13 @@ export default function StudioTeamPage() {
     }
   }
 
+  // Check if user has permission to access team management
+  const hasTeamManagementAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio'
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
@@ -272,6 +279,31 @@ export default function StudioTeamPage() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
               <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for unauthorized users
+  if (!hasTeamManagementAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
+        <NavBar />
+        <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+              <p className="text-gray-600 mb-4">
+                Team management is only available to studio owners, managers, and directors.
+              </p>
+              <p className="text-sm text-gray-500">
+                Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+              </p>
             </div>
           </div>
         </div>

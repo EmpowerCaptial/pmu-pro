@@ -21,7 +21,8 @@ import {
   Filter,
   RefreshCw,
   Eye,
-  MoreVertical
+  MoreVertical,
+  AlertTriangle
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -29,8 +30,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { NavBar } from '@/components/ui/navbar'
 
 interface Payout {
   id: string
@@ -110,13 +111,20 @@ const mockSummary: PayoutSummary = {
 }
 
 export default function PayoutsPage() {
-  const { currentUser } = useDemoAuth()
+  const { currentUser, isLoading } = useDemoAuth()
   const [payouts, setPayouts] = useState<Payout[]>([])
   const [summary, setSummary] = useState<PayoutSummary | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [timeFilter, setTimeFilter] = useState('week')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Check if user has permission to access payouts
+  const hasPayoutsAccess = currentUser && 
+    (currentUser.role === 'owner' || 
+     currentUser.role === 'manager' || 
+     currentUser.role === 'director') &&
+    (currentUser as any)?.selectedPlan === 'studio'
 
   // Load payout data
   useEffect(() => {
@@ -274,6 +282,48 @@ export default function PayoutsPage() {
         return true
     }
   })
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for unauthorized users
+  if (!hasPayoutsAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <NavBar />
+        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+              <p className="text-gray-600 mb-4">
+                Payout management is only available to studio owners, managers, and directors.
+              </p>
+              <p className="text-sm text-gray-500">
+                Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
