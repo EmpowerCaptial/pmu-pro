@@ -78,15 +78,7 @@ const mockInstructors = [
 
 const timeSlots = ['9:30 AM', '1:00 PM', '4:00 PM']
 
-// Default supervision services (fallback if no services loaded)
-const defaultSupervisionServices = [
-  { id: 'microblading', name: 'Eyebrow Microblading', duration: '2 hours', deposit: 150, total: 400 },
-  { id: 'powder-brows', name: 'Powder Brows', duration: '2 hours', deposit: 150, total: 400 },
-  { id: 'lip-blushing', name: 'Lip Blushing', duration: '2 hours', deposit: 150, total: 400 },
-  { id: 'eyeliner', name: 'Eyeliner', duration: '2 hours', deposit: 150, total: 400 },
-  { id: 'lash-enhancement', name: 'Lash Enhancement', duration: '2 hours', deposit: 150, total: 400 },
-  { id: 'color-correction', name: 'Color Correction', duration: '2 hours', deposit: 150, total: 400 }
-]
+// No default services - only use uploaded services from the database
 
 export default function StudioSupervisionPage() {
   const { currentUser, isLoading } = useDemoAuth()
@@ -862,7 +854,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       // For walk-in bookings, use the instructor selected in the form
       const instructorId = clientInfo.selectedInstructor || selectedInstructor
       const instructor = mockInstructors.find(i => i.id === instructorId)
-      const service = (availableServices.length > 0 ? availableServices : defaultSupervisionServices).find((s: any) => s.id === clientInfo.service) as any
+      const service = availableServices.find((s: any) => s.id === clientInfo.service) as any
       
       // Create booking with pending status
       const newBooking: any = {
@@ -2040,7 +2032,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 required
                               >
                                 <option value="">Select a service</option>
-                                {(availableServices.length > 0 ? availableServices : defaultSupervisionServices).map((service: any) => (
+                                {availableServices.map((service: any) => (
                                   <option key={service.id} value={service.id}>
                                     {service.name} - ${service.total} (${service.deposit} deposit)
                                   </option>
@@ -2073,7 +2065,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
                               <h3 className="font-bold text-ink mb-2">Service Details</h3>
                               {(() => {
-                                const service = (availableServices.length > 0 ? availableServices : defaultSupervisionServices).find((s: any) => s.id === clientInfo.service) as any
+                                const service = availableServices.find((s: any) => s.id === clientInfo.service) as any
                                 return service ? (
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div>

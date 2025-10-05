@@ -205,7 +205,7 @@ export default function ServiceAssignmentsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Service Assignments</h1>
               <p className="text-gray-600 mt-2">Control which services each team member can offer</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button
                 onClick={loadServiceAssignments}
                 variant="outline"
@@ -217,17 +217,17 @@ export default function ServiceAssignmentsPage() {
               <Button
                 onClick={saveAssignments}
                 disabled={isSaving}
-                className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-sm md:text-base px-3 md:px-4 py-2 md:py-2"
               >
                 {isSaving ? (
                   <>
-                    <Save className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    <Save className="h-4 w-4 mr-1 md:mr-2 animate-spin flex-shrink-0" />
+                    <span className="truncate">Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Assignments
+                    <Save className="h-4 w-4 mr-1 md:mr-2 flex-shrink-0" />
+                    <span className="truncate">Save Assignments</span>
                   </>
                 )}
               </Button>
@@ -307,7 +307,7 @@ export default function ServiceAssignmentsPage() {
                         <Switch
                           checked={isAssigned(service.id, member.id)}
                           onCheckedChange={() => toggleAssignment(service.id, member.id)}
-                          className="data-[state=checked]:bg-lavender"
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
                         />
                       </div>
                     </div>
