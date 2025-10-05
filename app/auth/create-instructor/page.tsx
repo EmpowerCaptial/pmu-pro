@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { Metadata } from "next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,20 +13,37 @@ import Link from "next/link"
 import { Loader2, UserPlus, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react"
 
 export default function CreateInstructorPage() {
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
-    email: 'admin@universalbeautystudio.com',
-    name: 'Universal Beauty Studio Admin',
-    businessName: 'Universal Beauty Studio',
-    licenseNumber: 'UBS001',
+    email: '',
+    name: '',
+    businessName: '',
+    licenseNumber: '',
     licenseState: 'CA',
-    password: 'Tyronej22!',
-    confirmPassword: 'Tyronej22!',
+    password: '',
+    confirmPassword: '',
     role: 'artist',
     selectedPlan: 'studio'
   })
   
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+
+  // Handle invitation parameters
+  useEffect(() => {
+    const invitation = searchParams.get('invitation')
+    const studio = searchParams.get('studio')
+    
+    if (invitation === 'instructor' && studio) {
+      // Pre-fill form for instructor invitation
+      setFormData(prev => ({
+        ...prev,
+        role: 'instructor',
+        selectedPlan: 'studio',
+        businessName: decodeURIComponent(studio)
+      }))
+    }
+  }, [searchParams])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -55,16 +73,19 @@ export default function CreateInstructorPage() {
 
       if (response.ok) {
         setMessage({ type: 'success', text: `Instructor created successfully! Email: ${data.email}` })
-        // Reset form
+        // Reset form but preserve invitation context
+        const invitation = searchParams.get('invitation')
+        const studio = searchParams.get('studio')
+        
         setFormData({
           email: '',
           name: '',
-          businessName: '',
+          businessName: invitation === 'instructor' && studio ? decodeURIComponent(studio) : '',
           licenseNumber: '',
-          licenseState: '',
+          licenseState: 'CA',
           password: '',
           confirmPassword: '',
-          role: 'artist',
+          role: invitation === 'instructor' ? 'instructor' : 'artist',
           selectedPlan: 'studio'
         })
       } else {
@@ -105,10 +126,13 @@ export default function CreateInstructorPage() {
             <UserPlus className="h-8 w-8 text-lavender" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Create Instructor
+            {searchParams.get('invitation') === 'instructor' ? 'Join Studio as Instructor' : 'Create Instructor'}
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Add a new instructor to the platform
+            {searchParams.get('invitation') === 'instructor' 
+              ? 'Complete your instructor profile to join the studio'
+              : 'Add a new instructor to the platform'
+            }
           </CardDescription>
         </CardHeader>
         
@@ -258,24 +282,34 @@ export default function CreateInstructorPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Instructor...
+                  {searchParams.get('invitation') === 'instructor' ? 'Joining Studio...' : 'Creating Instructor...'}
                 </>
               ) : (
                 <>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Create Instructor
+                  {searchParams.get('invitation') === 'instructor' ? 'Join Studio as Instructor' : 'Create Instructor'}
                 </>
               )}
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">Default Values</h3>
-            <p className="text-xs text-gray-600">
-              This form is pre-populated with default values for creating the Universal Beauty Studio admin account. 
-              You can modify any field before submitting.
-            </p>
-          </div>
+          {searchParams.get('invitation') === 'instructor' ? (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-medium text-blue-900 mb-2">🎓 Instructor Invitation</h3>
+              <p className="text-xs text-blue-700">
+                You've been invited to join {decodeURIComponent(searchParams.get('studio') || 'the studio')} as an instructor. 
+                Please complete your profile with your license information and create a secure password.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-900 mb-2">Default Values</h3>
+              <p className="text-xs text-gray-600">
+                This form is pre-populated with default values for creating the Universal Beauty Studio admin account. 
+                You can modify any field before submitting.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

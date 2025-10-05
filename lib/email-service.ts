@@ -671,7 +671,7 @@ This is an automated email, please do not reply.
         </ol>
         
         <div style="text-align: center;">
-          <a href="https://thepmuguide.com/auth/signup?invitation=instructor&studio=${encodeURIComponent(options.studioName)}" class="button">
+          <a href="https://thepmuguide.com/auth/create-instructor?invitation=instructor&studio=${encodeURIComponent(options.studioName)}" class="button">
             Accept Invitation & Join Studio
           </a>
         </div>
@@ -722,7 +722,7 @@ NEXT STEPS:
 3. Start managing apprentices and setting your availability
 
 ACCEPT INVITATION:
-Visit: https://thepmuguide.com/auth/signup?invitation=instructor&studio=${encodeURIComponent(options.studioName)}
+Visit: https://thepmuguide.com/auth/create-instructor?invitation=instructor&studio=${encodeURIComponent(options.studioName)}
 
 If you have any questions about this invitation or need help getting started, please don't hesitate to reach out.
 
