@@ -7,6 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import { 
   Users, 
   UserPlus, 
   Mail, 
@@ -16,7 +22,8 @@ import {
   Building2,
   GraduationCap,
   Trash2,
-  Edit
+  Edit,
+  MoreVertical
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -379,131 +386,100 @@ export default function StudioManagementPage() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3">
-                      {getStatusBadge(instructor.status)}
-                      
-                      <Badge variant="outline" className={
-                        instructor.role === 'instructor'
-                          ? 'text-gold-600 border-gold-600 bg-gold-50'
-                          : instructor.role === 'licensed' 
-                          ? 'text-blue-600 border-blue-600 bg-blue-50' 
-                          : 'text-purple-600 border-purple-600 bg-purple-50'
-                      }>
-                        {instructor.role === 'instructor' ? '🏆 Instructor' : instructor.role === 'licensed' ? '🎨 Licensed Artist' : '🎓 Student/Apprentice'}
-                      </Badge>
-                      
-                      <div className="flex space-x-2">
-                        {instructor.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleApproveInstructor(instructor.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            Approve
-                          </Button>
-                        )}
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center space-x-3 flex-wrap">
+                        {getStatusBadge(instructor.status)}
                         
-                        {instructor.status === 'active' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleSuspendInstructor(instructor.id)}
-                            className="text-red-600 border-red-600 hover:bg-red-50"
-                          >
-                            Suspend
-                          </Button>
-                        )}
-                        
-                        {instructor.status === 'suspended' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleApproveInstructor(instructor.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            Reactivate
-                          </Button>
-                        )}
-                        
-                        {instructor.status === 'active' && (
-                          <>
-                            {instructor.role === 'student' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
-                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                >
-                                  <GraduationCap className="h-4 w-4 mr-1" />
-                                  Make Licensed Artist
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
-                                  className="text-gold-600 border-gold-600 hover:bg-gold-50"
-                                >
-                                  <GraduationCap className="h-4 w-4 mr-1" />
-                                  Make Instructor
-                                </Button>
-                              </>
-                            )}
-                            {instructor.role === 'licensed' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
-                                  className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                >
-                                  <Users className="h-4 w-4 mr-1" />
-                                  Make Student
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
-                                  className="text-gold-600 border-gold-600 hover:bg-gold-50"
-                                >
-                                  <GraduationCap className="h-4 w-4 mr-1" />
-                                  Make Instructor
-                                </Button>
-                              </>
-                            )}
-                            {instructor.role === 'instructor' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
-                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                >
-                                  <GraduationCap className="h-4 w-4 mr-1" />
-                                  Make Licensed Artist
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
-                                  className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                                >
-                                  <Users className="h-4 w-4 mr-1" />
-                                  Make Student
-                                </Button>
-                              </>
-                            )}
-                          </>
-                        )}
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRemoveInstructor(instructor.id)}
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <Badge variant="outline" className={
+                          instructor.role === 'instructor'
+                            ? 'text-gold-600 border-gold-600 bg-gold-50'
+                            : instructor.role === 'licensed' 
+                            ? 'text-blue-600 border-blue-600 bg-blue-50' 
+                            : 'text-purple-600 border-purple-600 bg-purple-50'
+                        }>
+                          {instructor.role === 'instructor' ? '🏆 Instructor' : instructor.role === 'licensed' ? '🎨 Licensed Artist' : '🎓 Student/Apprentice'}
+                        </Badge>
                       </div>
+                      
+                      {/* Mobile-friendly actions dropdown */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {instructor.status === 'pending' && (
+                            <DropdownMenuItem onClick={() => handleApproveInstructor(instructor.id)}>
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                              Approve
+                            </DropdownMenuItem>
+                          )}
+                          
+                          {instructor.status === 'active' && (
+                            <DropdownMenuItem onClick={() => handleSuspendInstructor(instructor.id)}>
+                              <AlertTriangle className="h-4 w-4 mr-2 text-red-600" />
+                              Suspend
+                            </DropdownMenuItem>
+                          )}
+                          
+                          {instructor.status === 'suspended' && (
+                            <DropdownMenuItem onClick={() => handleApproveInstructor(instructor.id)}>
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                              Reactivate
+                            </DropdownMenuItem>
+                          )}
+                          
+                          {instructor.status === 'active' && (
+                            <>
+                              {instructor.role === 'student' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}>
+                                    <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
+                                    Make Licensed Artist
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}>
+                                    <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
+                                    Make Instructor
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {instructor.role === 'licensed' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}>
+                                    <Users className="h-4 w-4 mr-2 text-purple-600" />
+                                    Make Student
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}>
+                                    <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
+                                    Make Instructor
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {instructor.role === 'instructor' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}>
+                                    <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
+                                    Make Licensed Artist
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}>
+                                    <Users className="h-4 w-4 mr-2 text-purple-600" />
+                                    Make Student
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </>
+                          )}
+                          
+                          <DropdownMenuItem 
+                            onClick={() => handleRemoveInstructor(instructor.id)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}

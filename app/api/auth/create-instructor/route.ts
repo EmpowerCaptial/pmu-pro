@@ -26,38 +26,41 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        password: hashedPassword,
-        name,
-        businessName,
-        licenseNumber,
-        licenseState,
-        selectedPlan,
-        hasActiveSubscription: true,
-        isLicenseVerified: true,
-        role: role || 'artist'
-      },
-      create: {
-        email,
-        name,
-        password: hashedPassword,
-        businessName: businessName || '',
-        licenseNumber: licenseNumber || '',
-        licenseState: licenseState || '',
-        role: role || 'artist',
-        selectedPlan: selectedPlan || 'studio',
-        hasActiveSubscription: true,
-        isLicenseVerified: true,
-        subscriptionStatus: 'active'
-      }
-    })
+    // Use raw SQL to avoid Prisma schema issues with emailNotifications column
+    const user = await prisma.$queryRaw`
+      INSERT INTO users (
+        id, email, name, password, "businessName", "licenseNumber", "licenseState", 
+        role, "selectedPlan", "hasActiveSubscription", "isLicenseVerified", 
+        "subscriptionStatus", "createdAt", "updatedAt"
+      ) VALUES (
+        gen_random_uuid(), ${email}, ${name}, ${hashedPassword}, ${businessName || ''}, 
+        ${licenseNumber || ''}, ${licenseState || ''}, ${role || 'artist'}, 
+        ${selectedPlan || 'studio'}, true, true, 'active', NOW(), NOW()
+      )
+      ON CONFLICT (email) DO UPDATE SET
+        password = EXCLUDED.password,
+        name = EXCLUDED.name,
+        "businessName" = EXCLUDED."businessName",
+        "licenseNumber" = EXCLUDED."licenseNumber",
+        "licenseState" = EXCLUDED."licenseState",
+        role = EXCLUDED.role,
+        "selectedPlan" = EXCLUDED."selectedPlan",
+        "hasActiveSubscription" = EXCLUDED."hasActiveSubscription",
+        "isLicenseVerified" = EXCLUDED."isLicenseVerified",
+        "subscriptionStatus" = EXCLUDED."subscriptionStatus",
+        "updatedAt" = NOW()
+      RETURNING id, email, name, role, "selectedPlan"
+    `
+    
+    const createdUser = Array.isArray(user) ? user[0] : user
     
     return NextResponse.json({ 
       success: true, 
       message: 'Instructor user created successfully',
-      email: user.email 
+      email: createdUser.email,
+      id: createdUser.id,
+      name: createdUser.name,
+      role: createdUser.role
     })
     
   } catch (error) {
