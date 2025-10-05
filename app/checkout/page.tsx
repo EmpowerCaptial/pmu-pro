@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { getTransactionStripeAccount } from '@/lib/stripe-management'
 
 function CheckoutContent() {
   const router = useRouter()
@@ -130,6 +131,12 @@ function CheckoutContent() {
     setIsProcessing(true)
     
     try {
+      // Determine which Stripe account to use for Enterprise Studio users
+      let stripeAccountInfo = null
+      if (currentUser?.email) {
+        stripeAccountInfo = await getTransactionStripeAccount(currentUser.email, 'checkout')
+      }
+
       // Handle BNPL payments through Stripe
       if (['affirm', 'afterpay', 'klarna'].includes(selectedPaymentMethod)) {
         // Create Stripe checkout session for BNPL
@@ -146,7 +153,10 @@ function CheckoutContent() {
             clientEmail: client.email,
             items: cart,
             successUrl: `${window.location.origin}/checkout/success`,
-            cancelUrl: `${window.location.origin}/checkout`
+            cancelUrl: `${window.location.origin}/checkout`,
+            // Add Stripe account info for Enterprise Studio
+            stripeAccountId: stripeAccountInfo?.stripeAccountId,
+            isOwnerAccount: stripeAccountInfo?.isOwnerAccount
           }),
         })
 
@@ -161,7 +171,40 @@ function CheckoutContent() {
         }
       }
       
-      // Simulate other payment processing
+      // Handle regular card payments
+      if (selectedPaymentMethod === 'card') {
+        // Create Stripe checkout session for card payments
+        const response = await fetch('/api/stripe/create-payment-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'usd',
+            clientName: client.name,
+            clientEmail: client.email,
+            items: cart,
+            successUrl: `${window.location.origin}/checkout/success`,
+            cancelUrl: `${window.location.origin}/checkout`,
+            // Add Stripe account info for Enterprise Studio
+            stripeAccountId: stripeAccountInfo?.stripeAccountId,
+            isOwnerAccount: stripeAccountInfo?.isOwnerAccount
+          }),
+        })
+
+        const data = await response.json()
+        
+        if (data.success && data.url) {
+          // Redirect to Stripe checkout
+          window.location.href = data.url
+          return
+        } else {
+          throw new Error(data.error || 'Failed to create payment checkout')
+        }
+      }
+      
+      // Fallback: Simulate other payment processing
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       setIsProcessing(false)
@@ -171,12 +214,13 @@ function CheckoutContent() {
       console.log('Payment processed:', {
         method: selectedPaymentMethod,
         amount: total,
-        items: cart
+        items: cart,
+        stripeAccount: stripeAccountInfo
       })
     } catch (error) {
       console.error('Payment processing error:', error)
       setIsProcessing(false)
-      // Handle error - could show error message to user
+      alert(`Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

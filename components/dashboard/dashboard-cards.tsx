@@ -36,6 +36,7 @@ import { consentReminderService } from "@/lib/services/consent-reminder-service"
 import { WeeklyBalanceCard, DailyBalanceCard } from "@/components/dashboard/financial-dashboard"
 import { checkStudioSupervisionAccess, shouldUseRegularBooking, shouldUseSupervisionBooking } from "@/lib/studio-supervision-gate"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { hasEnterpriseStudioAccess, isStudioOwner } from "@/lib/stripe-management"
 
 export function DashboardCards() {
   const [showConsentFormModal, setShowConsentFormModal] = useState(false)
@@ -297,6 +298,46 @@ export function DashboardCards() {
                     </p>
                   </div>
                 </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Studio Settings - Mobile (for owners only) */}
+      {hasEnterpriseStudioAccess(currentUser) && isStudioOwner(currentUser) && (
+        <div className="lg:hidden mb-4 sm:mb-6">
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40">
+            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <CardTitle className="text-base sm:text-lg font-bold text-blue-800">Studio Settings</CardTitle>
+              </div>
+              <CardDescription className="text-sm sm:text-base text-blue-700">
+                Manage Stripe payments and artist permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  Owner Access
+                </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <CreditCard className="h-3 w-3 mr-1" />
+                  Payments
+                </Badge>
+              </div>
+              <p className="text-sm text-blue-600 mb-4">
+                Configure payment processing and artist permissions.
+              </p>
+              <Link href="/studio/settings">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Settings
+                </Button>
               </Link>
             </CardContent>
           </Card>
@@ -608,6 +649,44 @@ export function DashboardCards() {
                     </p>
                   </div>
                 </div>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Studio Settings - Desktop (for owners only) */}
+        {hasEnterpriseStudioAccess(currentUser) && isStudioOwner(currentUser) && (
+          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40 col-span-2">
+            <CardHeader className="pb-4 p-6">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Settings className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Settings</CardTitle>
+              </div>
+              <CardDescription className="text-sm xl:text-base text-blue-700">
+                Manage Stripe payments and artist permissions for your studio
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  Owner Access
+                </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <CreditCard className="h-3 w-3 mr-1" />
+                  Payment Management
+                </Badge>
+              </div>
+              <p className="text-sm text-blue-600 mb-4">
+                Configure how payments are processed and manage artist Stripe account permissions.
+              </p>
+              <Link href="/studio/settings">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Studio Settings
+                </Button>
               </Link>
             </CardContent>
           </Card>

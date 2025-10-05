@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { getTransactionStripeAccount } from '@/lib/stripe-management';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-07-30.basil',
@@ -19,7 +20,9 @@ export async function POST(req: NextRequest) {
       clientEmail,
       items,
       successUrl, 
-      cancelUrl 
+      cancelUrl,
+      stripeAccountId,
+      isOwnerAccount
     } = await req.json();
 
     if (!amount || !currency || !paymentMethod) {
@@ -53,7 +56,7 @@ export async function POST(req: NextRequest) {
     }));
 
     // Create Stripe checkout session for BNPL payment
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: [stripePaymentMethod],
       line_items: lineItems,
       mode: 'payment',
@@ -63,7 +66,9 @@ export async function POST(req: NextRequest) {
         paymentType: 'bnpl',
         paymentMethod: paymentMethod,
         clientName: clientName,
-        clientEmail: clientEmail
+        clientEmail: clientEmail,
+        stripeAccountId: stripeAccountId || 'default',
+        isOwnerAccount: isOwnerAccount ? 'true' : 'false'
       },
       customer_email: clientEmail,
       billing_address_collection: 'required',
@@ -76,7 +81,25 @@ export async function POST(req: NextRequest) {
           // BNPL specific options can be added here
         }
       }
-    });
+    };
+
+    let session: Stripe.Checkout.Session;
+
+    // For Enterprise Studio, use the specified Stripe account
+    if (stripeAccountId && isOwnerAccount) {
+      // Use Stripe Connect for owner account
+      session = await stripe.checkout.sessions.create(sessionConfig, {
+        stripeAccount: stripeAccountId
+      });
+    } else if (stripeAccountId && !isOwnerAccount) {
+      // Use artist's own account
+      session = await stripe.checkout.sessions.create(sessionConfig, {
+        stripeAccount: stripeAccountId
+      });
+    } else {
+      // Use default account
+      session = await stripe.checkout.sessions.create(sessionConfig);
+    }
 
     return NextResponse.json({ 
       success: true,
