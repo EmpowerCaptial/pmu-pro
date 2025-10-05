@@ -244,7 +244,7 @@ export default function InvoicesPage() {
 
   return (
     <SubscriptionGate>
-      <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige pb-20 sm:pb-0">
+      <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5 pb-20 sm:pb-0">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -252,11 +252,18 @@ export default function InvoicesPage() {
               <p className="text-gray-600">Create and manage invoices for your clients</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsPreviewOpen(true)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsPreviewOpen(true)}
+                className="border-lavender/30 text-lavender hover:bg-lavender/10"
+              >
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
               </Button>
-              <Button onClick={saveInvoice}>
+              <Button 
+                onClick={saveInvoice}
+                className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              >
                 <Save className="h-4 w-4 mr-2" />
                 Save Invoice
               </Button>
@@ -420,6 +427,7 @@ export default function InvoicesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => addItem('service')}
+                      className="border-lavender/30 text-lavender hover:bg-lavender/10"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Service
@@ -428,6 +436,7 @@ export default function InvoicesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => addItem('product')}
+                      className="border-lavender/30 text-lavender hover:bg-lavender/10"
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Add Product
@@ -436,6 +445,7 @@ export default function InvoicesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => addItem('custom')}
+                      className="border-lavender/30 text-lavender hover:bg-lavender/10"
                     >
                       <Wrench className="h-4 w-4 mr-2" />
                       Custom Charge

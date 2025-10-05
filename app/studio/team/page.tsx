@@ -18,7 +18,8 @@ import {
   Trash2,
   Edit,
   Crown,
-  User
+  User,
+  Package
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -374,13 +375,24 @@ export default function StudioTeamPage() {
                   Add students, licensed artists, or instructors to your studio team
                 </CardDescription>
               </div>
-              <Button 
-                onClick={() => setShowInviteForm(!showInviteForm)}
-                className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
-                size="sm"
-              >
-                {showInviteForm ? 'Cancel' : 'Invite Team Member'}
-              </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      onClick={() => setShowInviteForm(!showInviteForm)}
+                      className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
+                      size="sm"
+                    >
+                      {showInviteForm ? 'Cancel' : 'Invite Team Member'}
+                    </Button>
+                    <Button 
+                      onClick={() => window.location.href = '/studio/service-assignments'}
+                      variant="outline"
+                      className="w-full sm:w-auto border-lavender/30 text-lavender hover:bg-lavender/10"
+                      size="sm"
+                    >
+                      <Package className="h-4 w-4 mr-2" />
+                      Service Assignments
+                    </Button>
+                  </div>
             </div>
           </CardHeader>
           

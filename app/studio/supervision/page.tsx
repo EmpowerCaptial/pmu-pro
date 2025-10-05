@@ -265,8 +265,24 @@ export default function StudioSupervisionPage() {
         const services = await getServices(currentUser.email)
         const activeServices = services.filter(service => service.isActive)
         const mappedServices = activeServices.map(mapApiServiceToSupervisionService)
-        setAvailableServices(mappedServices as any)
-        console.log('Loaded services:', mappedServices)
+        
+        // Filter services based on assignments if user is a student
+        if (currentUser?.role === 'student') {
+          const assignments = JSON.parse(localStorage.getItem('service-assignments') || '[]')
+          const assignedServices = mappedServices.filter(service => 
+            assignments.some((assignment: any) => 
+              assignment.serviceId === service.id && 
+              assignment.userId === currentUser.id && 
+              assignment.assigned
+            )
+          )
+          setAvailableServices(assignedServices as any)
+          console.log('Loaded assigned services for student:', assignedServices)
+        } else {
+          // Instructors and licensed artists see all services
+          setAvailableServices(mappedServices as any)
+          console.log('Loaded all services:', mappedServices)
+        }
       } catch (error) {
         console.error('Error loading services:', error)
         // Fallback to default services
