@@ -304,45 +304,6 @@ export function DashboardCards() {
         </div>
       )}
 
-      {/* Studio Settings - Mobile (for owners only) */}
-      {hasEnterpriseStudioAccess(currentUser) && isStudioOwner(currentUser) && (
-        <div className="lg:hidden mb-4 sm:mb-6">
-          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40">
-            <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                </div>
-                <CardTitle className="text-base sm:text-lg font-bold text-blue-800">Studio Settings</CardTitle>
-              </div>
-              <CardDescription className="text-sm sm:text-base text-blue-700">
-                Manage Stripe payments and artist permissions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                  <Building2 className="h-3 w-3 mr-1" />
-                  Owner Access
-                </Badge>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                  <CreditCard className="h-3 w-3 mr-1" />
-                  Payments
-                </Badge>
-              </div>
-              <p className="text-sm text-blue-600 mb-4">
-                Configure payment processing and artist permissions.
-              </p>
-              <Link href="/studio/settings">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage Settings
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Studio Supervision - Mobile (for instructors only) */}
       {console.log('🔍 Mobile Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
@@ -654,43 +615,6 @@ export function DashboardCards() {
           </Card>
         )}
 
-        {/* Studio Settings - Desktop (for owners only) */}
-        {hasEnterpriseStudioAccess(currentUser) && isStudioOwner(currentUser) && (
-          <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40 col-span-2">
-            <CardHeader className="pb-4 p-6">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Settings className="h-5 w-5 text-white" />
-                </div>
-                <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Settings</CardTitle>
-              </div>
-              <CardDescription className="text-sm xl:text-base text-blue-700">
-                Manage Stripe payments and artist permissions for your studio
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                  <Building2 className="h-3 w-3 mr-1" />
-                  Owner Access
-                </Badge>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                  <CreditCard className="h-3 w-3 mr-1" />
-                  Payment Management
-                </Badge>
-              </div>
-              <p className="text-sm text-blue-600 mb-4">
-                Configure how payments are processed and manage artist Stripe account permissions.
-              </p>
-              <Link href="/studio/settings">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage Studio Settings
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Studio Supervision - Desktop (for instructors only) */}
         {console.log('🔍 Desktop Card Check:', { supervisionAccess, canAccess: supervisionAccess?.canAccess, userRole: supervisionAccess?.userRole })}
@@ -747,7 +671,7 @@ export function DashboardCards() {
                 <CardTitle className="text-lg xl:text-xl font-bold text-blue-800">Studio Management & Settings</CardTitle>
               </div>
               <CardDescription className="text-sm xl:text-base text-blue-700">
-                Manage your studio, team members, settings, and enterprise features
+                Manage your studio, team members, Stripe payments, artist permissions, and enterprise features
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -757,8 +681,8 @@ export function DashboardCards() {
                   Studio Owner
                 </Badge>
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                  <Settings className="h-3 w-3 mr-1" />
-                  Management Hub
+                  <CreditCard className="h-3 w-3 mr-1" />
+                  Payment Management
                 </Badge>
               </div>
               
@@ -781,6 +705,31 @@ export function DashboardCards() {
                     <div className="relative z-10 py-2 px-3 text-center">
                       <span className="text-white font-semibold text-xs">
                         🎯 Services
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+              
+              {/* Settings Options Grid */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <Link href="/studio/settings" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 px-3 text-center">
+                      <span className="text-white font-semibold text-xs">
+                        💳 Payments
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="/studio/settings" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 px-3 text-center">
+                      <span className="text-white font-semibold text-xs">
+                        ⚙️ Permissions
                       </span>
                     </div>
                   </div>
