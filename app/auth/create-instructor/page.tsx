@@ -263,19 +263,38 @@ function CreateInstructorContent() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="selectedPlan">Plan</Label>
-                <Select value={formData.selectedPlan} onValueChange={(value) => handleInputChange('selectedPlan', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="studio">Studio</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Only show plan selection for admin-created instructors, not studio invitations */}
+              {searchParams.get('invitation') !== 'instructor' && (
+                <div className="space-y-2">
+                  <Label htmlFor="selectedPlan">Plan</Label>
+                  <Select value={formData.selectedPlan} onValueChange={(value) => handleInputChange('selectedPlan', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="studio">Studio</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {/* Show plan info for studio invitations */}
+              {searchParams.get('invitation') === 'instructor' && (
+                <div className="space-y-2">
+                  <Label>Plan</Label>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-blue-700 font-medium">Studio Plan (Included)</span>
+                    </div>
+                    <p className="text-blue-600 text-sm mt-1">
+                      You'll be joining the studio's enterprise plan
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button type="submit" disabled={isLoading} className="w-full bg-lavender hover:bg-lavender/90">
