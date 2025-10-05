@@ -30,7 +30,7 @@ interface Instructor {
   joinedAt?: string
   licenseNumber?: string
   licenseState?: string
-  role: 'licensed' | 'student'
+  role: 'instructor' | 'licensed' | 'student'
 }
 
 export default function StudioManagementPage() {
@@ -39,7 +39,7 @@ export default function StudioManagementPage() {
   const [showInviteForm, setShowInviteForm] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
-  const [inviteRole, setInviteRole] = useState<'licensed' | 'student'>('student')
+  const [inviteRole, setInviteRole] = useState<'instructor' | 'licensed' | 'student'>('instructor')
   const [isInviting, setIsInviting] = useState(false)
 
   // Load instructors from localStorage
@@ -96,7 +96,7 @@ export default function StudioManagementPage() {
       // Reset form
       setInviteEmail('')
       setInviteName('')
-      setInviteRole('student')
+      setInviteRole('instructor')
       setShowInviteForm(false)
       setIsInviting(false)
 
@@ -115,7 +115,7 @@ export default function StudioManagementPage() {
     }
   }
 
-  const handleUpgradeInstructorRole = (instructorId: string, newRole: 'licensed' | 'student') => {
+  const handleUpgradeInstructorRole = (instructorId: string, newRole: 'instructor' | 'licensed' | 'student') => {
     const instructor = instructors.find(i => i.id === instructorId)
     if (!instructor) return
     
@@ -126,8 +126,8 @@ export default function StudioManagementPage() {
     )
     saveInstructors(updatedInstructors)
     
-    const roleText = newRole === 'licensed' ? 'Licensed Artist' : 'Student'
-    alert(`${instructor.name} has been ${newRole === 'licensed' ? 'upgraded to' : 'changed to'} ${roleText} status!`)
+    const roleText = newRole === 'instructor' ? 'Instructor' : newRole === 'licensed' ? 'Licensed Artist' : 'Student'
+    alert(`${instructor.name} has been changed to ${roleText} status!`)
   }
 
   const handleApproveInstructor = (instructorId: string) => {
@@ -297,14 +297,17 @@ export default function StudioManagementPage() {
                 <select
                   id="instructor-role"
                   value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as 'licensed' | 'student')}
+                  onChange={(e) => setInviteRole(e.target.value as 'instructor' | 'licensed' | 'student')}
                   className="w-full mt-1 p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
                 >
-                  <option value="student">Student/Apprentice - Uses supervision booking system</option>
-                  <option value="licensed">Licensed Artist - Uses regular booking system</option>
+                  <option value="instructor">🏆 Instructor - Gets instructor dashboard & can supervise students</option>
+                  <option value="licensed">🎨 Licensed Artist - Uses regular booking system independently</option>
+                  <option value="student">🎓 Student/Apprentice - Uses supervision booking system</option>
                 </select>
                 <p className="text-sm text-ink/70 mt-2">
-                  {inviteRole === 'student' 
+                  {inviteRole === 'instructor' 
+                    ? 'Instructors get access to the instructor dashboard, can supervise students, and manage the supervision booking system.'
+                    : inviteRole === 'student' 
                     ? 'Students will use the supervision booking system and require instructor oversight for all procedures.'
                     : 'Licensed artists will use the regular booking system and can work independently with clients.'
                   }
@@ -380,11 +383,13 @@ export default function StudioManagementPage() {
                       {getStatusBadge(instructor.status)}
                       
                       <Badge variant="outline" className={
-                        instructor.role === 'licensed' 
+                        instructor.role === 'instructor'
+                          ? 'text-gold-600 border-gold-600 bg-gold-50'
+                          : instructor.role === 'licensed' 
                           ? 'text-blue-600 border-blue-600 bg-blue-50' 
                           : 'text-purple-600 border-purple-600 bg-purple-50'
                       }>
-                        {instructor.role === 'licensed' ? 'Licensed Artist' : 'Student/Apprentice'}
+                        {instructor.role === 'instructor' ? '🏆 Instructor' : instructor.role === 'licensed' ? '🎨 Licensed Artist' : '🎓 Student/Apprentice'}
                       </Badge>
                       
                       <div className="flex space-x-2">
@@ -422,26 +427,70 @@ export default function StudioManagementPage() {
                         {instructor.status === 'active' && (
                           <>
                             {instructor.role === 'student' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
-                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                              >
-                                <GraduationCap className="h-4 w-4 mr-1" />
-                                Upgrade to Licensed
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                >
+                                  <GraduationCap className="h-4 w-4 mr-1" />
+                                  Make Licensed Artist
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                  className="text-gold-600 border-gold-600 hover:bg-gold-50"
+                                >
+                                  <GraduationCap className="h-4 w-4 mr-1" />
+                                  Make Instructor
+                                </Button>
+                              </>
                             )}
                             {instructor.role === 'licensed' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
-                                className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                              >
-                                <Users className="h-4 w-4 mr-1" />
-                                Change to Student
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                  className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                >
+                                  <Users className="h-4 w-4 mr-1" />
+                                  Make Student
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                  className="text-gold-600 border-gold-600 hover:bg-gold-50"
+                                >
+                                  <GraduationCap className="h-4 w-4 mr-1" />
+                                  Make Instructor
+                                </Button>
+                              </>
+                            )}
+                            {instructor.role === 'instructor' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                >
+                                  <GraduationCap className="h-4 w-4 mr-1" />
+                                  Make Licensed Artist
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                  className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                                >
+                                  <Users className="h-4 w-4 mr-1" />
+                                  Make Student
+                                </Button>
+                              </>
                             )}
                           </>
                         )}
