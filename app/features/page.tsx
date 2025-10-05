@@ -371,9 +371,18 @@ const professionalFeatures = [
 // All features combined
 const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures, ...professionalFeatures]
 
-// Filter features based on user's plan
-const getFilteredFeatures = (userPlan: string) => {
+// Filter features based on user's plan and role
+const getFilteredFeatures = (userPlan: string, userRole?: string) => {
   return allFeatures.filter(feature => {
+    // Management features - only available to owners, managers, directors
+    const managementFeatures = ['team', 'time-clock', 'reports', 'payouts', 'expenses', 'inventory']
+    if (managementFeatures.includes(feature.id)) {
+      // Must have Studio plan AND management role
+      const hasStudioPlan = userPlan === 'studio' || userPlan === 'enterprise'
+      const hasManagementRole = userRole === 'owner' || userRole === 'manager' || userRole === 'director'
+      return hasStudioPlan && hasManagementRole
+    }
+    
     // Team feature is only available for Studio plans
     if (feature.id === 'team') {
       return userPlan === 'studio' || userPlan === 'enterprise'
@@ -416,11 +425,12 @@ export default function FeaturesPage() {
   const [showTeamChoiceModal, setShowTeamChoiceModal] = useState(false)
   const [selectedCategory] = useState('all') // Always show all features
   
-  // Get user's plan for feature filtering
+  // Get user's plan and role for feature filtering
   const userPlan = (currentUser as any)?.selectedPlan || (currentUser as any)?.subscription || 'starter'
+  const userRole = currentUser?.role
   
-  // Get filtered features based on user's plan
-  const filteredFeatures = getFilteredFeatures(userPlan)
+  // Get filtered features based on user's plan and role
+  const filteredFeatures = getFilteredFeatures(userPlan, userRole)
 
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
@@ -471,12 +481,18 @@ export default function FeaturesPage() {
     initials: "PA",
   }
 
+  // Calculate filtered counts for each category
+  const filteredCoreFeatures = filteredFeatures.filter(f => f.category === 'core')
+  const filteredBusinessFeatures = filteredFeatures.filter(f => f.category === 'business')
+  const filteredMarketingFeatures = filteredFeatures.filter(f => f.category === 'marketing')
+  const filteredProfessionalFeatures = filteredFeatures.filter(f => f.category === 'professional')
+
   const categories = [
     { id: 'all', name: 'All Features', count: filteredFeatures.length },
-    { id: 'core', name: 'Core', count: coreFeatures.length },
-    { id: 'business', name: 'Business', count: businessFeatures.length },
-    { id: 'marketing', name: 'Marketing', count: marketingFeatures.length },
-    { id: 'professional', name: 'Professional', count: professionalFeatures.length }
+    { id: 'core', name: 'Core', count: filteredCoreFeatures.length },
+    { id: 'business', name: 'Business', count: filteredBusinessFeatures.length },
+    { id: 'marketing', name: 'Marketing', count: filteredMarketingFeatures.length },
+    { id: 'professional', name: 'Professional', count: filteredProfessionalFeatures.length }
   ]
 
   const searchFilteredFeatures = filteredFeatures.filter(feature => {
