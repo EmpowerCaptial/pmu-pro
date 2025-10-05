@@ -176,6 +176,49 @@ export default function StudioTeamPage() {
     saveTeamMembers(updatedTeamMembers)
   }
 
+  const handleSeparateTeamMember = async (memberId: string) => {
+    const member = teamMembers.find(m => m.id === memberId)
+    if (!member) return
+
+    const newPlan = confirm(`Separate ${member.name} from the studio?\n\nThis will create an individual ${member.role === 'student' ? 'Starter' : 'Professional'} account for them.\n\nClick OK to proceed.`) 
+      ? (member.role === 'student' ? 'starter' : 'professional')
+      : null
+
+    if (!newPlan) return
+
+    try {
+      const response = await fetch('/api/studio/separate-member', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: member.email,
+          newPlan: newPlan,
+          reason: 'Studio separation',
+          ownerEmail: currentUser?.email
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to separate member')
+      }
+
+      const result = await response.json()
+      
+      // Remove member from team list
+      const updatedTeamMembers = teamMembers.filter(m => m.id !== memberId)
+      saveTeamMembers(updatedTeamMembers)
+
+      alert(`✅ ${member.name} has been successfully separated from the studio!\n\nThey now have their own ${newPlan} account:\nEmail: ${result.newAccount.email}\nTemporary Password: ${result.newAccount.temporaryPassword}\n\nPlease share these credentials with them securely.`)
+
+    } catch (error) {
+      console.error('Error separating team member:', error)
+      alert(`Failed to separate ${member.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -525,6 +568,17 @@ export default function StudioTeamPage() {
                                   <option value="instructor">Instructor</option>
                                 </select>
                               )}
+                              
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSeparateTeamMember(member.id)}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50 text-xs px-2 py-1 h-7"
+                                title="Create individual account for this member"
+                              >
+                                <User className="h-3 w-3 mr-1" />
+                                Separate
+                              </Button>
                               
                               <Button
                                 size="sm"

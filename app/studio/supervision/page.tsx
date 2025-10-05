@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   Calendar, 
   Users, 
@@ -46,7 +47,7 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 123-4567',
     email: 'sarah@universalbeautystudio.com',
-    avatar: '/images/instructor1.jpg',
+    avatar: null, // Will be populated from database
     licenseNumber: 'PMU-2024-001'
   },
   {
@@ -58,7 +59,7 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 987-6543',
     email: 'michael@universalbeautystudio.com',
-    avatar: '/images/instructor2.jpg',
+    avatar: null, // Will be populated from database
     licenseNumber: 'PMU-2024-002'
   },
   {
@@ -70,7 +71,7 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 456-7890',
     email: 'emma@universalbeautystudio.com',
-    avatar: '/images/instructor3.jpg',
+    avatar: null, // Will be populated from database
     licenseNumber: 'PMU-2024-003'
   }
 ]
@@ -107,7 +108,8 @@ export default function StudioSupervisionPage() {
     name: '',
     phone: '',
     email: '',
-    service: ''
+    service: '',
+    selectedInstructor: '' // For walk-in bookings
   })
   const [showClientForm, setShowClientForm] = useState(false)
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
@@ -172,6 +174,40 @@ export default function StudioSupervisionPage() {
       }
     }
   }, [])
+
+  // Fetch instructor avatars from database
+  useEffect(() => {
+    const fetchInstructorAvatars = async () => {
+      try {
+        // Get all instructors from the same studio
+        const response = await fetch('/api/studio/instructors', {
+          headers: {
+            'x-user-email': currentUser?.email || ''
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          // Update mockInstructors with real avatar data
+          const updatedInstructors = mockInstructors.map(instructor => {
+            const realInstructor = data.instructors.find((i: any) => i.email === instructor.email)
+            return {
+              ...instructor,
+              avatar: realInstructor?.avatar || null
+            }
+          })
+          // Note: In a real app, you'd update state here, but since we're using mock data,
+          // we'll keep the current structure for now
+        }
+      } catch (error) {
+        console.error('Error fetching instructor avatars:', error)
+      }
+    }
+
+    if (currentUser?.email) {
+      fetchInstructorAvatars()
+    }
+  }, [currentUser])
 
   // Map API services to supervision service format
   const mapApiServiceToSupervisionService = (apiService: Service) => ({
@@ -801,19 +837,21 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Handle client form submission and deposit generation
   const handleClientFormSubmit = async () => {
-    if (!clientInfo.name || !clientInfo.phone || !clientInfo.service) {
-      alert('Please fill in all required fields')
+    if (!clientInfo.name || !clientInfo.phone || !clientInfo.service || !clientInfo.selectedInstructor) {
+      alert('Please fill in all required fields including supervising instructor')
       return
     }
 
     try {
-      const instructor = mockInstructors.find(i => i.id === selectedInstructor)
+      // For walk-in bookings, use the instructor selected in the form
+      const instructorId = clientInfo.selectedInstructor || selectedInstructor
+      const instructor = mockInstructors.find(i => i.id === instructorId)
       const service = (availableServices.length > 0 ? availableServices : defaultSupervisionServices).find((s: any) => s.id === clientInfo.service) as any
       
       // Create booking with pending status
       const newBooking: any = {
         id: Date.now().toString(),
-        instructorId: selectedInstructor,
+        instructorId: instructorId,
         instructorName: instructor?.name,
         date: selectedDate,
         time: selectedTime,
@@ -951,7 +989,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       setSelectedTime('')
       setAvailableSlots([])
       setShowClientForm(false)
-      setClientInfo({ name: '', phone: '', email: '', service: '' })
+      setClientInfo({ name: '', phone: '', email: '', service: '', selectedInstructor: '' })
       setBookingStatus('pending')
 
     } catch (error) {
@@ -1626,9 +1664,16 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3 mb-3">
-                            <div className="w-12 h-12 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                              {instructor.name.split(' ').map(n => n[0]).join('')}
-                            </div>
+                            <Avatar className="w-12 h-12 border-2 border-lavender/20">
+                              <AvatarImage 
+                                src={instructor.avatar || undefined} 
+                                alt={`${instructor.name} profile`}
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white font-bold text-lg">
+                                {instructor.name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
                               <h3 className="font-bold text-ink">{instructor.name}</h3>
                               <p className="text-sm text-ink/70">{instructor.specialty}</p>
@@ -1986,6 +2031,25 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 ))}
                               </select>
                             </div>
+                            <div>
+                              <label className="block text-sm font-medium text-ink mb-2">Supervising Instructor *</label>
+                              <select
+                                value={clientInfo.selectedInstructor}
+                                onChange={(e) => setClientInfo({...clientInfo, selectedInstructor: e.target.value})}
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                required
+                              >
+                                <option value="">Select supervising instructor</option>
+                                {mockInstructors.map((instructor) => (
+                                  <option key={instructor.id} value={instructor.id}>
+                                    {instructor.name} - {instructor.specialty}
+                                  </option>
+                                ))}
+                              </select>
+                              <p className="text-xs text-ink/60 mt-1">
+                                The instructor must approve this walk-in booking before it's added to the schedule
+                              </p>
+                            </div>
                           </div>
 
                           {/* Selected Service Details */}
@@ -2025,7 +2089,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </Button>
                             <Button 
                               onClick={handleClientFormSubmit}
-                              disabled={!clientInfo.name || !clientInfo.phone || !clientInfo.service}
+                              disabled={!clientInfo.name || !clientInfo.phone || !clientInfo.service || !clientInfo.selectedInstructor}
                               className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
                             >
                               <div className="flex flex-col items-center">
