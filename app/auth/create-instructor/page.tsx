@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import type { Metadata } from "next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { Loader2, UserPlus, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react"
 
-export default function CreateInstructorPage() {
+function CreateInstructorContent() {
   const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     email: '',
@@ -313,5 +313,22 @@ export default function CreateInstructorPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function CreateInstructorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-lavender-50 to-white flex items-center justify-center p-4">
+        <Card className="w-full max-sm:max-w-md border-lavender/30 shadow-xl">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <CreateInstructorContent />
+    </Suspense>
   )
 }
