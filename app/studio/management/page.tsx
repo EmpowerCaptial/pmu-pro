@@ -38,6 +38,7 @@ interface Instructor {
   licenseNumber?: string
   licenseState?: string
   role: 'instructor' | 'licensed' | 'student'
+  avatar?: string
 }
 
 export default function StudioManagementPage() {
@@ -343,10 +344,7 @@ export default function StudioManagementPage() {
         {/* Instructors List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <GraduationCap className="h-5 w-5 text-lavender" />
-              <span>Studio Instructors</span>
-            </CardTitle>
+            <CardTitle>Studio Instructors</CardTitle>
             <CardDescription>
               Manage your studio's instructors and their access levels
             </CardDescription>
@@ -368,17 +366,24 @@ export default function StudioManagementPage() {
                 {instructors.map((instructor) => (
                   <div key={instructor.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
-                            {instructor.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </span>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
+                          {instructor.avatar ? (
+                            <img 
+                              src={instructor.avatar} 
+                              alt={`${instructor.name} profile`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg font-medium text-gray-600">
+                              {instructor.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{instructor.name}</h3>
-                          <p className="text-sm text-gray-600">{instructor.email}</p>
+                          <h3 className="font-medium text-gray-900 text-lg">{instructor.name}</h3>
                           {instructor.licenseNumber && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-gray-500">
                               License: {instructor.licenseNumber} ({instructor.licenseState})
                             </p>
                           )}
@@ -401,30 +406,51 @@ export default function StudioManagementPage() {
                         </Badge>
                       </div>
                       
-                      {/* Mobile-friendly actions dropdown */}
+                      {/* Actions dropdown */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 w-8 p-0 hover:bg-gray-50"
+                            onClick={(e) => e.preventDefault()}
+                          >
                             <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           {instructor.status === 'pending' && (
-                            <DropdownMenuItem onClick={() => handleApproveInstructor(instructor.id)}>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                handleApproveInstructor(instructor.id);
+                              }}
+                              className="cursor-pointer"
+                            >
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Approve
                             </DropdownMenuItem>
                           )}
                           
                           {instructor.status === 'active' && (
-                            <DropdownMenuItem onClick={() => handleSuspendInstructor(instructor.id)}>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                handleSuspendInstructor(instructor.id);
+                              }}
+                              className="cursor-pointer"
+                            >
                               <AlertTriangle className="h-4 w-4 mr-2 text-red-600" />
                               Suspend
                             </DropdownMenuItem>
                           )}
                           
                           {instructor.status === 'suspended' && (
-                            <DropdownMenuItem onClick={() => handleApproveInstructor(instructor.id)}>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                handleApproveInstructor(instructor.id);
+                              }}
+                              className="cursor-pointer"
+                            >
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Reactivate
                             </DropdownMenuItem>
@@ -434,11 +460,17 @@ export default function StudioManagementPage() {
                             <>
                               {instructor.role === 'student' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                    className="cursor-pointer"
+                                  >
                                     <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
                                     Make Licensed Artist
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                    className="cursor-pointer"
+                                  >
                                     <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
                                     Make Instructor
                                   </DropdownMenuItem>
@@ -446,11 +478,17 @@ export default function StudioManagementPage() {
                               )}
                               {instructor.role === 'licensed' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                    className="cursor-pointer"
+                                  >
                                     <Users className="h-4 w-4 mr-2 text-purple-600" />
                                     Make Student
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                    className="cursor-pointer"
+                                  >
                                     <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
                                     Make Instructor
                                   </DropdownMenuItem>
@@ -458,11 +496,17 @@ export default function StudioManagementPage() {
                               )}
                               {instructor.role === 'instructor' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                    className="cursor-pointer"
+                                  >
                                     <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
                                     Make Licensed Artist
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                    className="cursor-pointer"
+                                  >
                                     <Users className="h-4 w-4 mr-2 text-purple-600" />
                                     Make Student
                                   </DropdownMenuItem>
@@ -472,8 +516,10 @@ export default function StudioManagementPage() {
                           )}
                           
                           <DropdownMenuItem 
-                            onClick={() => handleRemoveInstructor(instructor.id)}
-                            className="text-red-600 focus:text-red-600"
+                            onClick={() => {
+                              handleRemoveInstructor(instructor.id);
+                            }}
+                            className="text-red-600 focus:text-red-600 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Remove
