@@ -23,7 +23,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        selectedPlan: true,
+        hasActiveSubscription: true,
+        isLicenseVerified: true,
+        businessName: true,
+        studioName: true
+      }
     })
 
     if (!user) {
@@ -70,7 +81,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        selectedPlan: true,
+        hasActiveSubscription: true,
+        isLicenseVerified: true,
+        businessName: true,
+        studioName: true
+      }
     })
 
     if (!user) {
