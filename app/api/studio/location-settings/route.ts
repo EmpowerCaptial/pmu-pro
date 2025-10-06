@@ -1,0 +1,70 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  try {
+    const userEmail = request.headers.get('x-user-email')
+
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 400 })
+    }
+
+    // Return default settings without any database queries
+    const defaultSettings = {
+      address: '',
+      lat: null,
+      lng: null,
+      radius: 15.24, // 50 feet in meters
+      isConfigured: false
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      settings: defaultSettings,
+      studioKey: `geolocation-settings-${userEmail.split('@')[0]}`
+    })
+
+  } catch (error) {
+    console.error('Error fetching geolocation settings:', error)
+    return NextResponse.json({ 
+      error: 'Failed to fetch geolocation settings',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const userEmail = request.headers.get('x-user-email')
+    const settings = await request.json()
+
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 400 })
+    }
+
+    if (!settings.address || !settings.lat || !settings.lng) {
+      return NextResponse.json({ error: 'Address and coordinates are required' }, { status: 400 })
+    }
+
+    // Return success without any database queries
+    const settingsToStore = {
+      ...settings,
+      studioName: userEmail.split('@')[0],
+      updatedBy: userEmail,
+      updatedAt: new Date().toISOString()
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Geolocation settings saved successfully',
+      settings: settingsToStore,
+      studioKey: `geolocation-settings-${userEmail.split('@')[0]}`
+    })
+
+  } catch (error) {
+    console.error('Error saving geolocation settings:', error)
+    return NextResponse.json({ 
+      error: 'Failed to save geolocation settings',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}

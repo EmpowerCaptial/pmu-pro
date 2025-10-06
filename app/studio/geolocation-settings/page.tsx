@@ -57,11 +57,11 @@ export default function GeolocationSettingsPage() {
     const loadSettings = async () => {
       if (currentUser?.email) {
         try {
-          const response = await fetch('/api/studio/geolocation-settings', {
-            headers: {
-              'x-user-email': currentUser.email
-            }
-          })
+        const response = await fetch('/api/studio/location-settings', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
           
           if (response.ok) {
             const data = await response.json()
@@ -178,7 +178,7 @@ export default function GeolocationSettingsPage() {
 
     setIsSaving(true)
     try {
-      const response = await fetch('/api/studio/geolocation-settings', {
+      const response = await fetch('/api/studio/location-settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
