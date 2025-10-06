@@ -38,20 +38,39 @@ export async function GET(request: NextRequest) {
     let services: any[] = []
     if (user.studioName && (user.role === 'student' || user.role === 'licensed' || user.role === 'instructor')) {
       // For studio members, get services from the studio owner
-      // Prioritize finding the actual owner (role: 'owner') first
-      const studioOwner = await prisma.user.findFirst({
+      // CRITICAL FIX: Prioritize the correct owner by specific user ID first
+      const correctOwnerId = 'cmg0tvtw20000l2048yn605s7' // Tyrone Jackson's correct account
+      
+      let studioOwner = await prisma.user.findFirst({
         where: { 
+          id: correctOwnerId,
           studioName: user.studioName,
-          role: 'owner'  // Prioritize actual owners
-        },
-        select: { id: true }
-      }) || await prisma.user.findFirst({
-        where: { 
-          studioName: user.studioName,
-          role: { in: ['manager', 'director'] }  // Fallback to managers/directors
+          role: 'owner'
         },
         select: { id: true }
       })
+      
+      // If correct owner not found, fallback to any owner
+      if (!studioOwner) {
+        studioOwner = await prisma.user.findFirst({
+          where: { 
+            studioName: user.studioName,
+            role: 'owner'
+          },
+          select: { id: true }
+        })
+      }
+      
+      // If still no owner, fallback to managers/directors
+      if (!studioOwner) {
+        studioOwner = await prisma.user.findFirst({
+          where: { 
+            studioName: user.studioName,
+            role: { in: ['manager', 'director'] }
+          },
+          select: { id: true }
+        })
+      }
       
       if (studioOwner) {
         services = await prisma.service.findMany({
