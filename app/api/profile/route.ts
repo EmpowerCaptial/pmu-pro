@@ -5,6 +5,9 @@ import { z } from 'zod'
 const prisma = new PrismaClient()
 
 const profileSchema = z.object({
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  businessName: z.string().optional(),
   bio: z.string().optional(),
   studioName: z.string().optional(),
   website: z.string().optional(),
@@ -92,6 +95,9 @@ export async function PUT(request: NextRequest) {
 
     // Convert objects to JSON strings for storage
     const updateData: any = {}
+    if (validatedData.name !== undefined) updateData.name = validatedData.name
+    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone
+    if (validatedData.businessName !== undefined) updateData.businessName = validatedData.businessName
     if (validatedData.bio !== undefined) updateData.bio = validatedData.bio
     if (validatedData.studioName !== undefined) updateData.studioName = validatedData.studioName
     if (validatedData.website !== undefined) updateData.website = validatedData.website

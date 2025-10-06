@@ -91,15 +91,55 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Here you would typically save the profile data to the database
-      // For now, we'll just simulate a save
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          name: profileData.name,
+          phone: profileData.phone,
+          businessName: profileData.businessName,
+          studioName: profileData.studioName,
+          address: profileData.address,
+          bio: profileData.bio,
+          specialties: profileData.specialties,
+          certifications: profileData.certifications,
+          avatar: profileData.avatar
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save profile')
+      }
+
+      const result = await response.json()
+      
+      // Update localStorage with the saved data
+      if (typeof window !== 'undefined' && currentUser) {
+        const updatedUser = {
+          ...currentUser,
+          name: profileData.name,
+          phone: profileData.phone,
+          businessName: profileData.businessName,
+          studioName: profileData.studioName,
+          address: profileData.address,
+          bio: profileData.bio,
+          specialties: profileData.specialties,
+          certifications: profileData.certifications,
+          avatar: profileData.avatar
+        }
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+      }
       
       setSaveSuccess(true)
       setIsEditing(false)
       setTimeout(() => setSaveSuccess(false), 2000)
-      } catch (error) {
-        console.error('Error saving profile:', error)
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Failed to save profile. Please try again.')
     } finally {
       setIsSaving(false)
     }
