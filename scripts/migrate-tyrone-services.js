@@ -108,7 +108,7 @@ async function migrateTyroneServices() {
     
     console.log('   📋 Services to migrate:', localStorageServices.length);
     localStorageServices.forEach(s => {
-      console.log(\`     - \${s.name}: $\${s.defaultPrice}\`);
+      console.log(`     - ${s.name}: $${s.defaultPrice}`);
     });
     
     // Step 3: Migrate services to database
