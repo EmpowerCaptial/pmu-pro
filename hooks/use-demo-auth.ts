@@ -12,6 +12,7 @@ interface DemoUser {
   features?: string[]
   platformRole?: string
   isOwner?: boolean
+  avatar?: string
 }
 
 // SECURITY: Production users removed - all authentication now goes through database

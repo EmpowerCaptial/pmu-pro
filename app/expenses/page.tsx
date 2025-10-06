@@ -116,7 +116,8 @@ export default function ExpensesPage() {
   const user = currentUser ? {
     name: currentUser.name,
     email: currentUser.email,
-    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: currentUser.avatar
   } : {
     name: "PMU Artist",
     email: "user@pmupro.com",
