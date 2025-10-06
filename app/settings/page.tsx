@@ -45,9 +45,35 @@ export default function SettingsPage() {
   })
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  const handleSave = () => {
-    // Save settings logic here
-    console.log("Settings saved:", settings)
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify(settings)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save settings')
+      }
+
+      const result = await response.json()
+      
+      // Update localStorage with the saved settings
+      if (typeof window !== 'undefined' && currentUser) {
+        const updatedUser = { ...currentUser, settings: result.settings }
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+      }
+      
+      alert('Settings saved successfully!')
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      alert('Failed to save settings. Please try again.')
+    }
   }
 
   const handleUpgradePlan = (plan: 'starter' | 'professional' | 'studio') => {

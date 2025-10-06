@@ -22,21 +22,49 @@ export default function NewServicePage() {
 
   const categories = ['Eyebrows', 'Lips', 'Eyes', 'Face', 'Other']
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!service.name || !service.description || service.price <= 0) return
 
-    // Save to service storage
-    serviceStorage.addService({
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      duration: service.duration,
-      category: service.category,
-      isActive: true
-    })
+    try {
+      const response = await fetch('/api/services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': localStorage.getItem('userEmail') || ''
+        },
+        body: JSON.stringify({
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          duration: service.duration,
+          category: service.category,
+          isActive: true
+        })
+      })
 
-    // Redirect back to services
-    router.push('/services')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create service')
+      }
+
+      const result = await response.json()
+      
+      // Also save to localStorage for backward compatibility
+      serviceStorage.addService({
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        duration: service.duration,
+        category: service.category,
+        isActive: true
+      })
+
+      // Redirect back to services
+      router.push('/services')
+    } catch (error) {
+      console.error('Error creating service:', error)
+      alert('Failed to create service. Please try again.')
+    }
   }
 
   return (

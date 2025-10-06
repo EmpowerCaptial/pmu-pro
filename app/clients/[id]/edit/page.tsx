@@ -53,35 +53,58 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     loadClientData()
   }, [params.id])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!originalClient) {
       alert("Error: Original client data not found!")
       return
     }
 
     try {
-      // Update the client with new data
-      const updatedClient = {
-        ...originalClient,
-        name: client.name,
-        email: client.email,
-        phone: client.phone,
-        notes: client.notes,
-        emergencyContact: client.emergencyContact,
-        updatedAt: new Date().toISOString()
+      const response = await fetch(`/api/clients/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          notes: client.notes,
+          emergencyContact: client.emergencyContact
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update client')
       }
 
-      const success = updateClient(params.id, updatedClient)
+      const result = await response.json()
       
-      if (success) {
-        alert("Client information updated successfully!")
-        window.location.href = "/clients"
-      } else {
-        alert("Error updating client. Please try again.")
+      // Update localStorage with the saved data
+      if (typeof window !== 'undefined') {
+        const clients = JSON.parse(localStorage.getItem('clients') || '[]')
+        const clientIndex = clients.findIndex((c: any) => c.id === params.id)
+        if (clientIndex !== -1) {
+          clients[clientIndex] = {
+            ...clients[clientIndex],
+            name: client.name,
+            email: client.email,
+            phone: client.phone,
+            notes: client.notes,
+            emergencyContact: client.emergencyContact,
+            updatedAt: new Date().toISOString()
+          }
+          localStorage.setItem('clients', JSON.stringify(clients))
+        }
       }
+      
+      alert("Client information updated successfully!")
+      window.location.href = "/clients"
     } catch (error) {
       console.error('Error saving client:', error)
-      alert("Error saving client data. Please try again.")
+      alert("Error updating client. Please try again.")
     }
   }
 
