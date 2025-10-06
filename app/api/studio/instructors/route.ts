@@ -27,9 +27,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user has access to instructor data
-    if (user.selectedPlan !== 'studio') {
+    // Allow access if user is part of a studio (has studioName) regardless of their individual plan
+    if (!user.studioName) {
       return NextResponse.json({ 
-        error: 'Enterprise Studio subscription required' 
+        error: 'Studio access required' 
       }, { status: 403 })
     }
 
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     const instructors = await prisma.user.findMany({
       where: {
         studioName: user.studioName,
-        role: { in: ['instructor', 'artist'] }, // Include both instructors and artists
+        role: { in: ['instructor', 'artist', 'licensed'] }, // Include instructors, artists, and licensed professionals
         id: { not: user.id } // Exclude the requesting user
       },
       select: {

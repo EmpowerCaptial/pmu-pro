@@ -192,57 +192,112 @@ export default function StudioSupervisionPage() {
     }
   }, [])
 
-  // Fetch real instructors from database
+  // Fetch instructors from database AND localStorage
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
-        // Get all instructors from the same studio
-        const response = await fetch('/api/studio/instructors', {
-          headers: {
-            'x-user-email': currentUser?.email || ''
-          }
-        })
+        let allInstructors: Instructor[] = []
         
-        if (response.ok) {
-          const data = await response.json()
-          
-          // Transform real instructor data to match expected format
-          const transformedInstructors: Instructor[] = data.instructors.map((instructor: any) => ({
-            id: instructor.id,
-            name: instructor.name,
-            email: instructor.email,
-            avatar: instructor.avatar,
-            role: instructor.role,
-            specialties: instructor.specialties,
-            certifications: instructor.certifications,
-            bio: instructor.bio,
-            phone: instructor.phone,
-            businessName: instructor.businessName,
-            // Add compatibility fields
-            specialty: instructor.specialties || 'PMU Specialist',
-            experience: '5+ years', // Default experience
-            rating: 4.8, // Default rating
-            location: instructor.businessName || 'Studio',
-            availability: {
-              monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-              tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-              wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-              thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-              friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-              saturday: [],
-              sunday: []
-            },
-            licenseNumber: `PMU-${instructor.id.slice(-3)}`
-          }))
-          
-          setInstructors(transformedInstructors)
-          
-          // Store in localStorage for persistence
-          localStorage.setItem('supervisionInstructors', JSON.stringify(transformedInstructors))
+        // First, try to get instructors from localStorage (studio management data)
+        const studioInstructors = localStorage.getItem('studio-instructors')
+        if (studioInstructors) {
+          try {
+            const parsed = JSON.parse(studioInstructors)
+            // Transform localStorage data to match expected format
+            const transformedLocalInstructors: Instructor[] = parsed.map((instructor: any) => ({
+              id: instructor.id,
+              name: instructor.name,
+              email: instructor.email,
+              avatar: instructor.avatar,
+              role: instructor.role || 'instructor',
+              specialties: instructor.specialties,
+              certifications: instructor.certifications,
+              bio: instructor.bio,
+              phone: instructor.phone,
+              businessName: instructor.businessName,
+              // Add compatibility fields
+              specialty: instructor.specialty || instructor.specialties || 'PMU Specialist',
+              experience: instructor.experience || '5+ years',
+              rating: instructor.rating || 4.8,
+              location: instructor.location || instructor.businessName || 'Studio',
+              availability: instructor.availability || {
+                monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                saturday: [],
+                sunday: []
+              },
+              licenseNumber: instructor.licenseNumber || `PMU-${instructor.id?.slice(-3) || '001'}`
+            }))
+            allInstructors = [...allInstructors, ...transformedLocalInstructors]
+          } catch (e) {
+            console.error('Error parsing localStorage instructors:', e)
+          }
         }
+        
+        // Then try to get instructors from database API
+        try {
+          const response = await fetch('/api/studio/instructors', {
+            headers: {
+              'x-user-email': currentUser?.email || ''
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            
+            // Transform database instructor data to match expected format
+            const transformedDbInstructors: Instructor[] = data.instructors.map((instructor: any) => ({
+              id: instructor.id,
+              name: instructor.name,
+              email: instructor.email,
+              avatar: instructor.avatar,
+              role: instructor.role,
+              specialties: instructor.specialties,
+              certifications: instructor.certifications,
+              bio: instructor.bio,
+              phone: instructor.phone,
+              businessName: instructor.businessName,
+              // Add compatibility fields
+              specialty: instructor.specialties || 'PMU Specialist',
+              experience: '5+ years',
+              rating: 4.8,
+              location: instructor.businessName || 'Studio',
+              availability: {
+                monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                saturday: [],
+                sunday: []
+              },
+              licenseNumber: `PMU-${instructor.id.slice(-3)}`
+            }))
+            
+            // Merge database instructors with localStorage instructors (avoid duplicates)
+            const existingEmails = new Set(allInstructors.map(i => i.email))
+            const newDbInstructors = transformedDbInstructors.filter(i => !existingEmails.has(i.email))
+            allInstructors = [...allInstructors, ...newDbInstructors]
+          }
+        } catch (apiError) {
+          console.error('Error fetching instructors from API:', apiError)
+        }
+        
+        // If we have instructors from either source, use them
+        if (allInstructors.length > 0) {
+          setInstructors(allInstructors)
+          localStorage.setItem('supervisionInstructors', JSON.stringify(allInstructors))
+        } else {
+          // Fallback to mock data if both fail
+          setInstructors(mockInstructors)
+        }
+        
       } catch (error) {
         console.error('Error fetching instructors:', error)
-        // Fallback to mock data if API fails
+        // Fallback to mock data if everything fails
         setInstructors(mockInstructors)
       }
     }
