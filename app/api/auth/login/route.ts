@@ -24,6 +24,7 @@ export async function POST(req: Request) {
             email: true,
             password: true,
             businessName: true,
+            studioName: true,
             licenseNumber: true,
             licenseState: true,
             selectedPlan: true,
