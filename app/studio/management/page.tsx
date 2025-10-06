@@ -418,10 +418,11 @@ export default function StudioManagementPage() {
                             <span className="sr-only">Open menu</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 z-50">
+                        <DropdownMenuContent align="end" className="w-48 z-50 bg-white border border-gray-200 shadow-lg">
                           {instructor.status === 'pending' && (
                             <DropdownMenuItem 
                               onClick={() => handleApproveInstructor(instructor.id)}
+                              className="hover:bg-green-50 focus:bg-green-50 text-gray-700"
                             >
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Approve
@@ -431,6 +432,7 @@ export default function StudioManagementPage() {
                           {instructor.status === 'active' && (
                             <DropdownMenuItem 
                               onClick={() => handleSuspendInstructor(instructor.id)}
+                              className="hover:bg-red-50 focus:bg-red-50 text-gray-700"
                             >
                               <AlertTriangle className="h-4 w-4 mr-2 text-red-600" />
                               Suspend
@@ -440,6 +442,7 @@ export default function StudioManagementPage() {
                           {instructor.status === 'suspended' && (
                             <DropdownMenuItem 
                               onClick={() => handleApproveInstructor(instructor.id)}
+                              className="hover:bg-green-50 focus:bg-green-50 text-gray-700"
                             >
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Reactivate
@@ -452,14 +455,16 @@ export default function StudioManagementPage() {
                                 <>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                    className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
                                   >
                                     <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
                                     Make Licensed Artist
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                    className="hover:bg-yellow-50 focus:bg-yellow-50 text-gray-700"
                                   >
-                                    <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
+                                    <GraduationCap className="h-4 w-4 mr-2 text-yellow-600" />
                                     Make Instructor
                                   </DropdownMenuItem>
                                 </>
@@ -468,14 +473,16 @@ export default function StudioManagementPage() {
                                 <>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                    className="hover:bg-purple-50 focus:bg-purple-50 text-gray-700"
                                   >
                                     <Users className="h-4 w-4 mr-2 text-purple-600" />
                                     Make Student
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'instructor')}
+                                    className="hover:bg-yellow-50 focus:bg-yellow-50 text-gray-700"
                                   >
-                                    <GraduationCap className="h-4 w-4 mr-2 text-gold-600" />
+                                    <GraduationCap className="h-4 w-4 mr-2 text-yellow-600" />
                                     Make Instructor
                                   </DropdownMenuItem>
                                 </>
@@ -484,12 +491,14 @@ export default function StudioManagementPage() {
                                 <>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'licensed')}
+                                    className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
                                   >
                                     <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
                                     Make Licensed Artist
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleUpgradeInstructorRole(instructor.id, 'student')}
+                                    className="hover:bg-purple-50 focus:bg-purple-50 text-gray-700"
                                   >
                                     <Users className="h-4 w-4 mr-2 text-purple-600" />
                                     Make Student
@@ -501,7 +510,7 @@ export default function StudioManagementPage() {
                           
                           <DropdownMenuItem 
                             onClick={() => handleRemoveInstructor(instructor.id)}
-                            className="text-red-600 focus:text-red-600"
+                            className="hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Remove

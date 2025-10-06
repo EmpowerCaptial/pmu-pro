@@ -36,8 +36,29 @@ import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
 import { NavBar } from '@/components/ui/navbar'
 
-// Mock data for instructors and bookings
-const mockInstructors = [
+// Interface for real instructor data
+interface Instructor {
+  id: string
+  name: string
+  email: string
+  avatar?: string
+  role: string
+  specialties?: string
+  certifications?: string
+  bio?: string
+  phone?: string
+  businessName?: string
+  // Add mock fields for compatibility with existing code
+  specialty?: string
+  experience?: string
+  rating?: number
+  location?: string
+  availability?: any
+  licenseNumber?: string
+}
+
+// Fallback mock data for instructors (used when API fails)
+const mockInstructors: Instructor[] = [
   {
     id: '1',
     name: 'Sarah Johnson',
@@ -47,8 +68,9 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 123-4567',
     email: 'sarah@universalbeautystudio.com',
-    avatar: null, // Will be populated from database
-    licenseNumber: 'PMU-2024-001'
+    avatar: undefined,
+    licenseNumber: 'PMU-2024-001',
+    role: 'instructor'
   },
   {
     id: '2', 
@@ -59,8 +81,9 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 987-6543',
     email: 'michael@universalbeautystudio.com',
-    avatar: null, // Will be populated from database
-    licenseNumber: 'PMU-2024-002'
+    avatar: undefined,
+    licenseNumber: 'PMU-2024-002',
+    role: 'instructor'
   },
   {
     id: '3',
@@ -71,8 +94,9 @@ const mockInstructors = [
     location: 'Universal Beauty Studio',
     phone: '(555) 456-7890',
     email: 'emma@universalbeautystudio.com',
-    avatar: null, // Will be populated from database
-    licenseNumber: 'PMU-2024-003'
+    avatar: undefined,
+    licenseNumber: 'PMU-2024-003',
+    role: 'instructor'
   }
 ]
 
@@ -86,6 +110,7 @@ export default function StudioSupervisionPage() {
   const [supervisionAccess, setSupervisionAccess] = useState<any>(null)
   const [userRole, setUserRole] = useState<'INSTRUCTOR' | 'APPRENTICE' | 'ADMIN' | 'NONE'>('NONE')
   const [activeTab, setActiveTab] = useState<string>('overview')
+  const [instructors, setInstructors] = useState<Instructor[]>([])
   
   // Booking system state
   const [selectedInstructor, setSelectedInstructor] = useState<string>('')
@@ -167,9 +192,9 @@ export default function StudioSupervisionPage() {
     }
   }, [])
 
-  // Fetch instructor avatars from database
+  // Fetch real instructors from database
   useEffect(() => {
-    const fetchInstructorAvatars = async () => {
+    const fetchInstructors = async () => {
       try {
         // Get all instructors from the same studio
         const response = await fetch('/api/studio/instructors', {
@@ -180,24 +205,50 @@ export default function StudioSupervisionPage() {
         
         if (response.ok) {
           const data = await response.json()
-          // Update mockInstructors with real avatar data
-          const updatedInstructors = mockInstructors.map(instructor => {
-            const realInstructor = data.instructors.find((i: any) => i.email === instructor.email)
-            return {
-              ...instructor,
-              avatar: realInstructor?.avatar || null
-            }
-          })
-          // Note: In a real app, you'd update state here, but since we're using mock data,
-          // we'll keep the current structure for now
+          
+          // Transform real instructor data to match expected format
+          const transformedInstructors: Instructor[] = data.instructors.map((instructor: any) => ({
+            id: instructor.id,
+            name: instructor.name,
+            email: instructor.email,
+            avatar: instructor.avatar,
+            role: instructor.role,
+            specialties: instructor.specialties,
+            certifications: instructor.certifications,
+            bio: instructor.bio,
+            phone: instructor.phone,
+            businessName: instructor.businessName,
+            // Add compatibility fields
+            specialty: instructor.specialties || 'PMU Specialist',
+            experience: '5+ years', // Default experience
+            rating: 4.8, // Default rating
+            location: instructor.businessName || 'Studio',
+            availability: {
+              monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+              tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+              wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+              thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+              friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+              saturday: [],
+              sunday: []
+            },
+            licenseNumber: `PMU-${instructor.id.slice(-3)}`
+          }))
+          
+          setInstructors(transformedInstructors)
+          
+          // Store in localStorage for persistence
+          localStorage.setItem('supervisionInstructors', JSON.stringify(transformedInstructors))
         }
       } catch (error) {
-        console.error('Error fetching instructor avatars:', error)
+        console.error('Error fetching instructors:', error)
+        // Fallback to mock data if API fails
+        setInstructors(mockInstructors)
       }
     }
 
     if (currentUser?.email) {
-      fetchInstructorAvatars()
+      fetchInstructors()
     }
   }, [currentUser])
 
@@ -318,8 +369,8 @@ export default function StudioSupervisionPage() {
         })
         setUserRole('INSTRUCTOR')
       } else {
-        setSupervisionAccess(accessCheck)
-        setUserRole(accessCheck.userRole)
+      setSupervisionAccess(accessCheck)
+      setUserRole(accessCheck.userRole)
       }
     }
   }, [currentUser, isLoading])
@@ -367,7 +418,7 @@ export default function StudioSupervisionPage() {
     const bookedTimes = existingBookings.map(booking => booking.time)
     
     // Find the instructor to get their email
-    const instructor = mockInstructors.find(i => i.id === instructorId)
+    const instructor = instructors.find(i => i.id === instructorId)
     const instructorEmail = instructor?.email
     
     // Get real bookings from the booking page (client appointments)
@@ -416,7 +467,7 @@ export default function StudioSupervisionPage() {
     setAvailableSlots([])
     
     // Fetch instructor bookings when instructor is selected
-    const instructor = mockInstructors.find(i => i.id === instructorId)
+    const instructor = instructors.find(i => i.id === instructorId)
     if (instructor?.email) {
       fetchInstructorBookings(instructor.email)
     }
@@ -428,7 +479,7 @@ export default function StudioSupervisionPage() {
     setSelectedTime('')
     
     // Fetch instructor bookings for specific date when date is selected
-    const instructor = mockInstructors.find(i => i.id === selectedInstructor)
+    const instructor = instructors.find(i => i.id === selectedInstructor)
     if (instructor?.email) {
       fetchInstructorBookings(instructor.email, date)
     }
@@ -514,7 +565,7 @@ export default function StudioSupervisionPage() {
     }
 
     // Find the instructor details
-    const instructor = mockInstructors.find(i => i.id === booking.instructorId)
+    const instructor = instructors.find(i => i.id === booking.instructorId)
     
     // Create procedure entry from booking data
     const autoProcedure = {
@@ -701,7 +752,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
   // Handle opening message composer
   const handleMessageInstructor = (instructorId: string) => {
     console.log('Message button clicked for instructor:', instructorId)
-    const instructor = mockInstructors.find(i => i.id === instructorId)
+    const instructor = instructors.find(i => i.id === instructorId)
     if (instructor) {
       console.log('Found instructor:', instructor.name)
       setSelectedInstructorForMessage(instructorId)
@@ -719,7 +770,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Handle opening availability manager
   const handleManageAvailability = (instructorId: string) => {
-    const instructor = mockInstructors.find(i => i.id === instructorId)
+    const instructor = instructors.find(i => i.id === instructorId)
     if (instructor) {
       setSelectedInstructorForAvailability(instructorId)
       setNewAvailability({
@@ -853,7 +904,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
     try {
       // For walk-in bookings, use the instructor selected in the form
       const instructorId = clientInfo.selectedInstructor || selectedInstructor
-      const instructor = mockInstructors.find(i => i.id === instructorId)
+      const instructor = instructors.find(i => i.id === instructorId)
       const service = availableServices.find((s: any) => s.id === clientInfo.service) as any
       
       // Create booking with pending status
@@ -1092,8 +1143,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Show access denied message for licensed artists (unless they're instructors)
   if (!canUseSupervisionBooking && !isInstructor) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory">
         <NavBar 
           currentPath="/studio/supervision"
           user={currentUser ? {
@@ -1408,7 +1459,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                   <CardDescription className="text-ink/70 font-medium">
                     Your scheduled client appointments automatically block supervision times
                   </CardDescription>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="relative z-10">
                   {currentUser?.email && instructorBookings[currentUser.email] ? (
                     <div className="space-y-4">
@@ -1426,7 +1477,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                         </div>
                         <Button
                           onClick={() => {
-                            const instructor = mockInstructors.find(i => i.email === currentUser.email)
+                            const instructor = instructors.find(i => i.email === currentUser.email)
                             if (instructor?.email) {
                               fetchInstructorBookings(instructor.email)
                             }
@@ -1455,7 +1506,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </div>
                           ))
                         ) : (
-                          <div className="text-center py-8">
+                <div className="text-center py-8">
                             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                             <p className="text-gray-600">No client bookings found</p>
                             <p className="text-sm text-gray-500">Your client appointments will appear here</p>
@@ -1468,7 +1519,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                           Showing 5 of {instructorBookings[currentUser.email].blockedTimes.length} appointments
                         </p>
                       )}
-                    </div>
+                </div>
                   ) : (
                     <div className="text-center py-8">
                       <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -1487,8 +1538,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
 
               {/* Manual Availability Settings */}
               <Card className="relative overflow-hidden border-green-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-green-50 backdrop-blur-sm">
@@ -1661,7 +1712,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {mockInstructors.map((instructor) => (
+                    {instructors.map((instructor) => (
                       <Card 
                         key={instructor.id}
                         className={`transition-all duration-300 border-2 ${
@@ -1926,7 +1977,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-ink">Instructor:</span>
-                              <span className="text-ink/80">{mockInstructors.find(i => i.id === selectedInstructor)?.name}</span>
+                              <span className="text-ink/80">{instructors.find(i => i.id === selectedInstructor)?.name}</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-ink">Date:</span>
@@ -1982,7 +2033,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                           <div className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
                             <h3 className="font-bold text-ink mb-2">Session Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                              <div><span className="font-medium">Instructor:</span> {mockInstructors.find(i => i.id === selectedInstructor)?.name}</div>
+                              <div><span className="font-medium">Instructor:</span> {instructors.find(i => i.id === selectedInstructor)?.name}</div>
                               <div><span className="font-medium">Date:</span> {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
                               <div><span className="font-medium">Time:</span> {selectedTime}</div>
                               <div><span className="font-medium">Duration:</span> 2 hours</div>
@@ -2048,7 +2099,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 required
                               >
                                 <option value="">Select supervising instructor</option>
-                                {mockInstructors.map((instructor) => (
+                                {instructors.map((instructor) => (
                                   <option key={instructor.id} value={instructor.id}>
                                     {instructor.name} - {instructor.specialty}
                                   </option>
@@ -2131,7 +2182,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                   <CardDescription className="text-ink/70 font-medium">
                     Manage your apprentice supervision bookings
                   </CardDescription>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="space-y-4">
                     {bookings.filter(booking => booking.instructorId === currentUser?.id).length > 0 ? (
@@ -2233,15 +2284,15 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                           </div>
                         ))
                     ) : (
-                      <div className="text-center py-8">
+                <div className="text-center py-8">
                         <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600 mb-2">No supervision sessions scheduled</p>
                         <p className="text-sm text-gray-500">Apprentice bookings will appear here</p>
                       </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
               {/* Client Appointments */}
               <Card className="relative overflow-hidden border-green-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-green-50 backdrop-blur-sm">
