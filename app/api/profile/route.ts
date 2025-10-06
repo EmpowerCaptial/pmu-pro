@@ -94,6 +94,7 @@ export async function PUT(request: NextRequest) {
     const validatedData = profileSchema.parse(body)
 
     // Convert objects to JSON strings for storage
+    // Only update fields that exist in the database schema
     const updateData: any = {}
     if (validatedData.name !== undefined) updateData.name = validatedData.name
     if (validatedData.phone !== undefined) updateData.phone = validatedData.phone
