@@ -130,6 +130,11 @@ export function shouldUseRegularBooking(user: SupervisionUser): boolean {
     return true
   }
   
+  // Instructors use regular booking system (they can book their own clients)
+  if (user.role === 'instructor') {
+    return true
+  }
+  
   // Licensed artists use regular booking system
   if (user.role === 'licensed') {
     return true
