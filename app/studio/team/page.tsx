@@ -205,69 +205,103 @@ export default function StudioTeamPage() {
     }
   }
 
-  const handleAddTeamMemberManually = () => {
+  const handleAddTeamMemberManually = async () => {
     if (!inviteEmail || !inviteName) return
 
-    // Add directly to team without invitation
-    const newMember: TeamMember = {
-      id: Date.now().toString(),
-      name: inviteName,
-      email: inviteEmail,
-      status: 'active', // Directly active since added manually
-      invitedAt: new Date().toISOString(),
-      joinedAt: new Date().toISOString(),
-      role: inviteRole,
-      licenseNumber: `LIC-${Date.now().toString().slice(-6)}`
-    }
+    setIsInviting(true)
+    
+    try {
+      // Generate a default password for manual additions
+      const defaultPassword = `temp${Date.now().toString().slice(-6)}`
+      
+      // Create database account via API (same as invitation but without email)
+      const response = await fetch('/api/studio/invite-team-member', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: inviteEmail,
+          memberName: inviteName,
+          memberPassword: defaultPassword,
+          memberRole: inviteRole,
+          studioName: (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
+          studioOwnerName: currentUser?.name || 'Studio Owner'
+        }),
+      })
 
-    const updatedTeamMembers = [...teamMembers, newMember]
-    saveTeamMembers(updatedTeamMembers)
-
-    // Also add to studio instructors if they're an instructor
-    if (inviteRole === 'instructor' || inviteRole === 'licensed') {
-      const instructorData = {
-        id: newMember.id,
-        name: newMember.name,
-        email: newMember.email,
-        role: inviteRole,
-        specialty: inviteRole === 'instructor' ? 'PMU Instructor' : 'Licensed Artist',
-        experience: '5+ years',
-        rating: 4.8,
-        location: (currentUser as any)?.businessName || 'Studio',
-        phone: '',
-        avatar: null,
-        licenseNumber: newMember.licenseNumber,
-        availability: {
-          monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-          tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-          wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-          thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-          friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-          saturday: [],
-          sunday: []
-        }
+      if (!response.ok) {
+        throw new Error('Failed to create team member account')
       }
 
-      // Add to studio instructors localStorage
-      const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
-      console.log('➕ Adding instructor manually:', instructorData.name, 'with role:', inviteRole)
-      console.log('📋 Existing instructors before add:', existingInstructors)
+      const data = await response.json()
       
-      existingInstructors.push(instructorData)
-      localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
-      
-      console.log('✅ Added to studio-instructors localStorage:', instructorData)
-      console.log('📋 Updated instructors list:', existingInstructors)
+      // Add to team members list with the real database ID
+      const newMember: TeamMember = {
+        id: data.userId, // Use the real database ID
+        name: inviteName,
+        email: inviteEmail,
+        status: 'active', // Directly active since added manually
+        invitedAt: new Date().toISOString(),
+        joinedAt: new Date().toISOString(),
+        role: inviteRole,
+        licenseNumber: `LIC-${Date.now().toString().slice(-6)}`
+      }
+
+      const updatedTeamMembers = [...teamMembers, newMember]
+      saveTeamMembers(updatedTeamMembers)
+
+      // Also add to studio instructors if they're an instructor
+      if (inviteRole === 'instructor' || inviteRole === 'licensed') {
+        const instructorData = {
+          id: newMember.id,
+          name: newMember.name,
+          email: newMember.email,
+          role: inviteRole,
+          specialty: inviteRole === 'instructor' ? 'PMU Instructor' : 'Licensed Artist',
+          experience: '5+ years',
+          rating: 4.8,
+          location: (currentUser as any)?.businessName || 'Studio',
+          phone: '',
+          avatar: null,
+          licenseNumber: newMember.licenseNumber,
+          availability: {
+            monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            saturday: [],
+            sunday: []
+          }
+        }
+
+        // Add to studio instructors localStorage
+        const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+        console.log('➕ Adding instructor manually:', instructorData.name, 'with role:', inviteRole)
+        console.log('📋 Existing instructors before add:', existingInstructors)
+        
+        existingInstructors.push(instructorData)
+        localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
+        
+        console.log('✅ Added to studio-instructors localStorage:', instructorData)
+        console.log('📋 Updated instructors list:', existingInstructors)
+      }
+
+      // Reset form
+      setInviteEmail('')
+      setInviteName('')
+      setInvitePassword('')
+      setInviteRole('student')
+      setShowInviteForm(false)
+
+      alert(`${inviteRole === 'instructor' ? 'Instructor' : inviteRole === 'licensed' ? 'Licensed Artist' : 'Student'} added to team successfully!\n\nLogin credentials:\nEmail: ${inviteEmail}\nPassword: ${defaultPassword}`)
+    } catch (error) {
+      console.error('Error adding team member manually:', error)
+      alert('Failed to add team member. Please try again.')
+    } finally {
+      setIsInviting(false)
     }
-
-    // Reset form
-    setInviteEmail('')
-    setInviteName('')
-    setInvitePassword('')
-    setInviteRole('student')
-    setShowInviteForm(false)
-
-    alert(`${inviteRole === 'instructor' ? 'Instructor' : inviteRole === 'licensed' ? 'Licensed Artist' : 'Student'} added to team successfully!`)
   }
 
   const handleRemoveTeamMember = (memberId: string) => {
@@ -644,13 +678,13 @@ export default function StudioTeamPage() {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Add Manually
+                    Add to Database
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
                   {addMode === 'invite' 
                     ? 'Send an email invitation with login credentials to the team member'
-                    : 'Add the team member directly without sending an invitation email'
+                    : 'Add the team member directly to the database without sending an email'
                   }
                 </p>
               </div>
@@ -736,7 +770,7 @@ export default function StudioTeamPage() {
                 >
                   {addMode === 'invite' 
                     ? (isInviting ? 'Sending...' : 'Send Invitation')
-                    : 'Add Team Member'
+                    : (isInviting ? 'Adding...' : 'Add to Database')
                   }
                 </Button>
               </div>
