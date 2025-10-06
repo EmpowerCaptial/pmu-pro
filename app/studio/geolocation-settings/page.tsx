@@ -85,15 +85,12 @@ export default function GeolocationSettingsPage() {
   // Geocode address to get coordinates
   const geocodeAddress = async (address: string): Promise<{lat: number, lng: number} | null> => {
     try {
-      // Using a free geocoding service (you can replace with Google Maps API for better accuracy)
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
+      // Use our server-side geocoding API to avoid CORS issues
+      const response = await fetch(`/api/geocoding?address=${encodeURIComponent(address)}`)
       const data = await response.json()
       
-      if (data && data.length > 0) {
-        return {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon)
-        }
+      if (data.success && data.coordinates) {
+        return data.coordinates
       }
       return null
     } catch (error) {
