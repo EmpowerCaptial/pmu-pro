@@ -54,6 +54,14 @@ export function checkStudioSupervisionAccess(user: SupervisionUser): Supervision
     case 'staff':
       supervisionRole = 'ADMIN'
       break
+    case 'instructor':
+      // Direct instructor role - full access to supervision system
+      if (isEnterpriseStudio && user.isLicenseVerified) {
+        supervisionRole = 'INSTRUCTOR'
+      } else {
+        supervisionRole = 'NONE'
+      }
+      break
     case 'licensed':
       // Licensed artists with studio subscription can be instructors
       if (isEnterpriseStudio && user.isLicenseVerified) {
