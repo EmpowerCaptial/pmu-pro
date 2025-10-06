@@ -25,3 +25,28 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const { userEmail } = await request.json()
+    
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 400 })
+    }
+
+    // Get user from database
+    const user = await getSupervisionUser(userEmail)
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Check supervision access
+    const accessResult = checkStudioSupervisionAccess(user)
+
+    return NextResponse.json(accessResult)
+  } catch (error) {
+    console.error('Error checking supervision access:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
