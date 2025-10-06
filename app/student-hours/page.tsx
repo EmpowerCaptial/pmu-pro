@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { 
   Clock, 
   Calendar, 
@@ -13,7 +14,8 @@ import {
   AlertTriangle,
   GraduationCap,
   Clock3,
-  Timer
+  Timer,
+  Users
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -64,7 +66,13 @@ export default function StudentHoursPage() {
 
   // Calculate total hours
   const totalHours = clockEntries.reduce((total, entry) => total + entry.totalHours, 0)
-  const requiredHours = 1000 // Missouri requirement
+  
+  // Get required hours from localStorage (settable by staff managers)
+  const [requiredHours, setRequiredHours] = useState(() => {
+    const saved = localStorage.getItem('apprenticeship-required-hours')
+    return saved ? parseInt(saved) : 1000 // Default to 1000 hours
+  })
+  
   const remainingHours = Math.max(0, requiredHours - totalHours)
   const progressPercentage = Math.min(100, (totalHours / requiredHours) * 100)
 
@@ -145,10 +153,18 @@ export default function StudentHoursPage() {
     return `${displayHour}:${minutes} ${ampm}`
   }
 
-  // Access control - only students and apprentices can access this page
+  // Function to update required hours (for staff managers)
+  const updateRequiredHours = (newHours: number) => {
+    setRequiredHours(newHours)
+    localStorage.setItem('apprenticeship-required-hours', newHours.toString())
+  }
+
+  // Access control - students, apprentices, and staff managers can access this page
   const isStudent = currentUser?.role === 'student' || currentUser?.role === 'apprentice'
+  const isStaffManager = currentUser?.role === 'manager' || currentUser?.role === 'director' || currentUser?.role === 'owner'
+  const canAccess = isStudent || isStaffManager
   
-  if (!isStudent) {
+  if (!canAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
         <NavBar currentPath="/student-hours" user={user} />
@@ -157,7 +173,7 @@ export default function StudentHoursPage() {
             <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
             <p className="text-gray-600 mb-4">
-              Clock hours tracking is only available to students and apprentices.
+              Clock hours tracking is only available to students, apprentices, and staff managers.
             </p>
             <p className="text-sm text-gray-500">
               Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
@@ -180,7 +196,7 @@ export default function StudentHoursPage() {
               <Clock className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Clock Hours Tracker</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Apprenticeship Hours Tracker</h1>
               <p className="text-gray-600">Track your required apprenticeship hours</p>
             </div>
           </div>
@@ -234,13 +250,30 @@ export default function StudentHoursPage() {
         {/* Progress Bar */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <GraduationCap className="h-5 w-5 text-blue-600" />
-              <span>Missouri Apprenticeship Requirements</span>
-            </CardTitle>
-            <CardDescription>
-              {requiredHours} hours required for PMU license
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <GraduationCap className="h-5 w-5 text-blue-600" />
+                  <span>Apprenticeship Requirements</span>
+                </CardTitle>
+                <CardDescription>
+                  {requiredHours} hours required for apprenticeship completion
+                </CardDescription>
+              </div>
+              {isStaffManager && (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="number"
+                    value={requiredHours}
+                    onChange={(e) => updateRequiredHours(parseInt(e.target.value) || 1000)}
+                    className="w-24 text-center"
+                    min="100"
+                    max="2000"
+                  />
+                  <span className="text-sm text-gray-600">hours</span>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -254,9 +287,117 @@ export default function StudentHoursPage() {
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
+              {isStaffManager && (
+                <p className="text-xs text-gray-500">
+                  💡 Staff managers can adjust the required hours using the input above
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Staff Manager View - All Students */}
+        {isStaffManager && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-purple-600" />
+                <span>All Students Hours</span>
+              </CardTitle>
+              <CardDescription>
+                Overview of all students' apprenticeship progress
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Mock student data - in real app, this would come from API */}
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">Tierra Student</h4>
+                      <Badge variant="outline" className="text-blue-600 border-blue-600">
+                        Student
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Hours:</span>
+                        <span className="font-medium">{totalHours.toFixed(1)} / {requiredHours}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Progress:</span>
+                        <span className="font-medium">{progressPercentage.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full"
+                          style={{ width: `${progressPercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">Sample Student 2</h4>
+                      <Badge variant="outline" className="text-green-600 border-green-600">
+                        Apprentice
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Hours:</span>
+                        <span className="font-medium">750.0 / {requiredHours}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Progress:</span>
+                        <span className="font-medium">75.0%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: '75%' }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">Sample Student 3</h4>
+                      <Badge variant="outline" className="text-orange-600 border-orange-600">
+                        Student
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Hours:</span>
+                        <span className="font-medium">250.0 / {requiredHours}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Progress:</span>
+                        <span className="font-medium">25.0%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-orange-500 h-2 rounded-full"
+                          style={{ width: '25%' }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>Staff Manager Controls:</strong> Use the input field above to adjust the required hours for all students. 
+                    Changes will be saved and applied to all apprenticeship tracking.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Clock In/Out */}
         <Card className="mb-8">
