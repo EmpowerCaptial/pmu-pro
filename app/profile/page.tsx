@@ -63,8 +63,8 @@ export default function ProfilePage() {
       formData.append('image', file)
 
       const response = await fetch('/api/profile/upload-image', {
-        method: 'POST',
-        headers: {
+          method: 'POST',
+          headers: {
           'x-user-email': currentUser?.email || ''
         },
         body: formData
@@ -98,8 +98,8 @@ export default function ProfilePage() {
       setSaveSuccess(true)
       setIsEditing(false)
       setTimeout(() => setSaveSuccess(false), 2000)
-    } catch (error) {
-      console.error('Error saving profile:', error)
+      } catch (error) {
+        console.error('Error saving profile:', error)
     } finally {
       setIsSaving(false)
     }
@@ -133,7 +133,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
         <NavBar />
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
@@ -149,8 +149,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
       <NavBar />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+          {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -159,7 +159,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex items-center space-x-3">
               {getRoleBadge(currentUser?.role || 'artist')}
-              <Button
+            <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant={isEditing ? "outline" : "default"}
               >
@@ -174,10 +174,10 @@ export default function ProfilePage() {
                     Edit Profile
                   </>
                 )}
-              </Button>
-            </div>
-          </div>
-        </div>
+                </Button>
+              </div>
+                    </div>
+                  </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Image */}
@@ -188,7 +188,7 @@ export default function ProfilePage() {
               userName={profileData.name}
               disabled={!isEditing}
             />
-          </div>
+                </div>
 
           {/* Profile Information */}
           <div className="lg:col-span-2 space-y-6">
@@ -202,7 +202,7 @@ export default function ProfilePage() {
                 <CardDescription>
                   Your personal and contact information
                 </CardDescription>
-              </CardHeader>
+            </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -216,29 +216,29 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <Label htmlFor="email">Email Address</Label>
-                    <Input
+                      <Input
                       id="email"
                       type="email"
                       value={profileData.email}
                       disabled
                       className="bg-gray-50"
                     />
-                  </div>
                 </div>
-                
+              </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
+                        <Input
+                          id="phone"
                       value={profileData.phone}
                       onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
                       disabled={!isEditing}
-                    />
+                        />
                   </div>
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input
+                      <Input
                       id="address"
                       value={profileData.address}
                       onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
@@ -264,7 +264,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="businessName">Business Name</Label>
-                    <Input
+                        <Input
                       id="businessName"
                       value={profileData.businessName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, businessName: e.target.value }))}
@@ -273,7 +273,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <Label htmlFor="studioName">Studio Name</Label>
-                    <Input
+                      <Input
                       id="studioName"
                       value={profileData.studioName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, studioName: e.target.value }))}
@@ -307,19 +307,19 @@ export default function ProfilePage() {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:bg-gray-50"
                     placeholder="Tell us about yourself..."
                   />
-                </div>
-                
+              </div>
+
                 <div>
                   <Label htmlFor="specialties">Specialties</Label>
-                  <Input
+                        <Input
                     id="specialties"
                     value={profileData.specialties}
                     onChange={(e) => setProfileData(prev => ({ ...prev, specialties: e.target.value }))}
                     disabled={!isEditing}
                     placeholder="e.g., Microblading, Powder Brows, Lip Blush"
                   />
-                </div>
-                
+              </div>
+
                 <div>
                   <Label htmlFor="certifications">Certifications</Label>
                   <Input
@@ -360,7 +360,7 @@ export default function ProfilePage() {
                 </Button>
               </div>
             )}
-          </div>
+              </div>
         </div>
       </div>
     </div>
