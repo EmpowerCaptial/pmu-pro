@@ -1447,6 +1447,36 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                         <span className="font-bold text-lg">Log Procedures</span>
                         <span className="text-ink/70 text-sm mt-1">Track completed work</span>
                       </Button>
+                      
+                      {/* Debug button for testing instructor population */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              const response = await fetch('/api/populate-instructors', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ studioName: 'Universal Beauty Studio' })
+                              })
+                              
+                              if (response.ok) {
+                                const data = await response.json()
+                                localStorage.setItem('studio-instructors', data.localStorageValue)
+                                console.log('✅ Instructors populated:', data.instructors)
+                                alert('Instructors populated! Refresh the page to see Tierra Jackson.')
+                                window.location.reload()
+                              }
+                            } catch (error) {
+                              console.error('Error populating instructors:', error)
+                              alert('Failed to populate instructors')
+                            }
+                          }}
+                          variant="outline"
+                          className="text-xs mt-2"
+                        >
+                          🔧 Populate Instructors (Debug)
+                        </Button>
+                      )}
                     </>
                   )}
 
