@@ -351,7 +351,7 @@ export function DashboardCards() {
       )}
 
       {/* Studio Management - Mobile (for studio owners only) */}
-      {((supervisionAccess?.canAccess && supervisionAccess?.userRole === 'INSTRUCTOR') || 
+      {(currentUser?.role === 'owner' || currentUser?.role === 'manager' || currentUser?.role === 'director' || 
         (currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com')) && (
         <div className="lg:hidden mb-4 sm:mb-6">
           <Card className="relative overflow-hidden border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-600/20 backdrop-blur-sm border-blue-400/40">

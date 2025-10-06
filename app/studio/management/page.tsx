@@ -50,6 +50,52 @@ export default function StudioManagementPage() {
   const [inviteRole, setInviteRole] = useState<'instructor' | 'licensed' | 'student'>('instructor')
   const [isInviting, setIsInviting] = useState(false)
 
+  // Check if user has access to studio management
+  const hasAccess = currentUser?.role === 'owner' || 
+                   currentUser?.role === 'manager' || 
+                   currentUser?.role === 'director' ||
+                   currentUser?.email?.toLowerCase() === 'tyronejackboy@gmail.com'
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-lavender/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-lavender/20">
+        <NavBar 
+          currentUser={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+            avatar: currentUser.avatar
+          } : undefined}
+        />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="h-8 w-8 text-red-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+            <p className="text-gray-600 mb-4">
+              Studio management is only available to studio owners, managers, and directors.
+            </p>
+            <p className="text-sm text-gray-500">
+              Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Load instructors from localStorage
   useEffect(() => {
     const savedInstructors = localStorage.getItem('studio-instructors')
