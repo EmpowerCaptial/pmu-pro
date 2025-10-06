@@ -454,7 +454,11 @@ export default function StudioTeamPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: currentUser.avatar
+        } : undefined} />
         <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -471,7 +475,11 @@ export default function StudioTeamPage() {
   if (!hasTeamManagementAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: currentUser.avatar
+        } : undefined} />
         <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -494,7 +502,11 @@ export default function StudioTeamPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-      <NavBar />
+      <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: currentUser.avatar
+      } : undefined} />
       
       <div className="max-w-7xl mx-auto px-3 py-4 pb-20 md:px-4 md:py-8 md:pb-8">
         {/* Header */}
