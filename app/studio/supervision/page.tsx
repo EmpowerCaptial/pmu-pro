@@ -200,9 +200,13 @@ export default function StudioSupervisionPage() {
         
         // First, try to get instructors from localStorage (studio management data)
         const studioInstructors = localStorage.getItem('studio-instructors')
+        console.log('🔍 Checking localStorage for studio-instructors:', studioInstructors)
+        
         if (studioInstructors) {
           try {
             const parsed = JSON.parse(studioInstructors)
+            console.log('✅ Parsed localStorage instructors:', parsed)
+            
             // Transform localStorage data to match expected format
             const transformedLocalInstructors: Instructor[] = parsed.map((instructor: any) => ({
               id: instructor.id,

@@ -60,7 +60,11 @@ export default function StudioTeamPage() {
   useEffect(() => {
     const savedTeamMembers = localStorage.getItem('studio-team-members')
     if (savedTeamMembers) {
-      setTeamMembers(JSON.parse(savedTeamMembers))
+      const teamMembers = JSON.parse(savedTeamMembers)
+      setTeamMembers(teamMembers)
+      
+      // Sync existing instructors to supervision list
+      syncExistingInstructors(teamMembers)
     } else {
       // Add the current user as the studio owner
       if (currentUser) {
@@ -78,6 +82,61 @@ export default function StudioTeamPage() {
       }
     }
   }, [currentUser])
+
+  // Sync existing team members who are instructors to supervision list
+  const syncExistingInstructors = (teamMembers: TeamMember[]) => {
+    console.log('🔄 Syncing existing team members to supervision list...')
+    
+    const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+    console.log('📋 Current instructors in localStorage:', existingInstructors)
+    
+    const instructorsToSync = teamMembers.filter(member => 
+      (member.role === 'instructor' || member.role === 'licensed') && 
+      member.status === 'active'
+    )
+    
+    console.log('👥 Team members who should be instructors:', instructorsToSync)
+    
+    instructorsToSync.forEach(member => {
+      // Check if already exists
+      const exists = existingInstructors.some((inst: any) => inst.id === member.id)
+      
+      if (!exists) {
+        const instructorData = {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          role: member.role,
+          specialty: member.role === 'instructor' ? 'PMU Instructor' : 'Licensed Artist',
+          experience: '5+ years',
+          rating: 4.8,
+          location: (currentUser as any)?.businessName || 'Studio',
+          phone: member.phone || '',
+          avatar: member.avatar || null,
+          licenseNumber: member.licenseNumber || `LIC-${member.id.slice(-6)}`,
+          availability: {
+            monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            saturday: [],
+            sunday: []
+          }
+        }
+        
+        existingInstructors.push(instructorData)
+        console.log('✅ Synced instructor to supervision list:', instructorData.name)
+      } else {
+        console.log('ℹ️ Instructor already exists in supervision list:', member.name)
+      }
+    })
+    
+    if (instructorsToSync.length > 0) {
+      localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
+      console.log('✅ Updated studio-instructors localStorage with synced instructors')
+    }
+  }
 
   // Save team members to localStorage
   const saveTeamMembers = (newTeamMembers: TeamMember[]) => {
@@ -191,8 +250,14 @@ export default function StudioTeamPage() {
 
       // Add to studio instructors localStorage
       const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+      console.log('➕ Adding instructor manually:', instructorData.name, 'with role:', inviteRole)
+      console.log('📋 Existing instructors before add:', existingInstructors)
+      
       existingInstructors.push(instructorData)
       localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
+      
+      console.log('✅ Added to studio-instructors localStorage:', instructorData)
+      console.log('📋 Updated instructors list:', existingInstructors)
     }
 
     // Reset form
@@ -225,6 +290,8 @@ export default function StudioTeamPage() {
     
     // Sync with studio-instructors localStorage for supervision booking
     const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+    console.log('🔄 Syncing role change for:', member.name, 'to role:', newRole)
+    console.log('📋 Current existing instructors:', existingInstructors)
     
     if (newRole === 'instructor' || newRole === 'licensed') {
       // Add or update instructor in the instructors list
