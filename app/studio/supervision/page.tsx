@@ -297,11 +297,21 @@ export default function StudioSupervisionPage() {
           console.error('Error fetching instructors from API:', apiError)
         }
         
+            // Filter out test instructors (hardcoded test accounts)
+            const testInstructorEmails = [
+              'test-instructor@universalbeautystudio.com',
+              'instructor-supervision-1759775642383@universalbeautystudio.com'
+            ]
+            
+            const filteredInstructors = allInstructors.filter(instructor => 
+              !testInstructorEmails.includes(instructor.email)
+            )
+            
             // If we have instructors from either source, use them
-            if (allInstructors.length > 0) {
-              console.log('✅ Loaded instructors for supervision:', allInstructors)
-              setInstructors(allInstructors)
-              localStorage.setItem('supervisionInstructors', JSON.stringify(allInstructors))
+            if (filteredInstructors.length > 0) {
+              console.log('✅ Loaded instructors for supervision (filtered):', filteredInstructors)
+              setInstructors(filteredInstructors)
+              localStorage.setItem('supervisionInstructors', JSON.stringify(filteredInstructors))
             } else {
               console.log('⚠️ No instructors found, using mock data')
               // Fallback to mock data if both fail
