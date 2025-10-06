@@ -28,6 +28,8 @@ import {
   Shield,
   Image
 } from 'lucide-react'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { useRouter } from 'next/navigation'
 
 // Feature Help Guide - organized by feature categories
@@ -94,9 +96,21 @@ const coreFeaturesGuide = [
 const allFeaturesGuide = [...coreFeaturesGuide]
 
 export default function HelpPage() {
+  const { currentUser } = useDemoAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "user@pmupro.com",
+    initials: "PA",
+  }
 
   const categories = [
     { id: 'all', name: 'All Features', count: allFeaturesGuide.length },
@@ -115,8 +129,9 @@ export default function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10 p-3 sm:p-4 pb-16 sm:pb-20">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
+      <NavBar currentPath="/help" user={user} />
+      <main className="max-w-7xl mx-auto p-3 sm:p-4 pb-16 sm:pb-20 relative z-10">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
           <div>
@@ -336,7 +351,7 @@ export default function HelpPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

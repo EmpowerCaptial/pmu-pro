@@ -9,12 +9,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Search, Download, FileText, BookOpen, Shield, FileCheck, Clipboard, AlertTriangle, Mail } from 'lucide-react'
 import { getAllPDFResources, PDFResource } from '@/lib/pdf-generator'
 import Link from 'next/link'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 export default function LibraryPage() {
+  const { currentUser } = useDemoAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
   
   const resources = getAllPDFResources()
+  
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase()
+  } : {
+    name: "PMU Artist",
+    email: "user@pmupro.com",
+    initials: "PA",
+  }
   
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,7 +119,8 @@ export default function LibraryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <NavBar currentPath="/library" user={user} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Resource Library</h1>
@@ -249,7 +264,7 @@ export default function LibraryPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   )
 }
