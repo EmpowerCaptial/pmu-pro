@@ -18,6 +18,7 @@ import {
   Users
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { useClockInOut } from '@/hooks/use-clock-in-out'
 import { NavBar } from '@/components/ui/navbar'
 
 interface ClockEntry {
@@ -33,6 +34,7 @@ interface ClockEntry {
 
 export default function StudentHoursPage() {
   const { currentUser } = useDemoAuth()
+  const { clockStatus, isStudent, clockIn, clockOut } = useClockInOut()
   const [clockEntries, setClockEntries] = useState<ClockEntry[]>([])
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [currentClockIn, setCurrentClockIn] = useState<string | null>(null)
@@ -49,20 +51,18 @@ export default function StudentHoursPage() {
     initials: "PS",
   }
 
-  // Load clock entries from localStorage
+  // Load clock entries from localStorage and sync with clock status
   useEffect(() => {
     const savedEntries = localStorage.getItem('student-clock-entries')
-    const currentClock = localStorage.getItem('student-current-clock')
     
     if (savedEntries) {
       setClockEntries(JSON.parse(savedEntries))
     }
     
-    if (currentClock) {
-      setIsClockedIn(true)
-      setCurrentClockIn(currentClock)
-    }
-  }, [])
+    // Sync with clock status from hook
+    setIsClockedIn(clockStatus.isClockedIn)
+    setCurrentClockIn(clockStatus.clockInTime)
+  }, [clockStatus])
 
   // Calculate total hours
   const totalHours = clockEntries.reduce((total, entry) => total + entry.totalHours, 0)
@@ -91,55 +91,52 @@ export default function StudentHoursPage() {
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-  const handleClockIn = () => {
-    const now = new Date()
-    const clockInTime = now.toISOString()
-    
-    setCurrentClockIn(clockInTime)
-    setIsClockedIn(true)
-    
-    localStorage.setItem('student-current-clock', clockInTime)
-    
-    // Create new clock entry
-    const newEntry: ClockEntry = {
-      id: Date.now().toString(),
-      date: now.toISOString().split('T')[0],
-      clockIn: now.toTimeString().split(' ')[0].substring(0, 5),
-      status: 'active',
-      totalHours: 0
+  const handleClockIn = async () => {
+    const result = await clockIn()
+    if (result.success) {
+      // Create new clock entry
+      const now = new Date()
+      const newEntry: ClockEntry = {
+        id: Date.now().toString(),
+        date: now.toISOString().split('T')[0],
+        clockIn: now.toTimeString().split(' ')[0].substring(0, 5),
+        status: 'active',
+        totalHours: 0
+      }
+      
+      const updatedEntries = [...clockEntries, newEntry]
+      setClockEntries(updatedEntries)
+      localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
+      
+      alert(result.message)
+    } else {
+      alert(`Error: ${result.message}`)
     }
-    
-    const updatedEntries = [...clockEntries, newEntry]
-    setClockEntries(updatedEntries)
-    localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
   }
 
-  const handleClockOut = () => {
-    if (!currentClockIn) return
-    
-    const clockInTime = new Date(currentClockIn)
-    const clockOutTime = new Date()
-    const hoursWorked = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60 * 60)
-    
-    // Update the last entry (active one)
-    const updatedEntries = clockEntries.map((entry, index) => {
-      if (index === clockEntries.length - 1 && entry.status === 'active') {
-        return {
-          ...entry,
-          clockOut: clockOutTime.toTimeString().split(' ')[0].substring(0, 5),
-          totalHours: Math.round(hoursWorked * 100) / 100,
-          status: 'completed' as const
+  const handleClockOut = async () => {
+    const result = await clockOut()
+    if (result.success) {
+      // Update the last entry (active one)
+      const updatedEntries = clockEntries.map((entry, index) => {
+        if (index === clockEntries.length - 1 && entry.status === 'active') {
+          return {
+            ...entry,
+            clockOut: new Date().toTimeString().split(' ')[0].substring(0, 5),
+            totalHours: result.hoursWorked || 0,
+            status: 'completed' as const
+          }
         }
-      }
-      return entry
-    })
-    
-    setClockEntries(updatedEntries)
-    setIsClockedIn(false)
-    setCurrentClockIn(null)
-    
-    localStorage.removeItem('student-current-clock')
-    localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
+        return entry
+      })
+      
+      setClockEntries(updatedEntries)
+      localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
+      
+      alert(result.message)
+    } else {
+      alert(`Error: ${result.message}`)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -165,7 +162,6 @@ export default function StudentHoursPage() {
   }
 
   // Access control - students, apprentices, and staff managers can access this page
-  const isStudent = currentUser?.role === 'student' || currentUser?.role === 'apprentice'
   const isStaffManager = currentUser?.role === 'manager' || currentUser?.role === 'director' || currentUser?.role === 'owner'
   const canAccess = isStudent || isStaffManager
   

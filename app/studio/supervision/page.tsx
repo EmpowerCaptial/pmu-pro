@@ -111,6 +111,7 @@ export default function StudioSupervisionPage() {
   const [userRole, setUserRole] = useState<'INSTRUCTOR' | 'APPRENTICE' | 'ADMIN' | 'NONE'>('NONE')
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [instructors, setInstructors] = useState<Instructor[]>([])
+  const [studentHours, setStudentHours] = useState<any[]>([])
   
   // Booking system state
   const [selectedInstructor, setSelectedInstructor] = useState<string>('')
@@ -476,6 +477,36 @@ export default function StudioSupervisionPage() {
       }
     }
   }, [])
+
+  // Fetch student hours for instructors/owners
+  useEffect(() => {
+    const fetchStudentHours = async () => {
+      if (currentUser?.email && (currentUser.role === 'owner' || currentUser.role === 'manager' || currentUser.role === 'director' || currentUser.role === 'instructor')) {
+        try {
+          const response = await fetch('/api/student-hours', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setStudentHours(data.students || [])
+          }
+        } catch (error) {
+          console.error('Error fetching student hours:', error)
+        }
+      }
+    }
+
+    fetchStudentHours()
+  }, [currentUser])
+
+  // Get student hours for a specific instructor
+  const getStudentHoursForInstructor = (instructorId: string) => {
+    // For now, return mock data - in a real implementation, you'd filter by instructor
+    return studentHours.slice(0, 3) // Show first 3 students as example
+  }
 
   // Get available time slots for selected instructor and date
   const getAvailableSlots = (instructorId: string, date: string) => {
@@ -1909,6 +1940,30 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               <span>Available for supervision</span>
                             </div>
                           </div>
+                          
+                          {/* Student Hours Section - Only for instructors/owners */}
+                          {(userRole === 'INSTRUCTOR' || userRole === 'ADMIN') && (
+                            <div className="mt-3 p-3 bg-lavender/5 rounded-lg border border-lavender/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <GraduationCap className="h-4 w-4 text-lavender" />
+                                <span className="text-sm font-medium text-ink">Student Hours</span>
+                              </div>
+                              <div className="space-y-1">
+                                {getStudentHoursForInstructor(instructor.id).slice(0, 2).map((student, index) => (
+                                  <div key={index} className="flex justify-between items-center text-xs">
+                                    <span className="text-ink/70 truncate">{student.name}</span>
+                                    <span className="font-medium text-lavender">{student.totalHours}h</span>
+                                  </div>
+                                ))}
+                                {getStudentHoursForInstructor(instructor.id).length > 2 && (
+                                  <div className="text-xs text-ink/50 text-center">
+                                    +{getStudentHoursForInstructor(instructor.id).length - 2} more students
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
                           <div className="mt-4 flex gap-2">
                             <Button
                               onClick={(e) => {
