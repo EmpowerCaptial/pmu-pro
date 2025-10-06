@@ -91,7 +91,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log('Profile update request body:', body)
     const validatedData = profileSchema.parse(body)
+    console.log('Validated data:', validatedData)
 
     // Convert objects to JSON strings for storage
     // Only update fields that exist in the database schema
@@ -163,11 +165,16 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ profile })
   } catch (error) {
     console.error('Error updating profile:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid data', details: error.errors }, { status: 400 })
     }
     return NextResponse.json(
-      { error: 'Failed to update profile' },
+      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
