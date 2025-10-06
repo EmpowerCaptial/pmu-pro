@@ -71,7 +71,7 @@ export default function StudioManagementPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-lavender/20">
         <NavBar 
-          currentUser={currentUser ? {
+          user={currentUser ? {
             name: currentUser.name,
             email: currentUser.email,
             initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),

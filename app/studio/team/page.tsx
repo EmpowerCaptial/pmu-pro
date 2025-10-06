@@ -20,7 +20,8 @@ import {
   Crown,
   User,
   Package,
-  MoreVertical
+  MoreVertical,
+  Settings
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
