@@ -38,10 +38,17 @@ export async function GET(request: NextRequest) {
     let services: any[] = []
     if (user.studioName && (user.role === 'student' || user.role === 'licensed' || user.role === 'instructor')) {
       // For studio members, get services from the studio owner
+      // Prioritize finding the actual owner (role: 'owner') first
       const studioOwner = await prisma.user.findFirst({
         where: { 
           studioName: user.studioName,
-          role: { in: ['owner', 'manager', 'director'] }
+          role: 'owner'  // Prioritize actual owners
+        },
+        select: { id: true }
+      }) || await prisma.user.findFirst({
+        where: { 
+          studioName: user.studioName,
+          role: { in: ['manager', 'director'] }  // Fallback to managers/directors
         },
         select: { id: true }
       })
