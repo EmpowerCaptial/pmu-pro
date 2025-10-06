@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
         where: { 
           email: 'Tyronejackboy@gmail.com', // Specific email to avoid confusion
           studioName: user.studioName,
-          role: 'owner'
+          role: 'owner',
+          businessName: { contains: 'Tyrone Jackson' } // Use unique business name
         },
         select: { id: true, name: true, email: true }
       })
