@@ -55,6 +55,7 @@ export default function StudioTeamPage() {
   const [inviteRole, setInviteRole] = useState<'student' | 'licensed' | 'instructor'>('student')
   const [isInviting, setIsInviting] = useState(false)
   const [addMode, setAddMode] = useState<'invite' | 'manual'>('invite') // New state for add mode
+  const [isSyncing, setIsSyncing] = useState(false)
 
   // Load team members from localStorage
   useEffect(() => {
@@ -142,6 +143,62 @@ export default function StudioTeamPage() {
   const saveTeamMembers = (newTeamMembers: TeamMember[]) => {
     setTeamMembers(newTeamMembers)
     localStorage.setItem('studio-team-members', JSON.stringify(newTeamMembers))
+  }
+
+  // Sync team members from database
+  const syncFromDatabase = async () => {
+    if (!currentUser?.email) return
+    
+    setIsSyncing(true)
+    try {
+      const response = await fetch('/api/studio/instructors', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const dbInstructors = data.instructors || []
+        
+        // Convert database instructors to team member format
+        const dbTeamMembers: TeamMember[] = dbInstructors.map((instructor: any) => ({
+          id: instructor.id,
+          name: instructor.name,
+          email: instructor.email,
+          status: 'active' as const,
+          invitedAt: new Date().toISOString(),
+          joinedAt: new Date().toISOString(),
+          role: instructor.role as 'student' | 'licensed' | 'instructor' | 'owner',
+          licenseNumber: instructor.licenseNumber,
+          licenseState: instructor.licenseState,
+          phone: instructor.phone,
+          avatar: instructor.avatar
+        }))
+        
+        // Get existing team members
+        const existingTeamMembers = [...teamMembers]
+        
+        // Add database instructors that aren't already in the team
+        dbTeamMembers.forEach(dbMember => {
+          const exists = existingTeamMembers.some(member => member.email === dbMember.email)
+          if (!exists) {
+            existingTeamMembers.push(dbMember)
+          }
+        })
+        
+        // Save updated team members
+        saveTeamMembers(existingTeamMembers)
+        
+        console.log('✅ Synced team members from database')
+      } else {
+        console.error('Failed to sync from database:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error syncing from database:', error)
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   const handleInviteTeamMember = async () => {
@@ -643,12 +700,31 @@ export default function StudioTeamPage() {
                       {showInviteForm ? 'Cancel' : 'Add Team Member'}
                     </Button>
                     <Button 
+                      onClick={syncFromDatabase}
+                      disabled={isSyncing}
+                      variant="outline"
+                      className="w-full sm:w-auto border-lavender/30 text-lavender hover:bg-lavender/10"
+                      size="sm"
+                    >
+                      {isSyncing ? (
+                        <>
+                          <Clock className="h-4 w-4 mr-2 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <Package className="h-4 w-4 mr-2" />
+                          Sync from Database
+                        </>
+                      )}
+                    </Button>
+                    <Button 
                       onClick={() => window.location.href = '/studio/service-assignments'}
                       variant="outline"
                       className="w-full sm:w-auto border-lavender/30 text-lavender hover:bg-lavender/10"
                       size="sm"
                     >
-                      <Package className="h-4 w-4 mr-2" />
+                      <Settings className="h-4 w-4 mr-2" />
                       Service Assignments
                     </Button>
                   </div>
