@@ -341,6 +341,43 @@ export default function StudioManagementPage() {
           )}
         </Card>
 
+        {/* Studio Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-blue-600" />
+              <span>Studio Settings</span>
+            </CardTitle>
+            <CardDescription>
+              Configure your studio's location and clock in/out settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Geolocation Settings</h3>
+                    <p className="text-sm text-gray-600">Set your studio address for clock in/out tracking</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => window.location.href = '/studio/geolocation-settings'}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Configure
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Instructors List */}
         <Card>
           <CardHeader>

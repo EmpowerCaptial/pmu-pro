@@ -22,8 +22,8 @@ interface StudioLocation {
   radius: number // in meters (5 feet ≈ 1.5 meters)
 }
 
-// Mock studio location - in production this would come from user settings
-const STUDIO_LOCATION: StudioLocation = {
+// Default studio location - will be overridden by user settings
+const DEFAULT_STUDIO_LOCATION: StudioLocation = {
   lat: 40.7128, // Example coordinates - replace with actual studio address
   lng: -74.0060,
   address: "123 Studio Street, New York, NY 10001",
@@ -61,8 +61,38 @@ export function useClockInOut() {
   })
   const [isLocationLoading, setIsLocationLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [studioLocation, setStudioLocation] = useState<StudioLocation>(DEFAULT_STUDIO_LOCATION)
 
-  // Load clock status from localStorage
+  // Load configured studio location
+  const loadStudioLocation = useCallback(async () => {
+    if (currentUser?.email) {
+      try {
+        const response = await fetch('/api/studio/geolocation-settings', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.settings && data.settings.isConfigured) {
+            setStudioLocation({
+              lat: data.settings.lat,
+              lng: data.settings.lng,
+              address: data.settings.address,
+              radius: data.settings.radius || 1.5
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error loading studio location:', error)
+        // Fall back to default location
+        setStudioLocation(DEFAULT_STUDIO_LOCATION)
+      }
+    }
+  }, [currentUser])
+
+  // Load clock status and studio location from localStorage/API
   useEffect(() => {
     if (typeof window !== 'undefined' && currentUser?.email) {
       const savedStatus = localStorage.getItem(`clock-status-${currentUser.email}`)
@@ -74,8 +104,11 @@ export function useClockInOut() {
           console.error('Error parsing clock status:', error)
         }
       }
+      
+      // Load configured studio location
+      loadStudioLocation()
     }
-  }, [currentUser])
+  }, [currentUser, loadStudioLocation])
 
   // Save clock status to localStorage
   const saveClockStatus = useCallback((status: ClockStatus) => {
@@ -146,13 +179,13 @@ export function useClockInOut() {
   // Check if location is within studio radius
   const isWithinStudioRadius = useCallback((userLat: number, userLng: number): boolean => {
     const distance = calculateDistance(
-      STUDIO_LOCATION.lat,
-      STUDIO_LOCATION.lng,
+      studioLocation.lat,
+      studioLocation.lng,
       userLat,
       userLng
     )
-    return distance <= STUDIO_LOCATION.radius
-  }, [])
+    return distance <= studioLocation.radius
+  }, [studioLocation])
 
   // Clock in
   const clockIn = useCallback(async () => {
@@ -160,7 +193,7 @@ export function useClockInOut() {
       const location = await getCurrentLocation()
       
       if (!isWithinStudioRadius(location.lat, location.lng)) {
-        throw new Error(`You must be within 5 feet of the studio to clock in. Current distance: ${calculateDistance(STUDIO_LOCATION.lat, STUDIO_LOCATION.lng, location.lat, location.lng).toFixed(1)} meters`)
+        throw new Error(`You must be within 5 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
       }
 
       const now = new Date().toISOString()
@@ -285,6 +318,6 @@ export function useClockInOut() {
     clockIn,
     clockOut,
     isWithinStudioRadius,
-    STUDIO_LOCATION
+    studioLocation
   }
 }
