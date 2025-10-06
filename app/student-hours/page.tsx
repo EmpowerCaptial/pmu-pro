@@ -68,10 +68,15 @@ export default function StudentHoursPage() {
   const totalHours = clockEntries.reduce((total, entry) => total + entry.totalHours, 0)
   
   // Get required hours from localStorage (settable by staff managers)
-  const [requiredHours, setRequiredHours] = useState(() => {
+  const [requiredHours, setRequiredHours] = useState(1000) // Default to 1000 hours
+  
+  // Load required hours from localStorage on client side
+  useEffect(() => {
     const saved = localStorage.getItem('apprenticeship-required-hours')
-    return saved ? parseInt(saved) : 1000 // Default to 1000 hours
-  })
+    if (saved) {
+      setRequiredHours(parseInt(saved))
+    }
+  }, [])
   
   const remainingHours = Math.max(0, requiredHours - totalHours)
   const progressPercentage = Math.min(100, (totalHours / requiredHours) * 100)
