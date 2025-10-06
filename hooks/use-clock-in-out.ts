@@ -87,7 +87,7 @@ export function useClockInOut() {
     if (currentUser?.email && typeof window !== 'undefined') {
       try {
         // First try to load from localStorage
-        const studioKey = `geolocation-settings-${currentUser.studioName || currentUser.businessName || 'default'}`
+        const studioKey = `geolocation-settings-${currentUser.studioName || 'default'}`
         const savedSettings = localStorage.getItem(studioKey)
         
         if (savedSettings) {
