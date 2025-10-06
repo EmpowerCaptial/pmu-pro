@@ -1361,43 +1361,102 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className={`flex w-full ${userRole === 'INSTRUCTOR' ? 'md:grid md:grid-cols-5' : 'md:grid md:grid-cols-4'} bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1 overflow-x-auto md:overflow-x-visible`}>
-            <TabsTrigger 
-              value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value={userRole === 'INSTRUCTOR' ? 'availability' : 'find'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
-            >
-              {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Book Instructor'}
-            </TabsTrigger>
-            <TabsTrigger 
-              value={userRole === 'INSTRUCTOR' ? 'bookings' : 'history'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
-            >
-              {userRole === 'INSTRUCTOR' ? 'My Bookings' : 'My History'}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="inbox"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
-            >
-              <Users className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">Inbox</span>
-            </TabsTrigger>
-            {/* Reports tab - Instructor only */}
-            {userRole === 'INSTRUCTOR' && (
-              <TabsTrigger 
-                value="reports"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
+          {/* Professional Tab Navigation - No Scrolling */}
+          <div className="bg-white/95 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-2xl p-4">
+            <div className={`grid gap-3 ${userRole === 'INSTRUCTOR' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'} w-full`}>
+              
+              {/* Overview Tab */}
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
+                  activeTab === 'overview' 
+                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                }`}
               >
-                <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Reports</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                  activeTab === 'overview' ? 'bg-white/20' : 'bg-lavender/20'
+                }`}>
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-medium text-center leading-tight">Overview</span>
+              </button>
+
+              {/* Availability/Book Instructor Tab */}
+              <button
+                onClick={() => setActiveTab(userRole === 'INSTRUCTOR' ? 'availability' : 'find')}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'availability' : 'find')
+                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'availability' : 'find') ? 'bg-white/20' : 'bg-lavender/20'
+                }`}>
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-medium text-center leading-tight">
+                  {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Book Instructor'}
+                </span>
+              </button>
+
+              {/* Bookings/History Tab */}
+              <button
+                onClick={() => setActiveTab(userRole === 'INSTRUCTOR' ? 'bookings' : 'history')}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'bookings' : 'history')
+                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'bookings' : 'history') ? 'bg-white/20' : 'bg-lavender/20'
+                }`}>
+                  <Clock className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-medium text-center leading-tight">
+                  {userRole === 'INSTRUCTOR' ? 'My Bookings' : 'My History'}
+                </span>
+              </button>
+
+              {/* Inbox Tab */}
+              <button
+                onClick={() => setActiveTab('inbox')}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
+                  activeTab === 'inbox'
+                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                  activeTab === 'inbox' ? 'bg-white/20' : 'bg-lavender/20'
+                }`}>
+                  <Users className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-medium text-center leading-tight">Inbox</span>
+              </button>
+
+              {/* Reports Tab - Instructor Only */}
+              {userRole === 'INSTRUCTOR' && (
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
+                    activeTab === 'reports'
+                      ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
+                      : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+                    activeTab === 'reports' ? 'bg-white/20' : 'bg-lavender/20'
+                  }`}>
+                    <BarChart3 className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-medium text-center leading-tight">Reports</span>
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-8">

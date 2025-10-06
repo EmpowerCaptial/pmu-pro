@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       address: '',
       lat: null,
       lng: null,
-      radius: 15.24, // 50 feet in meters
+      radius: 100, // 100 meters (≈328 feet) for better GPS accuracy
       isConfigured: false
     }
 
