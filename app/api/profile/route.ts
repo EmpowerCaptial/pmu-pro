@@ -55,13 +55,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Parse JSON fields
+    // Parse JSON fields safely
     const profile = {
       ...user,
-      address: user.address ? JSON.parse(user.address) : null,
-      businessHours: user.businessHours ? JSON.parse(user.businessHours) : null,
-      specialties: user.specialties ? JSON.parse(user.specialties) : [],
-      certifications: user.certifications ? JSON.parse(user.certifications) : []
+      address: user.address || null,
+      businessHours: user.businessHours ? (() => {
+        try { return JSON.parse(user.businessHours) } catch { return user.businessHours }
+      })() : null,
+      specialties: user.specialties ? (() => {
+        try { 
+          const parsed = JSON.parse(user.specialties)
+          return Array.isArray(parsed) ? parsed.join(', ') : user.specialties
+        } catch { 
+          return user.specialties 
+        }
+      })() : '',
+      certifications: user.certifications ? (() => {
+        try { 
+          const parsed = JSON.parse(user.certifications)
+          return Array.isArray(parsed) ? parsed.join(', ') : user.certifications
+        } catch { 
+          return user.certifications 
+        }
+      })() : ''
     }
 
     return NextResponse.json({ profile })
@@ -91,9 +107,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    console.log('Profile update request body:', body)
     const validatedData = profileSchema.parse(body)
-    console.log('Validated data:', validatedData)
 
     // Convert objects to JSON strings for storage
     // Only update fields that exist in the database schema
@@ -121,14 +135,14 @@ export async function PUT(request: NextRequest) {
         : JSON.stringify(validatedData.businessHours)
     }
     if (validatedData.specialties !== undefined) {
-      updateData.specialties = typeof validatedData.specialties === 'string'
-        ? validatedData.specialties
-        : JSON.stringify(validatedData.specialties)
+      // Handle specialties as JSON string (comma-separated values)
+      const specialtiesArray = validatedData.specialties.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      updateData.specialties = JSON.stringify(specialtiesArray)
     }
     if (validatedData.certifications !== undefined) {
-      updateData.certifications = typeof validatedData.certifications === 'string'
-        ? validatedData.certifications
-        : JSON.stringify(validatedData.certifications)
+      // Handle certifications as JSON string (comma-separated values)
+      const certificationsArray = validatedData.certifications.split(',').map(c => c.trim()).filter(c => c.length > 0)
+      updateData.certifications = JSON.stringify(certificationsArray)
     }
 
     const updatedUser = await prisma.user.update({
@@ -156,25 +170,36 @@ export async function PUT(request: NextRequest) {
     // Parse JSON fields for response
     const profile = {
       ...updatedUser,
-      address: updatedUser.address ? JSON.parse(updatedUser.address) : null,
-      businessHours: updatedUser.businessHours ? JSON.parse(updatedUser.businessHours) : null,
-      specialties: updatedUser.specialties ? JSON.parse(updatedUser.specialties) : [],
-      certifications: updatedUser.certifications ? JSON.parse(updatedUser.certifications) : []
+      address: updatedUser.address || null,
+      businessHours: updatedUser.businessHours ? (() => {
+        try { return JSON.parse(updatedUser.businessHours) } catch { return updatedUser.businessHours }
+      })() : null,
+      specialties: updatedUser.specialties ? (() => {
+        try { 
+          const parsed = JSON.parse(updatedUser.specialties)
+          return Array.isArray(parsed) ? parsed.join(', ') : updatedUser.specialties
+        } catch { 
+          return updatedUser.specialties 
+        }
+      })() : '',
+      certifications: updatedUser.certifications ? (() => {
+        try { 
+          const parsed = JSON.parse(updatedUser.certifications)
+          return Array.isArray(parsed) ? parsed.join(', ') : updatedUser.certifications
+        } catch { 
+          return updatedUser.certifications 
+        }
+      })() : ''
     }
 
     return NextResponse.json({ profile })
   } catch (error) {
     console.error('Error updating profile:', error)
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined
-    })
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid data', details: error.errors }, { status: 400 })
     }
     return NextResponse.json(
-      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to update profile' },
       { status: 500 }
     )
   }
