@@ -19,10 +19,17 @@ import {
   Edit,
   Crown,
   User,
-  Package
+  Package,
+  MoreVertical
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 interface TeamMember {
   id: string
@@ -639,107 +646,109 @@ export default function StudioTeamPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-medium text-gray-600">
-                              {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </span>
+                <div className="space-y-2">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      {/* Member Info */}
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-medium text-gray-600">
+                            {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-medium text-gray-900 text-sm truncate">{member.name}</h3>
+                            {getStatusBadge(member.status)}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium text-gray-900 text-sm md:text-base break-words">{member.name}</h3>
-                            <p className="text-xs md:text-sm text-gray-600 break-words">{member.email}</p>
-                            {member.licenseNumber && (
-                              <p className="text-xs text-gray-500">
-                                License: {member.licenseNumber} ({member.licenseState})
-                              </p>
-                            )}
-                            <p className="text-xs text-gray-500">{getRoleDescription(member.role)}</p>
-                          </div>
+                          <p className="text-xs text-gray-600 truncate">{member.email}</p>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-3">
-                        <div className="flex flex-wrap gap-2">
-                          {getStatusBadge(member.status)}
-                          {getRoleBadge(member.role)}
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2">
-                          {member.role !== 'owner' && (
-                            <>
+
+                      {/* Role Dropdown */}
+                      <div className="flex items-center space-x-2">
+                        {member.role !== 'owner' && member.status === 'active' ? (
+                          <select
+                            value={member.role}
+                            onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
+                            className="text-xs border border-gray-300 rounded px-2 py-1 h-7 bg-white"
+                          >
+                            <option value="student">🎓 Student</option>
+                            <option value="licensed">🎨 Licensed Artist</option>
+                            <option value="instructor">🏆 Instructor</option>
+                          </select>
+                        ) : (
+                          <div className="text-xs text-gray-600 px-2 py-1">
+                            {member.role === 'owner' ? '👑 Owner' : getRoleDescription(member.role)}
+                          </div>
+                        )}
+
+                        {/* Actions Dropdown */}
+                        {member.role !== 'owner' && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-7 w-7 p-0 hover:bg-gray-50"
+                              >
+                                <MoreVertical className="h-3 w-3" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg">
                               {member.status === 'pending' && (
-                                <Button
-                                  size="sm"
+                                <DropdownMenuItem 
                                   onClick={() => handleApproveTeamMember(member.id)}
-                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-7"
+                                  className="hover:bg-green-50 focus:bg-green-50 text-gray-700"
                                 >
+                                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                                   Approve
-                                </Button>
+                                </DropdownMenuItem>
                               )}
                               
                               {member.status === 'active' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
+                                <DropdownMenuItem 
                                   onClick={() => handleSuspendTeamMember(member.id)}
-                                  className="text-red-600 border-red-600 hover:bg-red-50 text-xs px-2 py-1 h-7"
+                                  className="hover:bg-red-50 focus:bg-red-50 text-gray-700"
                                 >
+                                  <AlertTriangle className="h-4 w-4 mr-2 text-red-600" />
                                   Suspend
-                                </Button>
+                                </DropdownMenuItem>
                               )}
                               
                               {member.status === 'suspended' && (
-                                <Button
-                                  size="sm"
+                                <DropdownMenuItem 
                                   onClick={() => handleApproveTeamMember(member.id)}
-                                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-7"
+                                  className="hover:bg-green-50 focus:bg-green-50 text-gray-700"
                                 >
+                                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                                   Reactivate
-                                </Button>
+                                </DropdownMenuItem>
                               )}
                               
-                              {member.status === 'active' && (
-                                <select
-                                  value={member.role}
-                                  onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
-                                  className="text-xs border border-gray-300 rounded px-2 py-1 h-7"
-                                >
-                                  <option value="student">Student</option>
-                                  <option value="licensed">Licensed</option>
-                                  <option value="instructor">Instructor</option>
-                                </select>
-                              )}
-                              
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              <DropdownMenuItem 
                                 onClick={() => handleSeparateTeamMember(member.id)}
-                                className="text-blue-600 border-blue-600 hover:bg-blue-50 text-xs px-2 py-1 h-7"
-                                title="Create individual account for this member"
+                                className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
                               >
-                                <User className="h-3 w-3 mr-1" />
-                                Separate
-                              </Button>
+                                <User className="h-4 w-4 mr-2 text-blue-600" />
+                                Separate from Studio
+                              </DropdownMenuItem>
                               
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              <DropdownMenuItem 
                                 onClick={() => handleRemoveTeamMember(member.id)}
-                                className="text-red-600 border-red-600 hover:bg-red-50 text-xs px-2 py-1 h-7"
+                                className="hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                               >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Remove
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
