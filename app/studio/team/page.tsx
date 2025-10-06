@@ -45,6 +45,7 @@ export default function StudioTeamPage() {
   const [invitePassword, setInvitePassword] = useState('')
   const [inviteRole, setInviteRole] = useState<'student' | 'licensed' | 'instructor'>('student')
   const [isInviting, setIsInviting] = useState(false)
+  const [addMode, setAddMode] = useState<'invite' | 'manual'>('invite') // New state for add mode
 
   // Load team members from localStorage
   useEffect(() => {
@@ -134,6 +135,65 @@ export default function StudioTeamPage() {
       alert('Failed to send invitation. Please try again.')
       setIsInviting(false)
     }
+  }
+
+  const handleAddTeamMemberManually = () => {
+    if (!inviteEmail || !inviteName) return
+
+    // Add directly to team without invitation
+    const newMember: TeamMember = {
+      id: Date.now().toString(),
+      name: inviteName,
+      email: inviteEmail,
+      status: 'active', // Directly active since added manually
+      invitedAt: new Date().toISOString(),
+      joinedAt: new Date().toISOString(),
+      role: inviteRole,
+      licenseNumber: `LIC-${Date.now().toString().slice(-6)}`
+    }
+
+    const updatedTeamMembers = [...teamMembers, newMember]
+    saveTeamMembers(updatedTeamMembers)
+
+    // Also add to studio instructors if they're an instructor
+    if (inviteRole === 'instructor' || inviteRole === 'licensed') {
+      const instructorData = {
+        id: newMember.id,
+        name: newMember.name,
+        email: newMember.email,
+        role: inviteRole,
+        specialty: inviteRole === 'instructor' ? 'PMU Instructor' : 'Licensed Artist',
+        experience: '5+ years',
+        rating: 4.8,
+        location: (currentUser as any)?.businessName || 'Studio',
+        phone: '',
+        avatar: null,
+        licenseNumber: newMember.licenseNumber,
+        availability: {
+          monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          saturday: [],
+          sunday: []
+        }
+      }
+
+      // Add to studio instructors localStorage
+      const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+      existingInstructors.push(instructorData)
+      localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
+    }
+
+    // Reset form
+    setInviteEmail('')
+    setInviteName('')
+    setInvitePassword('')
+    setInviteRole('student')
+    setShowInviteForm(false)
+
+    alert(`${inviteRole === 'instructor' ? 'Instructor' : inviteRole === 'licensed' ? 'Licensed Artist' : 'Student'} added to team successfully!`)
   }
 
   const handleRemoveTeamMember = (memberId: string) => {
@@ -401,7 +461,7 @@ export default function StudioTeamPage() {
               <div>
                 <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
                   <UserPlus className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
-                  <span>Invite Team Member</span>
+                  <span>Add Team Member</span>
                 </CardTitle>
                 <CardDescription className="text-sm md:text-base mt-1">
                   Add students, licensed artists, or instructors to your studio team
@@ -413,7 +473,7 @@ export default function StudioTeamPage() {
                       className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
                       size="sm"
                     >
-                      {showInviteForm ? 'Cancel' : 'Invite Team Member'}
+                      {showInviteForm ? 'Cancel' : 'Add Team Member'}
                     </Button>
                     <Button 
                       onClick={() => window.location.href = '/studio/service-assignments'}
@@ -430,6 +490,38 @@ export default function StudioTeamPage() {
           
           {showInviteForm && (
             <CardContent className="pt-0">
+              {/* Add Mode Toggle */}
+              <div className="mb-6">
+                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+                  <button
+                    onClick={() => setAddMode('invite')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      addMode === 'invite'
+                        ? 'bg-white text-violet-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Send Invitation
+                  </button>
+                  <button
+                    onClick={() => setAddMode('manual')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      addMode === 'manual'
+                        ? 'bg-white text-violet-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Add Manually
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {addMode === 'invite' 
+                    ? 'Send an email invitation with login credentials to the team member'
+                    : 'Add the team member directly without sending an invitation email'
+                  }
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="member-name" className="text-sm font-medium">Full Name</Label>
@@ -454,20 +546,22 @@ export default function StudioTeamPage() {
                 </div>
               </div>
               
-              <div className="mt-4">
-                <Label htmlFor="member-password" className="text-sm font-medium">Initial Password</Label>
-                <Input
-                  id="member-password"
-                  type="password"
-                  value={invitePassword}
-                  onChange={(e) => setInvitePassword(e.target.value)}
-                  placeholder="Create initial password for team member"
-                  className="mt-1 text-sm"
-                />
-                <p className="text-xs text-gray-600 mt-2">
-                  The team member will use this password to log in. They can change it after their first login.
-                </p>
-              </div>
+              {addMode === 'invite' && (
+                <div className="mt-4">
+                  <Label htmlFor="member-password" className="text-sm font-medium">Initial Password</Label>
+                  <Input
+                    id="member-password"
+                    type="password"
+                    value={invitePassword}
+                    onChange={(e) => setInvitePassword(e.target.value)}
+                    placeholder="Create initial password for team member"
+                    className="mt-1 text-sm"
+                  />
+                  <p className="text-xs text-gray-600 mt-2">
+                    The team member will use this password to log in. They can change it after their first login.
+                  </p>
+                </div>
+              )}
               
               <div className="mt-4">
                 <Label htmlFor="member-role" className="text-sm font-medium">Role</Label>
@@ -498,12 +592,19 @@ export default function StudioTeamPage() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleInviteTeamMember}
-                  disabled={!inviteName || !inviteEmail || !invitePassword || isInviting}
+                  onClick={addMode === 'invite' ? handleInviteTeamMember : handleAddTeamMemberManually}
+                  disabled={
+                    addMode === 'invite' 
+                      ? (!inviteName || !inviteEmail || !invitePassword || isInviting)
+                      : (!inviteName || !inviteEmail)
+                  }
                   className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto"
                   size="sm"
                 >
-                  {isInviting ? 'Sending...' : 'Send Invitation'}
+                  {addMode === 'invite' 
+                    ? (isInviting ? 'Sending...' : 'Send Invitation')
+                    : 'Add Team Member'
+                  }
                 </Button>
               </div>
             </CardContent>
@@ -533,7 +634,7 @@ export default function StudioTeamPage() {
                   className="bg-violet-600 hover:bg-violet-700"
                   size="sm"
                 >
-                  Invite Team Member
+                  Add Team Member
                 </Button>
               </div>
             ) : (
