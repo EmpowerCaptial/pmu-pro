@@ -80,7 +80,7 @@ export default function ProfilePage() {
       // Update currentUser in localStorage or trigger a refresh
       if (typeof window !== 'undefined') {
         const updatedUser = { ...currentUser, avatar: result.imageUrl }
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+        localStorage.setItem('demoUser', JSON.stringify(updatedUser))
       }
     } catch (error) {
       console.error('Error uploading image:', error)
@@ -117,22 +117,22 @@ export default function ProfilePage() {
 
       const result = await response.json()
       
-      // Update localStorage with the saved data
-      if (typeof window !== 'undefined' && currentUser) {
-        const updatedUser = {
-          ...currentUser,
-          name: profileData.name,
-          phone: profileData.phone,
-          businessName: profileData.businessName,
-          studioName: profileData.studioName,
-          address: profileData.address,
-          bio: profileData.bio,
-          specialties: profileData.specialties,
-          certifications: profileData.certifications,
-          avatar: profileData.avatar
+        // Update localStorage with the saved data (use same key as auth hook)
+        if (typeof window !== 'undefined' && currentUser) {
+          const updatedUser = {
+            ...currentUser,
+            name: profileData.name,
+            phone: profileData.phone,
+            businessName: profileData.businessName,
+            studioName: profileData.studioName,
+            address: profileData.address,
+            bio: profileData.bio,
+            specialties: profileData.specialties,
+            certifications: profileData.certifications,
+            avatar: profileData.avatar
+          }
+          localStorage.setItem('demoUser', JSON.stringify(updatedUser))
         }
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
-      }
       
       setSaveSuccess(true)
       setIsEditing(false)

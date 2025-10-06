@@ -63,11 +63,11 @@ export default function SettingsPage() {
 
       const result = await response.json()
       
-      // Update localStorage with the saved settings
-      if (typeof window !== 'undefined' && currentUser) {
-        const updatedUser = { ...currentUser, settings: result.settings }
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
-      }
+        // Update localStorage with the saved settings (use same key as auth hook)
+        if (typeof window !== 'undefined' && currentUser) {
+          const updatedUser = { ...currentUser, settings: result.settings }
+          localStorage.setItem('demoUser', JSON.stringify(updatedUser))
+        }
       
       alert('Settings saved successfully!')
     } catch (error) {
