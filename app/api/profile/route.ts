@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest) {
     // Students and licensed artists in studio cannot change critical studio fields
     if ((userRole === 'student' || userRole === 'licensed' || userRole === 'instructor') && user.studioName) {
       for (const field of restrictedFields) {
-        if (validatedData[field] !== undefined) {
+        if (field in validatedData && validatedData[field as keyof typeof validatedData] !== undefined) {
           return NextResponse.json({
             error: 'Access denied',
             message: `${userRole === 'student' ? 'Students' : userRole === 'licensed' ? 'Licensed artists' : 'Instructors'} cannot modify ${field}. This field is managed by the studio owner to maintain system integrity.`

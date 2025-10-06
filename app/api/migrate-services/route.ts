@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        role: true
+        role: true,
+        studioName: true
       }
     })
 

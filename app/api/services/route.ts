@@ -38,26 +38,26 @@ export async function GET(request: NextRequest) {
     let services: any[] = []
     if (user.studioName && (user.role === 'student' || user.role === 'licensed' || user.role === 'instructor')) {
       // For studio members, get services from the studio owner
-      // CRITICAL FIX: Prioritize the correct owner by specific user ID first
-      const correctOwnerId = 'cmg0tvtw20000l2048yn605s7' // Tyrone Jackson's correct account
+      // UNIVERSAL FIX: Find the actual studio owner by businessName match
+      // This prevents issues with multiple users having same studioName
       
       let studioOwner = await prisma.user.findFirst({
         where: { 
-          id: correctOwnerId,
           studioName: user.studioName,
-          role: 'owner'
+          role: 'owner',
+          businessName: user.studioName // Match businessName to studioName for consistency
         },
-        select: { id: true }
+        select: { id: true, name: true, email: true }
       })
       
-      // If correct owner not found, fallback to any owner
+      // If no exact match, find any owner with same studioName
       if (!studioOwner) {
         studioOwner = await prisma.user.findFirst({
           where: { 
             studioName: user.studioName,
             role: 'owner'
           },
-          select: { id: true }
+          select: { id: true, name: true, email: true }
         })
       }
       
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
             studioName: user.studioName,
             role: { in: ['manager', 'director'] }
           },
-          select: { id: true }
+          select: { id: true, name: true, email: true }
         })
       }
       
@@ -77,7 +77,11 @@ export async function GET(request: NextRequest) {
           where: { userId: studioOwner.id },
           orderBy: { createdAt: 'desc' }
         })
+        
+        // Log for debugging
+        console.log(`Services API: Found ${services.length} services for studio member ${user.email} from owner ${studioOwner.email}`)
       } else {
+        console.log(`Services API: No studio owner found for studioName: ${user.studioName}`)
         services = []
       }
     } else {
