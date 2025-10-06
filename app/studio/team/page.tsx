@@ -161,7 +161,7 @@ export default function StudioTeamPage() {
           memberName: inviteName,
           memberPassword: invitePassword,
           memberRole: inviteRole,
-          studioName: (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
+          studioName: (currentUser as any)?.studioName || (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
           studioOwnerName: currentUser?.name || 'Studio Owner'
         }),
       })
@@ -225,7 +225,7 @@ export default function StudioTeamPage() {
           memberName: inviteName,
           memberPassword: defaultPassword,
           memberRole: inviteRole,
-          studioName: (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
+          studioName: (currentUser as any)?.studioName || (currentUser as any)?.businessName || currentUser?.name || 'Your Studio',
           studioOwnerName: currentUser?.name || 'Studio Owner'
         }),
       })

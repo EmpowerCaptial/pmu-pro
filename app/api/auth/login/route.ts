@@ -66,6 +66,7 @@ export async function POST(req: Request) {
         name: userWithoutPassword.name,
         email: userWithoutPassword.email,
         businessName: userWithoutPassword.businessName,
+        studioName: userWithoutPassword.studioName,
         licenseNumber: userWithoutPassword.licenseNumber,
         licenseState: userWithoutPassword.licenseState,
         selectedPlan: userWithoutPassword.selectedPlan,
