@@ -34,11 +34,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get all services for this user
-    const services = await prisma.service.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' }
-    })
+    // Get services based on user role
+    let services: any[] = []
+    if (user.studioName && (user.role === 'student' || user.role === 'licensed' || user.role === 'instructor')) {
+      // For studio members, get services from the studio owner
+      const studioOwner = await prisma.user.findFirst({
+        where: { 
+          studioName: user.studioName,
+          role: { in: ['owner', 'manager', 'director'] }
+        },
+        select: { id: true }
+      })
+      
+      if (studioOwner) {
+        services = await prisma.service.findMany({
+          where: { userId: studioOwner.id },
+          orderBy: { createdAt: 'desc' }
+        })
+      } else {
+        services = []
+      }
+    } else {
+      // For owners, managers, directors, and artists with own accounts
+      services = await prisma.service.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' }
+      })
+    }
 
     return NextResponse.json({ services })
 
@@ -85,6 +107,19 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Check if user can manage services
+    const canManageServices = user.role === 'owner' || 
+                             user.role === 'manager' || 
+                             user.role === 'director' ||
+                             (user.role === 'artist' && !user.studioName) // Artist with own account
+
+    if (!canManageServices) {
+      return NextResponse.json({ 
+        error: 'Access denied', 
+        message: 'Only studio owners, managers, directors, and artists with their own accounts can manage services' 
+      }, { status: 403 })
     }
 
     // Create new service

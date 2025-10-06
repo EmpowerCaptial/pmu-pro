@@ -46,6 +46,14 @@ export default function ServicesPage() {
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
 
+  // Check if user can manage services (owner, manager, director, or artist with own account)
+  const canManageServices = currentUser && (
+    currentUser.role === 'owner' || 
+    currentUser.role === 'manager' || 
+    currentUser.role === 'director' ||
+    (currentUser.role === 'artist' && !currentUser.studioName) // Artist with own account
+  )
+
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   
@@ -255,22 +263,24 @@ export default function ServicesPage() {
         {/* Center: Title */}
         <h1 className="text-base sm:text-lg font-semibold text-gray-900">Services</h1>
         
-        {/* Right: Two square icon buttons */}
+        {/* Right: Icon buttons (conditionally show add button) */}
         <div className="flex gap-1 sm:gap-2">
           <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-gray-700 hover:bg-gray-100">
             <List className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-gray-700 hover:bg-gray-100"
-            onClick={() => {
-              console.log('Plus button clicked - opening add service modal')
-              setIsAddingNew(true)
-            }}
-          >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
+          {canManageServices && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-gray-700 hover:bg-gray-100"
+              onClick={() => {
+                console.log('Plus button clicked - opening add service modal')
+                setIsAddingNew(true)
+              }}
+            >
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -305,9 +315,15 @@ export default function ServicesPage() {
             </div>
 
             {/* Info Note */}
-            <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 px-1 sm:px-2">
-              Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
-            </p>
+            {canManageServices ? (
+              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 px-1 sm:px-2">
+                Want services to appear on your booking site in a specific order? Tap, hold, and drag services to reorder them.
+              </p>
+            ) : (
+              <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 px-1 sm:px-2">
+                These are the services available from your studio. Contact your studio owner to add or modify services.
+              </p>
+            )}
 
             {/* Scrollable Services List */}
             <div className="space-y-3 sm:space-y-4">
@@ -321,8 +337,10 @@ export default function ServicesPage() {
                 return (
                   <div 
                     key={service.id}
-                    onClick={() => setEditingService(service)}
-                    className="relative flex items-center rounded-xl bg-white border border-gray-200 p-3 sm:p-4 gap-2 sm:gap-3 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
+                    onClick={() => canManageServices && setEditingService(service)}
+                    className={`relative flex items-center rounded-xl bg-white border border-gray-200 p-3 sm:p-4 gap-2 sm:gap-3 transition-colors shadow-sm ${
+                      canManageServices ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'
+                    }`}
                   >
                     {/* Left accent bar */}
                     <span 
@@ -352,10 +370,12 @@ export default function ServicesPage() {
                       <div className="mt-1 text-xs sm:text-sm text-gray-600 truncate">{meta}</div>
                     </div>
 
-                    {/* Drag handle */}
-                    <div className="ml-1 sm:ml-2 text-gray-400 opacity-80">
-                      <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
+                    {/* Drag handle (only show for users who can manage services) */}
+                    {canManageServices && (
+                      <div className="ml-1 sm:ml-2 text-gray-400 opacity-80">
+                        <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -541,7 +561,12 @@ export default function ServicesPage() {
           <div className="text-center py-8 sm:py-12">
             <Tag className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-1 sm:mb-2">No services found</h3>
-            <p className="text-gray-500 text-sm sm:text-base">Try adjusting your search or add a new service.</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              {canManageServices 
+                ? "Try adjusting your search or add a new service."
+                : "Try adjusting your search or contact your studio owner to add services."
+              }
+            </p>
           </div>
         )}
       </div>
