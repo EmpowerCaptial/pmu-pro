@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 // Simple test endpoint to debug profile update issues
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Debug profile update test')
     
