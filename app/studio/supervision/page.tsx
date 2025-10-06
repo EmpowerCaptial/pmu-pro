@@ -241,7 +241,7 @@ export default function StudioSupervisionPage() {
           }
         }
         
-        // Then try to get instructors from database API
+        // Then try to get instructors from database API (PRIORITY)
         try {
           const response = await fetch('/api/studio/instructors', {
             headers: {
@@ -251,6 +251,7 @@ export default function StudioSupervisionPage() {
           
           if (response.ok) {
             const data = await response.json()
+            console.log('✅ API instructors response:', data)
             
             // Transform database instructor data to match expected format
             const transformedDbInstructors: Instructor[] = data.instructors.map((instructor: any) => ({
@@ -281,10 +282,15 @@ export default function StudioSupervisionPage() {
               licenseNumber: `PMU-${instructor.id.slice(-3)}`
             }))
             
-            // Merge database instructors with localStorage instructors (avoid duplicates)
-            const existingEmails = new Set(allInstructors.map(i => i.email))
-            const newDbInstructors = transformedDbInstructors.filter(i => !existingEmails.has(i.email))
-            allInstructors = [...allInstructors, ...newDbInstructors]
+            // If API returns instructors, use them as the primary source
+            if (transformedDbInstructors.length > 0) {
+              console.log('✅ Using API instructors as primary source:', transformedDbInstructors)
+              allInstructors = transformedDbInstructors
+            } else {
+              console.log('⚠️ API returned no instructors, keeping localStorage data')
+            }
+          } else {
+            console.log('❌ API request failed, status:', response.status)
           }
         } catch (apiError) {
           console.error('Error fetching instructors from API:', apiError)
@@ -1449,34 +1455,72 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       </Button>
                       
                       {/* Debug button for testing instructor population */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <Button 
-                          onClick={async () => {
-                            try {
-                              const response = await fetch('/api/populate-instructors', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ studioName: 'Universal Beauty Studio' })
-                              })
-                              
-                              if (response.ok) {
-                                const data = await response.json()
-                                localStorage.setItem('studio-instructors', data.localStorageValue)
-                                console.log('✅ Instructors populated:', data.instructors)
-                                alert('Instructors populated! Refresh the page to see Tierra Jackson.')
-                                window.location.reload()
-                              }
-                            } catch (error) {
-                              console.error('Error populating instructors:', error)
-                              alert('Failed to populate instructors')
-                            }
-                          }}
-                          variant="outline"
-                          className="text-xs mt-2"
-                        >
-                          🔧 Populate Instructors (Debug)
-                        </Button>
-                      )}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="flex gap-2 mt-2">
+          <Button 
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/populate-instructors', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ studioName: 'Universal Beauty Studio' })
+                })
+                
+                if (response.ok) {
+                  const data = await response.json()
+                  localStorage.setItem('studio-instructors', data.localStorageValue)
+                  console.log('✅ Instructors populated:', data.instructors)
+                  alert('Instructors populated! Refresh the page to see Tierra Jackson.')
+                  window.location.reload()
+                }
+              } catch (error) {
+                console.error('Error populating instructors:', error)
+                alert('Failed to populate instructors')
+              }
+            }}
+            variant="outline"
+            className="text-xs"
+          >
+            🔧 Populate Instructors (Debug)
+          </Button>
+          
+          <Button 
+            onClick={async () => {
+              try {
+                console.log('🔍 DEBUGGING INSTRUCTOR LOADING...')
+                console.log('Current user:', currentUser)
+                
+                // Check localStorage
+                const studioInstructors = localStorage.getItem('studio-instructors')
+                console.log('localStorage studio-instructors:', studioInstructors)
+                
+                // Check API
+                const response = await fetch('/api/studio/instructors', {
+                  headers: { 'x-user-email': currentUser?.email || '' }
+                })
+                console.log('API response status:', response.status)
+                
+                if (response.ok) {
+                  const data = await response.json()
+                  console.log('API instructors:', data)
+                  alert(`Found ${data.instructors?.length || 0} instructors via API. Check console for details.`)
+                } else {
+                  const error = await response.text()
+                  console.log('API error:', error)
+                  alert(`API error: ${response.status}. Check console for details.`)
+                }
+              } catch (error) {
+                console.error('Debug error:', error)
+                alert('Debug failed. Check console for details.')
+              }
+            }}
+            variant="outline"
+            className="text-xs"
+          >
+            🔍 Debug Instructor Loading
+          </Button>
+        </div>
+      )}
                     </>
                   )}
 
