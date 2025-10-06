@@ -84,21 +84,25 @@ export default function StudentHoursPage() {
   // Get recent entries (last 7 days)
   const recentEntries = clockEntries
     .filter(entry => {
-      const entryDate = new Date(entry.date)
+      const entryDate = new Date(entry.date + 'T00:00:00') // Treat as local date
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
       return entryDate >= sevenDaysAgo
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.date + 'T00:00:00').getTime() - new Date(a.date + 'T00:00:00').getTime())
 
   const handleClockIn = async () => {
     const result = await clockIn()
     if (result.success) {
-      // Create new clock entry
+      // Create new clock entry using local date
       const now = new Date()
+      const localDate = now.getFullYear() + '-' + 
+        String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(now.getDate()).padStart(2, '0')
+      
       const newEntry: ClockEntry = {
         id: Date.now().toString(),
-        date: now.toISOString().split('T')[0],
+        date: localDate,
         clockIn: now.toTimeString().split(' ')[0].substring(0, 5),
         status: 'active',
         totalHours: 0
@@ -120,9 +124,10 @@ export default function StudentHoursPage() {
       // Update the last entry (active one)
       const updatedEntries = clockEntries.map((entry, index) => {
         if (index === clockEntries.length - 1 && entry.status === 'active') {
+          const now = new Date()
           return {
             ...entry,
-            clockOut: new Date().toTimeString().split(' ')[0].substring(0, 5),
+            clockOut: now.toTimeString().split(' ')[0].substring(0, 5),
             totalHours: result.hoursWorked || 0,
             status: 'completed' as const
           }
@@ -140,7 +145,10 @@ export default function StudentHoursPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse as local date to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number)
+    const date = new Date(year, month - 1, day) // month is 0-indexed
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric'
@@ -439,7 +447,7 @@ export default function StudentHoursPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Currently Clocked In</h3>
                     <p className="text-gray-600 mb-4">
-                      Since: {currentClockIn ? formatTime(new Date(currentClockIn).toTimeString().split(' ')[0].substring(0, 5)) : 'Unknown'}
+                      Since: {currentClockIn ? formatTime(new Date(currentClockIn).toLocaleTimeString('en-US', { hour12: false }).substring(0, 5)) : 'Unknown'}
                     </p>
                     <Button 
                       onClick={handleClockOut}

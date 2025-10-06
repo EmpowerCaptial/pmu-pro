@@ -1351,28 +1351,28 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className={`grid w-full ${userRole === 'INSTRUCTOR' ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'} bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1`}>
+            <TabsList className={`flex w-full ${userRole === 'INSTRUCTOR' ? 'md:grid md:grid-cols-5' : 'md:grid md:grid-cols-4'} bg-white/90 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-xl p-1 overflow-x-auto md:overflow-x-visible`}>
             <TabsTrigger 
               value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value={userRole === 'INSTRUCTOR' ? 'availability' : 'find'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
             >
               {userRole === 'INSTRUCTOR' ? 'My Availability' : 'Book Instructor'}
             </TabsTrigger>
             <TabsTrigger 
               value={userRole === 'INSTRUCTOR' ? 'bookings' : 'history'}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
             >
               {userRole === 'INSTRUCTOR' ? 'My Bookings' : 'My History'}
             </TabsTrigger>
             <TabsTrigger 
               value="inbox"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
             >
               <Users className="h-4 w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Inbox</span>
@@ -1381,9 +1381,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             {userRole === 'INSTRUCTOR' && (
               <TabsTrigger 
                 value="reports"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-lavender data-[state=active]:to-lavender-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200 font-medium flex-shrink-0 min-w-[80px] md:min-w-0"
               >
-                Reports
+                <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Reports</span>
               </TabsTrigger>
             )}
           </TabsList>

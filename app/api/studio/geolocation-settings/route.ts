@@ -88,12 +88,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // For now, we'll store the settings in a way that the hook can access them
-    // In a real implementation, you'd have a separate table for studio settings
+    // Store settings in localStorage for now (in production, use database)
     const studioKey = `geolocation-settings-${user.studioName || user.businessName || 'default'}`
     
-    // Store settings in a way that can be accessed by the hook
-    // This is a temporary solution - in production you'd use a proper database table
     const settingsToStore = {
       ...settings,
       studioName: user.studioName || user.businessName,
@@ -101,8 +98,7 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString()
     }
 
-    // For now, we'll return success and the frontend will handle localStorage
-    // In a real implementation, you'd save to a database table
+    // Return the settings so frontend can store them
     return NextResponse.json({ 
       success: true, 
       message: 'Geolocation settings saved successfully',

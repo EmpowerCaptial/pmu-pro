@@ -19,7 +19,7 @@ interface StudioLocation {
   lat: number
   lng: number
   address: string
-  radius: number // in meters (5 feet ≈ 1.5 meters)
+  radius: number // in meters (50 feet ≈ 15.24 meters)
 }
 
 // Default studio location - will be overridden by user settings
@@ -27,7 +27,7 @@ const DEFAULT_STUDIO_LOCATION: StudioLocation = {
   lat: 40.7128, // Example coordinates - replace with actual studio address
   lng: -74.0060,
   address: "123 Studio Street, New York, NY 10001",
-  radius: 1.5 // 5 feet in meters
+  radius: 15.24 // 50 feet in meters
 }
 
 // Calculate distance between two coordinates using Haversine formula
@@ -44,6 +44,25 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
 
   return R * c // Distance in meters
+}
+
+// Helper function to get local date/time string
+function getLocalDateTime(): string {
+  const now = new Date()
+  // Get local timezone offset in minutes
+  const timezoneOffset = now.getTimezoneOffset()
+  // Create a new date adjusted for timezone
+  const localDate = new Date(now.getTime() - (timezoneOffset * 60000))
+  return localDate.toISOString()
+}
+
+// Helper function to get local date string (YYYY-MM-DD)
+function getLocalDateString(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function useClockInOut() {
@@ -65,8 +84,26 @@ export function useClockInOut() {
 
   // Load configured studio location
   const loadStudioLocation = useCallback(async () => {
-    if (currentUser?.email) {
+    if (currentUser?.email && typeof window !== 'undefined') {
       try {
+        // First try to load from localStorage
+        const studioKey = `geolocation-settings-${currentUser.studioName || currentUser.businessName || 'default'}`
+        const savedSettings = localStorage.getItem(studioKey)
+        
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings)
+          if (settings.isConfigured) {
+            setStudioLocation({
+              lat: settings.lat,
+              lng: settings.lng,
+              address: settings.address,
+              radius: settings.radius || 15.24 // Default to 50 feet
+            })
+            return
+          }
+        }
+        
+        // Fallback to API if no localStorage settings
         const response = await fetch('/api/studio/geolocation-settings', {
           headers: {
             'x-user-email': currentUser.email
@@ -80,7 +117,7 @@ export function useClockInOut() {
               lat: data.settings.lat,
               lng: data.settings.lng,
               address: data.settings.address,
-              radius: data.settings.radius || 1.5
+              radius: data.settings.radius || 15.24
             })
           }
         }
@@ -193,10 +230,10 @@ export function useClockInOut() {
       const location = await getCurrentLocation()
       
       if (!isWithinStudioRadius(location.lat, location.lng)) {
-        throw new Error(`You must be within 5 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
+        throw new Error(`You must be within 50 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
       }
 
-      const now = new Date().toISOString()
+      const now = getLocalDateTime()
       const newStatus: ClockStatus = {
         isClockedIn: true,
         clockInTime: now,
@@ -237,7 +274,7 @@ export function useClockInOut() {
         clockInTime: null,
         totalHoursToday: clockStatus.totalHoursToday + hoursWorked,
         location: clockStatus.location,
-        lastLocationCheck: null
+        lastLocationCheck: getLocalDateTime()
       }
 
       setClockStatus(newStatus)
@@ -282,7 +319,7 @@ export function useClockInOut() {
           setClockStatus(prev => ({
             ...prev,
             location,
-            lastLocationCheck: new Date().toISOString()
+            lastLocationCheck: getLocalDateTime()
           }))
         }
       } catch (error) {

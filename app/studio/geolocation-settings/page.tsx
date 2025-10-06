@@ -32,7 +32,7 @@ export default function GeolocationSettingsPage() {
     address: '',
     lat: null,
     lng: null,
-    radius: 1.5, // 5 feet in meters
+    radius: 15.24, // 50 feet in meters
     isConfigured: false
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -191,6 +191,13 @@ export default function GeolocationSettingsPage() {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        
+        // Save to localStorage using the studio key
+        if (data.studioKey) {
+          localStorage.setItem(data.studioKey, JSON.stringify(data.settings))
+        }
+        
         alert('Geolocation settings saved successfully!')
       } else {
         throw new Error('Failed to save settings')
@@ -254,7 +261,7 @@ export default function GeolocationSettingsPage() {
               <span>Studio Location</span>
             </CardTitle>
             <CardDescription>
-              Set your studio address for geolocation-based clock in/out. Students must be within 5 feet of this location to clock in.
+              Set your studio address for geolocation-based clock in/out. Students must be within 50 feet of this location to clock in.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -288,7 +295,7 @@ export default function GeolocationSettingsPage() {
                 <div className="text-sm text-green-700 space-y-1">
                   <p><strong>Latitude:</strong> {settings.lat.toFixed(6)}</p>
                   <p><strong>Longitude:</strong> {settings.lng.toFixed(6)}</p>
-                  <p><strong>Radius:</strong> {settings.radius} meters (≈5 feet)</p>
+                  <p><strong>Radius:</strong> {settings.radius} meters (≈50 feet)</p>
                 </div>
               </div>
             )}
@@ -369,7 +376,7 @@ export default function GeolocationSettingsPage() {
                 <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xs">3</div>
                 <div>
                   <p className="font-medium">Students Clock In</p>
-                  <p>Students can only clock in when they're physically within 5 feet of your studio location.</p>
+                  <p>Students can only clock in when they're physically within 50 feet of your studio location.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
