@@ -696,7 +696,8 @@ export default function StudioTeamPage() {
                                 <span className="sr-only">Open menu</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg">
+                            <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
+                              {/* Status Management */}
                               {member.status === 'pending' && (
                                 <DropdownMenuItem 
                                   onClick={() => handleApproveTeamMember(member.id)}
@@ -726,6 +727,50 @@ export default function StudioTeamPage() {
                                   Reactivate
                                 </DropdownMenuItem>
                               )}
+
+                              {/* Role Management */}
+                              {member.status === 'active' && (
+                                <>
+                                  <div className="px-2 py-1.5 text-xs font-medium text-gray-500 border-t border-gray-100 mt-1">
+                                    Change Role
+                                  </div>
+                                  
+                                  {member.role !== 'student' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'student')}
+                                      className="hover:bg-purple-50 focus:bg-purple-50 text-gray-700"
+                                    >
+                                      <GraduationCap className="h-4 w-4 mr-2 text-purple-600" />
+                                      Make Student/Apprentice
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'licensed' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'licensed')}
+                                      className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
+                                    >
+                                      <User className="h-4 w-4 mr-2 text-blue-600" />
+                                      Make Licensed Artist
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'instructor' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'instructor')}
+                                      className="hover:bg-yellow-50 focus:bg-yellow-50 text-gray-700"
+                                    >
+                                      <Crown className="h-4 w-4 mr-2 text-yellow-600" />
+                                      Make Instructor
+                                    </DropdownMenuItem>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* Account Management */}
+                              <div className="px-2 py-1.5 text-xs font-medium text-gray-500 border-t border-gray-100 mt-1">
+                                Account Actions
+                              </div>
                               
                               <DropdownMenuItem 
                                 onClick={() => handleSeparateTeamMember(member.id)}
@@ -740,7 +785,7 @@ export default function StudioTeamPage() {
                                 className="hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
-                                Remove
+                                Remove from Team
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -162,6 +162,16 @@ const coreFeatures = [
     color: 'bg-gradient-to-br from-orange-500 to-orange-600',
     status: 'active',
     category: 'core'
+  },
+  {
+    id: 'student-hours',
+    title: 'Clock Hours',
+    description: 'Track apprenticeship hours',
+    icon: Clock,
+    href: '/student-hours',
+    color: 'bg-gradient-to-br from-blue-500 to-blue-600',
+    status: 'active',
+    category: 'core'
   }
 ]
 
@@ -499,6 +509,20 @@ export default function FeaturesPage() {
     const matchesSearch = feature.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          feature.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || feature.category === selectedCategory
+    
+    // Hide invoice and products features from students, and show student-hours only to students
+    const isStudent = currentUser?.role === 'student' || currentUser?.role === 'apprentice'
+    const isRestrictedFeature = feature.id === 'invoices' || feature.id === 'products'
+    const isStudentOnlyFeature = feature.id === 'student-hours'
+    
+    if (isStudent && isRestrictedFeature) {
+      return false
+    }
+    
+    if (!isStudent && isStudentOnlyFeature) {
+      return false
+    }
+    
     return matchesSearch && matchesCategory
   })
 

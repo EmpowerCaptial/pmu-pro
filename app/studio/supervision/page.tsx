@@ -1050,6 +1050,28 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           if (clientResponse.ok) {
             const dbClient = await clientResponse.json()
             
+            // Add client to student's local client list for immediate visibility
+            const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
+            const newClient = {
+              id: dbClient.client.id,
+              name: clientInfo.name,
+              email: clientInfo.email || '',
+              phone: clientInfo.phone,
+              notes: `Supervision session with ${instructor?.name} - ${service?.name}`,
+              createdAt: new Date().toISOString(),
+              lastSeenAt: new Date().toISOString()
+            }
+            
+            // Check if client already exists to avoid duplicates
+            const clientExists = existingClients.some((c: any) => c.email === clientInfo.email || c.phone === clientInfo.phone)
+            if (!clientExists) {
+              const updatedClients = [...existingClients, newClient]
+              localStorage.setItem('clients', JSON.stringify(updatedClients))
+              console.log('✅ Client added to student\'s client list:', newClient)
+            } else {
+              console.log('✅ Client already exists in student\'s list')
+            }
+            
             // Generate deposit payment link
             const depositResponse = await fetch('/api/deposit-payments', {
               method: 'POST',

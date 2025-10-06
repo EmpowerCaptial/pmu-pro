@@ -1,0 +1,375 @@
+"use client"
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Clock, 
+  Calendar, 
+  TrendingUp, 
+  Target, 
+  CheckCircle,
+  AlertTriangle,
+  GraduationCap,
+  Clock3,
+  Timer
+} from 'lucide-react'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { NavBar } from '@/components/ui/navbar'
+
+interface ClockEntry {
+  id: string
+  date: string
+  clockIn: string
+  clockOut?: string
+  totalHours: number
+  status: 'active' | 'completed'
+  location?: string
+  notes?: string
+}
+
+export default function StudentHoursPage() {
+  const { currentUser } = useDemoAuth()
+  const [clockEntries, setClockEntries] = useState<ClockEntry[]>([])
+  const [isClockedIn, setIsClockedIn] = useState(false)
+  const [currentClockIn, setCurrentClockIn] = useState<string | null>(null)
+
+  // Prepare user object for NavBar
+  const user = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    initials: currentUser.name?.split(' ').map(n => n[0]).join('') || currentUser.email.charAt(0).toUpperCase(),
+    avatar: currentUser.avatar
+  } : {
+    name: "PMU Student",
+    email: "student@pmupro.com",
+    initials: "PS",
+  }
+
+  // Load clock entries from localStorage
+  useEffect(() => {
+    const savedEntries = localStorage.getItem('student-clock-entries')
+    const currentClock = localStorage.getItem('student-current-clock')
+    
+    if (savedEntries) {
+      setClockEntries(JSON.parse(savedEntries))
+    }
+    
+    if (currentClock) {
+      setIsClockedIn(true)
+      setCurrentClockIn(currentClock)
+    }
+  }, [])
+
+  // Calculate total hours
+  const totalHours = clockEntries.reduce((total, entry) => total + entry.totalHours, 0)
+  const requiredHours = 1000 // Missouri requirement
+  const remainingHours = Math.max(0, requiredHours - totalHours)
+  const progressPercentage = Math.min(100, (totalHours / requiredHours) * 100)
+
+  // Get recent entries (last 7 days)
+  const recentEntries = clockEntries
+    .filter(entry => {
+      const entryDate = new Date(entry.date)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      return entryDate >= sevenDaysAgo
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  const handleClockIn = () => {
+    const now = new Date()
+    const clockInTime = now.toISOString()
+    
+    setCurrentClockIn(clockInTime)
+    setIsClockedIn(true)
+    
+    localStorage.setItem('student-current-clock', clockInTime)
+    
+    // Create new clock entry
+    const newEntry: ClockEntry = {
+      id: Date.now().toString(),
+      date: now.toISOString().split('T')[0],
+      clockIn: now.toTimeString().split(' ')[0].substring(0, 5),
+      status: 'active',
+      totalHours: 0
+    }
+    
+    const updatedEntries = [...clockEntries, newEntry]
+    setClockEntries(updatedEntries)
+    localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
+  }
+
+  const handleClockOut = () => {
+    if (!currentClockIn) return
+    
+    const clockInTime = new Date(currentClockIn)
+    const clockOutTime = new Date()
+    const hoursWorked = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60 * 60)
+    
+    // Update the last entry (active one)
+    const updatedEntries = clockEntries.map((entry, index) => {
+      if (index === clockEntries.length - 1 && entry.status === 'active') {
+        return {
+          ...entry,
+          clockOut: clockOutTime.toTimeString().split(' ')[0].substring(0, 5),
+          totalHours: Math.round(hoursWorked * 100) / 100,
+          status: 'completed' as const
+        }
+      }
+      return entry
+    })
+    
+    setClockEntries(updatedEntries)
+    setIsClockedIn(false)
+    setCurrentClockIn(null)
+    
+    localStorage.removeItem('student-current-clock')
+    localStorage.setItem('student-clock-entries', JSON.stringify(updatedEntries))
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const formatTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
+  }
+
+  // Access control - only students and apprentices can access this page
+  const isStudent = currentUser?.role === 'student' || currentUser?.role === 'apprentice'
+  
+  if (!isStudent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+        <NavBar currentPath="/student-hours" user={user} />
+        <main className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+          <div className="text-center py-16">
+            <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+            <p className="text-gray-600 mb-4">
+              Clock hours tracking is only available to students and apprentices.
+            </p>
+            <p className="text-sm text-gray-500">
+              Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
+            </p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
+      <NavBar currentPath="/student-hours" user={user} />
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Clock Hours Tracker</h1>
+              <p className="text-gray-600">Track your required apprenticeship hours</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Hours</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalHours.toFixed(1)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Target className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Remaining</p>
+                  <p className="text-2xl font-bold text-gray-900">{remainingHours.toFixed(1)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Progress</p>
+                  <p className="text-2xl font-bold text-gray-900">{progressPercentage.toFixed(1)}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Progress Bar */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <GraduationCap className="h-5 w-5 text-blue-600" />
+              <span>Missouri Apprenticeship Requirements</span>
+            </CardTitle>
+            <CardDescription>
+              {requiredHours} hours required for PMU license
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span>Progress: {totalHours.toFixed(1)} / {requiredHours} hours</span>
+                <span>{progressPercentage.toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Clock In/Out */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Timer className="h-5 w-5 text-green-600" />
+              <span>Clock In/Out</span>
+            </CardTitle>
+            <CardDescription>
+              Track your daily hours at the studio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              {!isClockedIn ? (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <Clock3 className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Clock In</h3>
+                    <p className="text-gray-600 mb-4">Click below when you start your shift</p>
+                    <Button 
+                      onClick={handleClockIn}
+                      className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                      size="lg"
+                    >
+                      <Clock className="h-5 w-5 mr-2" />
+                      Clock In
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                    <Clock3 className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Currently Clocked In</h3>
+                    <p className="text-gray-600 mb-4">
+                      Since: {currentClockIn ? formatTime(new Date(currentClockIn).toTimeString().split(' ')[0].substring(0, 5)) : 'Unknown'}
+                    </p>
+                    <Button 
+                      onClick={handleClockOut}
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                      size="lg"
+                    >
+                      <Clock className="h-5 w-5 mr-2" />
+                      Clock Out
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Entries */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              <span>Recent Clock Entries</span>
+            </CardTitle>
+            <CardDescription>
+              Your last 7 days of clock entries
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentEntries.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No recent entries</h3>
+                <p className="text-gray-600">Start clocking in to track your hours</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentEntries.map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Calendar className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{formatDate(entry.date)}</h4>
+                        <p className="text-sm text-gray-600">
+                          {formatTime(entry.clockIn)} - {entry.clockOut ? formatTime(entry.clockOut) : 'In Progress'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      {entry.status === 'active' && (
+                        <Badge variant="outline" className="text-orange-600 border-orange-600">
+                          Active
+                        </Badge>
+                      )}
+                      {entry.status === 'completed' && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          Completed
+                        </Badge>
+                      )}
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900">{entry.totalHours.toFixed(1)}h</p>
+                        <p className="text-xs text-gray-500">hours</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  )
+}
