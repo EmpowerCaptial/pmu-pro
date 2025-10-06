@@ -88,6 +88,22 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const validatedData = profileSchema.parse(body)
 
+    // CRITICAL: Role-based field restrictions to prevent system breaking
+    const restrictedFields = ['studioName', 'businessName']
+    const userRole = user.role
+    
+    // Students and licensed artists in studio cannot change critical studio fields
+    if ((userRole === 'student' || userRole === 'licensed' || userRole === 'instructor') && user.studioName) {
+      for (const field of restrictedFields) {
+        if (validatedData[field] !== undefined) {
+          return NextResponse.json({
+            error: 'Access denied',
+            message: `${userRole === 'student' ? 'Students' : userRole === 'licensed' ? 'Licensed artists' : 'Instructors'} cannot modify ${field}. This field is managed by the studio owner to maintain system integrity.`
+          }, { status: 403 })
+        }
+      }
+    }
+
     // Only update fields that exist in the production database
     const updateData: any = {}
     if (validatedData.name !== undefined) updateData.name = validatedData.name
