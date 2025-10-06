@@ -134,11 +134,15 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ profile })
   } catch (error) {
     console.error('Error updating profile:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid data', details: error.errors }, { status: 400 })
     }
     return NextResponse.json(
-      { error: 'Failed to update profile' },
+      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
