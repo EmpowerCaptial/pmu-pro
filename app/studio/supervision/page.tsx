@@ -286,14 +286,16 @@ export default function StudioSupervisionPage() {
           console.error('Error fetching instructors from API:', apiError)
         }
         
-        // If we have instructors from either source, use them
-        if (allInstructors.length > 0) {
-          setInstructors(allInstructors)
-          localStorage.setItem('supervisionInstructors', JSON.stringify(allInstructors))
-        } else {
-          // Fallback to mock data if both fail
-          setInstructors(mockInstructors)
-        }
+            // If we have instructors from either source, use them
+            if (allInstructors.length > 0) {
+              console.log('✅ Loaded instructors for supervision:', allInstructors)
+              setInstructors(allInstructors)
+              localStorage.setItem('supervisionInstructors', JSON.stringify(allInstructors))
+            } else {
+              console.log('⚠️ No instructors found, using mock data')
+              // Fallback to mock data if both fail
+              setInstructors(mockInstructors)
+            }
         
       } catch (error) {
         console.error('Error fetching instructors:', error)

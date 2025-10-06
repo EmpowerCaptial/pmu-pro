@@ -41,6 +41,8 @@ interface TeamMember {
   role: 'student' | 'licensed' | 'instructor' | 'owner'
   licenseNumber?: string
   licenseState?: string
+  phone?: string
+  avatar?: string
 }
 
 export default function StudioTeamPage() {
@@ -220,6 +222,51 @@ export default function StudioTeamPage() {
         : member
     )
     saveTeamMembers(updatedTeamMembers)
+    
+    // Sync with studio-instructors localStorage for supervision booking
+    const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+    
+    if (newRole === 'instructor' || newRole === 'licensed') {
+      // Add or update instructor in the instructors list
+      const instructorData = {
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        role: newRole,
+        specialty: newRole === 'instructor' ? 'PMU Instructor' : 'Licensed Artist',
+        experience: '5+ years',
+        rating: 4.8,
+        location: (currentUser as any)?.businessName || 'Studio',
+        phone: member.phone || '',
+        avatar: member.avatar || null,
+        licenseNumber: member.licenseNumber || `LIC-${member.id.slice(-6)}`,
+        availability: {
+          monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+          saturday: [],
+          sunday: []
+        }
+      }
+      
+      // Check if instructor already exists
+      const existingIndex = existingInstructors.findIndex((i: any) => i.id === member.id)
+      if (existingIndex >= 0) {
+        existingInstructors[existingIndex] = instructorData
+      } else {
+        existingInstructors.push(instructorData)
+      }
+      
+      localStorage.setItem('studio-instructors', JSON.stringify(existingInstructors))
+      console.log('✅ Updated instructor in supervision list:', instructorData)
+    } else {
+      // Remove from instructors list if changed to student
+      const filteredInstructors = existingInstructors.filter((i: any) => i.id !== member.id)
+      localStorage.setItem('studio-instructors', JSON.stringify(filteredInstructors))
+      console.log('✅ Removed from supervision list (now student)')
+    }
     
     const roleText = newRole === 'licensed' ? 'Licensed Artist' : 
                     newRole === 'instructor' ? 'Instructor' : 'Student'
@@ -686,7 +733,7 @@ export default function StudioTeamPage() {
                         {/* Actions Dropdown */}
                         {member.role !== 'owner' && (
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger>
                               <Button 
                                 size="sm" 
                                 variant="outline" 
