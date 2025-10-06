@@ -42,7 +42,7 @@ model User {
   studioName             String?
   venmoUsername          String?
   website                String?
-  emailNotifications     Json?               @default("{\"subscription\": true, \"payments\": true, \"settings\": true}")
+  // emailNotifications     Json?               @default("{\"subscription\": true, \"payments\": true, \"settings\": true}")
   appointments           Appointment[]
   calendarIntegrations   CalendarIntegration[]
   clients                Client[]
