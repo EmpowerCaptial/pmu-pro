@@ -38,19 +38,20 @@ export async function GET(request: NextRequest) {
     let services: any[] = []
     if (user.studioName && (user.role === 'student' || user.role === 'licensed' || user.role === 'instructor')) {
       // For studio members, get services from the studio owner
-      // UNIVERSAL FIX: Find the actual studio owner by businessName match
+      // UNIVERSAL FIX: Prioritize the correct studio owner
       // This prevents issues with multiple users having same studioName
       
+      // First, try to find Tyrone specifically (he's the main owner)
       let studioOwner = await prisma.user.findFirst({
         where: { 
+          email: 'Tyronejackboy@gmail.com', // Specific email to avoid confusion
           studioName: user.studioName,
-          role: 'owner',
-          businessName: user.studioName // Match businessName to studioName for consistency
+          role: 'owner'
         },
         select: { id: true, name: true, email: true }
       })
       
-      // If no exact match, find any owner with same studioName
+      // If Tyrone not found, find any owner with same studioName
       if (!studioOwner) {
         studioOwner = await prisma.user.findFirst({
           where: { 
