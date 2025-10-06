@@ -1776,9 +1776,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                         
                         <div>
                           <Label className="text-ink font-medium">Time Slots</Label>
-                          <div className="mt-1 space-y-2">
+                          <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                             {['9:30 AM', '1:00 PM', '4:00 PM'].map((slot) => (
-                              <div key={slot} className="flex items-center space-x-2">
+                              <div key={slot} className="flex items-center space-x-2 bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3 hover:bg-green-100 transition-colors">
                                 <input
                                   type="checkbox"
                                   id={`slot-${slot}`}
@@ -1796,9 +1796,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                       })
                                     }
                                   }}
-                                  className="rounded border-green-300 text-green-600 focus:ring-green-500"
+                                  className="rounded border-green-300 text-green-600 focus:ring-green-500 h-4 w-4"
                                 />
-                                <Label htmlFor={`slot-${slot}`} className="text-sm text-ink">
+                                <Label htmlFor={`slot-${slot}`} className="text-sm text-ink cursor-pointer flex-1">
                                   {slot}
                                 </Label>
                               </div>
