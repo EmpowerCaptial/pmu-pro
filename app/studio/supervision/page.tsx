@@ -297,13 +297,26 @@ export default function StudioSupervisionPage() {
           console.error('Error fetching instructors from API:', apiError)
         }
         
+            // CRITICAL: Deduplicate instructors by email to prevent showing duplicates
+            const instructorMap = new Map<string, Instructor>()
+            allInstructors.forEach(instructor => {
+              // Only add if not already present (first one wins)
+              if (!instructorMap.has(instructor.email)) {
+                instructorMap.set(instructor.email, instructor)
+              }
+            })
+            
+            // Convert map back to array
+            const deduplicatedInstructors = Array.from(instructorMap.values())
+            console.log('🔧 Deduplicated instructors:', deduplicatedInstructors.length, 'from', allInstructors.length)
+            
             // Filter out test instructors (hardcoded test accounts)
             const testInstructorEmails = [
               'test-instructor@universalbeautystudio.com',
               'instructor-supervision-1759775642383@universalbeautystudio.com'
             ]
             
-            const filteredInstructors = allInstructors.filter(instructor => 
+            const filteredInstructors = deduplicatedInstructors.filter(instructor => 
               !testInstructorEmails.includes(instructor.email)
             )
             
