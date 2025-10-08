@@ -4,8 +4,6 @@ import { DepositPaymentService } from "@/lib/deposit-payment-service";
 import { DepositEmailService } from "@/lib/deposit-email-service";
 import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
 export async function POST(req: NextRequest) {
   try {
     console.log('🧪 DEBUG: Test deposit payment API called');

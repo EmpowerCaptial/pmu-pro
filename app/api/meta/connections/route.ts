@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { AuthService } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
 export async function GET(req: NextRequest) {
   try {
     // Get authorization header

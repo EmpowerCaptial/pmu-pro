@@ -3,8 +3,6 @@ import { AuthService } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { testCalendarConnection, CALENDAR_PROVIDERS } from "@/lib/calendar-integration";
 
-const prisma = new PrismaClient();
-
 export async function GET(req: NextRequest) {
   try {
     // Get authorization header

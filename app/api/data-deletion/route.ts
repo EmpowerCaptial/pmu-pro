@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
 // Simulate data deletion process for development
 async function simulateDataDeletion(email: string, requestId: string) {
   try {
