@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pmu-pro-v1.2025.10.08.0738';
+const CACHE_NAME = 'pmu-pro-v1.2025.10.08.0800';
 const urlsToCache = [
   '/',
   '/dashboard',
