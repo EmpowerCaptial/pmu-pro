@@ -362,10 +362,51 @@ export default function StudioTeamPage() {
     }
   }
 
-  const handleRemoveTeamMember = (memberId: string) => {
-    if (confirm('Are you sure you want to remove this team member?')) {
-      const updatedTeamMembers = teamMembers.filter(member => member.id !== memberId)
+  const handleRemoveTeamMember = async (memberId: string) => {
+    const member = teamMembers.find(m => m.id === memberId)
+    if (!member) return
+    
+    const confirmMessage = `Are you sure you want to remove ${member.name} from your team?\n\nThis will:\n• Delete their account from the database\n• Remove them from all team lists\n• Revoke their access to the studio\n\nThis action cannot be undone.`
+    
+    if (!confirm(confirmMessage)) return
+    
+    try {
+      // Delete from database via API
+      const response = await fetch('/api/studio/delete-team-member', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ memberId })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete team member')
+      }
+      
+      // Remove from localStorage team members
+      const updatedTeamMembers = teamMembers.filter(m => m.id !== memberId)
       saveTeamMembers(updatedTeamMembers)
+      
+      // Remove from studio-instructors localStorage if they were an instructor
+      const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+      const filteredInstructors = existingInstructors.filter((i: any) => i.id !== memberId)
+      localStorage.setItem('studio-instructors', JSON.stringify(filteredInstructors))
+      
+      // Remove from supervisionInstructors localStorage
+      const supervisionInstructors = JSON.parse(localStorage.getItem('supervisionInstructors') || '[]')
+      const filteredSupervision = supervisionInstructors.filter((i: any) => i.id !== memberId)
+      localStorage.setItem('supervisionInstructors', JSON.stringify(filteredSupervision))
+      
+      alert(`✅ ${member.name} has been successfully removed from your team and deleted from the system.`)
+      
+      // Refresh the page to ensure all data is in sync
+      window.location.reload()
+    } catch (error) {
+      console.error('Error removing team member:', error)
+      alert(`❌ Failed to remove team member: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
