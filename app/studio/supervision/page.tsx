@@ -400,25 +400,53 @@ export default function StudioSupervisionPage() {
         const activeServices = services.filter(service => service.isActive)
         const mappedServices = activeServices.map(mapApiServiceToSupervisionService)
         
+        console.log('🔍 Loading services for user:', {
+          userId: currentUser.id,
+          userRole: currentUser.role,
+          userEmail: currentUser.email,
+          totalServices: mappedServices.length
+        })
+        
         // Filter services based on assignments if user is a student
         if (currentUser?.role === 'student') {
           const assignments = JSON.parse(localStorage.getItem('service-assignments') || '[]')
-          const assignedServices = mappedServices.filter(service => 
-            assignments.some((assignment: any) => 
-              assignment.serviceId === service.id && 
-              assignment.userId === currentUser.id && 
-              assignment.assigned
-            )
-          )
+          console.log('📋 All service assignments from localStorage:', assignments)
+          console.log('🎯 Filtering for user ID:', currentUser.id)
+          
+          const assignedServices = mappedServices.filter(service => {
+            const hasAssignment = assignments.some((assignment: any) => {
+              const matches = assignment.serviceId === service.id && 
+                             assignment.userId === currentUser.id && 
+                             assignment.assigned === true
+              
+              if (assignment.userId === currentUser.id) {
+                console.log(`   Service "${service.name}" (${service.id}):`, {
+                  assigned: assignment.assigned,
+                  matches
+                })
+              }
+              
+              return matches
+            })
+            return hasAssignment
+          })
+          
+          console.log('✅ Student assigned services:', assignedServices.length, 'out of', mappedServices.length)
+          console.log('   Assigned service names:', assignedServices.map(s => s.name))
+          
+          if (assignedServices.length === 0) {
+            console.warn('⚠️ WARNING: No services assigned to this student!')
+            console.warn('   Please ensure the owner has assigned services to this student in Service Assignments page')
+          }
+          
           setAvailableServices(assignedServices as any)
-          console.log('Loaded assigned services for student:', assignedServices)
         } else {
           // Instructors and licensed artists see all services
+          console.log('✅ Non-student user - showing all services:', mappedServices.length)
           setAvailableServices(mappedServices as any)
-          console.log('Loaded all services:', mappedServices)
         }
       } catch (error) {
-        console.error('Error loading services:', error)
+        console.error('❌ Error loading services:', error)
         // Fallback to default services
         setAvailableServices([])
       } finally {
@@ -427,7 +455,7 @@ export default function StudioSupervisionPage() {
     }
 
     loadServices()
-  }, [currentUser?.email])
+  }, [currentUser?.email, currentUser?.id, currentUser?.role])
 
   // Load messages from localStorage
   useEffect(() => {
@@ -2371,13 +2399,34 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-ink mb-2">Service *</label>
+                              
+                              {/* Warning message when no services are available */}
+                              {availableServices.length === 0 && currentUser?.role === 'student' && (
+                                <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                  <div className="flex items-start gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                                    <div className="text-sm">
+                                      <p className="font-medium text-yellow-900 mb-1">No Services Assigned</p>
+                                      <p className="text-yellow-800">
+                                        Your studio owner or manager needs to assign services to you in the Service Assignments page before you can book supervision sessions.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              
                               <select
                                 value={clientInfo.service}
                                 onChange={(e) => setClientInfo({...clientInfo, service: e.target.value})}
-                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender disabled:bg-gray-50 disabled:cursor-not-allowed"
                                 required
+                                disabled={availableServices.length === 0}
                               >
-                                <option value="">Select a service</option>
+                                <option value="">
+                                  {availableServices.length === 0 
+                                    ? 'No services available - contact your manager' 
+                                    : 'Select a service'}
+                                </option>
                                 {availableServices.map((service: any) => (
                                   <option key={service.id} value={service.id}>
                                     {service.name} - ${service.total} (${service.deposit} deposit)

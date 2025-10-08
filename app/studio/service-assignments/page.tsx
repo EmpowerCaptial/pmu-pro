@@ -17,7 +17,9 @@ import {
   Award,
   Save,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  ChevronRight,
+  X
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -54,6 +56,7 @@ export default function ServiceAssignmentsPage() {
   const [assignments, setAssignments] = useState<ServiceAssignment[]>([])
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
 
   // Load data on component mount
   useEffect(() => {
@@ -80,7 +83,9 @@ export default function ServiceAssignmentsPage() {
         // Load assignments from localStorage
         const savedAssignments = localStorage.getItem('service-assignments')
         if (savedAssignments) {
-          setAssignments(JSON.parse(savedAssignments))
+          const parsedAssignments = JSON.parse(savedAssignments)
+          console.log('📋 Loaded service assignments from localStorage:', parsedAssignments)
+          setAssignments(parsedAssignments)
         } else {
           // Initialize with no assignments
           const initialAssignments: ServiceAssignment[] = []
@@ -115,6 +120,7 @@ export default function ServiceAssignmentsPage() {
       updatedAssignments = [...assignments, { serviceId, userId, assigned: true }]
     }
 
+    console.log(`🔄 Toggling assignment - Service: ${serviceId}, User: ${userId}`, updatedAssignments)
     setAssignments(updatedAssignments)
   }
 
@@ -124,6 +130,7 @@ export default function ServiceAssignmentsPage() {
       
       // Save to localStorage
       localStorage.setItem('service-assignments', JSON.stringify(assignments))
+      console.log('💾 Saved service assignments to localStorage:', assignments)
       
       // In a real system, you'd save to the database here
       const response = await fetch('/api/studio/service-assignments', {
@@ -176,6 +183,10 @@ export default function ServiceAssignmentsPage() {
       .join('')
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  const getAssignedServicesCount = (userId: string) => {
+    return assignments.filter(a => a.userId === userId && a.assigned).length
   }
 
   // Check if user has permission to access service assignments
@@ -236,7 +247,7 @@ export default function ServiceAssignmentsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Service Assignments</h1>
-              <p className="text-gray-600 mt-2">Control which services each team member can offer</p>
+              <p className="text-gray-600 mt-2">Select a team member to assign services</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button
@@ -276,100 +287,215 @@ export default function ServiceAssignmentsPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">How Service Assignments Work</h3>
                 <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• Click on a team member's name to view and assign their services</li>
                   <li>• <strong>Students</strong> can only see assigned services in the supervision booking system</li>
                   <li>• <strong>Licensed Artists</strong> can only see assigned services in the regular booking system</li>
                   <li>• <strong>Instructors</strong> can see all services and supervise any assigned service</li>
                   <li>• Unassigned services will not appear in team members' booking interfaces</li>
-                  <li>• This ensures quality control and proper supervision</li>
                 </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Services and Team Members Grid */}
-        <div className="space-y-6">
-          {services.map((service) => (
-            <Card key={service.id} className="border-lavender/20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Panel - Team Members List */}
+          <div className="lg:col-span-1">
+            <Card className="border-lavender/20 sticky top-4">
               <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Package className="h-5 w-5 text-lavender" />
-                  <div>
-                    <span className="text-lg">{service.name}</span>
-                    <span className="text-sm font-normal text-gray-600 ml-2">
-                      ${service.defaultPrice} • {service.defaultDuration ? `${Math.floor(service.defaultDuration / 60)}h ${service.defaultDuration % 60}m` : '2 hours'}
-                    </span>
-                  </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-lavender" />
+                  Team Members
                 </CardTitle>
-                {service.description && (
-                  <CardDescription>{service.description}</CardDescription>
-                )}
+                <CardDescription>
+                  {teamMembers.length} members • Click to assign services
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {teamMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-lavender/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage 
-                            src={member.avatar || undefined} 
-                            alt={`${member.name} profile`}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white text-sm font-semibold">
-                            {getInitials(member.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{member.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {getRoleBadge(member.role)}
+                <div className="space-y-2">
+                  {teamMembers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                      <p>No team members found</p>
+                      <p className="text-sm mt-1">Add team members from Studio Management</p>
+                    </div>
+                  ) : (
+                    teamMembers.map((member) => (
+                      <button
+                        key={member.id}
+                        onClick={() => setSelectedMember(member)}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
+                          selectedMember?.id === member.id
+                            ? 'bg-lavender/10 border-lavender shadow-md'
+                            : 'bg-white border-gray-200 hover:border-lavender/50 hover:bg-lavender/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage 
+                              src={member.avatar || undefined} 
+                              alt={`${member.name} profile`}
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white text-sm font-semibold">
+                              {getInitials(member.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-left">
+                            <p className="font-medium text-gray-900 text-sm">{member.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              {getRoleBadge(member.role)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {isAssigned(service.id, member.id) ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-gray-300" />
-                        )}
-                        <Switch
-                          checked={isAssigned(service.id, member.id)}
-                          onCheckedChange={() => toggleAssignment(service.id, member.id)}
-                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {getAssignedServicesCount(member.id)} / {services.length}
+                          </Badge>
+                          <ChevronRight className={`h-4 w-4 transition-transform ${
+                            selectedMember?.id === member.id ? 'text-lavender rotate-90' : 'text-gray-400'
+                          }`} />
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
-          ))}
+          </div>
+
+          {/* Right Panel - Services for Selected Member */}
+          <div className="lg:col-span-2">
+            {selectedMember ? (
+              <Card className="border-lavender/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage 
+                          src={selectedMember.avatar || undefined} 
+                          alt={`${selectedMember.name} profile`}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white font-semibold">
+                          {getInitials(selectedMember.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-xl">{selectedMember.name}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          {getRoleBadge(selectedMember.role)}
+                          <span className="text-xs">•</span>
+                          <span className="text-xs">{selectedMember.email}</span>
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedMember(null)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {services.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <Package className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                      <p className="font-medium mb-2">No Services Available</p>
+                      <p className="text-sm">Add services from the Services page first</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-900">Available Services</h3>
+                        <p className="text-sm text-gray-600">
+                          {getAssignedServicesCount(selectedMember.id)} of {services.length} assigned
+                        </p>
+                      </div>
+                      
+                      {services.map((service) => (
+                        <div
+                          key={service.id}
+                          className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                            isAssigned(service.id, selectedMember.id)
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-white border-gray-200 hover:border-lavender/30'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Package className={`h-5 w-5 ${
+                              isAssigned(service.id, selectedMember.id) ? 'text-green-600' : 'text-gray-400'
+                            }`} />
+                            <div>
+                              <p className="font-medium text-gray-900">{service.name}</p>
+                              <p className="text-sm text-gray-600">
+                                ${service.defaultPrice} • {service.defaultDuration ? `${Math.floor(service.defaultDuration / 60)}h ${service.defaultDuration % 60}m` : '2 hours'}
+                              </p>
+                              {service.description && (
+                                <p className="text-xs text-gray-500 mt-1">{service.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            {isAssigned(service.id, selectedMember.id) ? (
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-gray-300" />
+                            )}
+                            <Switch
+                              checked={isAssigned(service.id, selectedMember.id)}
+                              onCheckedChange={() => toggleAssignment(service.id, selectedMember.id)}
+                              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-lavender/20 border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-20 h-20 bg-lavender/10 rounded-full flex items-center justify-center mb-4">
+                    <Users className="h-10 w-10 text-lavender" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Select a Team Member
+                  </h3>
+                  <p className="text-gray-600 max-w-md">
+                    Choose a team member from the list on the left to view and manage their service assignments
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
 
         {/* Summary */}
         <Card className="mt-8 bg-gradient-to-r from-lavender/10 to-lavender-600/10 border-lavender/30">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <Users className="h-6 w-6 text-lavender" />
+              <Settings className="h-6 w-6 text-lavender" />
               <h3 className="font-semibold text-gray-900">Assignment Summary</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="bg-white p-3 rounded-lg">
-                <p className="font-medium text-gray-900">Total Services</p>
-                <p className="text-2xl font-bold text-lavender">{services.length}</p>
+              <div className="bg-white p-4 rounded-lg">
+                <p className="font-medium text-gray-900 mb-1">Total Services</p>
+                <p className="text-3xl font-bold text-lavender">{services.length}</p>
               </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="font-medium text-gray-900">Team Members</p>
-                <p className="text-2xl font-bold text-lavender">{teamMembers.length}</p>
+              <div className="bg-white p-4 rounded-lg">
+                <p className="font-medium text-gray-900 mb-1">Team Members</p>
+                <p className="text-3xl font-bold text-lavender">{teamMembers.length}</p>
               </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="font-medium text-gray-900">Active Assignments</p>
-                <p className="text-2xl font-bold text-lavender">
+              <div className="bg-white p-4 rounded-lg">
+                <p className="font-medium text-gray-900 mb-1">Active Assignments</p>
+                <p className="text-3xl font-bold text-lavender">
                   {assignments.filter(a => a.assigned).length}
                 </p>
               </div>
