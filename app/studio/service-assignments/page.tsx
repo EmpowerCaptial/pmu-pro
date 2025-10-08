@@ -132,6 +132,25 @@ export default function ServiceAssignmentsPage() {
       localStorage.setItem('service-assignments', JSON.stringify(assignments))
       console.log('💾 Saved service assignments to localStorage:', assignments)
       
+      // Log assignment details for debugging
+      const assignmentsByUser = assignments.reduce((acc: any, assignment) => {
+        if (assignment.assigned) {
+          if (!acc[assignment.userId]) {
+            acc[assignment.userId] = {
+              userId: assignment.userId,
+              userName: teamMembers.find(m => m.id === assignment.userId)?.name || 'Unknown',
+              serviceCount: 0,
+              serviceIds: []
+            }
+          }
+          acc[assignment.userId].serviceCount++
+          acc[assignment.userId].serviceIds.push(assignment.serviceId)
+        }
+        return acc
+      }, {})
+      
+      console.log('📊 Assignments by user:', assignmentsByUser)
+      
       // In a real system, you'd save to the database here
       const response = await fetch('/api/studio/service-assignments', {
         method: 'POST',
@@ -143,7 +162,10 @@ export default function ServiceAssignmentsPage() {
       })
 
       if (response.ok) {
-        alert('✅ Service assignments saved successfully!')
+        // Show detailed success message
+        const assignedCount = assignments.filter(a => a.assigned).length
+        const userCount = Object.keys(assignmentsByUser).length
+        alert(`✅ Service assignments saved successfully!\n\n${assignedCount} assignments for ${userCount} team member(s).\n\nNote: Team members must log in with accounts that match their user IDs for assignments to work.`)
       } else {
         console.error('Failed to save service assignments')
         alert('Failed to save assignments. Please try again.')
