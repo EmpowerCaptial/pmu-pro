@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
 // POST /api/portfolio/upload - Upload portfolio images to Vercel Blob
 export async function POST(request: NextRequest) {
   try {

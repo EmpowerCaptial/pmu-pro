@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: Request) {
   const userId = 'demo-user'; // replace with session user
   const { platform } = await req.json();

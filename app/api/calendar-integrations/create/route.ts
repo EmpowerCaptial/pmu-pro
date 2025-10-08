@@ -3,6 +3,8 @@ import { AuthService } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { testCalendarConnection } from "@/lib/calendar-integration";
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: NextRequest) {
   try {
     // Get authorization header

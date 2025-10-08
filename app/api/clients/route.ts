@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ClientLimitService } from '@/lib/client-limit-service'
 
+export const dynamic = "force-dynamic"
+
 const clientSchema = z.object({
   name: z.string().min(1),
   email: z.string().email().optional(),

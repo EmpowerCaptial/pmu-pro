@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = "force-dynamic"
+
 // Only include fields that definitely exist in the production database
 const profileSchema = z.object({
   name: z.string().optional(),

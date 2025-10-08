@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
 // POST /api/file-uploads - Upload file to Vercel Blob and save metadata
 export async function POST(request: NextRequest) {
   try {

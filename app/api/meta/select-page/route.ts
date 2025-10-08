@@ -3,6 +3,8 @@ import { AuthService } from "@/lib/auth";
 import { getIGFromPage, getIGBasic } from "@/lib/meta";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: NextRequest) {
   try {
     // Get authorization header

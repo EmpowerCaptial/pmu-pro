@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic"
+
 // Simulate data deletion process for development
 async function simulateDataDeletion(email: string, requestId: string) {
   try {

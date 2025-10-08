@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = "force-dynamic"
+
 const portfolioSchema = z.object({
   type: z.enum(['eyebrows', 'lips', 'eyeliner']),
   title: z.string().min(1),

@@ -3,6 +3,8 @@ import { EmailService } from '@/lib/email-service'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = "force-dynamic"
+
 export async function POST(request: NextRequest) {
   try {
     const { memberEmail, memberName, memberPassword, memberRole, studioName, studioOwnerName } = await request.json()

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
 // POST /api/avatar/upload - Upload avatar to Vercel Blob and update user
 export async function POST(request: NextRequest) {
   try {

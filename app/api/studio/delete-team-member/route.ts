@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
 export async function DELETE(request: NextRequest) {
   try {
     const userEmail = request.headers.get('x-user-email')

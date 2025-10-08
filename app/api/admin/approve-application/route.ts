@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { ArtistApplicationService } from '@/lib/artist-application-service'
 import { EmailService } from '@/lib/email-service'
 
+export const dynamic = "force-dynamic"
+
 export async function POST(request: NextRequest) {
   try {
     const { applicationId, status, reviewedBy, notes } = await request.json()

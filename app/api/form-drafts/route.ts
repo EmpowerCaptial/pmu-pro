@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = "force-dynamic"
+
 const formDraftSchema = z.object({
   formType: z.enum(['client_intake', 'consent_form', 'credit_application', 'artist_signup', 'skin_analysis']),
   formData: z.record(z.any()),

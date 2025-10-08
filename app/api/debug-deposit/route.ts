@@ -4,6 +4,8 @@ import { DepositPaymentService } from "@/lib/deposit-payment-service";
 import { DepositEmailService } from "@/lib/deposit-email-service";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: NextRequest) {
   try {
     console.log('🧪 DEBUG: Test deposit payment API called');

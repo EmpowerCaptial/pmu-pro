@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { EmailService } from '@/lib/email-service'
 
+export const dynamic = "force-dynamic"
+
 // GET /api/admin/users - Get all users with subscription status
 export async function GET(request: NextRequest) {
   try {

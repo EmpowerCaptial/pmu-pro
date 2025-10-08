@@ -3,6 +3,8 @@ import { PaymentVerificationService } from "@/lib/payment-verification"
 import { MagicLinkService } from "@/lib/magic-link"
 import { PrismaClient } from '@prisma/client'
 
+export const dynamic = "force-dynamic"
+
 // Create Prisma client with error handling
 let prisma: PrismaClient
 

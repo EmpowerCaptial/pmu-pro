@@ -8,6 +8,8 @@ import {
 } from '@/lib/stripe-management'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
 // GET /api/studio/stripe-settings - Get studio Stripe settings
 export async function GET(request: NextRequest) {
   try {
