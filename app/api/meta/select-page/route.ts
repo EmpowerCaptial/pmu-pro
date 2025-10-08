@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthService } from "@/lib/auth";
 import { getIGFromPage, getIGBasic } from "@/lib/meta";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 const prisma = new PrismaClient();
 

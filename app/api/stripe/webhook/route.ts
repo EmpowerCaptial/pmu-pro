@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-07-30.basil',
 }) : null
 
-const prisma = new PrismaClient()
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 export async function POST(req: NextRequest) {

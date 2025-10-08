@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
-
-const prisma = new PrismaClient()
 
 // Initialize Stripe only if API key is available
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -115,10 +113,7 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 
 // POST /api/financial/daily - Process immediate payout
 export async function POST(request: NextRequest) {
@@ -186,7 +181,4 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}

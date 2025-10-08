@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ClientLimitService } from '@/lib/client-limit-service'
-
-const prisma = new PrismaClient()
 
 const clientSchema = z.object({
   name: z.string().min(1),

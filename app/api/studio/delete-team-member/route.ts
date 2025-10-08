@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -72,8 +70,5 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting team member:', error)
     return NextResponse.json({ error: 'Failed to delete team member' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // GET /api/admin/analytics - Get business metrics and analytics
 export async function GET(request: NextRequest) {
@@ -219,7 +217,4 @@ export async function GET(request: NextRequest) {
       { success: false, error: 'Failed to fetch analytics', data: null },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}

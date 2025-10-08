@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,10 +77,7 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to upload profile image' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -119,7 +114,4 @@ export async function DELETE(request: NextRequest) {
       { error: 'Failed to remove profile image' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}

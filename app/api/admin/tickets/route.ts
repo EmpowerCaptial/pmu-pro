@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // GET /api/admin/tickets - Get all support tickets
 export async function GET(request: NextRequest) {
@@ -95,10 +93,7 @@ export async function GET(request: NextRequest) {
       { success: false, error: 'Failed to fetch tickets', data: [] },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 
 // POST /api/admin/tickets - Create a new ticket
 export async function POST(request: NextRequest) {

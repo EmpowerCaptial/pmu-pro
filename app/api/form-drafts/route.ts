@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const formDraftSchema = z.object({
   formType: z.enum(['client_intake', 'consent_form', 'credit_application', 'artist_signup', 'skin_analysis']),

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AuthService } from "@/lib/auth";
 import { DepositPaymentService } from "@/lib/deposit-payment-service";
 import { DepositEmailService } from "@/lib/deposit-email-service";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 const prisma = new PrismaClient();
 

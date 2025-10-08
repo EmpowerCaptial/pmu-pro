@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupervisionUser, canPublishAvailability, checkStudioSupervisionAccess } from '@/lib/studio-supervision-gate'
 import { StudioSupervisionService } from '@/lib/studio-supervision-service'
 import { AuthService } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {

@@ -6,9 +6,7 @@ import {
   canManageStripeSettings,
   hasEnterpriseStudioAccess
 } from '@/lib/stripe-management'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // GET /api/studio/stripe-settings - Get studio Stripe settings
 export async function GET(request: NextRequest) {
@@ -72,10 +70,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 
 // POST /api/studio/stripe-settings - Update studio Stripe settings
 export async function POST(request: NextRequest) {
@@ -159,7 +154,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}

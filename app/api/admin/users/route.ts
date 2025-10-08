@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { EmailService } from '@/lib/email-service'
-
-const prisma = new PrismaClient()
 
 // GET /api/admin/users - Get all users with subscription status
 export async function GET(request: NextRequest) {
@@ -115,10 +113,7 @@ export async function GET(request: NextRequest) {
       { success: false, error: 'Failed to fetch users', data: [] },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
 
 // PUT /api/admin/users - Update user status
 export async function PUT(request: NextRequest) {

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // POST /api/file-uploads - Upload file to Vercel Blob and save metadata
 export async function POST(request: NextRequest) {

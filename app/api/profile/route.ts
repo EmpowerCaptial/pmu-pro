@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 // Only include fields that definitely exist in the production database
 const profileSchema = z.object({

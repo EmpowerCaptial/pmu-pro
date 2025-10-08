@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,7 +110,4 @@ export async function POST(request: NextRequest) {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+  }}
