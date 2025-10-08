@@ -57,6 +57,21 @@ function getRetryDelay(attempt: number): number {
 }
 
 /**
+ * Get authentication headers from localStorage
+ * Returns x-user-email header if user is logged in
+ */
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') return {}
+  
+  const userEmail = localStorage.getItem('userEmail')
+  if (!userEmail) return {}
+  
+  return {
+    'x-user-email': userEmail
+  }
+}
+
+/**
  * Fetch with timeout using AbortController
  */
 async function fetchWithTimeout(url: string, options: FetchOptions = {}): Promise<Response> {
@@ -90,6 +105,10 @@ export async function getJSON<T = any>(url: string, options: FetchOptions = {}):
         ...fetchOptions,
         method: 'GET',
         credentials: 'include',
+        headers: {
+          ...getAuthHeaders(),
+          ...fetchOptions.headers,
+        },
       })
 
       // Handle HTTP errors
@@ -171,11 +190,16 @@ export async function postJSON<T = any>(
 ): Promise<T> {
   const { idempotencyKey, retries = idempotencyKey ? 3 : 1, ...fetchOptions } = options
 
+  const authHeaders = getAuthHeaders()
   const headers = new Headers(fetchOptions.headers)
   headers.set('Content-Type', 'application/json')
   if (idempotencyKey) {
     headers.set('Idempotency-Key', idempotencyKey)
   }
+  // Add auth headers
+  Object.entries(authHeaders).forEach(([key, value]) => {
+    headers.set(key, value)
+  })
 
   let lastError: AppError | null = null
 
@@ -236,6 +260,7 @@ export async function patchJSON<T = any>(
       method: 'PATCH',
       credentials: 'include',
       headers: {
+        ...getAuthHeaders(),
         ...fetchOptions.headers,
         'Content-Type': 'application/json',
       },
@@ -267,6 +292,10 @@ export async function delJSON<T = any>(url: string, options: FetchOptions = {}):
       ...options,
       method: 'DELETE',
       credentials: 'include',
+      headers: {
+        ...getAuthHeaders(),
+        ...options.headers,
+      },
     })
 
     if (!response.ok) {
