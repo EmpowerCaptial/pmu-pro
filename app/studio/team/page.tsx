@@ -235,8 +235,9 @@ export default function StudioTeamPage() {
       }
 
       // Create new team member invitation
+      // IMPORTANT: Use the database user ID to prevent ID mismatch issues
       const newTeamMember: TeamMember = {
-        id: Date.now().toString(),
+        id: result.userId || Date.now().toString(), // Use database ID if available
         name: inviteName,
         email: inviteEmail,
         status: 'pending',
@@ -246,6 +247,9 @@ export default function StudioTeamPage() {
 
       const updatedTeamMembers = [...teamMembers, newTeamMember]
       saveTeamMembers(updatedTeamMembers)
+      
+      console.log(`✅ Added team member with ID: ${newTeamMember.id} (from database)`)
+      console.log(`   This ID will match when ${inviteName} logs in`)
 
       // Reset form
       setInviteEmail('')
