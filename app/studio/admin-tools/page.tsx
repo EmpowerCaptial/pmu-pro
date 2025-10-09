@@ -180,20 +180,57 @@ export default function AdminToolsPage() {
     }
   }
 
-  const clearFakeInstructors = () => {
+  const syncInstructors = () => {
     const confirmed = confirm(
-      'Remove all fake/mock instructors from localStorage?\n\n' +
-      'This will keep only real team members you added.'
+      'Sync team members to supervision instructors?\n\n' +
+      'This will:\n' +
+      '- Clear old fake instructors\n' +
+      '- Copy real instructors from Team Members\n' +
+      '- Make them available for supervision booking'
     )
     
     if (!confirmed) return
     
-    // Clear mock instructors
-    localStorage.removeItem('studio-instructors')
-    localStorage.removeItem('supervisionInstructors')
+    // Get real team members who are instructors
+    const teamMembers = JSON.parse(localStorage.getItem('studio-team-members') || '[]')
+    const instructors = teamMembers.filter((m: any) => 
+      m.role === 'instructor' || m.role === 'licensed'
+    )
     
-    alert('✅ Fake instructors cleared! Only real team members will show now.')
-    window.location.reload()
+    console.log('Found', instructors.length, 'instructors in team members')
+    
+    // Transform to instructor format
+    const studioInstructors = instructors.map((m: any) => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+      role: m.role,
+      specialty: m.specialties || 'PMU Specialist',
+      experience: m.experience || '5+ years',
+      rating: 4.8,
+      location: currentUser?.businessName || 'Studio',
+      phone: m.phone || '',
+      avatar: m.avatar || null,
+      licenseNumber: m.licenseNumber || `LIC-${m.id.slice(-6)}`,
+      availability: {
+        monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+        tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+        wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+        thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+        friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+        saturday: [],
+        sunday: []
+      }
+    }))
+    
+    // Save to both instructor storage keys
+    localStorage.setItem('studio-instructors', JSON.stringify(studioInstructors))
+    localStorage.setItem('supervisionInstructors', JSON.stringify(studioInstructors))
+    
+    alert(`✅ Synced ${studioInstructors.length} instructors!\n\n${studioInstructors.map((i: any) => i.name).join('\n')}\n\nThese will now show in supervision booking.`)
+    
+    // Refresh diagnostic
+    runDiagnostic()
   }
 
   useEffect(() => {
@@ -274,21 +311,21 @@ export default function AdminToolsPage() {
           <Card className="border-lavender/20">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
-                Clear Fake Instructors
+                <Users className="h-5 w-5 text-blue-600" />
+                Sync Instructors
               </CardTitle>
               <CardDescription>
-                Remove mock instructors from system
+                Copy instructors from Team Members to Supervision
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={clearFakeInstructors}
+                onClick={syncInstructors}
                 disabled={isRunning}
                 variant="outline"
-                className="w-full border-orange-300 text-orange-600 hover:bg-orange-50"
+                className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
               >
-                Clear Fake Data
+                Sync Instructors
               </Button>
             </CardContent>
           </Card>
