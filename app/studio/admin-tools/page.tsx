@@ -208,7 +208,7 @@ export default function AdminToolsPage() {
       specialty: m.specialties || 'PMU Specialist',
       experience: m.experience || '5+ years',
       rating: 4.8,
-      location: currentUser?.businessName || 'Studio',
+      location: (currentUser as any)?.businessName || 'Studio',
       phone: m.phone || '',
       avatar: m.avatar || null,
       licenseNumber: m.licenseNumber || `LIC-${m.id.slice(-6)}`,

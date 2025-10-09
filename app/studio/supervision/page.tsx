@@ -195,7 +195,7 @@ export default function StudioSupervisionPage() {
           specialty: member.specialties || 'PMU Specialist',
           experience: member.experience || '5+ years',
           rating: member.rating || 4.8,
-          location: member.businessName || (currentUser as any)?.businessName || 'Studio',
+          location: member.businessName || 'Studio',
           availability: member.availability || {
             monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
             tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],

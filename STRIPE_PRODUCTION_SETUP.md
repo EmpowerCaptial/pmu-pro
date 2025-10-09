@@ -1,4 +1,4 @@
-# 🏦 Stripe Connect Production Setup Guide for PMU Pro
+❌ Failed to remove team member: Cannot delete members from other studios# 🏦 Stripe Connect Production Setup Guide for PMU Pro
 
 ## 🎯 **Overview**
 This guide walks you through setting up Stripe Connect in production to enable artist payouts.
