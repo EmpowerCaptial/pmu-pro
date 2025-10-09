@@ -152,146 +152,73 @@ export default function StudioSupervisionPage() {
     }
   }, [])
 
-  // Fetch instructors from database AND localStorage
+  // Fetch instructors DIRECTLY from team members (single source of truth)
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
-        let allInstructors: Instructor[] = []
+        console.log('🔍 Loading instructors from team members (single source of truth)')
         
-        // First, try to get instructors from localStorage (studio management data)
-        const studioInstructors = localStorage.getItem('studio-instructors')
-        console.log('🔍 Checking localStorage for studio-instructors:', studioInstructors)
+        // PERMANENT FIX: Read directly from studio-team-members
+        // This is the ONLY source of truth - no more separate instructor lists!
+        const teamMembersStr = localStorage.getItem('studio-team-members')
         
-        if (studioInstructors) {
-          try {
-            const parsed = JSON.parse(studioInstructors)
-            console.log('✅ Parsed localStorage instructors:', parsed)
-            
-            // Transform localStorage data to match expected format
-            const transformedLocalInstructors: Instructor[] = parsed.map((instructor: any) => ({
-              id: instructor.id,
-              name: instructor.name,
-              email: instructor.email,
-              avatar: instructor.avatar,
-              role: instructor.role || 'instructor',
-              specialties: instructor.specialties,
-              certifications: instructor.certifications,
-              bio: instructor.bio,
-              phone: instructor.phone,
-              businessName: instructor.businessName,
-              // Add compatibility fields
-              specialty: instructor.specialty || instructor.specialties || 'PMU Specialist',
-              experience: instructor.experience || '5+ years',
-              rating: instructor.rating || 4.8,
-              location: instructor.location || instructor.businessName || 'Studio',
-              availability: instructor.availability || {
-                monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                saturday: [],
-                sunday: []
-              },
-              licenseNumber: instructor.licenseNumber || `PMU-${instructor.id?.slice(-3) || '001'}`
-            }))
-            allInstructors = [...allInstructors, ...transformedLocalInstructors]
-          } catch (e) {
-            console.error('Error parsing localStorage instructors:', e)
-          }
+        if (!teamMembersStr) {
+          console.warn('⚠️ No team members found! Add team members through Studio → Team Management')
+          setInstructors([])
+          return
         }
         
-        // Then try to get instructors from database API (PRIORITY)
-        try {
-          const response = await fetch('/api/studio/instructors', {
-            headers: {
-              'x-user-email': currentUser?.email || ''
-            }
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            console.log('✅ API instructors response:', data)
-            
-            // Transform database instructor data to match expected format
-            const transformedDbInstructors: Instructor[] = data.instructors.map((instructor: any) => ({
-              id: instructor.id,
-              name: instructor.name,
-              email: instructor.email,
-              avatar: instructor.avatar,
-              role: instructor.role,
-              specialties: instructor.specialties,
-              certifications: instructor.certifications,
-              bio: instructor.bio,
-              phone: instructor.phone,
-              businessName: instructor.businessName,
-              // Add compatibility fields
-              specialty: instructor.specialties || 'PMU Specialist',
-              experience: '5+ years',
-              rating: 4.8,
-              location: instructor.businessName || 'Studio',
-              availability: {
-                monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-                saturday: [],
-                sunday: []
-              },
-              licenseNumber: `PMU-${instructor.id.slice(-3)}`
-            }))
-            
-            // If API returns instructors, use them as the primary source
-            if (transformedDbInstructors.length > 0) {
-              console.log('✅ Using API instructors as primary source:', transformedDbInstructors)
-              allInstructors = transformedDbInstructors
-            } else {
-              console.log('⚠️ API returned no instructors, keeping localStorage data')
-            }
-          } else {
-            console.log('❌ API request failed, status:', response.status)
-          }
-        } catch (apiError) {
-          console.error('Error fetching instructors from API:', apiError)
-        }
+        const teamMembers = JSON.parse(teamMembersStr)
+        console.log('📋 Found', teamMembers.length, 'team members')
         
-            // CRITICAL: Deduplicate instructors by email to prevent showing duplicates
-            const instructorMap = new Map<string, Instructor>()
-            allInstructors.forEach(instructor => {
-              // Only add if not already present (first one wins)
-              if (!instructorMap.has(instructor.email)) {
-                instructorMap.set(instructor.email, instructor)
-              }
-            })
-            
-            // Convert map back to array
-            const deduplicatedInstructors = Array.from(instructorMap.values())
-            console.log('🔧 Deduplicated instructors:', deduplicatedInstructors.length, 'from', allInstructors.length)
-            
-            // Filter out test instructors (hardcoded test accounts)
-            const testInstructorEmails = [
-              'test-instructor@universalbeautystudio.com',
-              'instructor-supervision-1759775642383@universalbeautystudio.com'
-            ]
-            
-            const filteredInstructors = deduplicatedInstructors.filter(instructor => 
-              !testInstructorEmails.includes(instructor.email)
-            )
-            
-            // If we have instructors from either source, use them
-            if (filteredInstructors.length > 0) {
-              console.log('✅ Loaded instructors for supervision (filtered):', filteredInstructors)
-              setInstructors(filteredInstructors)
-              localStorage.setItem('supervisionInstructors', JSON.stringify(filteredInstructors))
-            } else {
-              console.warn('⚠️ No instructors found! Add instructors through Studio → Team Management')
-              setInstructors([]) // Empty array, no fake data!
-            }
+        // Get only instructors and licensed artists (can supervise)
+        const instructorMembers = teamMembers.filter((m: any) => 
+          (m.role === 'instructor' || m.role === 'licensed' || m.role === 'owner') &&
+          m.status === 'active'
+        )
+        
+        console.log('👥 Found', instructorMembers.length, 'instructors/licensed artists')
+        
+        // Transform to instructor format
+        const transformedInstructors: Instructor[] = instructorMembers.map((member: any) => ({
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          avatar: member.avatar,
+          role: member.role,
+          specialties: member.specialties || 'PMU Specialist',
+          certifications: member.certifications,
+          bio: member.bio,
+          phone: member.phone,
+          businessName: member.businessName,
+          // Compatibility fields
+          specialty: member.specialties || 'PMU Specialist',
+          experience: member.experience || '5+ years',
+          rating: member.rating || 4.8,
+          location: member.businessName || (currentUser as any)?.businessName || 'Studio',
+          availability: member.availability || {
+            monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+            saturday: [],
+            sunday: []
+          },
+          licenseNumber: member.licenseNumber || `PMU-${member.id.slice(-3)}`
+        }))
+        
+        if (transformedInstructors.length > 0) {
+          console.log('✅ Loaded instructors for supervision:', transformedInstructors.map(i => i.name))
+          setInstructors(transformedInstructors)
+        } else {
+          console.warn('⚠️ No instructors found! Add instructors through Studio → Team Management')
+          setInstructors([])
+        }
         
       } catch (error) {
-        console.error('Error fetching instructors:', error)
-        setInstructors([]) // Empty array, no fake data!
+        console.error('Error loading instructors:', error)
+        setInstructors([])
       }
     }
 
