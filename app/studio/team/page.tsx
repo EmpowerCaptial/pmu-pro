@@ -404,6 +404,11 @@ export default function StudioTeamPage() {
       const filteredSupervision = supervisionInstructors.filter((i: any) => i.id !== memberId)
       localStorage.setItem('supervisionInstructors', JSON.stringify(filteredSupervision))
       
+      // Remove from service-assignments localStorage
+      const serviceAssignments = JSON.parse(localStorage.getItem('service-assignments') || '[]')
+      const filteredAssignments = serviceAssignments.filter((a: any) => a.userId !== memberId)
+      localStorage.setItem('service-assignments', JSON.stringify(filteredAssignments))
+      
       alert(`✅ ${member.name} has been successfully removed from your team and deleted from the system.`)
       
       // Refresh the page to ensure all data is in sync
