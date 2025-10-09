@@ -57,48 +57,7 @@ interface Instructor {
   licenseNumber?: string
 }
 
-// Fallback mock data for instructors (used when API fails)
-const mockInstructors: Instructor[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    specialty: 'Eyebrow Microblading',
-    experience: '8 years',
-    rating: 4.9,
-    location: 'Universal Beauty Studio',
-    phone: '(555) 123-4567',
-    email: 'sarah@universalbeautystudio.com',
-    avatar: undefined,
-    licenseNumber: 'PMU-2024-001',
-    role: 'instructor'
-  },
-  {
-    id: '2', 
-    name: 'Michael Chen',
-    specialty: 'Lip Blushing',
-    experience: '6 years',
-    rating: 4.8,
-    location: 'Universal Beauty Studio',
-    phone: '(555) 987-6543',
-    email: 'michael@universalbeautystudio.com',
-    avatar: undefined,
-    licenseNumber: 'PMU-2024-002',
-    role: 'instructor'
-  },
-  {
-    id: '3',
-    name: 'Emma Rodriguez',
-    specialty: 'Eyeliner & Lash Enhancement',
-    experience: '10 years',
-    rating: 5.0,
-    location: 'Universal Beauty Studio',
-    phone: '(555) 456-7890',
-    email: 'emma@universalbeautystudio.com',
-    avatar: undefined,
-    licenseNumber: 'PMU-2024-003',
-    role: 'instructor'
-  }
-]
+// NO MOCK DATA - Always use real instructors from database/localStorage
 
 const timeSlots = ['9:30 AM', '1:00 PM', '4:00 PM']
 
@@ -326,15 +285,13 @@ export default function StudioSupervisionPage() {
               setInstructors(filteredInstructors)
               localStorage.setItem('supervisionInstructors', JSON.stringify(filteredInstructors))
             } else {
-              console.log('⚠️ No instructors found, using mock data')
-              // Fallback to mock data if both fail
-              setInstructors(mockInstructors)
+              console.warn('⚠️ No instructors found! Add instructors through Studio → Team Management')
+              setInstructors([]) // Empty array, no fake data!
             }
         
       } catch (error) {
         console.error('Error fetching instructors:', error)
-        // Fallback to mock data if everything fails
-        setInstructors(mockInstructors)
+        setInstructors([]) // Empty array, no fake data!
       }
     }
 
@@ -2881,9 +2838,11 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               <SelectValue placeholder="Select supervisor" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="sarah-johnson">Sarah Johnson</SelectItem>
-                              <SelectItem value="michael-chen">Michael Chen</SelectItem>
-                              <SelectItem value="emma-rodriguez">Emma Rodriguez</SelectItem>
+                              {instructors.map(instructor => (
+                                <SelectItem key={instructor.id} value={instructor.id}>
+                                  {instructor.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
