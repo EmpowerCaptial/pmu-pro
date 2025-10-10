@@ -156,6 +156,30 @@ export default function StudioSupervisionPage() {
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
+        // 🔧 CRITICAL FIX: Clear old cached fake instructors FIRST
+        const oldCache = localStorage.getItem('studio-team-members')
+        if (oldCache) {
+          try {
+            const cached = JSON.parse(oldCache)
+            const hasFakeData = cached.some((m: any) => 
+              m.email?.includes('sarah.johnson') ||
+              m.email?.includes('working-test') ||
+              m.email?.includes('test-frontend') ||
+              m.email?.includes('test-instructor')
+            )
+            
+            if (hasFakeData) {
+              console.log('🗑️ CLEARING OLD FAKE INSTRUCTOR CACHE')
+              localStorage.removeItem('studio-team-members')
+              localStorage.removeItem('studio-instructors')
+              localStorage.removeItem('supervisionInstructors')
+            }
+          } catch (e) {
+            // Invalid JSON, clear it anyway
+            localStorage.removeItem('studio-team-members')
+          }
+        }
+        
         console.log('🔍 Loading team members from DATABASE')
         
         // PRODUCTION FIX: Fetch from database, not localStorage
