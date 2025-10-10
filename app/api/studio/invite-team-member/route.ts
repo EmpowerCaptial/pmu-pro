@@ -7,7 +7,17 @@ export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
-    const { memberEmail, memberName, memberPassword, memberRole, studioName, studioOwnerName } = await request.json()
+    const { memberEmail, memberName, memberPassword, memberRole, studioName: frontendStudioName, studioOwnerName } = await request.json()
+    
+    // CRITICAL FIX: Get owner's email from headers to find their REAL studio name from database
+    const ownerEmail = request.headers.get('x-user-email')
+    
+    if (!ownerEmail) {
+      return NextResponse.json(
+        { error: 'Owner email required' },
+        { status: 401 }
+      )
+    }
 
     if (!memberEmail || !memberName || !memberPassword) {
       return NextResponse.json(
@@ -15,6 +25,33 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+    
+    // CRITICAL FIX: Get the CORRECT studioName and businessName from the database (owner)
+    const owner = await prisma.user.findUnique({
+      where: { email: ownerEmail },
+      select: {
+        id: true,
+        name: true,
+        studioName: true,
+        businessName: true
+      }
+    })
+    
+    if (!owner) {
+      return NextResponse.json(
+        { error: 'Owner not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Use owner's ACTUAL studio name from database, not frontend fallback
+    const correctStudioName = owner.studioName || frontendStudioName || 'Studio'
+    const correctBusinessName = owner.businessName || correctStudioName
+    
+    console.log('✅ Using correct studio info from database:')
+    console.log('   Studio Name:', correctStudioName)
+    console.log('   Business Name:', correctBusinessName)
+    console.log('   Owner:', owner.name)
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -47,7 +84,7 @@ export async function POST(request: NextRequest) {
         "licenseNumber", "licenseState", "createdAt", "updatedAt"
       ) VALUES (
         ${userId}, ${memberEmail}, ${memberName}, ${hashedPassword}, ${memberRole}, 'studio',
-        true, ${memberRole === 'licensed' || memberRole === 'instructor'}, ${studioName}, ${studioName},
+        true, ${memberRole === 'licensed' || memberRole === 'instructor'}, ${correctBusinessName}, ${correctStudioName},
         ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''}, 
         ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''},
         NOW(), NOW()
@@ -62,8 +99,8 @@ export async function POST(request: NextRequest) {
       selectedPlan: 'studio',
       hasActiveSubscription: true,
       isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor',
-      businessName: studioName,
-      studioName: studioName
+      businessName: correctBusinessName,
+      studioName: correctStudioName
     }
 
     // Create invitation email content based on role
@@ -96,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const emailContent = {
       to: memberEmail,
-      subject: `You've been invited to join ${studioName}`,
+      subject: `You've been invited to join ${correctStudioName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -104,7 +141,7 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #374151; margin-top: 0;">Welcome to ${studioName}!</h2>
+            <h2 style="color: #374151; margin-top: 0;">Welcome to ${correctStudioName}!</h2>
             
             <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
               Hi ${memberName},
@@ -149,7 +186,7 @@ export async function POST(request: NextRequest) {
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-              This invitation was sent by ${studioOwnerName} for ${studioName}.<br>
+              This invitation was sent by ${owner.name} for ${correctStudioName}.<br>
               If you didn't expect this invitation, you can safely ignore this email.
             </p>
           </div>

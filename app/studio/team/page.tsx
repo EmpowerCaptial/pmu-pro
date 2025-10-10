@@ -234,6 +234,7 @@ export default function StudioTeamPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || '' // CRITICAL: Pass owner's email so API can get correct studio name from database
         },
         body: JSON.stringify({
           memberEmail: inviteEmail,
@@ -302,6 +303,7 @@ export default function StudioTeamPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || '' // CRITICAL: Pass owner's email so API can get correct studio name from database
         },
         body: JSON.stringify({
           memberEmail: inviteEmail,
