@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
     // Get user email from headers
     const userEmail = request.headers.get('x-user-email');
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const body = await request.json();
+    body = await request.json();
     const {
       clientName,
       clientEmail,
@@ -48,6 +49,22 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!clientName || !clientEmail || !service || !date || !time) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Convert time to 24-hour format if needed (e.g., "9:30 AM" -> "09:30")
+    let time24 = time;
+    if (time.includes('AM') || time.includes('PM')) {
+      const [timePart, period] = time.split(' ');
+      let [hours, minutes] = timePart.split(':');
+      hours = parseInt(hours);
+      
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      
+      time24 = `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
 
     // Check if client exists, if not create one
@@ -78,8 +95,8 @@ export async function POST(request: NextRequest) {
         title: `${service} - ${clientName}`,
         serviceType: service,
         duration: duration || 120,
-        startTime: new Date(`${date}T${time}`),
-        endTime: new Date(new Date(`${date}T${time}`).getTime() + (duration || 120) * 60000),
+        startTime: new Date(`${date}T${time24}`),
+        endTime: new Date(new Date(`${date}T${time24}`).getTime() + (duration || 120) * 60000),
         status: status,
         price: price || 0,
         deposit: deposit || 0,
@@ -107,10 +124,19 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating appointment:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      body: body
+    });
     return NextResponse.json(
-      { error: 'Failed to create appointment' },
+      { 
+        error: 'Failed to create appointment',
+        details: error.message,
+        debugInfo: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
