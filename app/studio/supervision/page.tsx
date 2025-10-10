@@ -152,24 +152,32 @@ export default function StudioSupervisionPage() {
     }
   }, [])
 
-  // Fetch instructors DIRECTLY from team members (single source of truth)
+  // Fetch instructors DIRECTLY from database (single source of truth)
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
-        console.log('🔍 Loading instructors from team members (single source of truth)')
+        console.log('🔍 Loading team members from DATABASE')
         
-        // PERMANENT FIX: Read directly from studio-team-members
-        // This is the ONLY source of truth - no more separate instructor lists!
-        const teamMembersStr = localStorage.getItem('studio-team-members')
+        // PRODUCTION FIX: Fetch from database, not localStorage
+        const response = await fetch('/api/studio/team-members', {
+          headers: {
+            'x-user-email': currentUser?.email || ''
+          }
+        })
         
-        if (!teamMembersStr) {
-          console.warn('⚠️ No team members found! Add team members through Studio → Team Management')
+        if (!response.ok) {
+          console.error('Failed to fetch team members from database')
           setInstructors([])
           return
         }
         
-        const teamMembers = JSON.parse(teamMembersStr)
-        console.log('📋 Found', teamMembers.length, 'team members')
+        const data = await response.json()
+        const teamMembers = data.teamMembers || []
+        
+        console.log('📋 Loaded', teamMembers.length, 'team members from database')
+        
+        // Cache in localStorage for offline support
+        localStorage.setItem('studio-team-members', JSON.stringify(teamMembers))
         
         // Get only instructors and licensed artists (can supervise)
         const instructorMembers = teamMembers.filter((m: any) => 
@@ -177,7 +185,7 @@ export default function StudioSupervisionPage() {
           m.status === 'active'
         )
         
-        console.log('👥 Found', instructorMembers.length, 'instructors/licensed artists')
+        console.log('👥 Found', instructorMembers.length, 'instructors/licensed artists from database')
         
         // Transform to instructor format
         const transformedInstructors: Instructor[] = instructorMembers.map((member: any) => ({

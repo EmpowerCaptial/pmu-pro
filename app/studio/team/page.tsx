@@ -58,31 +58,52 @@ export default function StudioTeamPage() {
   const [addMode, setAddMode] = useState<'invite' | 'manual'>('invite') // New state for add mode
   const [isSyncing, setIsSyncing] = useState(false)
 
-  // Load team members from localStorage
+  // Load team members from DATABASE (not localStorage)
   useEffect(() => {
-    const savedTeamMembers = localStorage.getItem('studio-team-members')
-    if (savedTeamMembers) {
-      const teamMembers = JSON.parse(savedTeamMembers)
-      setTeamMembers(teamMembers)
+    const loadTeamMembersFromDatabase = async () => {
+      if (!currentUser?.email) return
       
-      // Sync existing instructors to supervision list
-      syncExistingInstructors(teamMembers)
-    } else {
-      // Add the current user as the studio owner
-      if (currentUser) {
-        const owner: TeamMember = {
-          id: currentUser.id || 'owner-1',
-          name: currentUser.name || 'Studio Owner',
-          email: currentUser.email || 'owner@studio.com',
-          status: 'active',
-          invitedAt: new Date().toISOString(),
-          joinedAt: new Date().toISOString(),
-          role: 'owner'
+      try {
+        // PRODUCTION FIX: Fetch from database first
+        const response = await fetch('/api/studio/team-members', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          const dbTeamMembers = data.teamMembers || []
+          
+          console.log('📋 Loaded team members from DATABASE:', dbTeamMembers.length)
+          setTeamMembers(dbTeamMembers)
+          
+          // Cache in localStorage for offline support
+          localStorage.setItem('studio-team-members', JSON.stringify(dbTeamMembers))
+          
+          // Sync instructors
+          syncExistingInstructors(dbTeamMembers)
+        } else {
+          // Fallback to localStorage if API fails
+          const savedTeamMembers = localStorage.getItem('studio-team-members')
+          if (savedTeamMembers) {
+            const teamMembers = JSON.parse(savedTeamMembers)
+            setTeamMembers(teamMembers)
+            syncExistingInstructors(teamMembers)
+          }
         }
-        setTeamMembers([owner])
-        localStorage.setItem('studio-team-members', JSON.stringify([owner]))
+      } catch (error) {
+        console.error('Error loading team members:', error)
+        
+        // Fallback to localStorage
+        const savedTeamMembers = localStorage.getItem('studio-team-members')
+        if (savedTeamMembers) {
+          setTeamMembers(JSON.parse(savedTeamMembers))
+        }
       }
     }
+    
+    loadTeamMembersFromDatabase()
   }, [currentUser])
 
   // Sync existing team members who are instructors to supervision list

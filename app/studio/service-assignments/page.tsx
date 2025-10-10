@@ -80,7 +80,24 @@ export default function ServiceAssignmentsPage() {
       if (response.ok) {
         const data = await response.json()
         setServices(data.services || [])
-        setTeamMembers(data.teamMembers || [])
+        
+        // Fetch team members from database
+        const teamResponse = await fetch('/api/studio/team-members', {
+          headers: {
+            'x-user-email': currentUser?.email || ''
+          }
+        })
+        
+        if (teamResponse.ok) {
+          const teamData = await teamResponse.json()
+          setTeamMembers(teamData.teamMembers || [])
+          
+          // Cache for offline support
+          localStorage.setItem('studio-team-members', JSON.stringify(teamData.teamMembers || []))
+          console.log('📋 Loaded team members from DATABASE:', teamData.teamMembers?.length)
+        } else {
+          setTeamMembers(data.teamMembers || [])
+        }
         
         // Load assignments from DATABASE (not localStorage)
         const dbAssignments = data.assignments || []

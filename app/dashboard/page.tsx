@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
 import { AppointmentDetailsCard } from "@/components/dashboard/appointment-details-card"
 import { MetaMessengerBox } from "@/components/messenger/meta-messenger-box"
@@ -27,11 +28,26 @@ import { ClockIndicator } from "@/components/dashboard/clock-indicator"
 
 export default function DashboardPage() {
   const { currentUser, isLoading, isProductionUser, isDemoUser } = useDemoAuth()
+  const router = useRouter()
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [hasApplication, setHasApplication] = useState(false)
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
+  
+  // PRODUCTION FIX: Check if studio owner needs to set studio name
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
+      const studioName = (currentUser as any).studioName
+      const businessName = (currentUser as any).businessName
+      
+      // Redirect to onboarding if names not set
+      if (!studioName || !businessName) {
+        console.log('⚠️ Studio owner missing studio/business name - redirecting to onboarding')
+        router.push('/studio/onboarding')
+      }
+    }
+  }, [currentUser, router])
   
   // Load avatar from API first, then fallback to localStorage
   useEffect(() => {
