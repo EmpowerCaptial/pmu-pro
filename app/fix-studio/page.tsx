@@ -13,7 +13,7 @@ export default function FixStudioPage() {
     setStatus(prev => [...prev, msg])
   }
 
-  const runAutoFix = () => {
+  const runAutoFix = async () => {
     addStatus('🔧 Starting automatic fix...')
     
     try {
@@ -45,14 +45,35 @@ export default function FixStudioPage() {
       localStorage.setItem('studio-team-members', JSON.stringify(teamMembers))
       addStatus(`✅ Updated ${updated} team members with studio names`)
       
-      // Fix 3: Show Jenny's assignments
-      const assignments = JSON.parse(localStorage.getItem('service-assignments') || '[]')
-      const jennyAssignments = assignments.filter((a: any) => {
-        const jenny = teamMembers.find((m: any) => m.email === 'jenny@universalbeautystudio.com')
-        return jenny && a.userId === jenny.id && a.assigned
-      })
+      // Fix 3: Re-assign services with CORRECT production service IDs
+      const jenny = teamMembers.find((m: any) => m.email === 'jenny@universalbeautystudio.com')
       
-      addStatus(`✅ Jenny has ${jennyAssignments.length} services assigned`)
+      if (jenny) {
+        // Fetch production services
+        const response = await fetch('/api/services', {
+          headers: { 'x-user-email': 'Tyronejackboy@gmail.com' }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          const services = data.services.filter((s: any) => s.isActive)
+          
+          // Create NEW assignments with CORRECT production service IDs
+          const newAssignments = services.map((service: any) => ({
+            serviceId: service.id,
+            userId: jenny.id,
+            assigned: true
+          }))
+          
+          localStorage.setItem('service-assignments', JSON.stringify(newAssignments))
+          addStatus(`✅ Re-assigned ${services.length} services to Jenny with correct IDs`)
+          addStatus(`   Services: ${services.map((s: any) => s.name).join(', ')}`)
+        } else {
+          addStatus('⚠️ Could not fetch services from API')
+        }
+      } else {
+        addStatus('⚠️ Jenny not found in team members')
+      }
       
       // Fix 4: Sync instructors from team members
       const instructorMembers = teamMembers.filter((m: any) => 
@@ -86,7 +107,7 @@ export default function FixStudioPage() {
       addStatus('1. Log in with: jenny@universalbeautystudio.com')
       addStatus('2. Go to Supervision Booking')
       addStatus(`3. See ${instructorMembers.length} instructors available`)
-      addStatus(`4. Select from ${jennyAssignments.length} assigned services`)
+      addStatus('4. Select from her assigned services')
       
     } catch (error) {
       addStatus('❌ Error: ' + (error instanceof Error ? error.message : 'Unknown'))
