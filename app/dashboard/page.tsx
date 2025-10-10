@@ -35,19 +35,25 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
   
-  // PRODUCTION FIX: Check if studio owner needs to set studio name
+  // PRODUCTION FIX: Check if studio owner needs to set studio name (only once on mount)
   useEffect(() => {
     if (currentUser && currentUser.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
       const studioName = (currentUser as any).studioName
       const businessName = (currentUser as any).businessName
       
-      // Redirect to onboarding if names not set
-      if (!studioName || !businessName) {
+      // Only redirect if BOTH are missing (prevents infinite loop)
+      if (!studioName && !businessName) {
         console.log('⚠️ Studio owner missing studio/business name - redirecting to onboarding')
-        router.push('/studio/onboarding')
+        
+        // Check if we just came from onboarding (prevent loop)
+        const fromOnboarding = sessionStorage.getItem('onboarding-complete')
+        if (!fromOnboarding) {
+          router.push('/studio/onboarding')
+        }
       }
     }
-  }, [currentUser, router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]) // Only run when user ID changes, not on every render
   
   // Load avatar from API first, then fallback to localStorage
   useEffect(() => {

@@ -47,13 +47,16 @@ export default function StudioSettingsPage() {
       })
 
       if (response.ok) {
-        setSaveSuccess(true)
-        
         // Update localStorage
         const userData = JSON.parse(localStorage.getItem('demoUser') || '{}')
         userData.studioName = studioName
         userData.businessName = businessName
         localStorage.setItem('demoUser', JSON.stringify(userData))
+        
+        // Mark as complete to prevent redirect loop
+        sessionStorage.setItem('onboarding-complete', 'true')
+        
+        setSaveSuccess(true)
         
         // Update team members
         const teamMembers = JSON.parse(localStorage.getItem('studio-team-members') || '[]')
@@ -117,7 +120,7 @@ export default function StudioSettingsPage() {
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
       <NavBar />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Building2 className="h-8 w-8 text-lavender" />

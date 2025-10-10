@@ -41,6 +41,9 @@ export default function StudioOnboardingPage() {
         userData.businessName = businessName
         localStorage.setItem('demoUser', JSON.stringify(userData))
         
+        // Mark onboarding as complete to prevent dashboard redirect loop
+        sessionStorage.setItem('onboarding-complete', 'true')
+        
         setStep(2)
       } else {
         alert('Failed to save names')
@@ -53,7 +56,7 @@ export default function StudioOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-lavender/10 to-indigo-100 flex items-center justify-center p-4 pb-24 md:pb-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="bg-gradient-to-r from-lavender to-indigo-600 text-white">
           <CardTitle className="text-2xl">Welcome to Studio Enterprise!</CardTitle>
@@ -161,21 +164,24 @@ export default function StudioOnboardingPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                 <Button
                   onClick={() => router.push('/services')}
                   variant="outline"
-                  className="border-lavender text-lavender hover:bg-lavender/10"
+                  className="border-lavender text-lavender hover:bg-lavender/10 h-12 text-base"
                 >
                   Add Services
                 </Button>
                 <Button
                   onClick={() => router.push('/dashboard')}
-                  className="bg-gradient-to-r from-lavender to-indigo-600"
+                  className="bg-gradient-to-r from-lavender to-indigo-600 h-12 text-base"
                 >
                   Go to Dashboard
                 </Button>
               </div>
+              
+              {/* Extra spacing for mobile navbar */}
+              <div className="h-8 sm:h-0"></div>
             </div>
           )}
         </CardContent>
