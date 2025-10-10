@@ -197,24 +197,24 @@ export default function StudioSupervisionPage() {
           rating: member.rating || 4.8,
           location: member.businessName || 'Studio',
           availability: member.availability || {
-            monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-            tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-            wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-            thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-            friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
-            saturday: [],
-            sunday: []
-          },
+                monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                tuesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                wednesday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                thursday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                friday: ['9:30 AM', '1:00 PM', '4:00 PM'],
+                saturday: [],
+                sunday: []
+              },
           licenseNumber: member.licenseNumber || `PMU-${member.id.slice(-3)}`
         }))
         
         if (transformedInstructors.length > 0) {
           console.log('✅ Loaded instructors for supervision:', transformedInstructors.map(i => i.name))
           setInstructors(transformedInstructors)
-        } else {
+            } else {
           console.warn('⚠️ No instructors found! Add instructors through Studio → Team Management')
           setInstructors([])
-        }
+            }
         
       } catch (error) {
         console.error('Error loading instructors:', error)
@@ -280,7 +280,22 @@ export default function StudioSupervisionPage() {
       
       setServicesLoading(true)
       try {
-        const services = await getServices(currentUser.email)
+        // CRITICAL FIX: Students need to see their studio owner's services, not their own
+        // Use studio owner's email if user is a student
+        let emailForServices = currentUser.email
+        
+        if (currentUser.role === 'student' || currentUser.role === 'licensed') {
+          // Find studio owner from team members
+          const teamMembers = JSON.parse(localStorage.getItem('studio-team-members') || '[]')
+          const owner = teamMembers.find((m: any) => m.role === 'owner')
+          
+          if (owner?.email) {
+            emailForServices = owner.email
+            console.log(`🔄 Student detected - fetching services from owner: ${owner.email}`)
+          }
+        }
+        
+        const services = await getServices(emailForServices)
         const activeServices = services.filter(service => service.isActive)
         const mappedServices = activeServices.map(mapApiServiceToSupervisionService)
         
@@ -300,7 +315,7 @@ export default function StudioSupervisionPage() {
           const assignedServices = mappedServices.filter(service => {
             const hasAssignment = assignments.some((assignment: any) => {
               const matches = assignment.serviceId === service.id && 
-                             assignment.userId === currentUser.id && 
+              assignment.userId === currentUser.id && 
                              assignment.assigned === true
               
               if (assignment.userId === currentUser.id) {
