@@ -287,11 +287,25 @@ export default function StudioSupervisionPage() {
         if (currentUser.role === 'student' || currentUser.role === 'licensed') {
           // Find studio owner from team members
           const teamMembers = JSON.parse(localStorage.getItem('studio-team-members') || '[]')
-          const owner = teamMembers.find((m: any) => m.role === 'owner')
+          
+          // ROBUST FIX: Match owner by studio name to handle multiple studios
+          const currentStudioName = (currentUser as any).studioName
+          const owner = teamMembers.find((m: any) => 
+            m.role === 'owner' && 
+            (currentStudioName ? m.studioName === currentStudioName : true)
+          )
           
           if (owner?.email) {
             emailForServices = owner.email
-            console.log(`🔄 Student detected - fetching services from owner: ${owner.email}`)
+            console.log(`🔄 Student/Licensed detected - fetching services from owner:`, {
+              ownerEmail: owner.email,
+              ownerName: owner.name,
+              studioName: owner.studioName
+            })
+          } else {
+            console.warn('⚠️ No studio owner found in team members!')
+            console.warn('   Current studio:', currentStudioName)
+            console.warn('   Available members:', teamMembers.map((m: any) => ({name: m.name, role: m.role, studio: m.studioName})))
           }
         }
         
