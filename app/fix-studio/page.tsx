@@ -42,10 +42,46 @@ export default function FixStudioPage() {
           m.businessName = businessName
         }
       })
+      // Fix role for "Ty" - should be student, not instructor
+      const tyIndex = teamMembers.findIndex((m: any) => 
+        m.email === 'Tierra@universalbeautystudio.com' || m.name === 'ty'
+      )
+      if (tyIndex >= 0 && teamMembers[tyIndex].role !== 'student') {
+        teamMembers[tyIndex].role = 'student'
+        addStatus(`✅ Fixed Ty's role to student (was showing as instructor)`)
+      }
+      
       localStorage.setItem('studio-team-members', JSON.stringify(teamMembers))
       addStatus(`✅ Updated ${updated} team members with studio names`)
       
-      // Fix 3: Re-assign services with CORRECT production service IDs
+      // Fix 3: Reset Jenny's password in production database
+      const resetResponse = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'jenny@universalbeautystudio.com',
+          newPassword: 'temp839637',
+          adminEmail: 'Tyronejackboy@gmail.com'
+        })
+      })
+      
+      if (resetResponse.ok) {
+        const resetData = await resetResponse.json()
+        addStatus(`✅ Jenny's password set to: temp839637`)
+        addStatus(`   Jenny's ID in production: ${resetData.user.id}`)
+        
+        // Update Jenny in team members with correct ID
+        const jennyIndex = teamMembers.findIndex((m: any) => m.email === 'jenny@universalbeautystudio.com')
+        if (jennyIndex >= 0) {
+          teamMembers[jennyIndex].id = resetData.user.id
+          localStorage.setItem('studio-team-members', JSON.stringify(teamMembers))
+          addStatus(`✅ Updated Jenny's team member ID to match database`)
+        }
+      } else {
+        addStatus('⚠️ Could not reset Jenny\'s password')
+      }
+      
+      // Fix 4: Re-assign services with CORRECT production service IDs
       const jenny = teamMembers.find((m: any) => m.email === 'jenny@universalbeautystudio.com')
       
       if (jenny) {
