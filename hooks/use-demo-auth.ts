@@ -62,6 +62,7 @@ export function useDemoAuth() {
       const data = await response.json()
 
       if (data.success && data.user) {
+        // CRITICAL FIX: Save ALL user fields including studioName and businessName
         const user = {
           id: data.user.id,
           name: data.user.name,
@@ -72,8 +73,22 @@ export function useDemoAuth() {
           features: ['all'],
           hasActiveSubscription: data.user.hasActiveSubscription,
           subscriptionStatus: data.user.subscriptionStatus,
-          selectedPlan: data.user.selectedPlan
+          selectedPlan: data.user.selectedPlan,
+          // CRITICAL: Include studio information so team features work
+          studioName: data.user.studioName,
+          businessName: data.user.businessName,
+          // Include other useful fields
+          avatar: data.user.avatar,
+          phone: data.user.phone,
+          licenseNumber: data.user.licenseNumber
         }
+        
+        console.log('✅ Login successful - saved complete user data:', {
+          email: user.email,
+          role: user.role,
+          studioName: user.studioName,
+          hasStudio: !!user.studioName
+        })
         
         setCurrentUser(user)
         localStorage.setItem('demoUser', JSON.stringify(user))
