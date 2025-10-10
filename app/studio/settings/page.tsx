@@ -55,6 +55,7 @@ export default function StudioSettingsPage() {
         
         // Mark as complete to prevent redirect loop
         sessionStorage.setItem('onboarding-complete', 'true')
+        localStorage.setItem('studio-setup-complete', 'true')
         
         setSaveSuccess(true)
         

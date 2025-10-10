@@ -43,6 +43,7 @@ export default function StudioOnboardingPage() {
         
         // Mark onboarding as complete to prevent dashboard redirect loop
         sessionStorage.setItem('onboarding-complete', 'true')
+        localStorage.setItem('studio-setup-complete', 'true')
         
         setStep(2)
       } else {

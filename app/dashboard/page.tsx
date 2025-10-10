@@ -37,21 +37,45 @@ export default function DashboardPage() {
   
   // PRODUCTION FIX: Check if studio owner needs to set studio name (only once on mount)
   useEffect(() => {
-    if (currentUser && currentUser.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
-      const studioName = (currentUser as any).studioName
-      const businessName = (currentUser as any).businessName
-      
-      // Only redirect if BOTH are missing (prevents infinite loop)
-      if (!studioName && !businessName) {
-        console.log('⚠️ Studio owner missing studio/business name - redirecting to onboarding')
+    const checkStudioSetup = async () => {
+      if (currentUser && currentUser.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
+        // Check if setup was already completed
+        const setupComplete = localStorage.getItem('studio-setup-complete')
+        if (setupComplete === 'true') {
+          return // Don't check again if already completed
+        }
         
-        // Check if we just came from onboarding (prevent loop)
-        const fromOnboarding = sessionStorage.getItem('onboarding-complete')
-        if (!fromOnboarding) {
-          router.push('/studio/onboarding')
+        // Check database (not localStorage) for studio name
+        try {
+          const response = await fetch('/api/profile', {
+            headers: { 'x-user-email': currentUser.email }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            const studioName = data.profile?.studioName
+            const businessName = data.profile?.businessName
+            
+            if (studioName && businessName) {
+              // Setup is complete, mark it
+              localStorage.setItem('studio-setup-complete', 'true')
+              return
+            }
+            
+            // Missing from database - redirect to onboarding
+            console.log('⚠️ Studio owner missing studio/business name in database')
+            const fromOnboarding = sessionStorage.getItem('onboarding-complete')
+            if (!fromOnboarding) {
+              router.push('/studio/onboarding')
+            }
+          }
+        } catch (error) {
+          console.error('Error checking studio setup:', error)
         }
       }
     }
+    
+    checkStudioSetup()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id]) // Only run when user ID changes, not on every render
   
