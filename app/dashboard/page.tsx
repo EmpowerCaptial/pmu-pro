@@ -34,10 +34,21 @@ export default function DashboardPage() {
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showStudioSetupBanner, setShowStudioSetupBanner] = useState(false)
   
-  // REMOVED AUTO-REDIRECT TO ONBOARDING
-  // Studio owners can set their studio name via Studio → Settings instead
-  // This prevents annoying redirect loops and gives users control
+  // Check if studio setup banner should show
+  useEffect(() => {
+    if (currentUser?.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
+      const setupComplete = localStorage.getItem('studio-setup-complete')
+      const hasStudioName = !!(currentUser as any).studioName
+      const hasBusinessName = !!(currentUser as any).businessName
+      
+      // Show banner if setup NOT complete AND missing studio/business name
+      setShowStudioSetupBanner(!setupComplete && (!hasStudioName || !hasBusinessName))
+    } else {
+      setShowStudioSetupBanner(false)
+    }
+  }, [currentUser])
   
   // Load avatar from API first, then fallback to localStorage
   useEffect(() => {
@@ -351,8 +362,7 @@ export default function DashboardPage() {
               </div>
             </div>
             {/* Studio Setup Banner for new studio owners */}
-            {currentUser?.role === 'owner' && (currentUser as any).selectedPlan === 'studio' && 
-             (!((currentUser as any).studioName) || !((currentUser as any).businessName)) && (
+            {showStudioSetupBanner && (
               <Card className="mb-6 border-purple-200 bg-purple-50">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -374,7 +384,7 @@ export default function DashboardPage() {
                       size="sm"
                       onClick={() => {
                         localStorage.setItem('studio-setup-complete', 'true')
-                        window.location.reload()
+                        setShowStudioSetupBanner(false)
                       }}
                       className="text-purple-600 hover:text-purple-700"
                     >
