@@ -45,6 +45,10 @@ export default function MigrateToDatabasePage() {
       
       // Save to database
       addStatus('💾 Saving to production database...')
+      addStatus(`   Endpoint: POST /api/service-assignments`)
+      addStatus(`   User Email: ${currentUser.email}`)
+      addStatus(`   Assignments Count: ${localAssignments.length}`)
+      
       const response = await fetch('/api/service-assignments', {
         method: 'POST',
         headers: {
@@ -54,9 +58,12 @@ export default function MigrateToDatabasePage() {
         body: JSON.stringify({ assignments: localAssignments })
       })
       
+      addStatus(`   Response Status: ${response.status} ${response.statusText}`)
+      
       if (response.ok) {
         const data = await response.json()
         addStatus(`✅ Successfully migrated ${data.assignments?.length || 0} assignments to database`)
+        addStatus(`   Database confirmed: ${data.message || 'Saved'}`)
         addStatus('')
         addStatus('🎉 MIGRATION COMPLETE!')
         addStatus('')
@@ -80,6 +87,16 @@ export default function MigrateToDatabasePage() {
       } else {
         const errorData = await response.json()
         addStatus(`❌ Migration failed: ${errorData.error}`)
+        addStatus(`   Details: ${errorData.details || 'No details provided'}`)
+        addStatus(`   Status Code: ${response.status}`)
+        
+        if (response.status === 403) {
+          addStatus('')
+          addStatus('⚠️ Permission denied. Make sure you\'re logged in as owner/manager.')
+        } else if (response.status === 500) {
+          addStatus('')
+          addStatus('⚠️ Database error. Check that the service_assignments table exists.')
+        }
       }
       
     } catch (error) {

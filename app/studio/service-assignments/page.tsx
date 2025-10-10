@@ -71,6 +71,7 @@ export default function ServiceAssignmentsPage() {
       
       // PRODUCTION FIX: Fetch from database API (not localStorage)
       const response = await fetch('/api/service-assignments', {
+        method: 'GET',
         headers: {
           'x-user-email': currentUser?.email || ''
         }
