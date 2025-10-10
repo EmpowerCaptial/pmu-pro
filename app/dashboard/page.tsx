@@ -35,49 +35,9 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
   
-  // PRODUCTION FIX: Check if studio owner needs to set studio name (only once on mount)
-  useEffect(() => {
-    const checkStudioSetup = async () => {
-      if (currentUser && currentUser.role === 'owner' && (currentUser as any).selectedPlan === 'studio') {
-        // Check if setup was already completed
-        const setupComplete = localStorage.getItem('studio-setup-complete')
-        if (setupComplete === 'true') {
-          return // Don't check again if already completed
-        }
-        
-        // Check database (not localStorage) for studio name
-        try {
-          const response = await fetch('/api/profile', {
-            headers: { 'x-user-email': currentUser.email }
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            const studioName = data.profile?.studioName
-            const businessName = data.profile?.businessName
-            
-            if (studioName && businessName) {
-              // Setup is complete, mark it
-              localStorage.setItem('studio-setup-complete', 'true')
-              return
-            }
-            
-            // Missing from database - redirect to onboarding
-            console.log('⚠️ Studio owner missing studio/business name in database')
-            const fromOnboarding = sessionStorage.getItem('onboarding-complete')
-            if (!fromOnboarding) {
-              router.push('/studio/onboarding')
-            }
-          }
-        } catch (error) {
-          console.error('Error checking studio setup:', error)
-        }
-      }
-    }
-    
-    checkStudioSetup()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id]) // Only run when user ID changes, not on every render
+  // REMOVED AUTO-REDIRECT TO ONBOARDING
+  // Studio owners can set their studio name via Studio → Settings instead
+  // This prevents annoying redirect loops and gives users control
   
   // Load avatar from API first, then fallback to localStorage
   useEffect(() => {
@@ -390,6 +350,41 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </div>
+            {/* Studio Setup Banner for new studio owners */}
+            {currentUser?.role === 'owner' && (currentUser as any).selectedPlan === 'studio' && 
+             (!((currentUser as any).studioName) || !((currentUser as any).businessName)) && (
+              <Card className="mb-6 border-purple-200 bg-purple-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-purple-900 mb-2">
+                        🎯 Complete Your Studio Setup
+                      </h3>
+                      <p className="text-sm text-purple-700 mb-4">
+                        Set your studio and business name to enable all team features and make your studio professional.
+                      </p>
+                      <Link href="/studio/settings">
+                        <Button className="bg-purple-600 hover:bg-purple-700">
+                          Complete Setup in Settings →
+                        </Button>
+                      </Link>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        localStorage.setItem('studio-setup-complete', 'true')
+                        window.location.reload()
+                      }}
+                      className="text-purple-600 hover:text-purple-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {isDemoUser ? (
               <DemoDataProvider>
                 <DashboardCards />
