@@ -69,7 +69,8 @@ export default function ServiceAssignmentsPage() {
     try {
       setIsLoadingData(true)
       
-      const response = await fetch('/api/studio/service-assignments', {
+      // PRODUCTION FIX: Fetch from database API (not localStorage)
+      const response = await fetch('/api/service-assignments', {
         headers: {
           'x-user-email': currentUser?.email || ''
         }
@@ -80,17 +81,18 @@ export default function ServiceAssignmentsPage() {
         setServices(data.services || [])
         setTeamMembers(data.teamMembers || [])
         
-        // Load assignments from localStorage
-        const savedAssignments = localStorage.getItem('service-assignments')
-        if (savedAssignments) {
-          const parsedAssignments = JSON.parse(savedAssignments)
-          console.log('📋 Loaded service assignments from localStorage:', parsedAssignments)
-          setAssignments(parsedAssignments)
-        } else {
-          // Initialize with no assignments
-          const initialAssignments: ServiceAssignment[] = []
-          setAssignments(initialAssignments)
-        }
+        // Load assignments from DATABASE (not localStorage)
+        const dbAssignments = data.assignments || []
+        console.log('📋 Loaded service assignments from DATABASE:', dbAssignments.length)
+        
+        // Transform to local format
+        const formattedAssignments: ServiceAssignment[] = dbAssignments.map((a: any) => ({
+          serviceId: a.serviceId,
+          userId: a.userId,
+          assigned: a.assigned
+        }))
+        
+        setAssignments(formattedAssignments)
       } else {
         console.error('Failed to load service assignments')
       }
@@ -128,31 +130,10 @@ export default function ServiceAssignmentsPage() {
     try {
       setIsSaving(true)
       
-      // Save to localStorage
-      localStorage.setItem('service-assignments', JSON.stringify(assignments))
-      console.log('💾 Saved service assignments to localStorage:', assignments)
+      console.log('💾 Saving service assignments to DATABASE:', assignments.length)
       
-      // Log assignment details for debugging
-      const assignmentsByUser = assignments.reduce((acc: any, assignment) => {
-        if (assignment.assigned) {
-          if (!acc[assignment.userId]) {
-            acc[assignment.userId] = {
-              userId: assignment.userId,
-              userName: teamMembers.find(m => m.id === assignment.userId)?.name || 'Unknown',
-              serviceCount: 0,
-              serviceIds: []
-            }
-          }
-          acc[assignment.userId].serviceCount++
-          acc[assignment.userId].serviceIds.push(assignment.serviceId)
-        }
-        return acc
-      }, {})
-      
-      console.log('📊 Assignments by user:', assignmentsByUser)
-      
-      // In a real system, you'd save to the database here
-      const response = await fetch('/api/studio/service-assignments', {
+      // PRODUCTION FIX: Save to DATABASE (not localStorage)
+      const response = await fetch('/api/service-assignments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,13 +143,32 @@ export default function ServiceAssignmentsPage() {
       })
 
       if (response.ok) {
-        // Show detailed success message
+        const data = await response.json()
+        console.log('✅ Saved to database:', data)
+        
+        // Log assignment details
+        const assignmentsByUser = assignments.reduce((acc: any, assignment) => {
+          if (assignment.assigned) {
+            if (!acc[assignment.userId]) {
+              acc[assignment.userId] = {
+                userId: assignment.userId,
+                userName: teamMembers.find(m => m.id === assignment.userId)?.name || 'Unknown',
+                serviceCount: 0
+              }
+            }
+            acc[assignment.userId].serviceCount++
+          }
+          return acc
+        }, {})
+        
         const assignedCount = assignments.filter(a => a.assigned).length
         const userCount = Object.keys(assignmentsByUser).length
-        alert(`✅ Service assignments saved successfully!\n\n${assignedCount} assignments for ${userCount} team member(s).\n\nNote: Team members must log in with accounts that match their user IDs for assignments to work.`)
+        
+        alert(`✅ Service assignments saved to database!\n\n${assignedCount} assignments for ${userCount} team member(s).\n\nChanges are immediately available across all devices.`)
       } else {
-        console.error('Failed to save service assignments')
-        alert('Failed to save assignments. Please try again.')
+        const errorData = await response.json()
+        console.error('Failed to save service assignments:', errorData)
+        alert(`Failed to save assignments: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error saving service assignments:', error)
@@ -344,34 +344,34 @@ export default function ServiceAssignmentsPage() {
                   ) : (
                     teamMembers.map((member) => (
                       <button
-                        key={member.id}
+                      key={member.id}
                         onClick={() => setSelectedMember(member)}
                         className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
                           selectedMember?.id === member.id
                             ? 'bg-lavender/10 border-lavender shadow-md'
                             : 'bg-white border-gray-200 hover:border-lavender/50 hover:bg-lavender/5'
                         }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10">
-                            <AvatarImage 
-                              src={member.avatar || undefined} 
-                              alt={`${member.name} profile`}
-                              className="object-cover"
-                            />
-                            <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white text-sm font-semibold">
-                              {getInitials(member.name)}
-                            </AvatarFallback>
-                          </Avatar>
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage 
+                            src={member.avatar || undefined} 
+                            alt={`${member.name} profile`}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white text-sm font-semibold">
+                            {getInitials(member.name)}
+                          </AvatarFallback>
+                        </Avatar>
                           <div className="text-left">
-                            <p className="font-medium text-gray-900 text-sm">{member.name}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              {getRoleBadge(member.role)}
-                            </div>
+                          <p className="font-medium text-gray-900 text-sm">{member.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {getRoleBadge(member.role)}
                           </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
                             {getAssignedServicesCount(member.id)} / {services.length}
                           </Badge>
@@ -465,19 +465,19 @@ export default function ServiceAssignmentsPage() {
                           
                           <div className="flex items-center gap-3">
                             {isAssigned(service.id, selectedMember.id) ? (
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                            ) : (
-                              <XCircle className="h-5 w-5 text-gray-300" />
-                            )}
-                            <Switch
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-gray-300" />
+                        )}
+                        <Switch
                               checked={isAssigned(service.id, selectedMember.id)}
                               onCheckedChange={() => toggleAssignment(service.id, selectedMember.id)}
-                              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-                            />
-                          </div>
-                        </div>
-                      ))}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
+                        />
+                      </div>
                     </div>
+                  ))}
+                </div>
                   )}
                 </CardContent>
               </Card>
@@ -493,8 +493,8 @@ export default function ServiceAssignmentsPage() {
                   <p className="text-gray-600 max-w-md">
                     Choose a team member from the list on the left to view and manage their service assignments
                   </p>
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
             )}
           </div>
         </div>

@@ -61,6 +61,8 @@ model User {
   services               Service[]
   supportTickets         SupportTicket[]
   notifications          Notification[]
+  serviceAssignments     ServiceAssignment[] @relation("UserServiceAssignments")
+  assignedServices       ServiceAssignment[] @relation("AssignedByUser")
 
   @@map("users")
 }
@@ -399,7 +401,7 @@ model Appointment {
 }
 
 model Service {
-  id              String      @id @default(cuid())
+  id              String              @id @default(cuid())
   userId          String
   name            String
   description     String?
@@ -407,17 +409,37 @@ model Service {
   defaultPrice    Float
   category        String
   imageUrl        String?
-  isActive        Boolean     @default(true)
-  isCustomImage   Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  isActive        Boolean             @default(true)
+  isCustomImage   Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   procedures      Procedure[]
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments     ServiceAssignment[]
 
   @@index([userId])
   @@index([category])
   @@index([isActive])
   @@map("services")
+}
+
+model ServiceAssignment {
+  id          String   @id @default(cuid())
+  serviceId   String
+  userId      String
+  assigned    Boolean  @default(true)
+  assignedBy  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserServiceAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  assignedByUser User  @relation("AssignedByUser", fields: [assignedBy], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, userId])
+  @@index([userId])
+  @@index([serviceId])
+  @@index([assignedBy])
+  @@map("service_assignments")
 }
 
 model ConsentForm {

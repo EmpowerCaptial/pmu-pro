@@ -322,8 +322,27 @@ export default function StudioSupervisionPage() {
         
         // Filter services based on assignments if user is a student
         if (currentUser?.role === 'student') {
-          const assignments = JSON.parse(localStorage.getItem('service-assignments') || '[]')
-          console.log('📋 All service assignments from localStorage:', assignments)
+          // PRODUCTION FIX: Fetch assignments from DATABASE (not localStorage)
+          let assignments: any[] = []
+          
+          try {
+            const assignmentsResponse = await fetch('/api/service-assignments', {
+              headers: {
+                'x-user-email': currentUser.email
+              }
+            })
+            
+            if (assignmentsResponse.ok) {
+              const assignmentsData = await assignmentsResponse.json()
+              assignments = assignmentsData.assignments || []
+              console.log('📋 Loaded service assignments from DATABASE:', assignments.length)
+            } else {
+              console.error('Failed to fetch assignments from database')
+            }
+          } catch (error) {
+            console.error('Error fetching assignments:', error)
+          }
+          
           console.log('🎯 Filtering for user ID:', currentUser.id)
           
           const assignedServices = mappedServices.filter(service => {
