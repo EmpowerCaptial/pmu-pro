@@ -510,9 +510,9 @@ export default function FeaturesPage() {
                          feature.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || feature.category === selectedCategory
     
-    // Hide invoice and products features from students, and show student-hours only to students
+    // Hide billing, invoice, and products features from students; show student-hours only to students
     const isStudent = currentUser?.role === 'student' || currentUser?.role === 'apprentice'
-    const isRestrictedFeature = feature.id === 'invoices' || feature.id === 'products'
+    const isRestrictedFeature = feature.id === 'invoices' || feature.id === 'products' || feature.id === 'billing'
     const isStudentOnlyFeature = feature.id === 'student-hours'
     
     if (isStudent && isRestrictedFeature) {
