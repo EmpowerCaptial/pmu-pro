@@ -219,7 +219,11 @@ export default function ExpensesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: (currentUser as any).avatar
+        } : undefined} />
         <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -236,7 +240,11 @@ export default function ExpensesPage() {
   if (!hasExpensesAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: (currentUser as any).avatar
+        } : undefined} />
         <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">

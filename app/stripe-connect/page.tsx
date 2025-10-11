@@ -137,11 +137,38 @@ export default function StripeConnectPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-      <NavBar currentPath="/stripe-connect" />
+      <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} currentPath="/stripe-connect" />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Header */}
+        {/* Header with User Info */}
         <div className="mb-6 sm:mb-8">
+          {/* Show who's connecting */}
+          {currentUser && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">
+                    {currentUser.name.split(' ').map((n: string) => n[0]).join('')}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-blue-900">Connecting Stripe for:</p>
+                  <p className="text-sm text-blue-800">{currentUser.name} ({currentUser.email})</p>
+                  <Badge variant="outline" className="mt-1 text-xs bg-blue-100 text-blue-800 border-blue-300">
+                    {currentUser.role === 'owner' ? '👑 Studio Owner' : 
+                     currentUser.role === 'instructor' ? '🏆 Instructor' : 
+                     currentUser.role === 'licensed' ? '🎨 Licensed Artist' : 
+                     '👤 ' + currentUser.role}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="w-10 h-10 bg-lavender rounded-full flex items-center justify-center">

@@ -172,7 +172,11 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: (currentUser as any).avatar
+        } : undefined} />
         <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -189,7 +193,11 @@ export default function ProfilePage() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: (currentUser as any).avatar
+        } : undefined} />
         <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
