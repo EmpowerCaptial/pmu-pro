@@ -1227,7 +1227,7 @@ export default function StudioTeamPage() {
         {/* Employment Settings Modal */}
         {showEmploymentModal && selectedMember && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
