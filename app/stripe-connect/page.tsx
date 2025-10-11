@@ -19,6 +19,7 @@ import {
   Star
 } from "lucide-react"
 import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { getFeeDisplayInfo } from "@/lib/platform-fee-config"
 
 interface StripeAccount {
@@ -32,6 +33,7 @@ interface StripeAccount {
 }
 
 export default function StripeConnectPage() {
+  const { currentUser } = useDemoAuth()
   const [stripeAccount, setStripeAccount] = useState<StripeAccount | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -53,24 +55,12 @@ export default function StripeConnectPage() {
   }
 
   const checkStripeConnection = async () => {
+    if (!currentUser?.email) return
+    
     try {
-      // Get user email from localStorage
-      const userEmail = localStorage.getItem('userEmail') || ''
-      const demoUser = localStorage.getItem('demoUser')
-      let email = userEmail
-      
-      if (demoUser) {
-        try {
-          const user = JSON.parse(demoUser)
-          email = user.email || userEmail
-        } catch (e) {
-          console.error('Error parsing demoUser:', e)
-        }
-      }
-      
       const response = await fetch('/api/stripe/connect/account-status', {
         headers: {
-          'x-user-email': email
+          'x-user-email': currentUser.email
         }
       })
       
@@ -85,6 +75,11 @@ export default function StripeConnectPage() {
   }
 
   const handleStripeConnect = async () => {
+    if (!currentUser?.email) {
+      setError('Please log in to connect Stripe')
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
@@ -95,9 +90,9 @@ export default function StripeConnectPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          artistId: 'current-user', // This would come from auth
-          artistName: 'PMU Artist',
-          artistEmail: 'artist@pmupro.com',
+          artistId: currentUser.id,
+          artistName: currentUser.name,
+          artistEmail: currentUser.email,
           businessType: 'individual',
           country: 'US',
           currency: 'usd'
