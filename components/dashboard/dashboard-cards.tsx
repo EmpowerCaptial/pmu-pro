@@ -34,6 +34,8 @@ import { ConsentFormModal } from "@/components/consent/consent-form-modal"
 import { ConsentNotifications } from "@/components/consent/consent-notifications"
 import { consentReminderService } from "@/lib/services/consent-reminder-service"
 import { WeeklyBalanceCard, DailyBalanceCard } from "@/components/dashboard/financial-dashboard"
+import { CommissionSummaryCard } from "@/components/dashboard/commission-summary-card"
+import { StaffEarningsCard } from "@/components/dashboard/staff-earnings-card"
 import { checkStudioSupervisionAccess, shouldUseRegularBooking, shouldUseSupervisionBooking } from "@/lib/studio-supervision-gate"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { hasEnterpriseStudioAccess, isStudioOwner } from "@/lib/stripe-management"
@@ -455,6 +457,8 @@ export function DashboardCards() {
         <div className="lg:hidden grid grid-cols-1 gap-2 sm:gap-3 mb-4 sm:mb-6">
           <WeeklyBalanceCard />
           <DailyBalanceCard />
+          {currentUser?.role === 'owner' && <CommissionSummaryCard />}
+          {currentUser?.role !== 'owner' && <StaffEarningsCard />}
           
           {/* Stripe Connect Card */}
           <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow border-lavender/50">
@@ -844,6 +848,8 @@ export function DashboardCards() {
         {/* Financial Dashboard Cards */}
         <WeeklyBalanceCard />
         <DailyBalanceCard />
+        {currentUser?.role === 'owner' && <CommissionSummaryCard />}
+        {currentUser?.role !== 'owner' && <StaffEarningsCard />}
 
         <Card className="relative overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm border-lavender/30">
           {/* Background Image with higher opacity */}

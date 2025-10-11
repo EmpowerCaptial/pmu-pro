@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getPaymentRouting, recordCommissionTransaction } from '@/lib/payment-routing';
 
 export const dynamic = "force-dynamic"
 
@@ -87,6 +88,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // CRITICAL: Determine where payment should go based on employment type
+    const paymentRouting = await getPaymentRouting(user.id, price || 0);
+    
+    console.log('💰 Payment Routing:', {
+      serviceProvider: user.name,
+      amount: price,
+      goesTo: paymentRouting.recipientName,
+      employmentType: paymentRouting.employmentType,
+      commissionTracked: paymentRouting.shouldTrackCommission
+    });
+
     // Create appointment
     const appointment = await prisma.appointment.create({
       data: {
@@ -102,10 +114,23 @@ export async function POST(request: NextRequest) {
         deposit: deposit || 0,
         paymentStatus: 'pending',
         source: 'public_booking',
-        notes: `Booked via public booking page`,
+        notes: `Booked via public booking page. Payment to: ${paymentRouting.recipientName}${paymentRouting.shouldTrackCommission ? ` (${paymentRouting.commissionRate}% commission)` : ''}`,
         reminderSent: false
       }
     });
+
+    // If payment goes to owner for commissioned staff, record commission owed
+    if (paymentRouting.shouldTrackCommission && paymentRouting.commissionRate) {
+      await recordCommissionTransaction(
+        paymentRouting.recipientId, // Owner ID
+        user.id, // Staff ID
+        price || 0,
+        paymentRouting.commissionRate,
+        paymentRouting.employmentType,
+        appointment.id,
+        `${service} for ${clientName}`
+      );
+    }
 
     return NextResponse.json({
       success: true,

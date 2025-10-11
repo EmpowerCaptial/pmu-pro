@@ -374,6 +374,30 @@ model MarketingSync {
   @@map("marketing_syncs")
 }
 
+model CommissionTransaction {
+  id                String   @id @default(cuid())
+  ownerId           String   // Studio owner who owes the commission
+  staffId           String   // Staff member who earned the commission
+  appointmentId     String?  // Related appointment (if applicable)
+  amount            Float    // Total service amount
+  commissionRate    Float    // Commission percentage at time of transaction
+  commissionAmount  Float    // Amount owed to staff member
+  ownerAmount       Float    // Amount owner keeps
+  employmentType    String   // "commissioned" or "booth_renter" at time of transaction
+  status            String   @default("pending") // "pending", "paid", "cancelled"
+  paidAt            DateTime?
+  paidMethod        String?  // "cash", "check", "stripe", "venmo", etc.
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([staffId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("commission_transactions")
+}
+
 model Appointment {
   id            String      @id @default(cuid())
   userId        String
