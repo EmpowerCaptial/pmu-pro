@@ -41,7 +41,8 @@ export function CommissionSummaryCard() {
 
   useEffect(() => {
     loadCommissions()
-  }, [currentUser, range])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, range])
 
   const loadCommissions = async () => {
     if (!currentUser?.email || currentUser.role !== 'owner') return

@@ -378,19 +378,35 @@ export function DashboardCards() {
                   Studio Owner
                 </Badge>
               </div>
-              <Link href="/studio/management" className="w-full">
-                <div className="relative group cursor-pointer">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
-                    <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
-                      🏢 Manage Studio
-                    </span>
-                    <p className="text-blue-100 text-xs mt-1">
-                      Invite & manage instructors
-                    </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/studio/team" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                      <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                        👥 Team
+                      </span>
+                      <p className="text-blue-100 text-xs mt-1">
+                        Manage staff
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+                
+                <Link href="/studio/commissions" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                      <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                        💰 Pay
+                      </span>
+                      <p className="text-green-100 text-xs mt-1">
+                        Commissions
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>

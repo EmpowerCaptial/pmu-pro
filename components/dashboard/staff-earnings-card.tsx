@@ -27,7 +27,8 @@ export function StaffEarningsCard() {
 
   useEffect(() => {
     loadEarnings()
-  }, [currentUser])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id])
 
   const loadEarnings = async () => {
     if (!currentUser?.email) return
