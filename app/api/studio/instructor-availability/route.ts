@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { dateToTime12Hour } from '@/lib/time-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,8 +65,8 @@ export async function GET(request: NextRequest) {
       return {
         id: apt.id,
         date: startTime.toISOString().split('T')[0],
-        startTime: startTime.toTimeString().split(' ')[0].substring(0, 5),
-        endTime: endTime.toTimeString().split(' ')[0].substring(0, 5),
+        startTime: dateToTime12Hour(startTime), // 12-hour format (e.g., "9:30 AM", "1:00 PM")
+        endTime: dateToTime12Hour(endTime), // 12-hour format
         duration: apt.duration,
         clientName: apt.client.name,
         service: apt.serviceType,

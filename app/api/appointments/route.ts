@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getPaymentRouting, recordCommissionTransaction } from '@/lib/payment-routing';
+import { dateToTime12Hour } from '@/lib/time-utils';
 
 export const dynamic = "force-dynamic"
 
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest) {
         clientEmail: client.email,
         service: appointment.serviceType,
         date: appointment.startTime.toISOString().split('T')[0],
-        time: appointment.startTime.toTimeString().split(' ')[0].substring(0, 5),
+        time: dateToTime12Hour(appointment.startTime), // Convert to 12-hour format (e.g., "9:30 AM", "1:00 PM")
         duration: appointment.duration,
         price: appointment.price,
         deposit: appointment.deposit,
@@ -216,7 +217,7 @@ export async function GET(request: NextRequest) {
         clientEmail: apt.client.email,
         service: apt.serviceType,
         date: apt.startTime.toISOString().split('T')[0],
-        time: apt.startTime.toTimeString().split(' ')[0].substring(0, 5),
+        time: dateToTime12Hour(apt.startTime), // Convert to 12-hour format (e.g., "9:30 AM", "1:00 PM")
         duration: apt.duration,
         price: apt.price,
         deposit: apt.deposit,

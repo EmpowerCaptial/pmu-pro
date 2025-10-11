@@ -539,24 +539,9 @@ export default function StudioSupervisionPage() {
     const realBookedTimes = realBookings
       .filter((booking: any) => booking.date === date)
       .map((booking: any) => {
-        // Convert 24-hour format to 12-hour format to match our time slots
-        const time = booking.startTime
-        const [hours, minutes] = time.split(':').map(Number)
-        
-        if (hours === 9 && minutes === 30) return '9:30 AM'
-        if (hours === 13) return '1:00 PM' // 1:00 PM
-        if (hours === 16) return '4:00 PM' // 4:00 PM
-        
-        // For other times, we need to check if they overlap with our slots
-        const bookingStart = hours * 60 + minutes
-        const bookingEnd = bookingStart + booking.duration
-        
-        // Check overlap with our predefined slots
-        if (bookingStart <= 570 && bookingEnd > 570) return '9:30 AM' // 9:30 AM = 570 minutes
-        if (bookingStart <= 780 && bookingEnd > 780) return '1:00 PM' // 1:00 PM = 780 minutes  
-        if (bookingStart <= 960 && bookingEnd > 960) return '4:00 PM' // 4:00 PM = 960 minutes
-        
-        return null
+        // API now returns 12-hour format directly (e.g., "9:30 AM", "1:00 PM")
+        // Just return the startTime as-is
+        return booking.startTime
       })
       .filter(Boolean)
     
