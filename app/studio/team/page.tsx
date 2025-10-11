@@ -21,7 +21,9 @@ import {
   User,
   Package,
   MoreVertical,
-  Settings
+  Settings,
+  DollarSign,
+  X
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -44,6 +46,10 @@ interface TeamMember {
   licenseState?: string
   phone?: string
   avatar?: string
+  // Payment settings
+  employmentType?: 'commissioned' | 'booth_renter' | null
+  commissionRate?: number
+  boothRentAmount?: number
 }
 
 export default function StudioTeamPage() {
@@ -57,6 +63,14 @@ export default function StudioTeamPage() {
   const [isInviting, setIsInviting] = useState(false)
   const [addMode, setAddMode] = useState<'invite' | 'manual'>('invite') // New state for add mode
   const [isSyncing, setIsSyncing] = useState(false)
+  
+  // Employment settings modal state
+  const [showEmploymentModal, setShowEmploymentModal] = useState(false)
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
+  const [employmentType, setEmploymentType] = useState<'commissioned' | 'booth_renter' | ''>('')
+  const [commissionRate, setCommissionRate] = useState<number>(50)
+  const [boothRentAmount, setBoothRentAmount] = useState<number>(500)
+  const [isSavingEmployment, setIsSavingEmployment] = useState(false)
 
   // Load team members from DATABASE (not localStorage)
   useEffect(() => {
@@ -386,6 +400,69 @@ export default function StudioTeamPage() {
       alert('Failed to add team member. Please try again.')
     } finally {
       setIsInviting(false)
+    }
+  }
+
+  // Open employment settings modal
+  const handleOpenEmploymentSettings = (member: TeamMember) => {
+    setSelectedMember(member)
+    setEmploymentType(member.employmentType || '')
+    setCommissionRate(member.commissionRate || 50)
+    setBoothRentAmount(member.boothRentAmount || 500)
+    setShowEmploymentModal(true)
+  }
+
+  // Save employment settings
+  const handleSaveEmploymentSettings = async () => {
+    if (!selectedMember) return
+
+    setIsSavingEmployment(true)
+    try {
+      const response = await fetch('/api/studio/update-employment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId: selectedMember.id,
+          employmentType: employmentType || null,
+          commissionRate: employmentType === 'commissioned' ? commissionRate : null,
+          boothRentAmount: employmentType === 'booth_renter' ? boothRentAmount : null
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update employment settings')
+      }
+
+      const result = await response.json()
+
+      // Update local state
+      const updatedMembers = teamMembers.map(m =>
+        m.id === selectedMember.id
+          ? {
+              ...m,
+              employmentType: result.member.employmentType,
+              commissionRate: result.member.commissionRate,
+              boothRentAmount: result.member.boothRentAmount
+            }
+          : m
+      )
+      
+      setTeamMembers(updatedMembers)
+      localStorage.setItem('studio-team-members', JSON.stringify(updatedMembers))
+
+      alert(`✅ Employment settings updated for ${selectedMember.name}`)
+      setShowEmploymentModal(false)
+      setSelectedMember(null)
+
+    } catch (error) {
+      console.error('Error updating employment settings:', error)
+      alert(error instanceof Error ? error.message : 'Failed to update employment settings')
+    } finally {
+      setIsSavingEmployment(false)
     }
   }
 
@@ -967,9 +1044,31 @@ export default function StudioTeamPage() {
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-wrap">
                             <h3 className="font-medium text-gray-900 text-sm truncate">{member.name}</h3>
                             {getStatusBadge(member.status)}
+                            {/* Employment Type Badge */}
+                            {(member.role === 'instructor' || member.role === 'licensed') && member.employmentType && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  member.employmentType === 'commissioned' 
+                                    ? 'bg-green-50 text-green-700 border-green-300'
+                                    : 'bg-blue-50 text-blue-700 border-blue-300'
+                                }`}
+                              >
+                                {member.employmentType === 'commissioned' 
+                                  ? `💰 ${member.commissionRate}% Commission`
+                                  : `🏢 $${member.boothRentAmount}/mo Rent`
+                                }
+                              </Badge>
+                            )}
+                            {/* Warning if employment not set */}
+                            {(member.role === 'instructor' || member.role === 'licensed') && !member.employmentType && (
+                              <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">
+                                ⚠️ Payment Not Set
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-xs text-gray-600 truncate">{member.email}</p>
                         </div>
@@ -1077,6 +1176,22 @@ export default function StudioTeamPage() {
                                 </>
                               )}
                               
+                              {/* Employment Settings - Only for instructors and licensed artists */}
+                              {(member.role === 'instructor' || member.role === 'licensed') && member.status === 'active' && (
+                                <>
+                                  <div className="px-2 py-1.5 text-xs font-medium text-gray-500 border-t border-gray-100 mt-1">
+                                    Payment Settings
+                                  </div>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleOpenEmploymentSettings(member)}
+                                    className="hover:bg-green-50 focus:bg-green-50 text-gray-700"
+                                  >
+                                    <DollarSign className="h-4 w-4 mr-2 text-green-600" />
+                                    Set Employment Type
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              
                               {/* Account Management */}
                               <div className="px-2 py-1.5 text-xs font-medium text-gray-500 border-t border-gray-100 mt-1">
                                 Account Actions
@@ -1108,6 +1223,190 @@ export default function StudioTeamPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Employment Settings Modal */}
+        {showEmploymentModal && selectedMember && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                      Employment & Payment Settings
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Set how {selectedMember.name} will be paid for their services
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowEmploymentModal(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* Member Info */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-violet-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {selectedMember.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{selectedMember.name}</p>
+                      <p className="text-sm text-gray-600">{selectedMember.email}</p>
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {selectedMember.role === 'instructor' ? '🏆 Instructor' : '🎨 Licensed Artist'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Employment Type Selection */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Employment Type</Label>
+                  
+                  {/* Commissioned Option */}
+                  <div 
+                    onClick={() => setEmploymentType('commissioned')}
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      employmentType === 'commissioned'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                        employmentType === 'commissioned'
+                          ? 'border-green-500 bg-green-500'
+                          : 'border-gray-300'
+                      }`}>
+                        {employmentType === 'commissioned' && (
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">💰 Commissioned Artist</h3>
+                        <p className="text-sm text-gray-600 mb-3">
+                          All client payments come to your Stripe account. You pay them a percentage commission.
+                        </p>
+                        
+                        {employmentType === 'commissioned' && (
+                          <div className="space-y-3 mt-4 pt-4 border-t border-green-200">
+                            <div>
+                              <Label className="text-sm font-medium">Commission Rate (%)</Label>
+                              <div className="flex items-center gap-3 mt-2">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={commissionRate}
+                                  onChange={(e) => setCommissionRate(Number(e.target.value))}
+                                  className="w-24"
+                                />
+                                <span className="text-sm text-gray-600">
+                                  {selectedMember.name} gets {commissionRate}%, you keep {100 - commissionRate}%
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Example: On a $400 service, {selectedMember.name} earns ${(400 * commissionRate / 100).toFixed(2)}, you keep ${(400 * (100 - commissionRate) / 100).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Booth Renter Option */}
+                  <div 
+                    onClick={() => setEmploymentType('booth_renter')}
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      employmentType === 'booth_renter'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                        employmentType === 'booth_renter'
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-300'
+                      }`}>
+                        {employmentType === 'booth_renter' && (
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">🏢 Independent Booth Renter</h3>
+                        <p className="text-sm text-gray-600 mb-3">
+                          Payments go directly to their Stripe account. They pay you monthly booth rent.
+                        </p>
+                        
+                        {employmentType === 'booth_renter' && (
+                          <div className="space-y-3 mt-4 pt-4 border-t border-blue-200">
+                            <div>
+                              <Label className="text-sm font-medium">Monthly Booth Rent ($)</Label>
+                              <div className="flex items-center gap-3 mt-2">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={boothRentAmount}
+                                  onChange={(e) => setBoothRentAmount(Number(e.target.value))}
+                                  className="w-32"
+                                />
+                                <span className="text-sm text-gray-600">per month</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">
+                                ⚠️ {selectedMember.name} must connect their own Stripe account to receive payments
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={handleSaveEmploymentSettings}
+                    disabled={!employmentType || isSavingEmployment}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {isSavingEmployment ? 'Saving...' : 'Save Settings'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowEmploymentModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                {/* Info Note */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+                  <p className="font-medium text-blue-900 mb-2">📝 Important Notes:</p>
+                  <ul className="space-y-1 text-blue-800 text-xs">
+                    <li>• Students are always 100% commissioned (you keep all revenue)</li>
+                    <li>• Commission rates can be adjusted anytime</li>
+                    <li>• Booth renters need their own Stripe Connect account</li>
+                    <li>• Payment type affects how reports and dashboards display earnings</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )

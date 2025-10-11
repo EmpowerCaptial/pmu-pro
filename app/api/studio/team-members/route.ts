@@ -46,7 +46,11 @@ export async function GET(request: NextRequest) {
         studioName: true,
         licenseNumber: true,
         licenseState: true,
-        createdAt: true
+        createdAt: true,
+        // Employment/payment fields
+        employmentType: true,
+        commissionRate: true,
+        boothRentAmount: true
       },
       orderBy: [
         { role: 'asc' },
@@ -70,7 +74,11 @@ export async function GET(request: NextRequest) {
       licenseNumber: member.licenseNumber,
       licenseState: member.licenseState,
       invitedAt: member.createdAt.toISOString(),
-      joinedAt: member.createdAt.toISOString()
+      joinedAt: member.createdAt.toISOString(),
+      // Employment/payment fields
+      employmentType: member.employmentType,
+      commissionRate: member.commissionRate,
+      boothRentAmount: member.boothRentAmount
     }))
 
     return NextResponse.json({
