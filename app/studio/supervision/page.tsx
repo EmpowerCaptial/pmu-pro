@@ -1451,53 +1451,141 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="relative overflow-hidden border-lavender/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-lavender/20 to-white backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-lavender/30 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                  <CardTitle className="text-sm font-bold text-ink">Training Hours</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
-                    <BookOpen className="h-5 w-5 text-white" />
-                  </div>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <div className="text-3xl font-bold text-ink">24</div>
-                  <p className="text-sm text-lavender-600 font-medium">
-                    +12% from last month
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Show different cards based on role */}
+              {userRole === 'INSTRUCTOR' ? (
+                <>
+                  {/* Instructor: Next Opening */}
+                  <Card className="relative overflow-hidden border-lavender/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-lavender/20 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-lavender/30 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-ink">Next Opening</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Calendar className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-xl font-bold text-ink">
+                        {(() => {
+                          // Find next available slot from instructor availability
+                          const today = new Date().toISOString().split('T')[0]
+                          const sortedDates = Object.keys(instructorAvailability)
+                            .filter(date => date >= today)
+                            .sort()
+                          
+                          if (sortedDates.length > 0) {
+                            const nextDate = sortedDates[0]
+                            const dateObj = new Date(nextDate)
+                            const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                            const slots = instructorAvailability[nextDate]?.timeSlots || []
+                            const firstSlot = slots[0]
+                            return (
+                              <>
+                                <div>{formattedDate}</div>
+                                <div className="text-lg font-medium text-lavender-600">
+                                  {firstSlot || 'Set availability'}
+                                </div>
+                              </>
+                            )
+                          }
+                          return 'Set Availability'
+                        })()}
+                      </div>
+                      <p className="text-sm text-lavender-600 font-medium mt-2">
+                        Click to manage schedule
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Instructor: Active Bookings */}
+                  <Card className="relative overflow-hidden border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50/80 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-blue-800">Active Bookings</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
+                        <Users className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-3xl font-bold text-blue-900">{bookings.length}</div>
+                      <p className="text-sm text-blue-600 font-medium">
+                        Scheduled sessions
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Instructor: Total Procedures Supervised */}
+                  <Card className="relative overflow-hidden border-green-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50/80 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-green-800">Supervised Total</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
+                        <CheckCircle className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-3xl font-bold text-green-900">{loggedProcedures.length}</div>
+                      <p className="text-sm text-green-600 font-medium">
+                        Procedures logged
+                      </p>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <>
+                  {/* Student/Apprentice: Training Hours */}
+                  <Card className="relative overflow-hidden border-lavender/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-lavender/20 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-lavender/30 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-ink">Training Hours</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center shadow-lg">
+                        <BookOpen className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-3xl font-bold text-ink">
+                        {studentHours.reduce((total, record) => total + (record.hours || 0), 0)}
+                      </div>
+                      <p className="text-sm text-lavender-600 font-medium">
+                        Total logged hours
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card className="relative overflow-hidden border-green-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50/80 to-white backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                  <CardTitle className="text-sm font-bold text-green-800">Completed Procedures</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle className="h-5 w-5 text-white" />
-                  </div>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <div className="text-3xl font-bold text-green-900">18</div>
-                  <p className="text-sm text-green-600 font-medium">
-                    +8 this month
-                  </p>
-                </CardContent>
-              </Card>
+                  {/* Student/Apprentice: Completed Procedures */}
+                  <Card className="relative overflow-hidden border-green-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50/80 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-green-800">Completed Procedures</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
+                        <CheckCircle className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-3xl font-bold text-green-900">{loggedProcedures.length}</div>
+                      <p className="text-sm text-green-600 font-medium">
+                        {loggedProcedures.length >= 50 ? '✓ License requirement met!' : `${50 - loggedProcedures.length} more needed`}
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card className="relative overflow-hidden border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50/80 to-white backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                  <CardTitle className="text-sm font-bold text-blue-800">Active Bookings</CardTitle>
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
-                    <Calendar className="h-5 w-5 text-white" />
-                  </div>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <div className="text-3xl font-bold text-blue-900">5</div>
-                  <p className="text-sm text-blue-600 font-medium">
-                    +2 this week
-                  </p>
-                </CardContent>
-              </Card>
+                  {/* Student/Apprentice: Active Bookings */}
+                  <Card className="relative overflow-hidden border-blue-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50/80 to-white backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                      <CardTitle className="text-sm font-bold text-blue-800">My Bookings</CardTitle>
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
+                        <Calendar className="h-5 w-5 text-white" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="text-3xl font-bold text-blue-900">{bookings.filter(b => b.status !== 'completed').length}</div>
+                      <p className="text-sm text-blue-600 font-medium">
+                        Upcoming sessions
+                      </p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
 
             <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
