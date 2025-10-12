@@ -289,7 +289,11 @@ export default function InventoryPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
-        <NavBar />
+        <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
         <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -306,7 +310,11 @@ export default function InventoryPage() {
   if (!hasInventoryAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/20 via-white to-purple/10">
-        <NavBar />
+        <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
         <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">

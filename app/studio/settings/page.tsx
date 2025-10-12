@@ -127,7 +127,11 @@ export default function StudioSettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-      <NavBar />
+      <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
       
       <div className="max-w-4xl mx-auto px-4 py-8 pb-24 md:pb-8">
         <div className="mb-8">

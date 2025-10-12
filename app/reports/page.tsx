@@ -98,7 +98,11 @@ export default function ReportsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
         <div className="max-w-7xl mx-auto p-4 pb-20">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -115,7 +119,11 @@ export default function ReportsPage() {
   if (!hasReportsAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
         <div className="max-w-7xl mx-auto p-4 pb-20">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -138,7 +146,11 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
-      <NavBar />
+      <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
       <div className="max-w-7xl mx-auto p-4 pb-20">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">

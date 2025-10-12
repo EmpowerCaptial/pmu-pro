@@ -242,7 +242,11 @@ export default function AdminToolsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-        <NavBar />
+        <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
@@ -255,7 +259,11 @@ export default function AdminToolsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/5 to-lavender-600/5">
-      <NavBar />
+      <NavBar user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: (currentUser as any).avatar
+      } : undefined} />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
