@@ -337,6 +337,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData(prev => ({ ...prev, businessName: e.target.value }))}
                       disabled={!isEditing}
                     />
+                    <p className="text-xs text-gray-500 mt-1">Your personal or business branding name</p>
                   </div>
                   <div>
                     <Label htmlFor="studioName">Studio Name</Label>
@@ -344,8 +345,17 @@ export default function ProfilePage() {
                       id="studioName"
                       value={profileData.studioName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, studioName: e.target.value }))}
-                      disabled={!isEditing}
+                      disabled={!isEditing || ['instructor', 'student', 'licensed'].includes(currentUser?.role || '')}
+                      className={['instructor', 'student', 'licensed'].includes(currentUser?.role || '') ? 'bg-gray-50' : ''}
                     />
+                    {['instructor', 'student', 'licensed'].includes(currentUser?.role || '') && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        ⚠️ Studio name is managed by your studio owner and cannot be changed
+                      </p>
+                    )}
+                    {!['instructor', 'student', 'licensed'].includes(currentUser?.role || '') && (
+                      <p className="text-xs text-gray-500 mt-1">The studio your team members will be linked to</p>
+                    )}
                   </div>
                 </div>
               </CardContent>

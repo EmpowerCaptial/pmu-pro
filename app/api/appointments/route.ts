@@ -122,12 +122,17 @@ export async function POST(request: NextRequest) {
 
     // If payment goes to owner for commissioned staff, record commission owed
     if (paymentRouting.shouldTrackCommission && paymentRouting.commissionRate) {
+      // TODO: Add gratuity field to booking API when gratuity is implemented
+      // For now, gratuity is 0 in booking flow (handled separately in checkout/payment)
+      const gratuityAmount = body.gratuity || 0;
+      
       await recordCommissionTransaction(
         paymentRouting.recipientId, // Owner ID
         user.id, // Staff ID
         price || 0,
         paymentRouting.commissionRate,
         paymentRouting.employmentType,
+        gratuityAmount, // Gratuity goes 100% to commissioned staff
         appointment.id,
         `${service} for ${clientName}`
       );

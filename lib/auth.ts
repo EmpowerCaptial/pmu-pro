@@ -197,8 +197,24 @@ export class AuthService {
    * Update user profile
    */
   static async updateProfile(userId: string, updates: Partial<User>): Promise<User> {
+    // Get current user to check role and restrictions
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, studioName: true }
+    })
+
+    if (!currentUser) {
+      throw new Error('User not found')
+    }
+
     // Remove sensitive fields that shouldn't be updated directly
     const { password, stripeCustomerId, stripeSubscriptionId, ...allowedUpdates } = updates
+
+    // CRITICAL: Prevent studio members from changing studioName
+    // This maintains the connection between members and their owner's services
+    if ((currentUser.role === 'student' || currentUser.role === 'licensed' || currentUser.role === 'instructor') && currentUser.studioName) {
+      delete (allowedUpdates as any).studioName
+    }
 
     const user = await prisma.user.update({
       where: { id: userId },

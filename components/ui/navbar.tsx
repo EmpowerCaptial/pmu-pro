@@ -28,6 +28,7 @@ import {
   Crown,
   Package,
   Bell,
+  MessageSquare,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
@@ -47,6 +48,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
   const { logout, currentUser } = useDemoAuth()
   const [pendingFormsCount, setPendingFormsCount] = useState(0)
   const [notificationsCount, setNotificationsCount] = useState(0)
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
 
   // Load pending consent forms count
   useEffect(() => {
@@ -69,6 +71,34 @@ export function NavBar({ currentPath, user }: NavBarProps) {
     const interval = setInterval(loadPendingCount, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  // Load unread team messages count
+  useEffect(() => {
+    const loadUnreadMessagesCount = async () => {
+      if (!currentUser?.email) return
+      
+      try {
+        const response = await fetch('/api/team-messages', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setUnreadMessagesCount(data.unreadCount || 0)
+        }
+      } catch (error) {
+        console.error("Error loading unread messages count:", error)
+      }
+    }
+
+    loadUnreadMessagesCount()
+    
+    // Check for updates every 30 seconds
+    const interval = setInterval(loadUnreadMessagesCount, 30000)
+    return () => clearInterval(interval)
+  }, [currentUser?.email])
 
   // EMERGENCY FIX: Disable notifications count to stop infinite loop
   useEffect(() => {
@@ -216,6 +246,17 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       {notificationsCount > 0 && (
                         <span className="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
                           {notificationsCount > 9 ? '9+' : notificationsCount}
+                        </span>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/team-messages" className="cursor-pointer">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <span>Team Messages</span>
+                      {unreadMessagesCount > 0 && (
+                        <span className="ml-auto bg-green-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                          {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
                         </span>
                       )}
                     </Link>

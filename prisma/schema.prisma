@@ -67,6 +67,8 @@ model User {
   notifications          Notification[]
   serviceAssignments     ServiceAssignment[]   @relation("UserServiceAssignments")
   assignedServices       ServiceAssignment[]   @relation("AssignedByUser")
+  sentMessages           TeamMessage[]         @relation("SentMessages")
+  receivedMessages       TeamMessage[]         @relation("ReceivedMessages")
 
   @@map("users")
 }
@@ -288,7 +290,9 @@ model DepositPayment {
   remainingAmount       Decimal       @db.Decimal(10, 2)
   currency              String        @default("USD")
   status                DepositStatus @default(PENDING)
-  paymentMethod         String?
+  paymentMethod         String?       // "card", "klarna", "affirm", "afterpay", "in_person", "cash"
+  collectInPerson       Boolean       @default(false) // True if payment will be collected in person
+  allowFullPayment      Boolean       @default(false) // True if client can pay full amount upfront
   stripePaymentIntentId String?
   stripeSessionId       String?
   depositLink           String        @unique
@@ -308,6 +312,26 @@ model DepositPayment {
   @@index([depositLink])
   @@index([status])
   @@map("deposit_payments")
+}
+
+model TeamMessage {
+  id          String   @id @default(cuid())
+  senderId    String   // User who sent the message
+  recipientId String   // User who receives the message
+  subject     String?
+  message     String   // Message content
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+  
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("team_messages")
 }
 
 model DataDeletionRequest {
@@ -379,10 +403,12 @@ model CommissionTransaction {
   ownerId           String   // Studio owner who owes the commission
   staffId           String   // Staff member who earned the commission
   appointmentId     String?  // Related appointment (if applicable)
-  amount            Float    // Total service amount
+  amount            Float    // Total service amount (excluding gratuity)
+  gratuityAmount    Float    @default(0) // Gratuity/tip amount - goes 100% to staff for commissioned employees
   commissionRate    Float    // Commission percentage at time of transaction
-  commissionAmount  Float    // Amount owed to staff member
-  ownerAmount       Float    // Amount owner keeps
+  commissionAmount  Float    // Amount owed to staff member (from service, not including gratuity)
+  ownerAmount       Float    // Amount owner keeps (from service only)
+  staffTotalAmount  Float?   // Total amount staff receives (commission + 100% gratuity)
   employmentType    String   // "commissioned" or "booth_renter" at time of transaction
   status            String   @default("pending") // "pending", "paid", "cancelled"
   paidAt            DateTime?

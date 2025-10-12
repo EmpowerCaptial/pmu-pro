@@ -89,19 +89,21 @@ export async function PUT(request: NextRequest) {
     const validatedData = profileSchema.parse(body)
 
     // CRITICAL: Role-based field restrictions to prevent system breaking
-    const restrictedFields = ['studioName', 'businessName']
     const userRole = user.role
     
-    // Students and licensed artists in studio cannot change critical studio fields
+    // Studio members (instructors, students, licensed artists) cannot change studioName
+    // This is critical because service assignment relies on matching studioName between owner and members
     if ((userRole === 'student' || userRole === 'licensed' || userRole === 'instructor') && user.studioName) {
-      for (const field of restrictedFields) {
-        if (field in validatedData && validatedData[field as keyof typeof validatedData] !== undefined) {
-          return NextResponse.json({
-            error: 'Access denied',
-            message: `${userRole === 'student' ? 'Students' : userRole === 'licensed' ? 'Licensed artists' : 'Instructors'} cannot modify ${field}. This field is managed by the studio owner to maintain system integrity.`
-          }, { status: 403 })
-        }
+      // Prevent changing studioName - this would break the connection to owner's services
+      if ('studioName' in validatedData && validatedData.studioName !== undefined && validatedData.studioName !== user.studioName) {
+        return NextResponse.json({
+          error: 'Access denied',
+          message: `${userRole === 'student' ? 'Students' : userRole === 'licensed' ? 'Licensed artists' : 'Instructors'} cannot modify studio name. This field is managed by the studio owner to maintain your connection to studio services and settings.`
+        }, { status: 403 })
       }
+      
+      // Remove studioName from the update data to prevent any accidental changes
+      delete validatedData.studioName
     }
 
     // Only update fields that exist in the production database
