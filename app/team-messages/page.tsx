@@ -80,18 +80,27 @@ export default function TeamMessagesPage() {
 
   const loadRecipients = async () => {
     try {
+      console.log('🔍 Loading recipients for:', currentUser?.email)
+      
       const response = await fetch('/api/team-messages/recipients', {
         headers: {
           'x-user-email': currentUser?.email || ''
         }
       })
       
+      console.log('📡 Recipients API response:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ Recipients loaded:', data.recipients?.length || 0)
         setRecipients(data.recipients || [])
+      } else {
+        console.error('❌ Recipients API failed:', response.status)
+        const errorText = await response.text()
+        console.error('Error details:', errorText)
       }
     } catch (error) {
-      console.error('Error loading recipients:', error)
+      console.error('❌ Error loading recipients:', error)
     }
   }
 
