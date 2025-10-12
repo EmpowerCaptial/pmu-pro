@@ -85,9 +85,13 @@ export function AppointmentDetailsCard() {
       if (response.ok) {
         const data = await response.json();
         setDepositPayments(data.depositPayments || []);
+      } else {
+        // Silently handle 401 - user not authenticated or no deposits
+        setDepositPayments([]);
       }
     } catch (error) {
-      console.error('Error loading deposit payments:', error);
+      // Silently fail - don't spam console
+      setDepositPayments([]);
     } finally {
       setLoading(false);
     }
