@@ -62,6 +62,7 @@ export default function TeamMessagesPage() {
   const [receivedMessages, setReceivedMessages] = useState<Message[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox')
+  const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null)
   
   // Compose message state
   const [showComposeDialog, setShowComposeDialog] = useState(false)
@@ -268,27 +269,27 @@ export default function TeamMessagesPage() {
       
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <MessageSquare className="h-8 w-8 text-lavender" />
-                Team Messages
+        <div className="mb-6">
+          <div className="flex items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-lavender flex-shrink-0" />
+                <span className="truncate">Team Messages</span>
               </h1>
-              <p className="text-gray-600 mt-2">Communicate with your studio team members</p>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Communicate with your studio team</p>
             </div>
             
             <Dialog open={showComposeDialog} onOpenChange={setShowComposeDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-lavender hover:bg-lavender-600">
-                  <Send className="h-4 w-4 mr-2" />
-                  New Message
+                <Button className="bg-lavender hover:bg-lavender-600 flex-shrink-0">
+                  <Send className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">New Message</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Send Message to Team Member</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-lg sm:text-xl">Send Message to Team Member</DialogTitle>
+                  <DialogDescription className="text-sm">
                     Choose a recipient and compose your message
                   </DialogDescription>
                 </DialogHeader>
@@ -385,48 +386,60 @@ export default function TeamMessagesPage() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex gap-2 overflow-x-auto">
           <Button
             variant={activeTab === 'inbox' ? 'default' : 'outline'}
             onClick={() => setActiveTab('inbox')}
-            className={activeTab === 'inbox' ? 'bg-lavender hover:bg-lavender-600' : ''}
+            className={`flex-shrink-0 ${activeTab === 'inbox' ? 'bg-lavender hover:bg-lavender-600' : ''}`}
           >
-            <Mail className="h-4 w-4 mr-2" />
-            Inbox
+            <Mail className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Inbox</span>
             {unreadCount > 0 && (
-              <Badge className="ml-2 bg-red-500">{unreadCount}</Badge>
+              <Badge className="ml-1 sm:ml-2 bg-red-500 text-xs">{unreadCount}</Badge>
             )}
           </Button>
           <Button
             variant={activeTab === 'sent' ? 'default' : 'outline'}
             onClick={() => setActiveTab('sent')}
-            className={activeTab === 'sent' ? 'bg-lavender hover:bg-lavender-600' : ''}
+            className={`flex-shrink-0 ${activeTab === 'sent' ? 'bg-lavender hover:bg-lavender-600' : ''}`}
           >
-            <Send className="h-4 w-4 mr-2" />
-            Sent ({sentMessages.length})
+            <Send className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Sent</span>
+            <span className="ml-1 sm:ml-0 text-xs">({sentMessages.length})</span>
           </Button>
         </div>
 
         {/* Messages List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {activeTab === 'inbox' && (
             <>
               {receivedMessages.length > 0 ? (
-                receivedMessages.map((msg) => (
-                  <Card key={msg.id} className={!msg.isRead ? 'border-lavender bg-lavender/5' : ''}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-4 flex-1">
-                          <Avatar className="h-12 w-12">
+                receivedMessages.map((msg) => {
+                  const isExpanded = expandedMessageId === msg.id
+                  return (
+                    <Card 
+                      key={msg.id} 
+                      className={`cursor-pointer transition-all hover:shadow-md ${!msg.isRead ? 'border-lavender bg-lavender/5' : ''}`}
+                      onClick={() => {
+                        setExpandedMessageId(isExpanded ? null : msg.id)
+                        if (!msg.isRead && !isExpanded) {
+                          handleMarkAsRead(msg.id)
+                        }
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        {/* Compact View */}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
                             <AvatarImage src={msg.sender?.avatar} />
-                            <AvatarFallback>
+                            <AvatarFallback className="text-sm">
                               {getInitials(msg.sender?.name || '')}
                             </AvatarFallback>
                           </Avatar>
                           
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-gray-900">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-gray-900 text-sm truncate">
                                 {msg.sender?.name}
                               </h3>
                               <Badge variant="outline" className={`text-xs ${getRoleColor(msg.sender?.role || '')}`}>
@@ -437,47 +450,60 @@ export default function TeamMessagesPage() {
                               )}
                             </div>
                             
-                            {msg.subject && (
-                              <h4 className="font-medium text-gray-700 mb-2">{msg.subject}</h4>
-                            )}
-                            
-                            <p className="text-gray-600 whitespace-pre-wrap">{msg.message}</p>
-                            
-                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {new Date(msg.createdAt).toLocaleString()}
-                              </div>
-                              {msg.isRead && msg.readAt && (
-                                <div className="flex items-center gap-1 text-green-600">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Read {new Date(msg.readAt).toLocaleString()}
-                                </div>
-                              )}
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              <Clock className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {new Date(msg.createdAt).toLocaleDateString()} at {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
+                            
+                            {!isExpanded && msg.subject && (
+                              <p className="text-sm text-gray-600 truncate mt-1">
+                                {msg.subject}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex-shrink-0">
+                            {isExpanded ? (
+                              <X className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Mail className="h-4 w-4 text-gray-400" />
+                            )}
                           </div>
                         </div>
                         
-                        {!msg.isRead && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMarkAsRead(msg.id)}
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                            Mark Read
-                          </Button>
+                        {/* Expanded View */}
+                        {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            {msg.subject && (
+                              <h4 className="font-medium text-gray-900 mb-3 break-words">
+                                {msg.subject}
+                              </h4>
+                            )}
+                            
+                            <p className="text-gray-700 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                              {msg.message}
+                            </p>
+                            
+                            {msg.readAt && (
+                              <div className="flex items-center gap-1 text-xs text-green-600 mt-3">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Read {new Date(msg.readAt).toLocaleString()}
+                              </div>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                      </CardContent>
+                    </Card>
+                  )
+                })
               ) : (
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
-                    <p className="text-gray-600">When your team members send you messages, they'll appear here.</p>
+                  <CardContent className="p-8 sm:p-12 text-center">
+                    <Mail className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+                    <p className="text-sm sm:text-base text-gray-600">When your team members send you messages, they'll appear here.</p>
                   </CardContent>
                 </Card>
               )}
@@ -487,62 +513,105 @@ export default function TeamMessagesPage() {
           {activeTab === 'sent' && (
             <>
               {sentMessages.length > 0 ? (
-                sentMessages.map((msg) => (
-                  <Card key={msg.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={msg.recipient?.avatar} />
-                          <AvatarFallback>
-                            {getInitials(msg.recipient?.name || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-gray-500">To:</span>
-                            <h3 className="font-semibold text-gray-900">
-                              {msg.recipient?.name}
-                            </h3>
-                            <Badge variant="outline" className={`text-xs ${getRoleColor(msg.recipient?.role || '')}`}>
-                              {getRoleName(msg.recipient?.role || '')}
-                            </Badge>
+                sentMessages.map((msg) => {
+                  const isExpanded = expandedMessageId === msg.id
+                  return (
+                    <Card 
+                      key={msg.id}
+                      className="cursor-pointer transition-all hover:shadow-md"
+                      onClick={() => setExpandedMessageId(isExpanded ? null : msg.id)}
+                    >
+                      <CardContent className="p-4">
+                        {/* Compact View */}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={msg.recipient?.avatar} />
+                            <AvatarFallback className="text-sm">
+                              {getInitials(msg.recipient?.name || '')}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs text-gray-500">To:</span>
+                              <h3 className="font-semibold text-gray-900 text-sm truncate">
+                                {msg.recipient?.name}
+                              </h3>
+                              <Badge variant="outline" className={`text-xs ${getRoleColor(msg.recipient?.role || '')}`}>
+                                {getRoleName(msg.recipient?.role || '')}
+                              </Badge>
+                              {msg.isRead ? (
+                                <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <Mail className="h-3 w-3 text-gray-400" />
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              <Clock className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {new Date(msg.createdAt).toLocaleDateString()} at {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            
+                            {!isExpanded && msg.subject && (
+                              <p className="text-sm text-gray-600 truncate mt-1">
+                                {msg.subject}
+                              </p>
+                            )}
                           </div>
                           
-                          {msg.subject && (
-                            <h4 className="font-medium text-gray-700 mb-2">{msg.subject}</h4>
-                          )}
-                          
-                          <p className="text-gray-600 whitespace-pre-wrap">{msg.message}</p>
-                          
-                          <div className="flex items-center gap-4 mt-3 text-sm">
-                            <div className="flex items-center gap-1 text-gray-500">
-                              <Clock className="h-3 w-3" />
-                              Sent {new Date(msg.createdAt).toLocaleString()}
-                            </div>
-                            {msg.isRead ? (
-                              <div className="flex items-center gap-1 text-green-600">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Read by recipient
-                              </div>
+                          <div className="flex-shrink-0">
+                            {isExpanded ? (
+                              <X className="h-4 w-4 text-gray-400" />
                             ) : (
-                              <div className="flex items-center gap-1 text-gray-500">
-                                <Mail className="h-3 w-3" />
-                                Unread
-                              </div>
+                              <Send className="h-4 w-4 text-gray-400" />
                             )}
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                        
+                        {/* Expanded View */}
+                        {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            {msg.subject && (
+                              <h4 className="font-medium text-gray-900 mb-3 break-words">
+                                {msg.subject}
+                              </h4>
+                            )}
+                            
+                            <p className="text-gray-700 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                              {msg.message}
+                            </p>
+                            
+                            <div className="flex items-center gap-3 text-xs mt-3">
+                              <div className="flex items-center gap-1 text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                Sent {new Date(msg.createdAt).toLocaleString()}
+                              </div>
+                              {msg.isRead ? (
+                                <div className="flex items-center gap-1 text-green-600">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  Read
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 text-gray-500">
+                                  <Mail className="h-3 w-3" />
+                                  Unread
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })
               ) : (
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No sent messages</h3>
-                    <p className="text-gray-600 mb-4">
+                  <CardContent className="p-8 sm:p-12 text-center">
+                    <Send className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No sent messages</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4">
                       Start a conversation with your team members.
                     </p>
                     <Button
