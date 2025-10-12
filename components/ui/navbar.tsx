@@ -87,16 +87,20 @@ export function NavBar({ currentPath, user }: NavBarProps) {
         if (response.ok) {
           const data = await response.json()
           setUnreadMessagesCount(data.unreadCount || 0)
+        } else {
+          // Silently fail if team messages not available yet
+          setUnreadMessagesCount(0)
         }
       } catch (error) {
-        console.error("Error loading unread messages count:", error)
+        // Silently fail - table may not exist yet on Vercel
+        setUnreadMessagesCount(0)
       }
     }
 
     loadUnreadMessagesCount()
     
-    // Check for updates every 30 seconds
-    const interval = setInterval(loadUnreadMessagesCount, 30000)
+    // Check for updates every 60 seconds (reduced frequency to avoid spam)
+    const interval = setInterval(loadUnreadMessagesCount, 60000)
     return () => clearInterval(interval)
   }, [currentUser?.email])
 
