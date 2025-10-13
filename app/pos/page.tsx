@@ -123,14 +123,14 @@ function POSContent() {
   // POS is now active - no longer coming soon
   const isComingSoon = false
   
-  // Load appointments from API
-  const [appointments, setAppointments] = useState<any[]>([])
+  // Load clients from API
+  const [clients, setClients] = useState<any[]>([])
   
-  const loadAppointments = async () => {
+  const loadClients = async () => {
     if (!currentUser?.email) return
     
     try {
-      const response = await fetch('/api/appointments', {
+      const response = await fetch('/api/clients', {
         headers: {
           'x-user-email': currentUser.email
         }
@@ -138,18 +138,18 @@ function POSContent() {
       
       if (response.ok) {
         const data = await response.json()
-        setAppointments(data.appointments || [])
+        setClients(data.clients || [])
       }
     } catch (error) {
-      console.error('Error loading appointments:', error)
-      setAppointments([])
+      console.error('Error loading clients:', error)
+      setClients([])
     }
   }
   
-  // Load appointments on component mount
+  // Load clients on component mount
   useEffect(() => {
     if (isAuthenticated && currentUser?.email) {
-      loadAppointments()
+      loadClients()
     }
   }, [isAuthenticated, currentUser?.email])
 
@@ -841,22 +841,35 @@ function POSContent() {
               </Button>
               
               <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
-                {appointments.map((appointment) => (
-                  <button
-                    key={appointment.id}
-                    className="w-full p-3 sm:p-4 text-left border border-gray-200 rounded-lg hover:border-lavender hover:bg-lavender/5 transition-colors"
-                    onClick={() => {
-                      setSelectedAppointment(appointment)
-                      setShowClientSelection(false)
-                    }}
-                  >
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{appointment.clientName}</h3>
-                      <p className="text-xs sm:text-sm text-gray-600">{appointment.email}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">{appointment.phone}</p>
+                {clients.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <User className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No clients found</p>
+                    <p className="text-xs mt-1">Create your first client to get started</p>
                   </div>
-                  </button>
-                ))}
+                ) : (
+                  clients.map((client) => (
+                    <button
+                      key={client.id}
+                      className="w-full p-3 sm:p-4 text-left border border-gray-200 rounded-lg hover:border-lavender hover:bg-lavender/5 transition-colors"
+                      onClick={() => {
+                        setSelectedAppointment({
+                          id: client.id,
+                          clientName: client.name,
+                          email: client.email || '',
+                          phone: client.phone || ''
+                        })
+                        setShowClientSelection(false)
+                      }}
+                    >
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{client.name}</h3>
+                        {client.email && <p className="text-xs sm:text-sm text-gray-600">{client.email}</p>}
+                        {client.phone && <p className="text-xs sm:text-sm text-gray-600">{client.phone}</p>}
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
               
               <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200">
