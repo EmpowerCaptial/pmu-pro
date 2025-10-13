@@ -134,8 +134,10 @@ const mockReviewLinks: ReviewLink[] = [
 
 export default function ReviewsPage() {
   const { currentUser } = useDemoAuth()
-  const [reviews, setReviews] = useState<Review[]>(mockReviews)
-  const [reviewLinks, setReviewLinks] = useState<ReviewLink[]>(mockReviewLinks)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewLinks, setReviewLinks] = useState<ReviewLink[]>([])
+  const [services, setServices] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [showCreateLink, setShowCreateLink] = useState(false)
   const [newLink, setNewLink] = useState({
@@ -143,6 +145,79 @@ export default function ReviewsPage() {
     service: '',
     platform: 'google'
   })
+
+  // Load reviews, links, and services from API
+  useEffect(() => {
+    if (currentUser?.email) {
+      loadReviews()
+      loadReviewLinks()
+      loadServices()
+    }
+  }, [currentUser])
+
+  const loadReviews = async () => {
+    try {
+      const response = await fetch('/api/reviews', {
+        headers: {
+          'x-user-email': currentUser?.email || ''
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReviews(data.reviews || [])
+      } else {
+        console.error('Failed to load reviews:', response.status)
+        setReviews([])
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+      setReviews([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadReviewLinks = async () => {
+    try {
+      const response = await fetch('/api/review-links', {
+        headers: {
+          'x-user-email': currentUser?.email || ''
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReviewLinks(data.reviewLinks || [])
+      } else {
+        console.error('Failed to load review links:', response.status)
+        setReviewLinks([])
+      }
+    } catch (error) {
+      console.error('Error loading review links:', error)
+      setReviewLinks([])
+    }
+  }
+
+  const loadServices = async () => {
+    try {
+      const response = await fetch('/api/services', {
+        headers: {
+          'x-user-email': currentUser?.email || ''
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setServices(data.services || [])
+      } else {
+        setServices([])
+      }
+    } catch (error) {
+      console.error('Error loading services:', error)
+      setServices([])
+    }
+  }
 
   // Fallback user if not authenticated
   const user = currentUser ? {
@@ -196,27 +271,40 @@ export default function ReviewsPage() {
     }
   }
 
-  const handleCreateLink = () => {
+  const handleCreateLink = async () => {
     if (!newLink.name || !newLink.service) {
       alert('Please fill in required fields')
       return
     }
 
-    const link: ReviewLink = {
-      id: Date.now().toString(),
-      name: newLink.name,
-      url: `https://pmupro.com/review/${Math.random().toString(36).substr(2, 9)}`,
-      service: newLink.service,
-      sentTo: 0,
-      responses: 0,
-      createdAt: new Date().toISOString(),
-      isActive: true
-    }
+    try {
+      const response = await fetch('/api/review-links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          name: newLink.name,
+          service: newLink.service,
+          platform: newLink.platform
+        })
+      })
 
-    setReviewLinks([...reviewLinks, link])
-    setNewLink({ name: '', service: '', platform: 'google' })
-    setShowCreateLink(false)
-    alert('Review link created successfully!')
+      if (response.ok) {
+        const data = await response.json()
+        setReviewLinks([data.reviewLink, ...reviewLinks])
+        setNewLink({ name: '', service: '', platform: 'google' })
+        setShowCreateLink(false)
+        alert('Review link created successfully!')
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to create review link')
+      }
+    } catch (error) {
+      console.error('Error creating review link:', error)
+      alert('Failed to create review link')
+    }
   }
 
   const handleCopyLink = async (url: string) => {
@@ -243,6 +331,80 @@ export default function ReviewsPage() {
       const subject = encodeURIComponent('Review Request')
       const body = encodeURIComponent(`Hi! I hope you're happy with your recent PMU service. I would greatly appreciate if you could take a moment to leave a review: ${link.url}`)
       window.open(`mailto:?subject=${subject}&body=${body}`)
+    }
+  }
+
+  const handleToggleLink = async (linkId: string) => {
+    const link = reviewLinks.find(l => l.id === linkId)
+    if (!link) return
+
+    try {
+      const response = await fetch('/api/review-links', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          linkId,
+          isActive: !link.isActive
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReviewLinks(reviewLinks.map(l => 
+          l.id === linkId ? data.reviewLink : l
+        ))
+      }
+    } catch (error) {
+      console.error('Error toggling link:', error)
+    }
+  }
+
+  const handleDeleteLink = async (linkId: string) => {
+    if (!confirm('Are you sure you want to delete this review link? This cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/review-links?id=${linkId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser?.email || ''
+        }
+      })
+
+      if (response.ok) {
+        setReviewLinks(reviewLinks.filter(l => l.id !== linkId))
+        alert('Review link deleted successfully')
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to delete review link')
+      }
+    } catch (error) {
+      console.error('Error deleting review link:', error)
+      alert('Failed to delete review link')
+    }
+  }
+
+  const handleUpdateReviewStatus = async (reviewId: string, status: 'pending' | 'published' | 'hidden') => {
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ reviewId, status })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReviews(reviews.map(r => r.id === reviewId ? data.review : r))
+      }
+    } catch (error) {
+      console.error('Error updating review:', error)
     }
   }
 
@@ -357,7 +519,7 @@ export default function ReviewsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {reviews.slice(0, 3).map((review) => (
+                    {reviews.length > 0 ? reviews.slice(0, 3).map((review) => (
                       <div key={review.id} className="p-4 bg-white rounded-lg border border-gray-200">
                         <div className="flex items-start justify-between mb-2">
                           <div>
@@ -378,7 +540,7 @@ export default function ReviewsPage() {
                             </Badge>
                           </div>
                         </div>
-                        <p className="text-sm text-muted mb-2">{review.comment}</p>
+                        <p className="text-sm text-muted mb-2 break-words">{review.comment}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted">
                             {new Date(review.createdAt).toLocaleDateString()}
@@ -389,7 +551,12 @@ export default function ReviewsPage() {
                           </Badge>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8">
+                        <MessageSquare className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600 text-sm">No reviews yet</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -402,14 +569,14 @@ export default function ReviewsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {reviewLinks.filter(link => link.isActive).map((link) => (
+                    {reviewLinks.filter(link => link.isActive).length > 0 ? reviewLinks.filter(link => link.isActive).map((link) => (
                       <div key={link.id} className="p-4 bg-white rounded-lg border border-gray-200">
                         <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-ink">{link.name}</h3>
-                            <p className="text-sm text-muted">{link.service}</p>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-ink truncate">{link.name}</h3>
+                            <p className="text-sm text-muted truncate">{link.service}</p>
                           </div>
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 text-green-800 flex-shrink-0">
                             Active
                           </Badge>
                         </div>
@@ -423,6 +590,7 @@ export default function ReviewsPage() {
                             size="sm" 
                             variant="outline"
                             onClick={() => handleCopyLink(link.url)}
+                            className="flex-shrink-0"
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -432,7 +600,21 @@ export default function ReviewsPage() {
                           <span>{link.responses} responses</span>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8">
+                        <Share2 className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600 text-sm">No active review links</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowCreateLink(true)}
+                          className="mt-3"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Your First Link
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -448,7 +630,7 @@ export default function ReviewsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {reviewLinks.map((link) => (
+                  {reviewLinks.length > 0 ? reviewLinks.map((link) => (
                     <div key={link.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-4">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -478,7 +660,7 @@ export default function ReviewsPage() {
                               <MoreVertical className="h-4 w-4 text-gray-600" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                          <DropdownMenuContent align="end" className="w-48 bg-white border-gray-200 shadow-lg">
                             <DropdownMenuItem 
                               className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
                               onClick={() => handleCopyLink(link.url)}
@@ -496,18 +678,44 @@ export default function ReviewsPage() {
                             <DropdownMenuItem 
                               className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
                               onClick={() => {
-                                // Navigate to responses page or show modal
                                 alert(`Viewing responses for ${link.name}\n\nResponses: ${link.responses}\nSent to: ${link.sentTo} clients`)
                               }}
                             >
                               <Eye className="mr-2 h-4 w-4 text-purple-500" />
                               <span>View Responses</span>
                             </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                              onClick={() => handleToggleLink(link.id)}
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4 text-amber-500" />
+                              <span>{link.isActive ? 'Deactivate' : 'Activate'}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600"
+                              onClick={() => handleDeleteLink(link.id)}
+                            >
+                              <AlertCircle className="mr-2 h-4 w-4" />
+                              <span>Delete Link</span>
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-12">
+                      <Share2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No review links yet</h3>
+                      <p className="text-gray-600 mb-4">Create review links to collect feedback from your clients.</p>
+                      <Button
+                        onClick={() => setShowCreateLink(true)}
+                        className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Link
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -522,12 +730,12 @@ export default function ReviewsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {reviews.map((review) => (
+                  {reviews.length > 0 ? reviews.map((review) => (
                     <div key={review.id} className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <div className="w-10 h-10 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-semibold">
+                            <span className="text-white font-semibold text-sm">
                               {review.clientName.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
@@ -536,7 +744,7 @@ export default function ReviewsPage() {
                             <p className="text-sm text-muted truncate">{review.service}</p>
                           </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                        <div className="flex items-center gap-2">
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star 
@@ -545,24 +753,68 @@ export default function ReviewsPage() {
                               />
                             ))}
                           </div>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge className={getPlatformColor(review.platform)}>
-                              {review.platform.charAt(0).toUpperCase() + review.platform.slice(1)}
-                            </Badge>
-                            <Badge className={getStatusColor(review.status)}>
-                              {getStatusIcon(review.status)}
-                              <span className="ml-1">{review.status.charAt(0).toUpperCase() + review.status.slice(1)}</span>
-                            </Badge>
-                          </div>
+                          <Badge className={getPlatformColor(review.platform)}>
+                            {review.platform.charAt(0).toUpperCase() + review.platform.slice(1)}
+                          </Badge>
+                          <Badge className={getStatusColor(review.status)}>
+                            {getStatusIcon(review.status)}
+                            <span className="ml-1">{review.status.charAt(0).toUpperCase() + review.status.slice(1)}</span>
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                              >
+                                <MoreVertical className="h-4 w-4 text-gray-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                              {review.status === 'pending' && (
+                                <DropdownMenuItem 
+                                  className="cursor-pointer hover:bg-green-50 focus:bg-green-50"
+                                  onClick={() => handleUpdateReviewStatus(review.id, 'published')}
+                                >
+                                  <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                  <span>Publish</span>
+                                </DropdownMenuItem>
+                              )}
+                              {review.status === 'published' && (
+                                <DropdownMenuItem 
+                                  className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                                  onClick={() => handleUpdateReviewStatus(review.id, 'hidden')}
+                                >
+                                  <AlertCircle className="mr-2 h-4 w-4 text-gray-500" />
+                                  <span>Hide</span>
+                                </DropdownMenuItem>
+                              )}
+                              {review.status === 'hidden' && (
+                                <DropdownMenuItem 
+                                  className="cursor-pointer hover:bg-green-50 focus:bg-green-50"
+                                  onClick={() => handleUpdateReviewStatus(review.id, 'published')}
+                                >
+                                  <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                  <span>Publish</span>
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                      <p className="text-sm text-muted mb-3">{review.comment}</p>
+                      <p className="text-sm text-muted mb-3 break-words">{review.comment}</p>
                       <div className="flex items-center justify-between text-xs text-muted">
-                        <span>{review.clientEmail}</span>
-                        <span>{new Date(review.createdAt).toLocaleDateString()}</span>
+                        <span className="truncate">{review.clientEmail || 'No email'}</span>
+                        <span className="flex-shrink-0">{new Date(review.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-12">
+                      <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No reviews yet</h3>
+                      <p className="text-gray-600">Reviews from your clients will appear here.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -595,10 +847,11 @@ export default function ReviewsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="All Services">All Services</SelectItem>
-                      <SelectItem value="Eyebrow Microblading">Eyebrow Microblading</SelectItem>
-                      <SelectItem value="Lip Blushing">Lip Blushing</SelectItem>
-                      <SelectItem value="Eyeliner Tattoo">Eyeliner Tattoo</SelectItem>
-                      <SelectItem value="Touch-up Session">Touch-up Session</SelectItem>
+                      {services.map((service) => (
+                        <SelectItem key={service.id} value={service.name}>
+                          {service.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -639,3 +892,4 @@ export default function ReviewsPage() {
     </div>
   )
 }
+

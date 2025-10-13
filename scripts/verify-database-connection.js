@@ -1,81 +1,105 @@
+#!/usr/bin/env node
+
+/**
+ * Database Connection Verification Script
+ * 
+ * This script verifies that you're connected to the correct production database (Neon)
+ * and displays all data counts to ensure data integrity.
+ * 
+ * Run this anytime you're unsure about your database connection:
+ *   node scripts/verify-database-connection.js
+ */
+
 const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
 
-async function verifyConnection() {
+async function verifyDatabaseConnection() {
+  console.log('\n🔍 DATABASE CONNECTION VERIFICATION');
+  console.log('='.repeat(70));
+  
   try {
-    console.log('🔍 Verifying database connection...\n');
-    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-    console.log('');
+    // Get connection info
+    const dbUrl = process.env.DATABASE_URL || '';
     
-    // Check total user count
-    const totalUsers = await prisma.user.count();
-    console.log('Total users in database:', totalUsers);
+    console.log('\n📊 Current Database:');
     
-    // Find Tyrone specifically
-    const tyrone = await prisma.user.findUnique({
-      where: { email: 'tyronejackboy@gmail.com' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        studioName: true,
-        businessName: true,
-        selectedPlan: true
-      }
-    });
-    
-    if (tyrone) {
-      console.log('\n✅ FOUND TYRONE:');
-      console.log('   ID:', tyrone.id);
-      console.log('   Name:', tyrone.name);
-      console.log('   Email:', tyrone.email);
-      console.log('   Role:', tyrone.role);
-      console.log('   Studio:', tyrone.studioName);
-      console.log('   Business:', tyrone.businessName);
-      console.log('   Plan:', tyrone.selectedPlan);
-      
-      // Check his services
-      const services = await prisma.service.findMany({
-        where: { userId: tyrone.id },
-        select: {
-          id: true,
-          name: true,
-          isActive: true
-        }
-      });
-      
-      console.log('\n   Services:', services.length);
-      services.forEach((s, i) => {
-        console.log(`   ${i + 1}. ${s.name} (${s.isActive ? 'Active' : 'Inactive'})`);
-      });
-      
+    if (dbUrl.includes('neon.tech')) {
+      console.log('✅ CORRECT: Neon Database (Production)');
+      console.log('   URL:', dbUrl.substring(0, 60) + '...');
+    } else if (dbUrl.includes('prisma.io')) {
+      console.log('⚠️  WARNING: Old Prisma.io Database (DEPRECATED)');
+      console.log('   URL:', dbUrl.substring(0, 60) + '...');
+      console.log('\n❌ ACTION REQUIRED:');
+      console.log('   Update DATABASE_URL in .env.local to use NEON_DATABASE_URL');
+      console.log('   The old Prisma.io database is no longer in use.');
+      await prisma.$disconnect();
+      process.exit(1);
     } else {
-      console.log('\n❌ TYRONE NOT FOUND');
+      console.log('❓ Unknown database');
+      console.log('   URL:', dbUrl.substring(0, 60) + '...');
     }
     
-    // Show all users
-    const allUsers = await prisma.user.findMany({
-      select: {
-        email: true,
-        name: true,
-        role: true
-      },
-      take: 10
-    });
+    // Test connection
+    console.log('\n🔌 Testing connection...');
+    await prisma.$connect();
+    console.log('✅ Connected successfully');
     
-    console.log('\n📋 First 10 users in database:');
-    allUsers.forEach(u => {
-      console.log(`   - ${u.email} (${u.name}) - ${u.role}`);
-    });
+    // Count all data
+    console.log('\n📈 Data Summary:');
+    
+    const users = await prisma.user.count();
+    console.log('   👥 Users:', users);
+    
+    const services = await prisma.service.count();
+    console.log('   📋 Services:', services);
+    
+    const clients = await prisma.client.count();
+    console.log('   💼 Clients:', clients);
+    
+    const messages = await prisma.teamMessage.count();
+    console.log('   💬 Team Messages:', messages);
+    
+    const appointments = await prisma.appointment.count();
+    console.log('   📅 Appointments:', appointments);
+    
+    const deposits = await prisma.depositPayment.count();
+    console.log('   💰 Deposit Payments:', deposits);
+    
+    const commissions = await prisma.commissionTransaction.count();
+    console.log('   💵 Commission Transactions:', commissions);
+    
+    // Expected minimum counts
+    console.log('\n📊 Data Validation:');
+    
+    if (users >= 5) {
+      console.log('   ✅ Users: Expected 5, found', users);
+    } else {
+      console.log('   ⚠️  Users: Expected 5, found', users);
+    }
+    
+    if (services >= 7) {
+      console.log('   ✅ Services: Expected 7+, found', services);
+    } else {
+      console.log('   ⚠️  Services: Expected 7+, found', services);
+    }
+    
+    if (clients >= 9) {
+      console.log('   ✅ Clients: Expected 9+, found', clients);
+    } else {
+      console.log('   ⚠️  Clients: Expected 9+, found', clients);
+    }
+    
+    console.log('\n' + '='.repeat(70));
+    console.log('✅ Database verification complete!\n');
     
   } catch (error) {
-    console.error('❌ DATABASE ERROR:', error.message);
-    console.error('   This might mean wrong database or connection issue');
+    console.error('\n❌ Error:', error.message);
+    console.log('\nPlease check your DATABASE_URL in .env.local');
+    process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-verifyConnection();
-
+verifyDatabaseConnection();
