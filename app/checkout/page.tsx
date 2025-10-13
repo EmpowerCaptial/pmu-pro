@@ -216,18 +216,39 @@ function CheckoutContent() {
         }
       }
       
-      // Fallback: Simulate other payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Record non-Stripe payment (cash, venmo, zelle, etc.) to database
+      const transactionResponse = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          clientName: client.name,
+          clientEmail: client.email,
+          clientPhone: client.phone,
+          items: cart,
+          subtotal,
+          tax,
+          tip: tipAmount,
+          discount: discountAmount,
+          total,
+          paymentMethod: selectedPaymentMethod
+        })
+      })
+
+      if (!transactionResponse.ok) {
+        throw new Error('Failed to record transaction')
+      }
       
       setIsProcessing(false)
       setPaymentSuccess(true)
       setShowNextAppointmentDialog(true)
       
-      console.log('Payment processed:', {
+      console.log('Payment recorded to database:', {
         method: selectedPaymentMethod,
         amount: total,
-        items: cart,
-        stripeAccount: stripeAccountInfo
+        items: cart
       })
     } catch (error) {
       console.error('Payment processing error:', error)
