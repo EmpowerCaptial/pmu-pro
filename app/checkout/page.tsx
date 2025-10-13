@@ -21,7 +21,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
-import { getTransactionStripeAccount } from '@/lib/stripe-management'
+// Removed import - now using API endpoint instead of direct Prisma call
 
 function CheckoutContent() {
   const router = useRouter()
@@ -134,7 +134,19 @@ function CheckoutContent() {
       // Determine which Stripe account to use for Enterprise Studio users
       let stripeAccountInfo = null
       if (currentUser?.email) {
-        stripeAccountInfo = await getTransactionStripeAccount(currentUser.email, 'checkout')
+        try {
+          const response = await fetch('/api/stripe/get-account-info', {
+            headers: {
+              'x-user-email': currentUser.email
+            }
+          })
+          if (response.ok) {
+            stripeAccountInfo = await response.json()
+          }
+        } catch (error) {
+          console.error('Error getting Stripe account info:', error)
+          // Continue without account info - will use default
+        }
       }
 
       // Handle BNPL payments through Stripe
