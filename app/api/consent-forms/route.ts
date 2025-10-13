@@ -116,11 +116,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { clientId, clientName, formType, sendMethod, contactInfo, customMessage, token } = body
 
-    if (!clientId || !clientName || !formType || !token) {
+    if (!clientName || !formType || !token) {
       return NextResponse.json(
-        { error: 'Missing required fields: clientId, clientName, formType, token' },
+        { error: 'Missing required fields: clientName, formType, token' },
         { status: 400 }
       )
+    }
+
+    // Validate clientId exists if provided
+    if (clientId && clientId !== 'new-client') {
+      const clientExists = await prisma.client.findUnique({
+        where: { id: clientId }
+      })
+      
+      if (!clientExists) {
+        return NextResponse.json(
+          { error: 'Client not found. Please create client first or use "new-client" as placeholder.' },
+          { status: 404 }
+        )
+      }
     }
 
     // Create consent form in database
@@ -129,7 +143,7 @@ export async function POST(request: NextRequest) {
     const consentForm = await prisma.consentForm.create({
       data: {
         userId: user.id,
-        clientId,
+        clientId: (clientId && clientId !== 'new-client') ? clientId : null, // Only set if valid client
         clientName,
         artistEmail: user.email,
         formType,

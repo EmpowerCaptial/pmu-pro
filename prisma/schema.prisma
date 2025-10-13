@@ -502,11 +502,11 @@ model ServiceAssignment {
 model ConsentForm {
   id                  String   @id @default(cuid())
   userId              String?
-  clientId            String
+  clientId            String?  // Optional - may not have client record yet
   clientName          String
   artistEmail         String?
   formType            String   // "general-consent", "medical-history", "brows", etc.
-  procedureType       String?
+  procedureType       String?  @default("")
   sendMethod          String   @default("email") // "email" or "sms"
   contactInfo         String?
   customMessage       String?
@@ -534,7 +534,7 @@ model ConsentForm {
   formVersion         String   @default("1.0")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client              Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
