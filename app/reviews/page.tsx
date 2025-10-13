@@ -416,7 +416,7 @@ export default function ReviewsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/reviews" user={user} />
-      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative z-10 pb-24 md:pb-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

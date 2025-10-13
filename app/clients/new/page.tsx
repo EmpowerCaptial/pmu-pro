@@ -21,7 +21,7 @@ export default function NewClientPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/clients/new" user={user} />
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto px-4 py-8 max-w-2xl pb-24 md:pb-8">
         <NewClientForm />
       </main>
     </div>
