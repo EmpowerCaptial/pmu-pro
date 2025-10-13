@@ -71,8 +71,16 @@ function BookingCalendarContent() {
   const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
   const { freshUserData, isRefreshing } = useFreshUserData()
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [currentDate, setCurrentDate] = useState(() => {
+    // Check if date parameter exists (from follow-up booking)
+    const dateParam = searchParams.get('date')
+    return dateParam ? new Date(dateParam) : new Date()
+  })
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Pre-select the date if coming from follow-up booking
+    const dateParam = searchParams.get('date')
+    return dateParam || ''
+  })
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   
@@ -100,6 +108,15 @@ function BookingCalendarContent() {
     email: searchParams.get('clientEmail') || '',
     phone: searchParams.get('clientPhone') || ''
   })
+  
+  // Auto-open new appointment modal if coming from checkout follow-up
+  useEffect(() => {
+    const hasClientParams = searchParams.get('clientName') || searchParams.get('date')
+    if (hasClientParams && !showNewAppointmentModal) {
+      setShowNewAppointmentModal(true)
+      setClientSelectionType('new') // Use the pre-filled data
+    }
+  }, [searchParams])
   
   // Time Blocks State
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([])
