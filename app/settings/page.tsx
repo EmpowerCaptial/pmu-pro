@@ -471,7 +471,8 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Subscription Management */}
+          {/* Subscription Management - Only for owners/independent artists, not students under enterprise */}
+          {currentUser?.role !== 'student' && currentUser?.role !== 'instructor' && (
           <Card className="bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
@@ -585,6 +586,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
     </div>

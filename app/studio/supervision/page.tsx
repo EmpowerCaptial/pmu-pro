@@ -3381,6 +3381,25 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               </CardHeader>
               <CardContent className="relative z-10 space-y-6">
                 <div className="space-y-4">
+                  {/* Recipient Selector */}
+                  <div>
+                    <Label htmlFor="message-recipient">Send To</Label>
+                    <select
+                      id="message-recipient"
+                      value={newMessage.to}
+                      onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
+                      className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender bg-white"
+                      required
+                    >
+                      <option value="">Select instructor...</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor.id} value={instructor.name}>
+                          {instructor.name} - {instructor.role === 'licensed' ? 'Licensed Artist' : 'Instructor'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
                   <div>
                     <Label htmlFor="message-subject">Subject</Label>
                     <Input
@@ -3414,7 +3433,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                   </Button>
                   <Button
                     onClick={handleSendMessage}
-                    className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white"
+                    disabled={!newMessage.to || !newMessage.subject || !newMessage.content}
+                    className="bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 text-white disabled:opacity-50"
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Send Message
