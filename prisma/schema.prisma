@@ -503,11 +503,24 @@ model ConsentForm {
   id                  String   @id @default(cuid())
   userId              String?
   clientId            String
-  procedureType       String
-  clientSignature     String
-  clientSignatureDate DateTime @default(now())
-  artistSignature     String
-  artistSignatureDate DateTime @default(now())
+  clientName          String
+  artistEmail         String?
+  formType            String   // "general-consent", "medical-history", "brows", etc.
+  procedureType       String?
+  sendMethod          String   @default("email") // "email" or "sms"
+  contactInfo         String?
+  customMessage       String?
+  token               String   @unique
+  expiresAt           DateTime
+  status              String   @default("sent") // "sent", "completed", "expired"
+  completedAt         DateTime?
+  sentAt              DateTime @default(now())
+  pdfUrl              String?
+  formData            Json?    // Store completed form data
+  clientSignature     String?
+  clientSignatureDate DateTime?
+  artistSignature     String?
+  artistSignatureDate DateTime?
   medicalHistory      String?
   allergies           String?
   medications         String?
@@ -526,7 +539,8 @@ model ConsentForm {
 
   @@index([userId])
   @@index([clientId])
-  @@index([procedureType])
+  @@index([token])
+  @@index([status])
   @@index([createdAt])
   @@map("consent_forms")
 }

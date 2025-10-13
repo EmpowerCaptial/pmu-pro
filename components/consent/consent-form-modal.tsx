@@ -72,30 +72,42 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
         reminderSent: false
       }
 
-      // Store form data in API for client access
+      // Create form in database via API
       try {
-        const response = await fetch(`/api/consent-forms/${clientId || "new-client"}/${token}`, {
-          method: 'PUT',
+        const response = await fetch('/api/consent-forms', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-user-email': currentUser?.email || ''
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({
+            clientId: clientId || "new-client",
+            clientName: clientName || "New Client",
+            formType: selectedForm,
+            sendMethod,
+            contactInfo: sendMethod === "email" ? email : phone,
+            customMessage,
+            token
+          })
         })
 
         if (!response.ok) {
-          console.error('Failed to store form data:', await response.text())
-          // Don't fail the entire process if API storage fails
-          console.log('Continuing with localStorage storage...')
+          const errorData = await response.json()
+          console.error('Failed to create form in database:', errorData)
+          alert('Failed to create consent form. Please try again.')
+          setIsSending(false)
+          return
         } else {
-          console.log('Form data stored successfully in API')
+          console.log('✅ Form created in database successfully')
         }
       } catch (storeError) {
-        console.error('Error storing form data:', storeError)
-        // Don't fail the entire process if API storage fails
-        console.log('Continuing with localStorage storage...')
+        console.error('Error creating form:', storeError)
+        alert('Failed to create consent form. Please try again.')
+        setIsSending(false)
+        return
       }
 
-      // Also save to localStorage for admin view
+      // Also save to localStorage for backward compatibility
       const existingForms = JSON.parse(localStorage.getItem("consent-forms") || "[]")
       existingForms.push(formData)
       localStorage.setItem("consent-forms", JSON.stringify(existingForms))

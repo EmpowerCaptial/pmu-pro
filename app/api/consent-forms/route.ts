@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ConsentForm } from '@/types/consent-forms'
-import { consentFormsStorage, formAuditLog } from '@/lib/shared-storage'
+import { prisma } from '@/lib/prisma'
 
+export const dynamic = "force-dynamic"
+
+// GET /api/consent-forms - Get user's consent forms
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -10,117 +12,157 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const artistId = searchParams.get('artistId') || 'default-artist'
     
     // Get user email from headers
     const userEmail = request.headers.get('x-user-email')
     
-    // Get all forms (in production, this would be a database query with filters)
-    let allForms: ConsentForm[] = Array.from(consentFormsStorage.values())
-    
-    // Filter by user email if provided
-    if (userEmail) {
-      allForms = allForms.filter(form => form.artistEmail === userEmail)
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 401 })
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { id: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
-    // Apply filters
-    let filteredForms = allForms
+    // Build where clause for filters
+    const where: any = {
+      userId: user.id
+    }
     
     if (clientId) {
-      filteredForms = filteredForms.filter(form => form.clientId === clientId)
+      where.clientId = clientId
     }
     
     if (formType) {
-      filteredForms = filteredForms.filter(form => form.formType === formType)
+      where.formType = formType
     }
     
     if (status) {
-      filteredForms = filteredForms.filter(form => form.status === status)
+      where.status = status
     }
     
-    if (startDate) {
-      const start = new Date(startDate)
-      filteredForms = filteredForms.filter(form => new Date(form.createdAt) >= start)
+    if (startDate || endDate) {
+      where.createdAt = {}
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate)
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate)
+      }
     }
     
-    if (endDate) {
-      const end = new Date(endDate)
-      filteredForms = filteredForms.filter(form => new Date(form.createdAt) <= end)
-    }
-    
-    // Sort by creation date (newest first)
-    filteredForms.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    
-    // Add audit information
-    const formsWithAudit = filteredForms.map(form => ({
-      ...form,
-      auditLog: formAuditLog.get(form.id) || [],
-      lastAccessed: getLastAccessTime(form.id)
-    }))
+    // Query database
+    const forms = await prisma.consentForm.findMany({
+      where,
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
     
     return NextResponse.json({
-      forms: formsWithAudit,
-      total: formsWithAudit.length,
+      forms,
+      total: forms.length,
       filters: {
         clientId,
         formType,
         status,
         startDate,
-        endDate,
-        artistId
+        endDate
       }
     })
     
   } catch (error) {
     console.error('Error retrieving consent forms:', error)
     return NextResponse.json(
-      { error: 'Failed to retrieve forms' },
+      { error: 'Failed to retrieve forms', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
 }
 
+// POST /api/consent-forms - Create a new consent form
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { formId, action, notes } = body
+    const userEmail = request.headers.get('x-user-email')
     
-    // Log the action
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      action,
-      formId,
-      notes,
-      userType: 'artist',
-      ipAddress: 'server-side' // In production, get from request
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email required' }, { status: 401 })
     }
-    
-    const existingLogs = formAuditLog.get(formId) || []
-    existingLogs.push(logEntry)
-    formAuditLog.set(formId, existingLogs)
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Action logged successfully'
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { id: true, email: true, name: true }
     })
-    
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const { clientId, clientName, formType, sendMethod, contactInfo, customMessage, token } = body
+
+    if (!clientId || !clientName || !formType || !token) {
+      return NextResponse.json(
+        { error: 'Missing required fields: clientId, clientName, formType, token' },
+        { status: 400 }
+      )
+    }
+
+    // Create consent form in database
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+
+    const consentForm = await prisma.consentForm.create({
+      data: {
+        userId: user.id,
+        clientId,
+        clientName,
+        artistEmail: user.email,
+        formType,
+        sendMethod: sendMethod || 'email',
+        contactInfo,
+        customMessage,
+        token,
+        expiresAt,
+        status: 'sent',
+        sentAt: new Date()
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({ 
+      success: true, 
+      form: consentForm 
+    }, { status: 201 })
+
   } catch (error) {
-    console.error('Error logging action:', error)
+    console.error('Error creating consent form:', error)
     return NextResponse.json(
-      { error: 'Failed to log action' },
+      { error: 'Failed to create consent form', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
-}
-
-function getLastAccessTime(formId: string): string | null {
-  const logs = formAuditLog.get(formId) || []
-  if (logs.length === 0) return null
-  
-  // Get the most recent log entry
-  const sortedLogs = logs.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  )
-  
-  return sortedLogs[0].timestamp
 }
