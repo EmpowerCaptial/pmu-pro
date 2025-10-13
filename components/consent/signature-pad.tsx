@@ -134,17 +134,24 @@ export function SignaturePad({ onSignature, value, width = 400, height = 200 }: 
   const handleMouseUp = () => stopDrawing()
   const handleMouseLeave = () => stopDrawing()
 
-  // Touch event handlers
+  // Touch event handlers (removed preventDefault to fix passive listener warnings)
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
+    // Don't call preventDefault on passive events - causes console spam
+    // The signature still works fine without it
     startDrawing(e)
   }
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
+    if (isDrawing) {
+      // Only prevent default if actively drawing
+      try {
+        e.preventDefault()
+      } catch (err) {
+        // Silently fail if passive listener
+      }
+    }
     draw(e)
   }
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
     stopDrawing()
   }
 

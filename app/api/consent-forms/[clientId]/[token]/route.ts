@@ -98,6 +98,10 @@ export async function POST(
     const pdfUrl = `/api/consent-forms/${clientId}/${token}/pdf`
     
     // Update form with submitted data
+    // Handle nested objects - convert to strings for database storage
+    const medicalHistory = body.formData?.medicalHistory
+    const emergencyContact = body.formData?.emergencyContact
+    
     const updatedForm = await prisma.consentForm.update({
       where: { id: form.id },
       data: {
@@ -105,17 +109,28 @@ export async function POST(
         completedAt: new Date(),
         formData: body.formData || {},
         pdfUrl,
-        clientSignature: body.formData?.signature || null,
+        clientSignature: body.formData?.clientSignature || body.clientSignature || null,
         clientSignatureDate: new Date(),
-        medicalHistory: body.formData?.medicalHistory || null,
-        allergies: body.formData?.allergies || null,
-        medications: body.formData?.medications || null,
-        skinConditions: body.formData?.skinConditions || null,
+        // Convert objects to strings or extract string values
+        medicalHistory: typeof medicalHistory === 'object' 
+          ? JSON.stringify(medicalHistory) 
+          : (medicalHistory || null),
+        allergies: typeof medicalHistory === 'object'
+          ? (medicalHistory.allergies?.join(', ') || null)
+          : (body.formData?.allergies || null),
+        medications: typeof medicalHistory === 'object'
+          ? (medicalHistory.medications?.join(', ') || null)
+          : (body.formData?.medications || null),
+        skinConditions: typeof medicalHistory === 'object'
+          ? (medicalHistory.conditions?.join(', ') || null)
+          : (body.formData?.skinConditions || null),
         previousProcedures: body.formData?.previousProcedures || null,
-        emergencyContact: body.formData?.emergencyContact || null,
+        emergencyContact: typeof emergencyContact === 'object'
+          ? `${emergencyContact.name} (${emergencyContact.relationship}) - ${emergencyContact.phone}`
+          : (emergencyContact || null),
         additionalNotes: body.formData?.additionalNotes || null,
-        consentGiven: body.formData?.consentGiven ?? true,
-        photographyConsent: body.formData?.photographyConsent ?? false,
+        consentGiven: body.formData?.consentAcknowledged ?? body.formData?.consentGiven ?? true,
+        photographyConsent: body.formData?.photoConsent ?? body.formData?.photographyConsent ?? false,
         marketingConsent: body.formData?.marketingConsent ?? false
       },
       include: {
