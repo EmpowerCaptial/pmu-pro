@@ -59,12 +59,26 @@ export async function GET(
 
 function generateConsentFormHTML(form: any): string {
   const template = getFormTemplate(form.formType)
-  const formData = form.formData as any // Type assertion for dynamic field access
+  const formData = form.formData as any
   
   if (!template) {
     throw new Error('Form template not found')
   }
   
+  // Helper to format values for display
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return 'Not provided'
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+    if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'None'
+    if (typeof value === 'object') {
+      // Handle nested objects like emergencyContact, medicalHistory
+      return Object.entries(value)
+        .map(([k, v]) => `${k}: ${formatValue(v)}`)
+        .join('<br>')
+    }
+    return String(value)
+  }
+
   // Create HTML content for viewing/printing
   const htmlContent = `
     <!DOCTYPE html>
@@ -74,49 +88,121 @@ function generateConsentFormHTML(form: any): string {
       <title>${template.name} - ${form.clientName}</title>
       <style>
         body { 
-          font-family: Arial, sans-serif; 
-          margin: 40px; 
-          line-height: 1.6; 
-          max-width: 800px;
+          font-family: 'Georgia', serif; 
+          margin: 0; 
+          line-height: 1.8; 
+          max-width: 850px;
           margin: 0 auto;
           padding: 40px;
+          color: #333;
         }
         .header { 
           text-align: center; 
-          border-bottom: 2px solid #333; 
+          border-bottom: 3px solid #6B46C1; 
           padding-bottom: 20px; 
-          margin-bottom: 30px; 
+          margin-bottom: 40px; 
         }
-        .section { margin-bottom: 25px; }
-        .field { margin-bottom: 15px; }
-        .label { font-weight: bold; margin-bottom: 5px; }
+        .header h1 {
+          color: #6B46C1;
+          margin-bottom: 10px;
+          font-size: 28px;
+        }
+        .header h2 {
+          color: #666;
+          font-size: 16px;
+          font-weight: normal;
+          margin-bottom: 20px;
+        }
+        .client-info {
+          background: #f8f4ff;
+          padding: 15px;
+          border-radius: 8px;
+          margin-bottom: 30px;
+        }
+        .client-info strong { color: #6B46C1; }
+        .section { 
+          margin-bottom: 30px;
+          page-break-inside: avoid;
+        }
+        .section-title {
+          font-size: 20px;
+          color: #6B46C1;
+          border-bottom: 2px solid #e0e0e0;
+          padding-bottom: 10px;
+          margin-bottom: 20px;
+        }
+        .field { 
+          margin-bottom: 20px;
+          padding: 15px;
+          background: #fafafa;
+          border-left: 4px solid #6B46C1;
+          border-radius: 4px;
+        }
+        .label { 
+          font-weight: bold; 
+          color: #6B46C1;
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
         .value { 
-          padding: 8px; 
-          background: #f9f9f9; 
-          border: 1px solid #ddd; 
-          border-radius: 4px; 
-          word-wrap: break-word;
+          color: #333;
+          font-size: 15px;
+          line-height: 1.6;
         }
-        .signature { 
-          margin-top: 30px; 
-          border-top: 1px solid #333; 
-          padding-top: 20px; 
+        .consent-statement {
+          background: #fff9e6;
+          border: 2px solid #ffd700;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 8px;
         }
-        .signature img { 
-          max-width: 200px; 
-          border: 1px solid #ccc; 
+        .consent-statement h3 {
+          color: #b8860b;
+          margin-top: 0;
+        }
+        .signature-section { 
+          margin-top: 40px; 
+          border-top: 3px solid #6B46C1; 
+          padding-top: 30px;
+          page-break-inside: avoid;
+        }
+        .signature-section h3 {
+          color: #6B46C1;
+          font-size: 20px;
+        }
+        .signature-box {
+          border: 2px solid #6B46C1;
+          padding: 20px;
+          text-align: center;
+          background: white;
+          border-radius: 8px;
+        }
+        .signature-box img { 
+          max-width: 300px;
+          max-height: 150px;
+          border: 1px solid #ddd;
+          padding: 10px;
+          background: white;
         }
         .footer { 
-          margin-top: 40px; 
+          margin-top: 50px; 
           text-align: center; 
           font-size: 12px; 
           color: #666; 
-          border-top: 1px solid #ddd;
+          border-top: 2px solid #e0e0e0;
           padding-top: 20px;
         }
-        .completed { color: green; font-weight: bold; }
+        .completed-badge { 
+          background: #10b981;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 25px;
+          font-weight: bold;
+          display: inline-block;
+          margin-bottom: 15px;
+        }
         @media print {
-          body { margin: 0; }
+          body { margin: 0; padding: 20px; }
           button { display: none; }
         }
       </style>
@@ -124,42 +210,81 @@ function generateConsentFormHTML(form: any): string {
     <body>
       <div class="header">
         <h1>${template.name}</h1>
-        <h2>PMU Pro - Professional Permanent Makeup Platform</h2>
-        <p>Client: ${form.clientName}</p>
-        <p>Completed: ${form.completedAt ? new Date(form.completedAt).toLocaleString() : 'N/A'}</p>
+        <h2>PMU Guide - Professional Management Platform</h2>
       </div>
       
-      <div class="section">
-        <h3>Form Details</h3>
-        ${formData ? Object.keys(formData).filter(key => key !== 'signature').map(key => {
-          const value = formData[key]
-          if (!value || typeof value === 'object') return ''
-          return `
-            <div class="field">
-              <div class="label">${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</div>
-              <div class="value">${value}</div>
-            </div>
-          `
-        }).join('') : '<p>No form data available</p>'}
+      <div class="client-info">
+        <p><strong>Client Name:</strong> ${formData?.clientName || form.clientName || 'Not provided'}</p>
+        <p><strong>Email:</strong> ${formData?.clientEmail || form.client?.email || 'Not provided'}</p>
+        <p><strong>Phone:</strong> ${formData?.clientPhone || 'Not provided'}</p>
+        <p><strong>Date of Birth:</strong> ${formData?.dateOfBirth || 'Not provided'}</p>
+        <p><strong>Completed:</strong> ${form.completedAt ? new Date(form.completedAt).toLocaleString() : 'N/A'}</p>
       </div>
       
-      ${form.clientSignature ? `
-        <div class="signature">
+      ${formData?.medicalHistory ? `
+        <div class="section">
+          <div class="section-title">Medical History</div>
+          <div class="field">
+            <div class="label">Allergies:</div>
+            <div class="value">${formatValue(formData.medicalHistory.allergies || form.allergies)}</div>
+          </div>
+          <div class="field">
+            <div class="label">Current Medications:</div>
+            <div class="value">${formatValue(formData.medicalHistory.medications || form.medications)}</div>
+          </div>
+          <div class="field">
+            <div class="label">Medical Conditions:</div>
+            <div class="value">${formatValue(formData.medicalHistory.conditions || form.skinConditions)}</div>
+          </div>
+        </div>
+      ` : ''}
+      
+      ${formData?.emergencyContact ? `
+        <div class="section">
+          <div class="section-title">Emergency Contact</div>
+          <div class="field">
+            <div class="value">${typeof formData.emergencyContact === 'object' 
+              ? formatValue(formData.emergencyContact) 
+              : formData.emergencyContact || form.emergencyContact || 'Not provided'}</div>
+          </div>
+        </div>
+      ` : ''}
+      
+      <div class="consent-statement">
+        <h3>✓ Consent Acknowledgment</h3>
+        <p><strong>I, ${formData?.clientName || form.clientName},</strong> acknowledge that I have:</p>
+        <ul>
+          <li>Reviewed and understood the ${template.name}</li>
+          <li>Provided accurate medical and personal information</li>
+          <li>Had the opportunity to ask questions about the procedure</li>
+          <li>Understood the risks, benefits, and aftercare instructions</li>
+          <li>Voluntarily consent to the PMU procedure described</li>
+        </ul>
+        ${formData?.consentAcknowledged || formData?.consentGiven ? '<p><strong>✓ Full Consent Given</strong></p>' : ''}
+        ${formData?.photographyConsent || formData?.photoConsent ? '<p><strong>✓ Photography/Marketing Consent Given</strong></p>' : ''}
+      </div>
+      
+      ${form.clientSignature || formData?.clientSignature ? `
+        <div class="signature-section">
           <h3>Digital Signature</h3>
-          <p>Client signature provided electronically:</p>
-          <img src="${form.clientSignature}" alt="Client Signature" />
-          <p>Signed on: ${form.clientSignatureDate ? new Date(form.clientSignatureDate).toLocaleString() : 'N/A'}</p>
+          <div class="signature-box">
+            <p><strong>Client Signature:</strong></p>
+            <img src="${form.clientSignature || formData.clientSignature}" alt="Client Signature" />
+            <p style="margin-top: 15px;"><strong>Date Signed:</strong> ${form.completedAt ? new Date(form.completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
+            <p><strong>IP Address:</strong> ${formData?.ipAddress || 'Not recorded'}</p>
+          </div>
         </div>
       ` : ''}
       
       <div class="footer">
-        <p class="completed">✓ FORM COMPLETED</p>
+        <div class="completed-badge">✓ FORM COMPLETED & SIGNED</div>
         <p>Form ID: ${form.id}</p>
-        <p>Generated on: ${new Date().toLocaleString()}</p>
-        <p>PMU Pro - Professional Permanent Makeup Platform</p>
+        <p>Form Type: ${template.name}</p>
+        <p>Generated: ${new Date().toLocaleString()}</p>
+        <p style="margin-top: 15px; color: #6B46C1; font-weight: bold;">PMU Guide - Professional Management Platform</p>
         <p style="margin-top: 20px;">
-          <button onclick="window.print()" style="padding: 10px 20px; background: #6B46C1; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            Print / Save as PDF
+          <button onclick="window.print()" style="padding: 12px 30px; background: #6B46C1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;">
+            🖨️ Print / Save as PDF
           </button>
         </p>
       </div>
