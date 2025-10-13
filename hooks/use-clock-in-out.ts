@@ -86,24 +86,7 @@ export function useClockInOut() {
   const loadStudioLocation = useCallback(async () => {
     if (currentUser?.email && typeof window !== 'undefined') {
       try {
-        // First try to load from localStorage
-        const studioKey = `geolocation-settings-${currentUser.studioName || 'default'}`
-        const savedSettings = localStorage.getItem(studioKey)
-        
-        if (savedSettings) {
-          const settings = JSON.parse(savedSettings)
-          if (settings.isConfigured) {
-            setStudioLocation({
-              lat: settings.lat,
-              lng: settings.lng,
-              address: settings.address,
-              radius: settings.radius || 15.24 // Default to 50 feet
-            })
-            return
-          }
-        }
-        
-        // Fallback to API if no localStorage settings
+        // Load from database API
         const response = await fetch('/api/studio/geolocation-settings', {
           headers: {
             'x-user-email': currentUser.email
@@ -117,9 +100,15 @@ export function useClockInOut() {
               lat: data.settings.lat,
               lng: data.settings.lng,
               address: data.settings.address,
-              radius: data.settings.radius || 15.24
+              radius: data.settings.radius || 50
             })
+          } else {
+            // Not configured - use defaults
+            setStudioLocation(DEFAULT_STUDIO_LOCATION)
           }
+        } else {
+          // API error or forbidden - use defaults
+          setStudioLocation(DEFAULT_STUDIO_LOCATION)
         }
       } catch (error) {
         console.error('Error loading studio location:', error)

@@ -27,18 +27,22 @@ interface GeolocationSettings {
 }
 
 export default function GeolocationSettingsPage() {
-  const { currentUser } = useDemoAuth()
+  const { currentUser, isLoading: authLoading } = useDemoAuth()
   const [settings, setSettings] = useState<GeolocationSettings>({
     address: '',
     lat: null,
     lng: null,
-    radius: 100, // 100 meters (≈328 feet) for better GPS accuracy
+    radius: 50, // 50 meters (≈165 feet) for better GPS accuracy
     isConfigured: false
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null)
   const [distance, setDistance] = useState<number | null>(null)
+  const [accessDenied, setAccessDenied] = useState(false)
+
+  // Check access - only owners, managers, directors can access
+  const hasAccess = currentUser && ['owner', 'manager', 'director'].includes(currentUser.role)
 
   // Prepare user object for NavBar
   const user = currentUser ? {
@@ -56,20 +60,30 @@ export default function GeolocationSettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       if (currentUser?.email) {
+        if (!hasAccess) {
+          setAccessDenied(true)
+          return
+        }
+
         try {
-        const response = await fetch('/api/studio/location-settings', {
+        const response = await fetch('/api/studio/geolocation-settings', {
           headers: {
             'x-user-email': currentUser.email
           }
         })
           
+          if (response.status === 403) {
+            setAccessDenied(true)
+            return
+          }
+
           if (response.ok) {
             const data = await response.json()
             setSettings(data.settings || {
               address: '',
               lat: null,
               lng: null,
-              radius: 1.5,
+              radius: 50,
               isConfigured: false
             })
           }
@@ -80,7 +94,7 @@ export default function GeolocationSettingsPage() {
     }
 
     loadSettings()
-  }, [currentUser])
+  }, [currentUser, hasAccess])
 
   // Geocode address to get coordinates
   const geocodeAddress = async (address: string): Promise<{lat: number, lng: number} | null> => {
@@ -178,26 +192,25 @@ export default function GeolocationSettingsPage() {
 
     setIsSaving(true)
     try {
-      const response = await fetch('/api/studio/location-settings', {
+      const response = await fetch('/api/studio/geolocation-settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-user-email': currentUser?.email || ''
         },
-        body: JSON.stringify(settings)
+        body: JSON.stringify({
+          address: settings.address,
+          lat: settings.lat,
+          lng: settings.lng,
+          radius: settings.radius
+        })
       })
 
       if (response.ok) {
-        const data = await response.json()
-        
-        // Save to localStorage using the studio key
-        if (data.studioKey) {
-          localStorage.setItem(data.studioKey, JSON.stringify(data.settings))
-        }
-        
-        alert('Geolocation settings saved successfully!')
+        alert('Geolocation settings saved to database successfully! Students can now clock in when at the studio.')
       } else {
-        throw new Error('Failed to save settings')
+        const data = await response.json()
+        alert(data.message || 'Failed to save settings. Please try again.')
       }
     } catch (error) {
       console.error('Error saving settings:', error)

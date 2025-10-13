@@ -902,3 +902,21 @@ model ReviewLink {
   
   @@map("review_links")
 }
+
+model StudioSettings {
+  id          String   @id @default(cuid())
+  studioName  String   @unique // Studio name from owner's account
+  ownerEmail  String   // Owner's email
+  address     String   // Physical studio address
+  lat         Float    // Latitude
+  lng         Float    // Longitude
+  radius      Float    @default(50) // Geofencing radius in meters
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  // Email of person who last updated
+
+  @@index([studioName])
+  @@index([ownerEmail])
+  @@map("studio_settings")
+}
