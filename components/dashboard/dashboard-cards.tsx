@@ -54,6 +54,15 @@ export function DashboardCards() {
     userRole: ''
   })
   
+  // Real data from database
+  const [stats, setStats] = useState({
+    totalClients: 0,
+    analysesThisMonth: 0,
+    successRate: 0
+  })
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [loadingStats, setLoadingStats] = useState(true)
+  
   // Initialize consent reminder service
   useEffect(() => {
     consentReminderService.startReminderService()
@@ -62,6 +71,37 @@ export function DashboardCards() {
       consentReminderService.stopReminderService()
     }
   }, [])
+
+  // Load real stats from database
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!currentUser?.email) return
+      
+      try {
+        const response = await fetch('/api/dashboard/stats', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setStats({
+            totalClients: data.totalClients || 0,
+            analysesThisMonth: data.analysesThisMonth || 0,
+            successRate: data.successRate || 0
+          })
+          setRecentActivity(data.recentActivity || [])
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error)
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+    
+    loadStats()
+  }, [currentUser])
 
   // Check studio supervision access and booking system access
   useEffect(() => {
@@ -948,8 +988,14 @@ export function DashboardCards() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-xl sm:text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">+3 from last month</p>
+            {loadingStats ? (
+              <div className="text-xl sm:text-2xl font-bold text-gray-400">...</div>
+            ) : (
+              <>
+                <div className="text-xl sm:text-2xl font-bold">{stats.totalClients}</div>
+                <p className="text-xs text-muted-foreground">Active clients</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -959,8 +1005,14 @@ export function DashboardCards() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-xl sm:text-2xl font-bold">47</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            {loadingStats ? (
+              <div className="text-xl sm:text-2xl font-bold text-gray-400">...</div>
+            ) : (
+              <>
+                <div className="text-xl sm:text-2xl font-bold">{stats.analysesThisMonth}</div>
+                <p className="text-xs text-muted-foreground">This month</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -970,8 +1022,14 @@ export function DashboardCards() {
             <Palette className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-xl sm:text-2xl font-bold">94%</div>
-            <p className="text-xs text-muted-foreground">Client satisfaction</p>
+            {loadingStats ? (
+              <div className="text-xl sm:text-2xl font-bold text-gray-400">...</div>
+            ) : (
+              <>
+                <div className="text-xl sm:text-2xl font-bold">{stats.successRate}%</div>
+                <p className="text-xs text-muted-foreground">Client satisfaction</p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -985,42 +1043,36 @@ export function DashboardCards() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="text-xs sm:text-sm font-medium">Sarah Johnson - Contraindication Screen</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
-              </div>
-              <Badge variant="secondary" className="bg-teal-100 text-teal-800 w-fit text-xs sm:text-sm">
-                Safe
-              </Badge>
+          {loadingStats ? (
+            <div className="text-center py-8 text-gray-400">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-lavender mx-auto"></div>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="text-xs sm:text-sm font-medium">Maria Garcia - Skin Analysis</p>
-                <p className="text-xs text-muted-foreground">5 hours ago</p>
-              </div>
-              <Badge variant="outline" className="w-fit text-xs sm:text-sm">Fitzpatrick III</Badge>
+          ) : recentActivity.length === 0 ? (
+            <div className="text-center py-8">
+              <Activity className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No recent activity</p>
+              <p className="text-xs text-gray-400 mt-1">Activity will appear here as you work with clients</p>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="text-xs sm:text-sm font-medium">Emma Wilson - Contraindication Screen</p>
-                <p className="text-xs text-muted-foreground">1 day ago</p>
-              </div>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 w-fit text-xs sm:text-sm">
-                Precaution
-              </Badge>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              {recentActivity.slice(0, 5).map((activity, index) => (
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium truncate">{activity.description}</p>
+                    <p className="text-xs text-muted-foreground">{activity.timeAgo}</p>
+                  </div>
+                  {activity.badge && (
+                    <Badge 
+                      variant={activity.badge.variant || "outline"} 
+                      className={`${activity.badge.className || ''} w-fit text-xs sm:text-sm flex-shrink-0`}
+                    >
+                      {activity.badge.text}
+                    </Badge>
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="text-xs sm:text-sm font-medium">Analysis link sent to Jessica Chen</p>
-                <p className="text-xs text-muted-foreground">3 hours ago</p>
-              </div>
-              <Badge variant="outline" className="bg-lavender-100 text-lavender-800 w-fit text-xs sm:text-sm">
-                Pending
-              </Badge>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
