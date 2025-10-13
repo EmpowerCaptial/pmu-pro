@@ -28,14 +28,22 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Get analyses this month
+    // Get analyses this month (Analysis model uses clientId, not userId)
+    // We need to count analyses for this user's clients
+    const userClients = await prisma.client.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    })
+    
+    const clientIds = userClients.map(c => c.id)
+    
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
     
     const analysesThisMonth = await prisma.analysis.count({
       where: {
-        userId: user.id,
+        clientId: { in: clientIds },
         createdAt: {
           gte: startOfMonth
         }
@@ -96,9 +104,9 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get recent analyses
-    const recentAnalyses = await prisma.analysis.findMany({
-      where: { userId: user.id },
+    // Get recent analyses (for this user's clients)
+    const recentAnalyses = clientIds.length > 0 ? await prisma.analysis.findMany({
+      where: { clientId: { in: clientIds } },
       orderBy: { createdAt: 'desc' },
       take: 3,
       include: {
@@ -106,15 +114,16 @@ export async function GET(request: NextRequest) {
           select: { name: true }
         }
       }
-    })
+    }) : []
 
     for (const analysis of recentAnalyses) {
       const timeAgo = getTimeAgo(analysis.createdAt)
+      const fitzpatrickText = analysis.fitzpatrick ? `Fitzpatrick ${analysis.fitzpatrick}` : 'Analyzed'
       recentActivity.push({
         description: `${analysis.client.name} - Skin Analysis`,
         timeAgo,
         badge: {
-          text: analysis.skinType || 'Analyzed',
+          text: fitzpatrickText,
           variant: 'outline'
         }
       })
