@@ -32,7 +32,7 @@ export default function GeolocationSettingsPage() {
     address: '',
     lat: null,
     lng: null,
-    radius: 50, // 50 meters (≈165 feet) for better GPS accuracy
+    radius: 100, // 100 meters (≈328 feet) for better GPS accuracy
     isConfigured: false
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -83,7 +83,7 @@ export default function GeolocationSettingsPage() {
               address: '',
               lat: null,
               lng: null,
-              radius: 50,
+              radius: 100,
               isConfigured: false
             })
           }

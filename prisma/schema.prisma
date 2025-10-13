@@ -910,7 +910,7 @@ model StudioSettings {
   address     String   // Physical studio address
   lat         Float    // Latitude
   lng         Float    // Longitude
-  radius      Float    @default(50) // Geofencing radius in meters
+  radius      Float    @default(100) // Geofencing radius in meters
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

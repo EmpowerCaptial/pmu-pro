@@ -27,7 +27,7 @@ const DEFAULT_STUDIO_LOCATION: StudioLocation = {
   lat: 40.7128, // Example coordinates - replace with actual studio address
   lng: -74.0060,
   address: "123 Studio Street, New York, NY 10001",
-  radius: 15.24 // 50 feet in meters
+  radius: 100 // 100 meters (328 feet)
 }
 
 // Calculate distance between two coordinates using Haversine formula
@@ -100,7 +100,7 @@ export function useClockInOut() {
               lat: data.settings.lat,
               lng: data.settings.lng,
               address: data.settings.address,
-              radius: data.settings.radius || 50
+              radius: data.settings.radius || 100
             })
           } else {
             // Not configured - use defaults

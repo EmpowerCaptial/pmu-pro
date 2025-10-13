@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
           address: '',
           lat: null,
           lng: null,
-          radius: 50,
+          radius: 100,
           isConfigured: false
         }
       })
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           address: '',
           lat: null,
           lng: null,
-          radius: 50,
+          radius: 100,
           isConfigured: false
         }
       })
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
         address: data.address,
         lat: data.lat,
         lng: data.lng,
-        radius: data.radius || 50,
+        radius: data.radius || 100,
         updatedBy: userEmail,
         isActive: true
       },
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         address: data.address,
         lat: data.lat,
         lng: data.lng,
-        radius: data.radius || 50,
+        radius: data.radius || 100,
         updatedBy: userEmail,
         isActive: true
       }
