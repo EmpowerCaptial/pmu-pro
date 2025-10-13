@@ -20,14 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Only owners, managers, and directors can access geolocation settings
-    if (!['owner', 'manager', 'director'].includes(user.role)) {
-      return NextResponse.json({ 
-        error: 'Access denied',
-        message: 'Only studio owners, managers, and directors can access geolocation settings'
-      }, { status: 403 })
-    }
-
+    // Students/instructors can READ settings (they need to know where to clock in)
+    // Only restriction is they must have a studio name
     const studioName = user.studioName || user.businessName
 
     if (!studioName) {
