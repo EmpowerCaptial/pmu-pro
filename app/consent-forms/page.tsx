@@ -359,7 +359,7 @@ export default function ConsentFormsInbox() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted h-4 w-4" />
                   <Input
-                    placeholder="Search by client name, form type, or contact info..."
+                    placeholder="Search client, form type, contact..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -435,21 +435,21 @@ export default function ConsentFormsInbox() {
                   return (
                     <div
                       key={form.id}
-                      className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200"
+                      className="p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 overflow-hidden"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className={`p-2 rounded-full ${status.color}`}>
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <div className={`p-2 rounded-full flex-shrink-0 ${status.color}`}>
                             <StatusIcon className="h-4 w-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-ink truncate">{form.clientName}</h3>
-                              <Badge variant="outline" className={status.color}>
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-semibold text-ink truncate max-w-[200px]">{form.clientName}</h3>
+                              <Badge variant="outline" className={`${status.color} flex-shrink-0`}>
                                 {status.label}
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted mb-1">
+                            <p className="text-sm text-muted mb-1 truncate">
                               {formTypeLabels[form.formType] || form.formType}
                             </p>
                             <p className="text-xs text-muted">
@@ -457,53 +457,55 @@ export default function ConsentFormsInbox() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {form.status === 'completed' && (
                             <>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => downloadPDF(form)}
-                                className="gap-1"
+                                className="gap-1 flex-shrink-0"
                               >
                                 <Download className="h-3 w-3" />
-                                PDF
+                                <span className="hidden sm:inline">PDF</span>
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => viewDocument(form)}
-                                className="gap-1"
+                                className="gap-1 flex-shrink-0"
                               >
-                                <ExternalLink className="h-3 w-3" />
-                                View
+                                <Eye className="h-3 w-3" />
+                                <span className="hidden sm:inline">View</span>
                               </Button>
                             </>
                           )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between text-xs text-muted">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {form.clientName}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="flex items-center gap-1 truncate max-w-[150px]">
+                            <User className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{form.clientName}</span>
                           </span>
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 truncate max-w-[200px]">
                             {form.sendMethod === 'email' ? (
-                              <Mail className="h-3 w-3" />
+                              <Mail className="h-3 w-3 flex-shrink-0" />
                             ) : (
-                              <Phone className="h-3 w-3" />
+                              <Phone className="h-3 w-3 flex-shrink-0" />
                             )}
-                            {form.contactInfo}
+                            <span className="truncate">{form.contactInfo}</span>
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <Calendar className="h-3 w-3" />
-                          {form.status === 'completed' && form.completedAt 
-                            ? `Completed ${getTimeAgo(form.completedAt)}`
-                            : `Sent ${getTimeAgo(form.sentAt)}`
-                          }
+                          <span className="whitespace-nowrap">
+                            {form.status === 'completed' && form.completedAt 
+                              ? `Completed ${getTimeAgo(form.completedAt)}`
+                              : `Sent ${getTimeAgo(form.sentAt)}`
+                            }
+                          </span>
                         </div>
                       </div>
                     </div>
