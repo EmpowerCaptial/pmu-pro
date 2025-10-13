@@ -227,27 +227,20 @@ export function useClockInOut() {
   // Clock in
   const clockIn = useCallback(async () => {
     try {
-      // Get location but don't fail if unavailable
-      let location = {
-        lat: null as number | null,
-        lng: null as number | null,
-        address: null as string | null
+      // Check if studio location is configured
+      if (studioLocation.lat === 40.7128 && studioLocation.lng === -74.0060) {
+        // Studio location NOT configured - show helpful error
+        throw new Error('Studio location not configured. Please ask your studio owner to set up the geolocation settings before clocking in.')
       }
+
+      // Get current location - REQUIRED for clock-in
+      const location = await getCurrentLocation()
       
-      try {
-        location = await getCurrentLocation()
-      } catch (locError) {
-        console.log('Location not available, proceeding without geofencing')
+      // ALWAYS enforce location check for students
+      if (!isWithinStudioRadius(location.lat, location.lng)) {
+        const distance = calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng)
+        throw new Error(`You must be within 50 feet of the studio to clock in. You are currently ${distance.toFixed(0)} meters (${(distance * 3.28084).toFixed(0)} feet) away.`)
       }
-      
-      // Only enforce location check if studio location is properly configured
-      if (studioLocation.lat !== 40.7128 && studioLocation.lng !== -74.0060 && location.lat && location.lng) {
-        // Only check if NOT using default coordinates (meaning studio actually configured their location)
-        if (!isWithinStudioRadius(location.lat, location.lng)) {
-          throw new Error(`You must be within 50 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
-        }
-      }
-      // If studio location not configured (still using defaults), allow clock-in from anywhere
 
       const now = getLocalDateTime()
       const newStatus: ClockStatus = {
@@ -261,10 +254,8 @@ export function useClockInOut() {
       setClockStatus(newStatus)
       saveClockStatus(newStatus)
       
-      // Start location monitoring every 15 minutes (only if configured)
-      if (studioLocation.lat !== 40.7128 && studioLocation.lng !== -74.0060) {
-        startLocationMonitoring()
-      }
+      // Start location monitoring every 15 minutes
+      startLocationMonitoring()
       
       return { success: true, message: 'Successfully clocked in!' }
     } catch (error) {

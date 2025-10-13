@@ -29,6 +29,7 @@ import {
   Package,
   Bell,
   MessageSquare,
+  MapPin,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
@@ -232,6 +233,14 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                       <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
+                  {(currentUser?.role === 'owner' || currentUser?.role === 'manager' || currentUser?.role === 'director') && (
+                    <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                      <Link href="/studio/geolocation-settings" className="cursor-pointer">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        <span>Studio Location</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild className="text-white hover:bg-white/20">
                     <Link href="/consent-forms" className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
