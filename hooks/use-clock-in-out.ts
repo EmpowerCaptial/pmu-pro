@@ -227,11 +227,27 @@ export function useClockInOut() {
   // Clock in
   const clockIn = useCallback(async () => {
     try {
-      const location = await getCurrentLocation()
-      
-      if (!isWithinStudioRadius(location.lat, location.lng)) {
-        throw new Error(`You must be within 50 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
+      // Get location but don't fail if unavailable
+      let location = {
+        lat: null as number | null,
+        lng: null as number | null,
+        address: null as string | null
       }
+      
+      try {
+        location = await getCurrentLocation()
+      } catch (locError) {
+        console.log('Location not available, proceeding without geofencing')
+      }
+      
+      // Only enforce location check if studio location is properly configured
+      if (studioLocation.lat !== 40.7128 && studioLocation.lng !== -74.0060 && location.lat && location.lng) {
+        // Only check if NOT using default coordinates (meaning studio actually configured their location)
+        if (!isWithinStudioRadius(location.lat, location.lng)) {
+          throw new Error(`You must be within 50 feet of the studio to clock in. Current distance: ${calculateDistance(studioLocation.lat, studioLocation.lng, location.lat, location.lng).toFixed(1)} meters`)
+        }
+      }
+      // If studio location not configured (still using defaults), allow clock-in from anywhere
 
       const now = getLocalDateTime()
       const newStatus: ClockStatus = {
@@ -245,8 +261,10 @@ export function useClockInOut() {
       setClockStatus(newStatus)
       saveClockStatus(newStatus)
       
-      // Start location monitoring every 15 minutes
-      startLocationMonitoring()
+      // Start location monitoring every 15 minutes (only if configured)
+      if (studioLocation.lat !== 40.7128 && studioLocation.lng !== -74.0060) {
+        startLocationMonitoring()
+      }
       
       return { success: true, message: 'Successfully clocked in!' }
     } catch (error) {
@@ -255,7 +273,7 @@ export function useClockInOut() {
         message: error instanceof Error ? error.message : 'Failed to clock in' 
       }
     }
-  }, [clockStatus.totalHoursToday, getCurrentLocation, isWithinStudioRadius, saveClockStatus])
+  }, [clockStatus.totalHoursToday, getCurrentLocation, isWithinStudioRadius, saveClockStatus, studioLocation])
 
   // Clock out
   const clockOut = useCallback(async () => {
