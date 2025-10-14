@@ -73,7 +73,7 @@ export const PRICING_PLANS: PricingPlan[] = [
 ]
 
 export class TrialService {
-  private static readonly TRIAL_DURATION_DAYS = 30
+  private static readonly TRIAL_DURATION_DAYS = 14
   private static readonly STORAGE_KEY = 'pmu_pro_trial'
 
   static startTrial(email: string): TrialUser {

@@ -206,9 +206,9 @@ export default function ArtistSignupPage() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to PMU Pro!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to PMU Guide!</h2>
             <p className="text-gray-600 mb-4">
-              Your account has been created and you've been automatically logged in. You now have immediate access to your 30-day free trial.
+              Your account has been created and you've been automatically logged in. You now have immediate access to your 14-day free trial.
             </p>
             <Alert className="border-blue-200 bg-blue-50 mb-4">
               <AlertTriangle className="h-4 w-4 text-blue-600" />

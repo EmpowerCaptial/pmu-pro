@@ -31,7 +31,7 @@ export interface ApplicationIssue {
 
 export class ArtistApplicationService {
   private static readonly STORAGE_KEY = 'artist_applications'
-  private static readonly TRIAL_DURATION_DAYS = 30
+  private static readonly TRIAL_DURATION_DAYS = 14
 
   static submitApplication(applicationData: Omit<ArtistApplication, 'id' | 'submittedAt' | 'status' | 'trialAccess'>): ArtistApplication {
     const now = new Date()

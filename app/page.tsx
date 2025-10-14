@@ -21,7 +21,7 @@ export default function HomePage() {
       <div className="relative z-10">
         {/* Urgency Banner */}
         <div className="bg-gradient-to-r from-lavender to-purple-500 text-white py-2 px-4 text-center text-sm font-medium">
-          🚀 <strong>Limited Time:</strong> Get 30 days FREE + Premium AI features unlocked during trial
+          🚀 <strong>Limited Time:</strong> Get 14 days FREE + Premium AI features unlocked during trial
         </div>
         
         <header className="sticky top-0 z-50 border-b border-beige bg-white/95 backdrop-blur-sm">
@@ -170,7 +170,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full relative overflow-hidden"
                 >
-                  <span className="relative z-10">Start 30-Day Free Trial</span>
+                  <span className="relative z-10">Start 14-Day Free Trial</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
@@ -768,13 +768,13 @@ export default function HomePage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-ink mb-6">Simple, Transparent Pricing</h2>
               <p className="text-xl text-ink/70 mb-8">
-                Start with a 30-day free trial. No credit card required.
+                Start with a 14-day free trial. No credit card required.
               </p>
               <div className="inline-flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
                 <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-green-800 font-medium">30-Day Free Trial • Cancel Anytime</span>
+                <span className="text-green-800 font-medium">14-Day Free Trial • Cancel Anytime</span>
               </div>
             </div>
 
@@ -1201,7 +1201,7 @@ export default function HomePage() {
                 {
                   question: "How does the free trial work?",
                   answer:
-                    "Start with a 30-day free trial with full access to all PMU Pro features. No credit card required. After 30 days, choose a plan that fits your practice or cancel anytime.",
+                    "Start with a 14-day free trial with full access to all PMU Guide features. No credit card required. After 14 days, choose a plan that fits your practice or cancel anytime.",
                 },
                 {
                   question: "What's included in the trial?",
