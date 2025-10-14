@@ -99,6 +99,13 @@ export class ConsentReminderService {
 
   private async sendActualReminder(form: ConsentForm) {
     try {
+      // Only send actual emails if SendGrid is configured
+      if (!process.env.SENDGRID_API_KEY) {
+        // Silently skip email sending if SendGrid not configured
+        // This prevents console spam in production
+        return
+      }
+      
       console.log(`Sending ${form.sendMethod} reminder to ${form.contactInfo} for form ${form.id}`)
       
       // Send real email reminder
@@ -110,24 +117,30 @@ export class ConsentReminderService {
           await EmailService.sendEmail({
             to: form.contactInfo,
             from: process.env.SENDGRID_FROM_EMAIL || "noreply@thepmuguide.com",
-            subject: `Reminder: Complete Your ${form.formType} Consent Form - PMU Pro`,
+            subject: `Reminder: Complete Your ${form.formType} Consent Form - PMU Guide`,
             html: this.generateReminderEmailHTML(form.formType, formLink, form.clientName),
             text: this.generateReminderEmailText(form.formType, formLink, form.clientName)
           })
           
           console.log(`✅ Reminder email sent successfully to: ${form.contactInfo}`)
         } catch (emailError) {
-          console.error("❌ Reminder email failed:", emailError)
+          // Silently handle email errors to prevent console spam
+          // Only log in development
+          if (process.env.NODE_ENV === 'development') {
+            console.warn("Reminder email skipped:", emailError)
+          }
         }
       }
       
       // SMS reminder (placeholder for future implementation)
       if (form.sendMethod === "sms") {
-        console.log(`SMS reminder would be sent to: ${form.contactInfo}`)
-        // TODO: Implement SMS service integration
+        // SMS not implemented yet - silently skip
       }
     } catch (error) {
-      console.error("Error in sendActualReminder:", error)
+      // Silently handle to prevent console spam
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error in sendActualReminder:", error)
+      }
     }
   }
 

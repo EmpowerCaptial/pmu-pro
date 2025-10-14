@@ -1,125 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
 
-export const dynamic = "force-dynamic"
+const prisma = new PrismaClient()
 
+// POST /api/studio/separate-member - Separate a team member into their own independent account
 export async function POST(request: NextRequest) {
   try {
-    const { memberEmail, newPlan, reason, ownerEmail } = await request.json()
+    const body = await request.json()
+    const { memberEmail, newPlan, ownerEmail } = body
 
     if (!memberEmail || !newPlan || !ownerEmail) {
-      return NextResponse.json(
-        { error: 'Member email, new plan, and owner email are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Validate the new plan
-    if (!['starter', 'professional'].includes(newPlan)) {
-      return NextResponse.json(
-        { error: 'Invalid plan. Must be starter or professional' },
-        { status: 400 }
-      )
-    }
-
-    // Find the owner to verify permissions
+    // Verify the owner exists and has permission
     const owner = await prisma.user.findUnique({
-      where: { email: ownerEmail },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        selectedPlan: true,
-        studioName: true
-      }
+      where: { email: ownerEmail }
     })
 
-    if (!owner) {
-      return NextResponse.json({ error: 'Owner not found' }, { status: 404 })
+    if (!owner || owner.role !== 'owner') {
+      return NextResponse.json({ error: 'Only studio owners can separate team members' }, { status: 403 })
     }
 
-    if (owner.selectedPlan !== 'studio') {
-      return NextResponse.json(
-        { error: 'Only Enterprise Studio owners can separate members' },
-        { status: 403 }
-      )
-    }
-
-    // Find the member to separate
+    // Get the team member
     const member = await prisma.user.findUnique({
-      where: { email: memberEmail },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        studioName: true,
-        businessName: true,
-        phone: true,
-        address: true,
-        bio: true,
-        specialties: true,
-        certifications: true,
-        avatar: true
-      }
+      where: { email: memberEmail }
     })
 
     if (!member) {
-      return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Team member not found' }, { status: 404 })
     }
 
+    // Verify they're in the same studio
     if (member.studioName !== owner.studioName) {
-      return NextResponse.json(
-        { error: 'Member does not belong to this studio' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Team member is not in your studio' }, { status: 403 })
     }
 
-    // Create a new individual account for the member
-    const newPassword = `TempPass${Date.now()}` // Temporary password
-    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    // Update the member's account to be independent
+    const updatedMember = await prisma.user.update({
+      where: { email: memberEmail },
+      data: {
+        selectedPlan: newPlan,
+        studioName: null, // Remove studio affiliation
+        role: newPlan === 'starter' ? 'artist' : 'licensed', // Change to independent role
+        // Reset employment type (they're no longer under studio)
+        employmentType: null,
+        commissionRate: null,
+        boothRentAmount: null,
+        // They'll need to subscribe separately
+        hasActiveSubscription: false,
+        subscriptionStatus: 'inactive'
+      }
+    })
 
-    const newUserId = `cmg${Date.now()}${Math.random().toString(36).substr(2, 9)}`
-    
-    await prisma.$executeRaw`
-      INSERT INTO "users" (
-        "id", "email", "name", "password", "role", "selectedPlan", 
-        "hasActiveSubscription", "isLicenseVerified", "businessName", "studioName",
-        "licenseNumber", "licenseState", "phone", "address", "bio", 
-        "specialties", "certifications", "avatar", "createdAt", "updatedAt"
-      ) VALUES (
-        ${newUserId}, ${member.email}, ${member.name}, ${hashedPassword}, 
-        ${member.role === 'student' ? 'artist' : member.role}, ${newPlan},
-        false, ${member.role === 'licensed' || member.role === 'instructor'}, 
-        ${member.businessName || member.name}, ${member.businessName || member.name},
-        ${member.role === 'licensed' || member.role === 'instructor' ? 'PENDING' : ''}, 
-        ${member.role === 'licensed' || member.role === 'instructor' ? 'PENDING' : ''},
-        ${member.phone || ''}, ${member.address || ''}, ${member.bio || ''},
-        ${member.specialties || ''}, ${member.certifications || ''}, ${member.avatar || ''},
-        NOW(), NOW()
-      )
-    `
-
-    // Log the separation for audit purposes
-    console.log(`Member separation: ${member.email} separated from ${owner.studioName} to ${newPlan} plan`)
-
-    return NextResponse.json({
+    return NextResponse.json({ 
       success: true,
-      message: 'Member successfully separated from studio',
+      message: `${member.name} has been separated from the studio`,
       newAccount: {
-        email: member.email,
-        name: member.name,
-        newPlan: newPlan,
-        temporaryPassword: newPassword,
-        newRole: member.role === 'student' ? 'artist' : member.role
+        email: updatedMember.email,
+        plan: newPlan,
+        role: updatedMember.role,
+        temporaryPassword: 'UseExistingPassword' // They keep their existing password
       }
     })
 
   } catch (error) {
-    console.error('Error separating member from studio:', error)
-    return NextResponse.json(
-      { error: 'Failed to separate member from studio' },
-      { status: 500 }
-    )
-  }}
+    console.error('Error separating team member:', error)
+    return NextResponse.json({ 
+      error: 'Failed to separate team member',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
+  }
+}
