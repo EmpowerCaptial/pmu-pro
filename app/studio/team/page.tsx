@@ -1065,9 +1065,10 @@ export default function StudioTeamPage() {
                             )}
                             {/* Warning if employment not set */}
                             {(member.role === 'instructor' || member.role === 'licensed') && !member.employmentType && (
-                              <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">
-                                ⚠️ Payment Not Set
-                              </Badge>
+                              <div className="flex items-center gap-1 text-xs text-amber-600">
+                                <AlertTriangle className="h-3 w-3" />
+                                <span>Pay Type</span>
+                              </div>
                             )}
                           </div>
                           <p className="text-xs text-gray-600 truncate">{member.email}</p>
