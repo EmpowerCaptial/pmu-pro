@@ -11,7 +11,7 @@ export async function GET(
   try {
     const handle = params.handle
 
-    // Get all users to find the one whose handle matches (studio name or email)
+    // Get all users to find the one whose handle matches (business name or email)
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -19,6 +19,7 @@ export async function GET(
         email: true,
         avatar: true,
         bio: true,
+        businessName: true,
         studioName: true,
         phone: true,
         website: true,
@@ -30,24 +31,30 @@ export async function GET(
       }
     })
 
-    // Find the user whose studio name OR email matches the handle
-    const artist = users.find(user => {
+    // Find the user whose business name OR email matches the handle
+    // Priority: Email handle (unique) > Business name handle (may conflict)
+    
+    // First, check for exact email handle match (most reliable, guaranteed unique)
+    let artist = users.find(user => {
       const emailHandle = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
-      
-      // Also generate handle from studio name (if it exists)
-      let studioHandle = null
-      if (user.studioName && user.studioName.trim()) {
-        studioHandle = user.studioName
+      return emailHandle === handle.toLowerCase()
+    })
+    
+    // If no email match, try business name match
+    if (!artist) {
+      artist = users.find(user => {
+        if (!(user as any).businessName || !(user as any).businessName.trim()) return false
+        
+        const businessHandle = (user as any).businessName
           .toLowerCase()
           .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
           .replace(/\s+/g, '-') // Replace spaces with hyphens
           .replace(/-+/g, '-') // Replace multiple hyphens with single
           .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-      }
-      
-      // Match either studio name handle OR email handle
-      return studioHandle === handle.toLowerCase() || emailHandle === handle.toLowerCase()
-    })
+        
+        return businessHandle === handle.toLowerCase()
+      })
+    }
 
     if (!artist) {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 })

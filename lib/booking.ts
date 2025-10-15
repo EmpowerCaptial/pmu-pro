@@ -25,11 +25,11 @@ export function buildBookingHref(handle: string, serviceId?: string) {
   return url.toString();
 }
 
-// Generate user handle from studio name or email
-export function generateUserHandle(studioName?: string, email?: string): string {
-  // Prefer studio name if available
-  if (studioName && studioName.trim()) {
-    return studioName
+// Generate user handle from business name or email
+export function generateUserHandle(businessName?: string, email?: string): string {
+  // Prefer business name if available (unique to each artist)
+  if (businessName && businessName.trim()) {
+    return businessName
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
       .replace(/\s+/g, '-') // Replace spaces with hyphens
@@ -37,7 +37,7 @@ export function generateUserHandle(studioName?: string, email?: string): string 
       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
   }
   
-  // Fallback to email if no studio name
+  // Fallback to email if no business name
   if (email) {
     return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
   }

@@ -67,18 +67,18 @@ export default function ShareBookingPage() {
     loadAvatar()
   }, [currentUser?.email])
 
-  // Generate user handle from studio name or email - MUST be before any early returns
+  // Generate user handle from business name or email - MUST be before any early returns
   const userHandle = useMemo(() => {
     if (!currentUser) return null;
     
-    const studioName = currentUser.studioName;
+    const businessName = (currentUser as any).businessName;
     const email = currentUser.email;
     
-    if (studioName || email) {
-      return generateUserHandle(studioName, email);
+    if (businessName || email) {
+      return generateUserHandle(businessName, email);
     }
     return null; // No fallback - user must be authenticated
-  }, [currentUser?.studioName, currentUser?.email]);
+  }, [(currentUser as any)?.businessName, currentUser?.email]);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thepmuguide.com';
 
   // Prepare user object for NavBar
