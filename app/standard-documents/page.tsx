@@ -10,6 +10,7 @@ import { Download, Eye, Mail, Home, Upload, FileText, Plus, X, Trash2, Edit } fr
 import Link from "next/link"
 import { useState, useRef } from "react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { NavBar } from "@/components/ui/navbar"
 
 interface PDFDocument {
   id: string
@@ -185,6 +186,7 @@ export default function StandardDocumentsPage() {
       </div>
 
       <div className="relative z-10">
+        <NavBar currentUser={currentUser} />
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">

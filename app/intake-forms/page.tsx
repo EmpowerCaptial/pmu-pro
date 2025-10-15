@@ -10,8 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useState } from "react"
+import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export default function IntakeFormsPage() {
+  const { currentUser } = useDemoAuth()
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
@@ -68,6 +71,7 @@ export default function IntakeFormsPage() {
       </div>
 
       <div className="container mx-auto max-w-4xl px-4 relative z-10">
+        <NavBar currentUser={currentUser} />
         <div className="mb-8">
           <Link href="/dashboard">
             <Button variant="outline" className="mb-4 bg-transparent">

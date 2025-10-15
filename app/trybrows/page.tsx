@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Brush, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export default function TryBrowsPage() {
+  const { currentUser } = useDemoAuth()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-beige/30 to-lavender/20 relative">
       <div
@@ -17,6 +21,7 @@ export default function TryBrowsPage() {
       />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
+        <NavBar currentUser={currentUser} />
         <div className="flex items-center justify-between mb-8">
           <Link href="/dashboard">
             <Button

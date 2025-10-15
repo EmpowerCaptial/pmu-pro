@@ -15,6 +15,7 @@ import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { useAutoSave } from "@/hooks/use-auto-save"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { FormRecovery } from "@/components/forms/form-recovery"
+import { NavBar } from "@/components/ui/navbar"
 
 interface ClientData {
   fullName: string
@@ -142,6 +143,7 @@ export default function ClientIntakePage() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
+        <NavBar currentUser={currentUser} />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

@@ -1,8 +1,12 @@
 import { PMUColorCorrectionTool } from "@/components/color-correction/pmu-color-correction-tool"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 export default function ColorCorrectionPage() {
+  const { currentUser } = useDemoAuth()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender-50 to-white">
       {/* Watermark Logo */}
@@ -11,6 +15,7 @@ export default function ColorCorrectionPage() {
       </div>
 
       <div className="relative z-10">
+        <NavBar currentUser={currentUser} />
         {/* Header */}
         <div className="p-4 md:p-6 border-b bg-white/80 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
