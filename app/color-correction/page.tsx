@@ -1,3 +1,5 @@
+"use client"
+
 import { PMUColorCorrectionTool } from "@/components/color-correction/pmu-color-correction-tool"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"

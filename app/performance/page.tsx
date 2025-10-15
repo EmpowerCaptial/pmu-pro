@@ -1,3 +1,5 @@
+"use client"
+
 import PerformanceMonitor from '@/components/performance/performance-monitor'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
