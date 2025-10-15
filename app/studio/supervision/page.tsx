@@ -2059,13 +2059,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3 mb-3">
-                            <Avatar className="w-12 h-12 border-2 border-lavender/20">
+                            <Avatar className="w-24 h-24 border-2 border-lavender/20 rounded-lg">
                               <AvatarImage 
                                 src={instructor.avatar || undefined} 
                                 alt={`${instructor.name} profile`}
-                                className="object-cover"
+                                className="object-cover rounded-lg"
                               />
-                              <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white font-bold text-lg">
+                              <AvatarFallback className="bg-gradient-to-r from-lavender to-lavender-600 text-white font-bold text-2xl rounded-lg">
                                 {instructor.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
