@@ -207,7 +207,7 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
         {/* Artist Header */}
         <Card className="mb-6 sm:mb-8 bg-white/90 backdrop-blur-sm border-lavender/20 shadow-lg">
           <CardContent className="p-4 sm:p-6">
