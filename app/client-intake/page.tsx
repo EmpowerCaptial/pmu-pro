@@ -143,7 +143,7 @@ export default function ClientIntakePage() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-        <NavBar currentUser={currentUser} />
+        <NavBar />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

@@ -71,7 +71,7 @@ export default function IntakeFormsPage() {
       </div>
 
       <div className="container mx-auto max-w-4xl px-4 relative z-10">
-        <NavBar currentUser={currentUser} />
+        <NavBar />
         <div className="mb-8">
           <Link href="/dashboard">
             <Button variant="outline" className="mb-4 bg-transparent">

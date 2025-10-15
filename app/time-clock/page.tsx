@@ -94,7 +94,7 @@ export default function TimeClockPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
       <div className="max-w-6xl mx-auto">
-        <NavBar currentUser={currentUser} />
+        <NavBar />
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>

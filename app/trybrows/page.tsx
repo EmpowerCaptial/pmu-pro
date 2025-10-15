@@ -21,7 +21,7 @@ export default function TryBrowsPage() {
       />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
-        <NavBar currentUser={currentUser} />
+        <NavBar />
         <div className="flex items-center justify-between mb-8">
           <Link href="/dashboard">
             <Button
