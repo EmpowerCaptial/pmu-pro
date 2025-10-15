@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 export const dynamic = "force-dynamic"
 
@@ -42,34 +39,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'profiles')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop() || 'jpg'
-    const fileName = `${user.id}-${Date.now()}.${fileExtension}`
-    const filePath = join(uploadsDir, fileName)
-
-    // Convert file to buffer and save
+    // Convert file to base64 (Vercel-friendly storage)
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
+    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`
 
-    // Generate public URL
-    const imageUrl = `/uploads/profiles/${fileName}`
-
-    // Update user's avatar in database
+    // Update user's avatar in database (stored as base64)
     await prisma.user.update({
       where: { id: user.id },
-      data: { avatar: imageUrl }
+      data: { avatar: base64Image }
     })
 
     return NextResponse.json({
       success: true,
-      imageUrl,
+      imageUrl: base64Image,
       message: 'Profile image uploaded successfully'
     })
 
