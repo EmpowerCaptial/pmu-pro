@@ -11,7 +11,7 @@ export async function GET(
   try {
     const handle = params.handle
 
-    // Find the user whose email matches the handle
+    // Get all users to find the one whose handle matches (studio name or email)
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -30,10 +30,23 @@ export async function GET(
       }
     })
 
-    // Find the user whose email matches the handle
+    // Find the user whose studio name OR email matches the handle
     const artist = users.find(user => {
       const emailHandle = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
-      return emailHandle === handle.toLowerCase()
+      
+      // Also generate handle from studio name (if it exists)
+      let studioHandle = null
+      if (user.studioName && user.studioName.trim()) {
+        studioHandle = user.studioName
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+      }
+      
+      // Match either studio name handle OR email handle
+      return studioHandle === handle.toLowerCase() || emailHandle === handle.toLowerCase()
     })
 
     if (!artist) {
