@@ -34,7 +34,14 @@ export default function ProfilePage() {
     bio: '',
     specialties: '',
     certifications: '',
-    avatar: ''
+    avatar: '',
+    website: '',
+    instagram: '',
+    facebook: '',
+    tiktok: '',
+    twitter: '',
+    youtube: '',
+    businessHours: ''
   })
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -52,7 +59,14 @@ export default function ProfilePage() {
         bio: (currentUser as any)?.bio || '',
         specialties: (currentUser as any)?.specialties || '',
         certifications: (currentUser as any)?.certifications || '',
-        avatar: (currentUser as any)?.avatar || ''
+        avatar: (currentUser as any)?.avatar || '',
+        website: (currentUser as any)?.website || '',
+        instagram: (currentUser as any)?.instagram || '',
+        facebook: (currentUser as any)?.facebook || '',
+        tiktok: (currentUser as any)?.tiktok || '',
+        twitter: (currentUser as any)?.twitter || '',
+        youtube: (currentUser as any)?.youtube || '',
+        businessHours: (currentUser as any)?.businessHours || ''
       })
     }
   }, [currentUser])
@@ -106,7 +120,14 @@ export default function ProfilePage() {
           bio: profileData.bio,
           specialties: profileData.specialties,
           certifications: profileData.certifications,
-          avatar: profileData.avatar
+          avatar: profileData.avatar,
+          website: profileData.website,
+          instagram: profileData.instagram,
+          facebook: profileData.facebook,
+          tiktok: profileData.tiktok,
+          twitter: profileData.twitter,
+          youtube: profileData.youtube,
+          businessHours: profileData.businessHours
         })
       })
 
@@ -410,6 +431,117 @@ export default function ProfilePage() {
                     disabled={!isEditing}
                     placeholder="e.g., Certified PMU Artist, Licensed Esthetician"
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Media & Online Presence */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Camera className="h-5 w-5 text-violet-600" />
+                  <span>Social Media & Online Presence</span>
+                </CardTitle>
+                <CardDescription>
+                  Your website and social media handles (shown on your public booking page)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={profileData.website}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, website: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="https://yourwebsite.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="instagram">Instagram</Label>
+                    <Input
+                      id="instagram"
+                      value={profileData.instagram}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, instagram: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="@yourusername"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="facebook">Facebook</Label>
+                    <Input
+                      id="facebook"
+                      value={profileData.facebook}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, facebook: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="facebook.com/yourpage"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tiktok">TikTok</Label>
+                    <Input
+                      id="tiktok"
+                      value={profileData.tiktok}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, tiktok: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="@yourusername"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="twitter">Twitter/X</Label>
+                    <Input
+                      id="twitter"
+                      value={profileData.twitter}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, twitter: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="@yourusername"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="youtube">YouTube</Label>
+                    <Input
+                      id="youtube"
+                      value={profileData.youtube}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, youtube: e.target.value }))}
+                      disabled={!isEditing}
+                      placeholder="youtube.com/@yourchannel"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Business Hours */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5 text-violet-600" />
+                  <span>Business Hours</span>
+                </CardTitle>
+                <CardDescription>
+                  Your operating hours (shown on your public booking page)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <Label htmlFor="businessHours">Business Hours</Label>
+                  <textarea
+                    id="businessHours"
+                    value={profileData.businessHours}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, businessHours: e.target.value }))}
+                    disabled={!isEditing}
+                    rows={4}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:bg-gray-50"
+                    placeholder="Mon-Fri: 9:00 AM - 6:00 PM&#10;Saturday: 10:00 AM - 4:00 PM&#10;Sunday: Closed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter your business hours (one day per line)</p>
                 </div>
               </CardContent>
             </Card>

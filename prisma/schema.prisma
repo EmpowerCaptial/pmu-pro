@@ -37,6 +37,10 @@ model User {
   certifications         String?
   experience             String?
   instagram              String?
+  facebook               String?
+  tiktok                 String?
+  twitter                String?
+  youtube                String?
   specialties            String?
   stripeConnectAccountId String?               @unique
   studioName             String?

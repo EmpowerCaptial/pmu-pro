@@ -22,7 +22,11 @@ import {
   ShoppingCart,
   Package,
   Plus,
-  Minus
+  Minus,
+  MapPin,
+  Facebook,
+  Twitter,
+  Youtube
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Input } from '@/components/ui/input'
@@ -252,23 +256,68 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
                       <span className="break-all">{artist.phone}</span>
                     </div>
                   )}
-                  {artist.website && (
+                  {(artist as any).address && (
                     <div className="flex items-center justify-center sm:justify-start gap-1">
-                      <Globe className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline break-all">
-                        Website
-                      </a>
-                    </div>
-                  )}
-                  {artist.instagram && (
-                    <div className="flex items-center justify-center sm:justify-start gap-1">
-                      <Camera className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <a href={`https://instagram.com/${artist.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-lavender hover:underline break-all">
-                        {artist.instagram}
-                      </a>
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="break-all">{(artist as any).address}</span>
                     </div>
                   )}
                 </div>
+
+                {/* Social Media Links */}
+                {(artist.website || artist.instagram || (artist as any).facebook || (artist as any).tiktok || (artist as any).twitter || (artist as any).youtube) && (
+                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-3">
+                    {artist.website && (
+                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-lavender/10 text-lavender hover:bg-lavender/20 rounded-full text-xs transition-colors">
+                        <Globe className="h-3 w-3" />
+                        <span>Website</span>
+                      </a>
+                    )}
+                    {artist.instagram && (
+                      <a href={`https://instagram.com/${artist.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-pink-100 text-pink-600 hover:bg-pink-200 rounded-full text-xs transition-colors">
+                        <Camera className="h-3 w-3" />
+                        <span>Instagram</span>
+                      </a>
+                    )}
+                    {(artist as any).facebook && (
+                      <a href={(artist as any).facebook.startsWith('http') ? (artist as any).facebook : `https://${(artist as any).facebook}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full text-xs transition-colors">
+                        <Facebook className="h-3 w-3" />
+                        <span>Facebook</span>
+                      </a>
+                    )}
+                    {(artist as any).tiktok && (
+                      <a href={`https://tiktok.com/${(artist as any).tiktok.replace('@', '@')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-xs transition-colors">
+                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1.04-.1z"/></svg>
+                        <span>TikTok</span>
+                      </a>
+                    )}
+                    {(artist as any).twitter && (
+                      <a href={`https://twitter.com/${(artist as any).twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-sky-100 text-sky-600 hover:bg-sky-200 rounded-full text-xs transition-colors">
+                        <Twitter className="h-3 w-3" />
+                        <span>Twitter/X</span>
+                      </a>
+                    )}
+                    {(artist as any).youtube && (
+                      <a href={(artist as any).youtube.startsWith('http') ? (artist as any).youtube : `https://${(artist as any).youtube}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-full text-xs transition-colors">
+                        <Youtube className="h-3 w-3" />
+                        <span>YouTube</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Business Hours */}
+                {(artist as any).businessHours && (
+                  <div className="bg-lavender/5 rounded-lg p-3 mt-3">
+                    <h3 className="font-semibold text-sm text-gray-900 mb-2 flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-lavender" />
+                      Business Hours
+                    </h3>
+                    <div className="text-xs text-gray-600 whitespace-pre-line">
+                      {(artist as any).businessHours}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
                   {artist.specialties && Array.isArray(artist.specialties) ? artist.specialties.map((specialty) => (
