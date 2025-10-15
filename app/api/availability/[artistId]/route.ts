@@ -51,44 +51,66 @@ export async function GET(
       timeBlocks = timeBlocksData.data || []
     }
 
-    // Generate all possible time slots (9 AM to 8 PM, hourly)
-    const allSlots = Array.from({ length: 12 }, (_, i) => {
-      const hour = 9 + i
-      return {
-        time: `${hour.toString().padStart(2, '0')}:00`,
-        display: hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 ${hour === 12 ? 'PM' : 'AM'}`,
-        available: true
+    // Generate all possible time slots (9 AM to 8 PM, 30-minute intervals)
+    const allSlots: Array<{ time: string; display: string; available: boolean }> = []
+    
+    for (let hour = 9; hour <= 20; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === 20 && minute > 0) break // Stop at 8:00 PM
+        
+        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+        let display: string
+        
+        if (hour === 12) {
+          display = `12:${minute.toString().padStart(2, '0')} PM`
+        } else if (hour > 12) {
+          display = `${hour - 12}:${minute.toString().padStart(2, '0')} PM`
+        } else {
+          display = `${hour}:${minute.toString().padStart(2, '0')} AM`
+        }
+        
+        allSlots.push({ time, display, available: true })
       }
-    })
+    }
 
+    // Helper function to convert time string to minutes since midnight
+    const timeToMinutes = (timeStr: string): number => {
+      const [hours, minutes] = timeStr.split(':').map(Number)
+      return hours * 60 + minutes
+    }
+    
     // Mark slots as unavailable based on time blocks
     const unavailableBlocks = timeBlocks.filter((block: any) => block.type === 'unavailable')
     
     for (const slot of allSlots) {
-      const slotHour = parseInt(slot.time.split(':')[0])
+      const slotMinutes = timeToMinutes(slot.time)
+      const slotEndMinutes = slotMinutes + 30 // 30-minute slot
       
       // Check if slot conflicts with unavailable time blocks
       for (const block of unavailableBlocks) {
-        const blockStart = parseInt(block.startTime.split(':')[0])
-        const blockEnd = parseInt(block.endTime.split(':')[0])
+        const blockStartMinutes = timeToMinutes(block.startTime)
+        const blockEndMinutes = timeToMinutes(block.endTime)
         
-        if (slotHour >= blockStart && slotHour < blockEnd) {
+        // Check for overlap: slot overlaps if it starts before block ends AND ends after block starts
+        if (slotMinutes < blockEndMinutes && slotEndMinutes > blockStartMinutes) {
           slot.available = false
           break
         }
       }
       
       // Check if slot conflicts with existing appointments
-      for (const appointment of existingAppointments) {
-        const appointmentStart = new Date(appointment.startTime)
-        const appointmentEnd = new Date(appointment.endTime)
-        const slotStart = new Date(`${date}T${slot.time}:00`)
-        const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000) // 1 hour slot
-        
-        // Check for overlap
-        if (slotStart < appointmentEnd && slotEnd > appointmentStart) {
-          slot.available = false
-          break
+      if (slot.available) {
+        for (const appointment of existingAppointments) {
+          const appointmentStart = new Date(appointment.startTime)
+          const appointmentEnd = new Date(appointment.endTime)
+          const slotStart = new Date(`${date}T${slot.time}:00`)
+          const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000) // 30-minute slot
+          
+          // Check for overlap
+          if (slotStart < appointmentEnd && slotEnd > appointmentStart) {
+            slot.available = false
+            break
+          }
         }
       }
     }

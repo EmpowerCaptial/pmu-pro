@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TimeBlock, TimeBlockRequest, validateTimeBlock } from '@/lib/time-blocks'
-import { mockTimeBlocks } from '@/lib/time-blocks'
+import { TimeBlockRequest, validateTimeBlock } from '@/lib/time-blocks'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,19 +17,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    // Filter mock data based on parameters
-    let blocks = mockTimeBlocks.filter(block => block.userId === userId)
+    // Build query for database
+    const where: any = { userId }
 
     if (date) {
-      blocks = blocks.filter(block => block.date === date)
+      where.date = date
     } else if (startDate && endDate) {
-      blocks = blocks.filter(block => block.date >= startDate && block.date <= endDate)
+      where.date = {
+        gte: startDate,
+        lte: endDate
+      }
     }
 
-    return NextResponse.json({ success: true, data: blocks })
+    // Fetch from database
+    const blocks = await prisma.timeBlock.findMany({
+      where,
+      orderBy: [
+        { date: 'asc' },
+        { startTime: 'asc' }
+      ]
+    })
+
+    // Convert to expected format (Prisma returns createdAt/updatedAt as Date objects)
+    const formattedBlocks = blocks.map(block => ({
+      ...block,
+      createdAt: block.createdAt.toISOString(),
+      updatedAt: block.updatedAt.toISOString()
+    }))
+
+    return NextResponse.json({ success: true, data: formattedBlocks })
   } catch (error: any) {
     console.error('Error fetching time blocks:', error)
-    return NextResponse.json({ error: 'Failed to fetch time blocks' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch time blocks', details: error.message }, { status: 500 })
   }
 }
 
@@ -44,31 +63,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', details: errors }, { status: 400 })
     }
 
-    // Create new time block
-    const newBlock: TimeBlock = {
-      id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: body.userId || 'demo_artist_001', // TODO: Get from auth
-      date: body.date,
-      startTime: body.startTime,
-      endTime: body.endTime,
-      type: body.type,
-      title: body.title,
-      notes: body.notes,
-      isRecurring: body.isRecurring || false,
-      recurringPattern: body.recurringPattern,
-      recurringEndDate: body.recurringEndDate,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    if (!body.userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    // In a real app, save to database
-    // For now, add to mock data
-    mockTimeBlocks.push(newBlock)
+    // Create new time block in database
+    const newBlock = await prisma.timeBlock.create({
+      data: {
+        userId: body.userId,
+        date: body.date,
+        startTime: body.startTime,
+        endTime: body.endTime,
+        type: body.type,
+        title: body.title,
+        notes: body.notes || null,
+        isRecurring: body.isRecurring || false,
+        recurringPattern: body.recurringPattern || null,
+        recurringEndDate: body.recurringEndDate || null
+      }
+    })
 
-    return NextResponse.json({ success: true, data: newBlock })
+    // Convert to expected format
+    const formattedBlock = {
+      ...newBlock,
+      createdAt: newBlock.createdAt.toISOString(),
+      updatedAt: newBlock.updatedAt.toISOString()
+    }
+
+    return NextResponse.json({ success: true, data: formattedBlock })
   } catch (error: any) {
     console.error('Error creating time block:', error)
-    return NextResponse.json({ error: 'Failed to create time block' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create time block', details: error.message }, { status: 500 })
   }
 }
 
@@ -87,32 +112,38 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', details: errors }, { status: 400 })
     }
 
-    // Find and update the time block
-    const blockIndex = mockTimeBlocks.findIndex(block => block.id === body.id)
-    if (blockIndex === -1) {
-      return NextResponse.json({ error: 'Time block not found' }, { status: 404 })
+    // Update in database
+    const updatedBlock = await prisma.timeBlock.update({
+      where: { id: body.id },
+      data: {
+        date: body.date,
+        startTime: body.startTime,
+        endTime: body.endTime,
+        type: body.type,
+        title: body.title,
+        notes: body.notes || null,
+        isRecurring: body.isRecurring || false,
+        recurringPattern: body.recurringPattern || null,
+        recurringEndDate: body.recurringEndDate || null
+      }
+    })
+
+    // Convert to expected format
+    const formattedBlock = {
+      ...updatedBlock,
+      createdAt: updatedBlock.createdAt.toISOString(),
+      updatedAt: updatedBlock.updatedAt.toISOString()
     }
 
-    const updatedBlock: TimeBlock = {
-      ...mockTimeBlocks[blockIndex],
-      date: body.date,
-      startTime: body.startTime,
-      endTime: body.endTime,
-      type: body.type,
-      title: body.title,
-      notes: body.notes,
-      isRecurring: body.isRecurring || false,
-      recurringPattern: body.recurringPattern,
-      recurringEndDate: body.recurringEndDate,
-      updatedAt: new Date().toISOString()
-    }
-
-    mockTimeBlocks[blockIndex] = updatedBlock
-
-    return NextResponse.json({ success: true, data: updatedBlock })
+    return NextResponse.json({ success: true, data: formattedBlock })
   } catch (error: any) {
     console.error('Error updating time block:', error)
-    return NextResponse.json({ error: 'Failed to update time block' }, { status: 500 })
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json({ error: 'Time block not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json({ error: 'Failed to update time block', details: error.message }, { status: 500 })
   }
 }
 
@@ -126,17 +157,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Time block ID is required' }, { status: 400 })
     }
 
-    // Find and remove the time block
-    const blockIndex = mockTimeBlocks.findIndex(block => block.id === id)
-    if (blockIndex === -1) {
-      return NextResponse.json({ error: 'Time block not found' }, { status: 404 })
-    }
-
-    mockTimeBlocks.splice(blockIndex, 1)
+    // Delete from database
+    await prisma.timeBlock.delete({
+      where: { id }
+    })
 
     return NextResponse.json({ success: true, message: 'Time block deleted successfully' })
   } catch (error: any) {
     console.error('Error deleting time block:', error)
-    return NextResponse.json({ error: 'Failed to delete time block' }, { status: 500 })
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json({ error: 'Time block not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json({ error: 'Failed to delete time block', details: error.message }, { status: 500 })
   }
 }
