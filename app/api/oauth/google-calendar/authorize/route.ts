@@ -6,10 +6,15 @@ export const dynamic = "force-dynamic"
 // GET /api/oauth/google-calendar/authorize - Start Google Calendar OAuth flow
 export async function GET(request: NextRequest) {
   try {
-    const userEmail = request.headers.get('x-user-email')
+    // Get user email from URL parameters or headers
+    const { searchParams } = new URL(request.url)
+    const userEmail = searchParams.get('email') || request.headers.get('x-user-email')
     
     if (!userEmail) {
-      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
+      // Redirect to calendar integration page with error
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/integrations/calendar?error=${encodeURIComponent('Please log in to connect your Google Calendar')}`
+      )
     }
 
     // Find user
@@ -19,14 +24,16 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/integrations/calendar?error=${encodeURIComponent('User not found. Please log in again.')}`
+      )
     }
 
     // Check if Google Calendar OAuth is configured
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      return NextResponse.json({ 
-        error: 'Google Calendar integration not configured. Please contact support.' 
-      }, { status: 500 })
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/integrations/calendar?error=${encodeURIComponent('Google Calendar integration not configured. Please contact support.')}`
+      )
     }
 
     // Generate state parameter for security
@@ -50,9 +57,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Google Calendar OAuth authorization error:', error)
-    return NextResponse.json(
-      { error: 'Failed to start Google Calendar authorization' },
-      { status: 500 }
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/integrations/calendar?error=${encodeURIComponent('Failed to start Google Calendar authorization')}`
     )
   }
 }

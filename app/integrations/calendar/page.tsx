@@ -90,8 +90,16 @@ export default function CalendarIntegrationPage() {
     setError(null);
 
     try {
-      // Redirect to Google Calendar OAuth
-      window.location.href = '/api/oauth/google-calendar/authorize';
+      // Get current user email
+      const userEmail = currentUser?.email;
+      if (!userEmail) {
+        setError("Please log in to connect your Google Calendar");
+        setTestingConnection(false);
+        return;
+      }
+
+      // Redirect to Google Calendar OAuth with user email
+      window.location.href = `/api/oauth/google-calendar/authorize?email=${encodeURIComponent(userEmail)}`;
     } catch (error) {
       setError("Failed to start Google Calendar connection");
       setTestingConnection(false);
