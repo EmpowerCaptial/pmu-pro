@@ -226,7 +226,7 @@ export default function StudioSupervisionPage() {
           // Compatibility fields
           specialty: member.specialties || 'PMU Specialist',
           experience: member.experience || '5+ years',
-          rating: member.rating || 4.8,
+          rating: member.rating || null, // Only show rating if they have reviews
           location: member.businessName || 'Studio',
           availability: member.availability || {
                 monday: ['9:30 AM', '1:00 PM', '4:00 PM'],
@@ -2075,10 +2075,19 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </div>
                           </div>
                           <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2 text-ink/70">
-                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                              <span>{instructor.rating} ({instructor.experience})</span>
-                            </div>
+                            {instructor.rating ? (
+                              <div className="flex items-center gap-2 text-ink/70">
+                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                                <span>{instructor.rating} ({instructor.experience})</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="bg-lavender/10 text-lavender text-xs">
+                                  New Instructor
+                                </Badge>
+                                <span className="text-xs text-ink/60">{instructor.experience}</span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-2 text-ink/70">
                               <MapPin className="h-4 w-4 text-lavender" />
                               <span>{instructor.location}</span>
