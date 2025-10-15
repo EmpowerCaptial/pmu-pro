@@ -48,14 +48,14 @@ export const CALENDAR_PROVIDERS: CalendarProvider[] = [
     setupInstructions: 'Generate API credentials in Acuity Settings > Integrations > API'
   },
   {
-    id: 'google',
+    id: 'GOOGLE_CALENDAR',
     name: 'Google Calendar',
     description: 'Sync with your Google Calendar for unified scheduling',
     logo: '📊',
     website: 'https://calendar.google.com',
     apiDocumentation: 'https://developers.google.com/calendar',
     supportedFeatures: ['Two-way sync', 'Multiple calendars', 'Event details', 'Attendees'],
-    setupInstructions: 'Enable Google Calendar API and create OAuth credentials'
+    setupInstructions: 'Click "Connect with Google" to authorize access to your calendar. No API keys needed!'
   },
   {
     id: 'outlook',

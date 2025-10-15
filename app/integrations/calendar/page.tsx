@@ -85,6 +85,19 @@ export default function CalendarIntegrationPage() {
     }
   };
 
+  const handleGoogleCalendarConnect = async () => {
+    setTestingConnection(true);
+    setError(null);
+
+    try {
+      // Redirect to Google Calendar OAuth
+      window.location.href = '/api/oauth/google-calendar/authorize';
+    } catch (error) {
+      setError("Failed to start Google Calendar connection");
+      setTestingConnection(false);
+    }
+  };
+
   const testConnection = async () => {
     if (!selectedProvider || !apiKey) {
       setError("Please select a provider and enter API key");
@@ -270,17 +283,43 @@ export default function CalendarIntegrationPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey" className="text-sm sm:text-base">API Key / Access Token</Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      placeholder="Enter your API key"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      className="force-white-bg force-gray-border force-dark-text h-9 sm:h-10 text-sm sm:text-base"
-                    />
-                  </div>
+                  {selectedProvider === 'GOOGLE_CALENDAR' ? (
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Google Calendar Connection</Label>
+                      <Button
+                        onClick={handleGoogleCalendarConnect}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white h-9 sm:h-10"
+                        disabled={testingConnection}
+                      >
+                        {testingConnection ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Connect with Google Calendar
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-xs text-gray-600">
+                        No API keys needed! Just sign in with your Google account.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="apiKey" className="text-sm sm:text-base">API Key / Access Token</Label>
+                      <Input
+                        id="apiKey"
+                        type="password"
+                        placeholder="Enter your API key"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        className="force-white-bg force-gray-border force-dark-text h-9 sm:h-10 text-sm sm:text-base"
+                      />
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="calendarId" className="text-sm sm:text-base">Calendar ID (Optional)</Label>
@@ -362,23 +401,43 @@ export default function CalendarIntegrationPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <Button
-                  onClick={testConnection}
-                  disabled={testingConnection || !selectedProvider || !apiKey}
-                  className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
-                >
-                  {testingConnection ? (
-                    <>
-                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
-                      Testing Connection...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                      Test & Connect
-                    </>
-                  )}
-                </Button>
+                {selectedProvider === 'GOOGLE_CALENDAR' ? (
+                  <Button
+                    onClick={handleGoogleCalendarConnect}
+                    disabled={testingConnection}
+                    className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                  >
+                    {testingConnection ? (
+                      <>
+                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        Connect with Google
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={testConnection}
+                    disabled={testingConnection || !selectedProvider || !apiKey}
+                    className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                  >
+                    {testingConnection ? (
+                      <>
+                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                        Testing Connection...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        Test & Connect
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => setShowIntegrationForm(false)}
