@@ -14,8 +14,11 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { NavBar } from '@/components/ui/navbar'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 export default function TimeClockPage() {
+  const { currentUser } = useDemoAuth()
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [workTime, setWorkTime] = useState(0)
@@ -91,6 +94,7 @@ export default function TimeClockPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 p-4 pb-20">
       <div className="max-w-6xl mx-auto">
+        <NavBar currentUser={currentUser} />
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
