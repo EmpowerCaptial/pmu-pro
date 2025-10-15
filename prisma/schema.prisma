@@ -330,6 +330,8 @@ model TeamMessage {
   message     String   // Message content
   isRead      Boolean  @default(false)
   readAt      DateTime?
+  isDeleted   Boolean  @default(false) // Soft delete for sender
+  isArchived  Boolean  @default(false) // Archive for recipient
   createdAt   DateTime @default(now())
   
   sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
@@ -338,6 +340,8 @@ model TeamMessage {
   @@index([senderId])
   @@index([recipientId])
   @@index([isRead])
+  @@index([isDeleted])
+  @@index([isArchived])
   @@index([createdAt])
   @@map("team_messages")
 }

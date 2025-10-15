@@ -16,7 +16,10 @@ import {
   Mail,
   Clock,
   CheckCircle2,
-  X
+  X,
+  Trash2,
+  Archive,
+  MoreVertical
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -35,6 +38,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface TeamMember {
   id: string
@@ -70,6 +90,11 @@ export default function TeamMessagesPage() {
   const [messageSubject, setMessageSubject] = useState('')
   const [messageContent, setMessageContent] = useState('')
   const [isSending, setIsSending] = useState(false)
+  
+  // Delete/Archive state
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
+  const [messageToArchive, setMessageToArchive] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Load recipients and messages
   useEffect(() => {
@@ -171,7 +196,7 @@ export default function TeamMessagesPage() {
           'Content-Type': 'application/json',
           'x-user-email': currentUser?.email || ''
         },
-        body: JSON.stringify({ messageId })
+        body: JSON.stringify({ messageId, action: 'read' })
       })
 
       // Update local state
@@ -183,6 +208,62 @@ export default function TeamMessagesPage() {
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
       console.error('Error marking message as read:', error)
+    }
+  }
+
+  const handleDeleteMessage = async (messageId: string) => {
+    setIsProcessing(true)
+    try {
+      const response = await fetch('/api/team-messages', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ messageId, action: 'delete' })
+      })
+
+      if (response.ok) {
+        // Remove from sent messages
+        setSentMessages(prev => prev.filter(msg => msg.id !== messageId))
+        setMessageToDelete(null)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to delete message')
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      alert('Failed to delete message')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleArchiveMessage = async (messageId: string) => {
+    setIsProcessing(true)
+    try {
+      const response = await fetch('/api/team-messages', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ messageId, action: 'archive' })
+      })
+
+      if (response.ok) {
+        // Remove from received messages
+        setReceivedMessages(prev => prev.filter(msg => msg.id !== messageId))
+        setMessageToArchive(null)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to archive message')
+      }
+    } catch (error) {
+      console.error('Error archiving message:', error)
+      alert('Failed to archive message')
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -464,7 +545,28 @@ export default function TeamMessagesPage() {
                             )}
                           </div>
                           
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 flex items-center gap-2">
+                            {isExpanded && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setMessageToArchive(msg.id)
+                                    }}
+                                    className="text-orange-600"
+                                  >
+                                    <Archive className="h-4 w-4 mr-2" />
+                                    Archive
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                             {isExpanded ? (
                               <X className="h-4 w-4 text-gray-400" />
                             ) : (
@@ -561,7 +663,28 @@ export default function TeamMessagesPage() {
                             )}
                           </div>
                           
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 flex items-center gap-2">
+                            {isExpanded && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setMessageToDelete(msg.id)
+                                    }}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                             {isExpanded ? (
                               <X className="h-4 w-4 text-gray-400" />
                             ) : (
@@ -627,6 +750,52 @@ export default function TeamMessagesPage() {
             </>
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Message</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this message? This action cannot be undone.
+                The recipient will no longer be able to see this message.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => messageToDelete && handleDeleteMessage(messageToDelete)}
+                disabled={isProcessing}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isProcessing ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Archive Confirmation Dialog */}
+        <AlertDialog open={!!messageToArchive} onOpenChange={() => setMessageToArchive(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Archive Message</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to archive this message? It will be moved out of your inbox
+                but can be retrieved later if needed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => messageToArchive && handleArchiveMessage(messageToArchive)}
+                disabled={isProcessing}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {isProcessing ? 'Archiving...' : 'Archive'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

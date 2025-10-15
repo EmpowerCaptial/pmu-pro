@@ -22,10 +22,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get all messages (sent and received)
+    // Get all messages (sent and received) - exclude deleted messages
     const [sentMessages, receivedMessages] = await Promise.all([
       prisma.teamMessage.findMany({
-        where: { senderId: user.id },
+        where: { 
+          senderId: user.id,
+          isDeleted: false // Exclude deleted messages from sender's view
+        },
         include: {
           recipient: {
             select: {
@@ -40,7 +43,10 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' }
       }),
       prisma.teamMessage.findMany({
-        where: { recipientId: user.id },
+        where: { 
+          recipientId: user.id,
+          isArchived: false // Exclude archived messages from recipient's inbox
+        },
         include: {
           sender: {
             select: {
@@ -153,7 +159,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/team-messages - Mark message as read
+// PUT /api/team-messages - Mark message as read, archive, or delete
 export async function PUT(request: NextRequest) {
   try {
     const userEmail = request.headers.get('x-user-email')
@@ -163,7 +169,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { messageId } = body
+    const { messageId, action } = body
 
     if (!messageId) {
       return NextResponse.json({ error: 'Missing message ID' }, { status: 400 })
@@ -179,16 +185,36 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Update message (only if user is the recipient)
-    const message = await prisma.teamMessage.updateMany({
-      where: {
-        id: messageId,
-        recipientId: user.id
-      },
-      data: {
+    let updateData: any = {}
+    let whereClause: any = { id: messageId }
+
+    if (action === 'read') {
+      // Mark as read (only if user is the recipient)
+      updateData = {
         isRead: true,
         readAt: new Date()
       }
+      whereClause.recipientId = user.id
+    } else if (action === 'archive') {
+      // Archive message (only if user is the recipient)
+      updateData = {
+        isArchived: true
+      }
+      whereClause.recipientId = user.id
+    } else if (action === 'delete') {
+      // Delete message (only if user is the sender)
+      updateData = {
+        isDeleted: true
+      }
+      whereClause.senderId = user.id
+    } else {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    // Update message
+    const message = await prisma.teamMessage.updateMany({
+      where: whereClause,
+      data: updateData
     })
 
     if (message.count === 0) {
@@ -198,7 +224,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true })
 
   } catch (error) {
-    console.error('Error marking message as read:', error)
+    console.error('Error updating team message:', error)
     return NextResponse.json(
       { error: 'Failed to update message', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
