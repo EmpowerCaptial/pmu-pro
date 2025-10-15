@@ -615,11 +615,68 @@ function BookingForm({ artist, selectedService, services, onBackToServices, onSe
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [availableSlots, setAvailableSlots] = useState<Array<{ time: string; display: string }>>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [availabilityInfo, setAvailabilityInfo] = useState<string>('')
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
   }
+
+  // Fetch available time slots when date changes
+  useEffect(() => {
+    const fetchAvailableSlots = async () => {
+      if (!formData.date || !artist.id) {
+        setAvailableSlots([])
+        setAvailabilityInfo('')
+        return
+      }
+
+      setLoadingSlots(true)
+      setAvailabilityInfo('')
+      
+      try {
+        const response = await fetch(`/api/availability/${artist.id}?date=${formData.date}`)
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch availability')
+        }
+
+        const data = await response.json()
+        
+        if (data.success) {
+          setAvailableSlots(data.slots || [])
+          
+          if (data.slots.length === 0) {
+            setAvailabilityInfo(`No available time slots on this date. ${data.blockedBy.appointments > 0 ? `${data.blockedBy.appointments} existing appointments. ` : ''}${data.blockedBy.timeBlocks > 0 ? `Artist is unavailable.` : ''}`)
+          } else {
+            setAvailabilityInfo(`${data.slots.length} time slot${data.slots.length > 1 ? 's' : ''} available`)
+          }
+          
+          // Clear selected time if it's no longer available
+          if (formData.time && !data.slots.find((s: any) => s.time === formData.time)) {
+            setFormData(prev => ({ ...prev, time: '' }))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching availability:', error)
+        setAvailabilityInfo('Unable to load availability. Please try again.')
+        // Fallback to default slots
+        setAvailableSlots(Array.from({ length: 12 }, (_, i) => {
+          const hour = 9 + i
+          return {
+            time: `${hour.toString().padStart(2, '0')}:00`,
+            display: hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 ${hour === 12 ? 'PM' : 'AM'}`
+          }
+        }))
+      } finally {
+        setLoadingSlots(false)
+      }
+    }
+
+    fetchAvailableSlots()
+  }, [formData.date, artist.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -799,21 +856,32 @@ function BookingForm({ artist, selectedService, services, onBackToServices, onSe
         </div>
         <div className="space-y-2">
           <Label htmlFor="time">Preferred Time *</Label>
-          <Select value={formData.time} onValueChange={(value) => handleInputChange('time', value)}>
+          <Select 
+            value={formData.time} 
+            onValueChange={(value) => handleInputChange('time', value)}
+            disabled={!formData.date || loadingSlots || availableSlots.length === 0}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Select time" />
+              <SelectValue placeholder={
+                !formData.date ? "Select a date first" :
+                loadingSlots ? "Loading available times..." :
+                availableSlots.length === 0 ? "No times available" :
+                "Select time"
+              } />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => {
-                const hour = 9 + i // 9 AM to 8 PM
-                return (
-                  <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
-                    {hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
-                  </SelectItem>
-                )
-              })}
+              {availableSlots.map((slot) => (
+                <SelectItem key={slot.time} value={slot.time}>
+                  {slot.display}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          {availabilityInfo && (
+            <p className={`text-xs ${availableSlots.length === 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {availabilityInfo}
+            </p>
+          )}
         </div>
       </div>
 

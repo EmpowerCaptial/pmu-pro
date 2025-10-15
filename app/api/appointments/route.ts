@@ -53,6 +53,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // CRITICAL: Check artist availability for the requested time slot
+    try {
+      const availabilityResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'https://thepmuguide.com'}/api/availability/${user.id}?date=${date}`
+      )
+      
+      if (availabilityResponse.ok) {
+        const availabilityData = await availabilityResponse.json()
+        
+        if (availabilityData.success) {
+          // Extract hour from requested time (e.g., "09:00" or "2:00 PM")
+          let requestedTime = time
+          if (time.includes('AM') || time.includes('PM')) {
+            const [timePart, period] = time.split(' ')
+            let [hours, minutes] = timePart.split(':')
+            let hour = parseInt(hours)
+            
+            if (period === 'PM' && hour !== 12) {
+              hour += 12
+            } else if (period === 'AM' && hour === 12) {
+              hour = 0
+            }
+            
+            requestedTime = `${hour.toString().padStart(2, '0')}:${minutes || '00'}`
+          }
+          
+          // Check if requested time is in available slots
+          const isAvailable = availabilityData.slots.some((slot: any) => slot.time === requestedTime)
+          
+          if (!isAvailable) {
+            return NextResponse.json({ 
+              error: 'Time slot not available', 
+              message: `The requested time (${time}) is not available. ${availabilityData.slots.length > 0 ? `Available times: ${availabilityData.slots.map((s: any) => s.display).join(', ')}` : 'No available time slots for this date.'}`,
+              availableSlots: availabilityData.slots
+            }, { status: 400 });
+          }
+        }
+      }
+    } catch (availabilityError) {
+      console.warn('Could not check availability, proceeding with booking:', availabilityError)
+      // Continue with booking if availability check fails (for backward compatibility)
+    }
+
     // Convert time to 24-hour format if needed (e.g., "9:30 AM" -> "09:30")
     let time24 = time;
     if (time.includes('AM') || time.includes('PM')) {
