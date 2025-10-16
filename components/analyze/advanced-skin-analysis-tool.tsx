@@ -381,7 +381,7 @@ export function AdvancedSkinAnalysisTool({ onAnalysisComplete }: AdvancedSkinAna
         analysisId: Math.random().toString(36).substr(2, 9).toUpperCase(),
         timestamp: new Date().toISOString(),
         photoQuality: basicAnalysis.confidence >= 0.9 ? "excellent" : basicAnalysis.confidence >= 0.8 ? "good" : "fair",
-        healingPrediction: `Based on your skin analysis, expect ${pmuReadiness.healing_potential >= 80 ? "excellent" : "good"} healing with ${pmuReadiness.overall >= 70 ? "minimal" : "moderate"} color shift over 4-6 weeks.`,
+        healingPrediction: `Based on your skin analysis, expect ${pmuReadiness.healing_potential >= 80 ? "excellent" : "good"} healing with ${pmuReadiness.overall >= 70 ? "minimal" : "moderate"} color shift over 6-8 weeks.`,
         longevityPrediction: `PMU longevity: ${pmuReadiness.overall >= 80 ? "24-36 months" : "18-24 months"} with proper aftercare`,
         maintenanceSchedule: [
           "Touch-up at 6-8 weeks",

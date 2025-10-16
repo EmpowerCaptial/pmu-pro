@@ -363,7 +363,7 @@ export default function ProcellSegmentation() {
 
       // Hyperpigmentation Assessment
       if (avgHyper > 20) {
-        clinicalDecision.treatmentModifications.push("Plan 4-6 ProCell sessions, 4 weeks apart")
+        clinicalDecision.treatmentModifications.push("Plan 4-6 ProCell sessions, 6 weeks apart")
         clinicalDecision.treatmentModifications.push("Start strict SPF 30+ protocol 2 weeks before treatment")
         clinicalDecision.treatmentModifications.push("Consider tyrosinase inhibitors pre-treatment")
       } else if (avgHyper > 10) {

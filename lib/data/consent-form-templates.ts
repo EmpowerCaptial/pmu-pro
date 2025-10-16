@@ -266,7 +266,7 @@ export const CONSENT_FORM_TEMPLATES: Record<ConsentFormType, FormTemplate> = {
       },
       {
         id: "healingTime",
-        label: "I understand that complete healing may take 4-6 weeks",
+        label: "I understand that complete healing may take 6-8 weeks",
         type: "checkbox",
         required: true,
         order: 5
@@ -478,7 +478,7 @@ export const CONSENT_FORM_TEMPLATES: Record<ConsentFormType, FormTemplate> = {
       },
       {
         id: "healingTime",
-        label: "I understand that complete healing may take 4-6 weeks",
+        label: "I understand that complete healing may take 6-8 weeks",
         type: "checkbox",
         required: true,
         order: 6

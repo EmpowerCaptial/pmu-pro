@@ -35,7 +35,7 @@ export const healingEmailSchedule: EmailSchedule[] = [
     day: 14,
     subject: "Day 14: Halfway Through Healing",
     content:
-      "You're halfway through the healing process! The color may appear lighter now - don't worry, it will continue to develop over the next two weeks.",
+      "You're making great progress! The color may appear lighter now - don't worry, it will continue to develop over the next 4-6 weeks for true healed results.",
     procedure: "brows",
   },
   // Day 21
@@ -46,10 +46,10 @@ export const healingEmailSchedule: EmailSchedule[] = [
       "You're in the final stretch! Your true color is emerging. Continue protecting your PMU from sun exposure and harsh products.",
     procedure: "brows",
   },
-  // Day 30
+  // Day 42
   {
-    day: 30,
-    subject: "Day 30: Fully Healed!",
+    day: 42,
+    subject: "Day 42: Fully Healed!",
     content:
       "Congratulations! Your PMU is now fully healed. Time to schedule your touch-up appointment if needed. Enjoy your beautiful results!",
     procedure: "brows",

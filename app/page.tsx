@@ -288,7 +288,7 @@ export default function HomePage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-ink/70">Healing Time:</span>
-                          <span className="font-medium text-ink">4-6 weeks</span>
+                          <span className="font-medium text-ink">6-8 weeks</span>
                         </div>
                       </div>
                       <div className="mt-4 p-3 bg-lavender/10 rounded border-l-4 border-lavender">

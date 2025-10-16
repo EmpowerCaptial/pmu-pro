@@ -7,7 +7,7 @@ const PMU_KNOWLEDGE = {
     "how long does pmu last": "PMU typically lasts 1-3 years, depending on factors like skin type, lifestyle, sun exposure, and the area treated. Touch-ups are usually needed every 12-18 months to maintain optimal results.",
     "is pmu painful": "Most clients report minimal discomfort during PMU procedures. Topical anesthetics are used to numb the area, and the sensation is often described as a light scratching or vibration.",
     "what areas can be treated": "Common PMU areas include eyebrows (microblading, powder brows), eyeliner (top, bottom, or both), lip color/liner, beauty marks, and scalp micropigmentation for hair loss.",
-    "how long is recovery": "Initial healing takes 7-14 days, with some redness and swelling. Full healing and color settling takes 4-6 weeks. During this time, avoid sun exposure, swimming, and certain skincare products."
+    "how long is recovery": "Initial healing takes 7-14 days, with some redness and swelling. Full healing and color settling takes 6-8 weeks. During this time, avoid sun exposure, swimming, and certain skincare products."
   },
   site_information: {
     "contact": "You can contact us at admin@thepmuguide.com for any questions, support, or inquiries about our PMU Pro system.",
@@ -112,7 +112,7 @@ function generateResponse(userMessage: string, conversationHistory: any[]): stri
   }
   
   if (message.includes('healing') || message.includes('recovery')) {
-    return "Initial healing takes 7-14 days with some redness and swelling. Full healing and color settling takes 4-6 weeks. During this time, avoid sun exposure, swimming, and certain skincare products. Proper aftercare is crucial for optimal results."
+    return "Initial healing takes 7-14 days with some redness and swelling. Full healing and color settling takes 6-8 weeks. During this time, avoid sun exposure, swimming, and certain skincare products. Proper aftercare is crucial for optimal results."
   }
   
   // Default response for unrecognized questions

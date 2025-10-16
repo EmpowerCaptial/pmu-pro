@@ -130,7 +130,7 @@ export function AnalysisResultsStep({ photo, results, onRetake, onNewAnalysis }:
         recommendations={[
           "Based on your Fitzpatrick type and undertones, we recommend starting with medium opacity pigments",
           "Consider patch testing before full procedure",
-          "Monitor healing for 4-6 weeks to assess final color result",
+          "Monitor healing for 6-8 weeks to assess final color result",
         ]}
         actions={[
           {
