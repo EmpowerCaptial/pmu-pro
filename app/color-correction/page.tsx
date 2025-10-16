@@ -17,7 +17,15 @@ export default function ColorCorrectionPage() {
       </div>
 
       <div className="relative z-10">
-        <NavBar />
+        <NavBar 
+          currentPath="/color-correction"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+            avatar: currentUser.avatar
+          } : undefined} 
+        />
         {/* Header */}
         <div className="p-4 md:p-6 border-b bg-white/80 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">

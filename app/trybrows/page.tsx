@@ -21,7 +21,15 @@ export default function TryBrowsPage() {
       />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
-        <NavBar />
+        <NavBar 
+          currentPath="/trybrows"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+            avatar: currentUser.avatar
+          } : undefined} 
+        />
         <div className="flex items-center justify-between mb-8">
           <Link href="/dashboard">
             <Button

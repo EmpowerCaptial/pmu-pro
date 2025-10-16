@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { NavBar } from "@/components/ui/navbar"
+import { useDemoAuth } from "@/hooks/use-demo-auth"
 
 interface ContraindicationResult {
   status: 'safe' | 'precaution' | 'contraindicated'
@@ -29,6 +30,7 @@ interface ContraindicationResult {
 }
 
 export default function AIContraindicationPage() {
+  const { currentUser } = useDemoAuth()
   const [clientName, setClientName] = useState("")
   const [medicalConditions, setMedicalConditions] = useState("")
   const [medications, setMedications] = useState("")
@@ -120,7 +122,15 @@ export default function AIContraindicationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
-      <NavBar currentPath="/ai-contraindication" />
+      <NavBar 
+        currentPath="/ai-contraindication" 
+        user={currentUser ? {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+          avatar: currentUser.avatar
+        } : undefined} 
+      />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 sm:pb-8">
         {/* Header */}

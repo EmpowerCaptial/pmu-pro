@@ -71,7 +71,15 @@ export default function IntakeFormsPage() {
       </div>
 
       <div className="container mx-auto max-w-4xl px-4 relative z-10">
-        <NavBar />
+        <NavBar 
+          currentPath="/intake-forms"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+            avatar: currentUser.avatar
+          } : undefined} 
+        />
         <div className="mb-8">
           <Link href="/dashboard">
             <Button variant="outline" className="mb-4 bg-transparent">

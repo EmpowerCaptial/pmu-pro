@@ -186,7 +186,15 @@ export default function StandardDocumentsPage() {
       </div>
 
       <div className="relative z-10">
-        <NavBar />
+        <NavBar 
+          currentPath="/standard-documents"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+            avatar: currentUser.avatar
+          } : undefined} 
+        />
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">

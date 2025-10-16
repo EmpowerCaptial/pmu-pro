@@ -10,7 +10,15 @@ export default function PerformancePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <div className="container mx-auto px-4 py-8">
-        <NavBar />
+        <NavBar 
+          currentPath="/performance"
+          user={currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            initials: currentUser.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U',
+            avatar: currentUser.avatar
+          } : undefined} 
+        />
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Performance Monitor
