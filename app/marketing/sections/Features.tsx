@@ -104,7 +104,7 @@ export function Features() {
               <Shield className="h-8 w-8 text-white" />
             </div>
             <h4 className="font-semibold mb-2">Compliance Ready</h4>
-            <p className="text-sm opacity-80">HIPAA-aware with secure data practices</p>
+            <p className="text-sm opacity-80">Enterprise-grade security with secure data practices</p>
           </div>
           
           <div className="text-center">

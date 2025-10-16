@@ -37,7 +37,7 @@ export function FAQ() {
     },
     {
       question: "Is my client data secure?",
-      answer: "Absolutely. We use HIPAA-aware data practices, encrypt all data in transit and at rest, and are SOC 2 compliant. Your client information is always secure."
+      answer: "Absolutely. We use enterprise-grade security practices, encrypt all data in transit and at rest, and follow industry-standard security protocols. Your client information is always secure."
     }
   ]
 

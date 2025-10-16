@@ -159,7 +159,7 @@ npx prisma studio
 
 ## 🔒 Data Security & Privacy
 
-### **HIPAA Compliance Considerations**
+### **Healthcare Data Security Considerations**
 - **Client Medical Data**: Store securely with encryption
 - **Document Access**: Implement role-based access control
 - **Audit Trail**: Track all data access and modifications

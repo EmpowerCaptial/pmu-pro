@@ -173,7 +173,7 @@ export function DocumentViewer({ clientId, highlightFormId }: { clientId?: strin
         </div>
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-blue-600" />
-          <span className="text-sm text-gray-600">HIPAA Compliant</span>
+          <span className="text-sm text-gray-600">Enterprise Security</span>
         </div>
       </div>
 

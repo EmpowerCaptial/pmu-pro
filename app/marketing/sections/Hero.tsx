@@ -42,7 +42,7 @@ export function Hero() {
           <div className="flex flex-wrap items-center gap-8 text-sm opacity-80">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              <span>HIPAA-aware data practices</span>
+              <span>Enterprise-grade security</span>
             </div>
             <div className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />

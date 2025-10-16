@@ -161,7 +161,7 @@ export default function HomePage() {
                 <span className="text-sm text-ink/70">4.9/5 Rating</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-ink/70">✅ HIPAA Compliant</span>
+                <span className="text-sm text-ink/70">✅ Enterprise Security</span>
               </div>
             </div>
             <div className="flex flex-col gap-4 sm:gap-6 justify-center px-4">
@@ -510,9 +510,9 @@ export default function HomePage() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-ink mb-3">HIPAA Compliance</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Enterprise Security</h3>
                   <p className="text-ink/70">
-                    Enterprise-grade security with encrypted data storage and compliant client management
+                    Bank-level encryption with secure data storage and professional client management
                   </p>
                 </CardContent>
               </Card>
@@ -617,9 +617,9 @@ export default function HomePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-ink mb-3">HIPAA Compliance</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Professional Security</h3>
                   <p className="text-ink/70">
-                    Enterprise-grade security with encrypted data storage and compliant client management for medical procedures
+                    Bank-level encryption with secure data storage and professional client management for medical procedures
                   </p>
                 </CardContent>
               </Card>
@@ -1221,7 +1221,7 @@ export default function HomePage() {
                 {
                   question: "Is my client data secure?",
                   answer:
-                    "Absolutely. PMU Pro is HIPAA-compliant with enterprise-grade security. All client data is encrypted and stored securely with strict access controls and regular security audits.",
+                    "Absolutely. PMU Pro uses enterprise-grade security with bank-level encryption. All client data is encrypted and stored securely with strict access controls and regular security audits.",
                 },
               ].map((faq, index) => (
                 <Card key={index} className="bg-white border-lavender/20">
