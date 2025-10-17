@@ -241,10 +241,17 @@ export default function PortfolioPage() {
   const handleCameraCapture = (file: File) => {
     handleFileUpload(cameraType, file)
     setIsCameraOpen(false)
+    setIsAddWorkOpen(true) // Reopen the Add Work dialog
+  }
+
+  const handleCameraClose = () => {
+    setIsCameraOpen(false)
+    setIsAddWorkOpen(true) // Reopen the Add Work dialog
   }
 
   const openCamera = (type: "before" | "after") => {
     setCameraType(type)
+    setIsAddWorkOpen(false) // Close the Add Work dialog
     setIsCameraOpen(true)
   }
 
@@ -893,7 +900,7 @@ export default function PortfolioPage() {
       {isCameraOpen && (
         <CameraCapture
           onCapture={handleCameraCapture}
-          onClose={() => setIsCameraOpen(false)}
+          onClose={handleCameraClose}
           title={`Take ${cameraType === "before" ? "Before" : "After"} Photo`}
           aspectRatio="square"
         />
