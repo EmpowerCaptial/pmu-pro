@@ -17,9 +17,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Send, Eye, Trash2, Plus, Share, Camera, Globe, Lock } from "lucide-react"
+import { Send, Eye, Trash2, Plus, Share, Camera, Globe, Lock, CameraIcon } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { CameraCapture } from "@/components/camera/camera-capture"
 
 interface PortfolioItem {
   id: string
@@ -43,12 +44,16 @@ export default function PortfolioPage() {
   )
 
   const [isAddWorkOpen, setIsAddWorkOpen] = useState(false)
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [cameraType, setCameraType] = useState<"before" | "after">("before")
   const [newWork, setNewWork] = useState({
     type: "eyebrows" as "eyebrows" | "lips" | "eyeliner",
     title: "",
     description: "",
     beforeImage: null as File | null,
     afterImage: null as File | null,
+    beforePreview: null as string | null,
+    afterPreview: null as string | null,
   })
 
   // Load saved portfolio items on component mount
@@ -158,6 +163,8 @@ export default function PortfolioPage() {
           description: "",
           beforeImage: null,
           afterImage: null,
+          beforePreview: null,
+          afterPreview: null,
         })
         alert("Portfolio item added successfully!")
       } else {
@@ -192,6 +199,8 @@ export default function PortfolioPage() {
         description: "",
         beforeImage: null,
         afterImage: null,
+        beforePreview: null,
+        afterPreview: null,
       })
       alert("Portfolio item added successfully (saved locally)!")
     }
@@ -221,10 +230,22 @@ export default function PortfolioPage() {
 
   const handleFileUpload = (type: "before" | "after", file: File | null) => {
     if (type === "before") {
-      setNewWork({ ...newWork, beforeImage: file })
+      const preview = file ? URL.createObjectURL(file) : null
+      setNewWork({ ...newWork, beforeImage: file, beforePreview: preview })
     } else {
-      setNewWork({ ...newWork, afterImage: file })
+      const preview = file ? URL.createObjectURL(file) : null
+      setNewWork({ ...newWork, afterImage: file, afterPreview: preview })
     }
+  }
+
+  const handleCameraCapture = (file: File) => {
+    handleFileUpload(cameraType, file)
+    setIsCameraOpen(false)
+  }
+
+  const openCamera = (type: "before" | "after") => {
+    setCameraType(type)
+    setIsCameraOpen(true)
   }
 
   const handleSendPortfolio = async () => {
@@ -376,21 +397,63 @@ export default function PortfolioPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="before-image">Before Image</Label>
-                        <Input
-                          id="before-image"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload("before", e.target.files?.[0] || null)}
-                        />
+                        <div className="space-y-2">
+                          <Input
+                            id="before-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload("before", e.target.files?.[0] || null)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCamera("before")}
+                            className="w-full"
+                          >
+                            <CameraIcon className="h-4 w-4 mr-2" />
+                            Take Photo
+                          </Button>
+                          {newWork.beforePreview && (
+                            <div className="mt-2">
+                              <img
+                                src={newWork.beforePreview}
+                                alt="Before preview"
+                                className="w-full h-24 object-cover rounded-md border"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="after-image">After Image</Label>
-                        <Input
-                          id="after-image"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload("after", e.target.files?.[0] || null)}
-                        />
+                        <div className="space-y-2">
+                          <Input
+                            id="after-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload("after", e.target.files?.[0] || null)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCamera("after")}
+                            className="w-full"
+                          >
+                            <CameraIcon className="h-4 w-4 mr-2" />
+                            Take Photo
+                          </Button>
+                          {newWork.afterPreview && (
+                            <div className="mt-2">
+                              <img
+                                src={newWork.afterPreview}
+                                alt="After preview"
+                                className="w-full h-24 object-cover rounded-md border"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <Button onClick={handleAddWork} className="w-full bg-lavender hover:bg-lavender-600">
@@ -497,21 +560,63 @@ export default function PortfolioPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="before-image">Before Image</Label>
-                        <Input
-                          id="before-image"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload("before", e.target.files?.[0] || null)}
-                        />
+                        <div className="space-y-2">
+                          <Input
+                            id="before-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload("before", e.target.files?.[0] || null)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCamera("before")}
+                            className="w-full"
+                          >
+                            <CameraIcon className="h-4 w-4 mr-2" />
+                            Take Photo
+                          </Button>
+                          {newWork.beforePreview && (
+                            <div className="mt-2">
+                              <img
+                                src={newWork.beforePreview}
+                                alt="Before preview"
+                                className="w-full h-24 object-cover rounded-md border"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="after-image">After Image</Label>
-                        <Input
-                          id="after-image"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload("after", e.target.files?.[0] || null)}
-                        />
+                        <div className="space-y-2">
+                          <Input
+                            id="after-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload("after", e.target.files?.[0] || null)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCamera("after")}
+                            className="w-full"
+                          >
+                            <CameraIcon className="h-4 w-4 mr-2" />
+                            Take Photo
+                          </Button>
+                          {newWork.afterPreview && (
+                            <div className="mt-2">
+                              <img
+                                src={newWork.afterPreview}
+                                alt="After preview"
+                                className="w-full h-24 object-cover rounded-md border"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <Button onClick={handleAddWork} className="w-full bg-lavender hover:bg-lavender-600">
@@ -783,6 +888,16 @@ export default function PortfolioPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Camera Capture Modal */}
+      {isCameraOpen && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setIsCameraOpen(false)}
+          title={`Take ${cameraType === "before" ? "Before" : "After"} Photo`}
+          aspectRatio="square"
+        />
+      )}
     </div>
   )
 }
