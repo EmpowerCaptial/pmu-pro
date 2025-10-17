@@ -71,6 +71,7 @@ export default function StudioSupervisionPage() {
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [instructors, setInstructors] = useState<Instructor[]>([])
   const [studentHours, setStudentHours] = useState<any[]>([])
+  const [expandedStudent, setExpandedStudent] = useState<string | null>(null)
   
   // Booking system state
   const [selectedInstructor, setSelectedInstructor] = useState<string>('')
@@ -521,6 +522,11 @@ export default function StudioSupervisionPage() {
   const getStudentHoursForInstructor = (instructorId: string) => {
     // For now, return mock data - in a real implementation, you'd filter by instructor
     return studentHours.slice(0, 3) // Show first 3 students as example
+  }
+
+  // Toggle student details expansion
+  const toggleStudentExpansion = (studentId: string) => {
+    setExpandedStudent(expandedStudent === studentId ? null : studentId)
   }
 
   // Get available time slots for selected instructor and date
@@ -3278,70 +3284,91 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <div className="bg-white/80 rounded-xl p-6 border border-lavender/30">
+                    <div className="bg-white/80 rounded-xl p-4 sm:p-6 border border-lavender/30">
                       {studentHours.length === 0 ? (
-                        <div className="text-center py-8">
-                          <div className="w-16 h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <GraduationCap className="h-8 w-8 text-white" />
+                        <div className="text-center py-6 sm:py-8">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-lavender to-lavender-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                            <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                           </div>
-                          <h3 className="text-lg font-bold text-ink mb-2">No Students Assigned</h3>
-                          <p className="text-ink/70">
+                          <h3 className="text-base sm:text-lg font-bold text-ink mb-2">No Students Assigned</h3>
+                          <p className="text-sm sm:text-base text-ink/70 px-4">
                             Students will appear here once they start logging training hours with you.
                           </p>
                         </div>
                       ) : (
-                        <div className="space-y-4">
-                          {studentHours.map((student, index) => (
-                            <div key={index} className="bg-lavender/10 rounded-lg p-4 border border-lavender/30">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="w-10 h-10">
-                                    <AvatarImage src={student.avatar} />
-                                    <AvatarFallback className="bg-lavender text-white font-semibold">
-                                      {student.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'S'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <h4 className="font-bold text-ink">{student.name || 'Student'}</h4>
-                                    <p className="text-sm text-ink/70">{student.email}</p>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender">
-                                  {student.totalHours || 0}h total
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white/60 rounded-lg p-3 border border-lavender/20">
-                                  <div className="text-sm text-ink/70 mb-1">Total Hours</div>
-                                  <div className="text-xl font-bold text-lavender">{student.totalHours || 0}h</div>
-                                </div>
-                                <div className="bg-white/60 rounded-lg p-3 border border-lavender/20">
-                                  <div className="text-sm text-ink/70 mb-1">Procedures</div>
-                                  <div className="text-xl font-bold text-lavender">{student.procedures || 0}</div>
-                                </div>
-                                <div className="bg-white/60 rounded-lg p-3 border border-lavender/20">
-                                  <div className="text-sm text-ink/70 mb-1">Last Activity</div>
-                                  <div className="text-sm font-medium text-ink">
-                                    {student.lastActivity ? new Date(student.lastActivity).toLocaleDateString() : 'N/A'}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {student.procedureTypes && student.procedureTypes.length > 0 && (
-                                <div className="mt-3 pt-3 border-t border-lavender/20">
-                                  <div className="text-sm font-medium text-ink mb-2">Procedure Types:</div>
-                                  <div className="flex flex-wrap gap-2">
-                                    {student.procedureTypes.map((type: string, typeIndex: number) => (
-                                      <Badge key={typeIndex} variant="secondary" className="bg-lavender/20 text-ink text-xs">
-                                        {type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                        <div className="space-y-3">
+                          {studentHours.map((student, index) => {
+                            const studentId = student.id || student.email || index.toString()
+                            const isExpanded = expandedStudent === studentId
+                            
+                            return (
+                              <div key={index} className="bg-lavender/10 rounded-lg border border-lavender/30 overflow-hidden">
+                                {/* Clickable student header */}
+                                <div 
+                                  className="p-3 sm:p-4 cursor-pointer hover:bg-lavender/20 transition-colors"
+                                  onClick={() => toggleStudentExpansion(studentId)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                      <Avatar className="w-10 h-10 flex-shrink-0">
+                                        <AvatarImage src={student.avatar} />
+                                        <AvatarFallback className="bg-lavender text-white font-semibold text-sm">
+                                          {student.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'S'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="min-w-0 flex-1">
+                                        <h4 className="font-bold text-ink text-sm sm:text-base truncate">{student.name || 'Student'}</h4>
+                                        <p className="text-xs sm:text-sm text-ink/70 truncate">{student.email}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                      <Badge variant="outline" className="bg-lavender/20 text-ink border-lavender text-xs sm:text-sm">
+                                        {student.totalHours || 0}h total
                                       </Badge>
-                                    ))}
+                                      <ChevronDown className={`h-4 w-4 text-ink/70 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                    </div>
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                          ))}
+
+                                {/* Expandable details */}
+                                {isExpanded && (
+                                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-lavender/20 bg-white/50">
+                                    {/* Responsive metrics grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-3">
+                                      <div className="bg-white/80 rounded-lg p-3 border border-lavender/20">
+                                        <div className="text-xs sm:text-sm text-ink/70 mb-1">Total Hours</div>
+                                        <div className="text-lg sm:text-xl font-bold text-lavender">{student.totalHours || 0}h</div>
+                                      </div>
+                                      <div className="bg-white/80 rounded-lg p-3 border border-lavender/20">
+                                        <div className="text-xs sm:text-sm text-ink/70 mb-1">Procedures</div>
+                                        <div className="text-lg sm:text-xl font-bold text-lavender">{student.procedures || 0}</div>
+                                      </div>
+                                      <div className="bg-white/80 rounded-lg p-3 border border-lavender/20">
+                                        <div className="text-xs sm:text-sm text-ink/70 mb-1">Last Activity</div>
+                                        <div className="text-xs sm:text-sm font-medium text-ink">
+                                          {student.lastActivity ? new Date(student.lastActivity).toLocaleDateString() : 'N/A'}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Procedure types */}
+                                    {student.procedureTypes && student.procedureTypes.length > 0 && (
+                                      <div className="mt-3 pt-3 border-t border-lavender/20">
+                                        <div className="text-xs sm:text-sm font-medium text-ink mb-2">Procedure Types:</div>
+                                        <div className="flex flex-wrap gap-1 sm:gap-2">
+                                          {student.procedureTypes.map((type: string, typeIndex: number) => (
+                                            <Badge key={typeIndex} variant="secondary" className="bg-lavender/20 text-ink text-xs px-2 py-1">
+                                              {type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
