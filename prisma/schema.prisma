@@ -76,6 +76,7 @@ model User {
   reviews                Review[]
   reviewLinks            ReviewLink[]
   timeBlocks             TimeBlock[]
+  timeTrackingSessions   TimeTrackingSession[]
 
   @@map("users")
 }
@@ -937,6 +938,44 @@ model TimeBlock {
   @@index([date])
   @@index([userId, date])
   @@map("time_blocks")
+}
+
+model TimeTrackingSession {
+  id            String    @id @default(cuid())
+  userId        String
+  clockInTime   DateTime
+  clockOutTime  DateTime?
+  totalHours    Float?    // Calculated total hours worked
+  breakSessions BreakSession[]
+  location      String?   // Location where clocked in
+  lat           Float?    // Latitude
+  lng           Float?    // Longitude
+  notes         String?   // Optional notes
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([clockInTime])
+  @@index([userId, clockInTime])
+  @@map("time_tracking_sessions")
+}
+
+model BreakSession {
+  id          String   @id @default(cuid())
+  sessionId   String
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Float?   // Calculated break duration in hours
+  reason      String?  // Reason for break
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  session TimeTrackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionId])
+  @@map("break_sessions")
 }
 
 model StudioSettings {

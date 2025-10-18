@@ -40,16 +40,66 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // For now, return mock data for student hours
-    // TODO: Implement actual time tracking when TimeBlock model is properly set up
-    const studentHours = students.map(student => ({
-      id: student.id,
-      name: student.name,
-      email: student.email,
-      totalHours: 0, // Mock data
-      procedures: 0, // Mock data
-      lastActivity: student.createdAt,
-      procedureTypes: [] // Mock data
+    // Calculate real student hours from time tracking sessions
+    const studentHours = await Promise.all(students.map(async (student) => {
+      // Get all completed time tracking sessions for this student
+      const sessions = await prisma.timeTrackingSession.findMany({
+        where: {
+          userId: student.id,
+          clockOutTime: { not: null } // Only completed sessions
+        },
+        include: {
+          breakSessions: true
+        }
+      })
+
+      // Calculate total hours worked
+      const totalHours = sessions.reduce((sum, session) => {
+        return sum + (session.totalHours || 0)
+      }, 0)
+
+      // Get procedure count from appointments
+      const procedureCount = await prisma.appointment.count({
+        where: {
+          userId: student.id,
+          status: 'completed'
+        }
+      })
+
+      // Get last activity (most recent session or appointment)
+      const lastSession = sessions[0]
+      const lastAppointment = await prisma.appointment.findFirst({
+        where: {
+          userId: student.id
+        },
+        orderBy: {
+          startTime: 'desc'
+        }
+      })
+
+      const lastActivity = lastSession?.clockInTime || lastAppointment?.startTime || student.createdAt
+
+      // Get procedure types from completed appointments
+      const procedureTypes = await prisma.appointment.findMany({
+        where: {
+          userId: student.id,
+          status: 'completed'
+        },
+        select: {
+          serviceType: true
+        },
+        distinct: ['serviceType']
+      })
+
+      return {
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal place
+        procedures: procedureCount,
+        lastActivity,
+        procedureTypes: procedureTypes.map(p => p.serviceType)
+      }
     }))
 
     return NextResponse.json({
