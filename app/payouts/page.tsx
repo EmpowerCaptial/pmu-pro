@@ -647,30 +647,6 @@ export default function PayoutsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-lavender/20 bg-gradient-to-r from-white to-beige/30">
-                <CardHeader className="p-3 sm:p-6">
-                  <CardTitle className="text-lavender text-base sm:text-lg">Payout Methods</CardTitle>
-                  <CardDescription className="text-sm sm:text-base">Distribution by payment method</CardDescription>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6">
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
-                      <div className="flex items-center space-x-2">
-                        <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                        <span className="text-xs sm:text-sm font-medium text-muted">Stripe</span>
-                      </div>
-                      <span className="font-semibold text-ink text-sm sm:text-base">85%</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
-                      <div className="flex items-center space-x-2">
-                        <Banknote className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                        <span className="text-xs sm:text-sm font-medium text-muted">Bank Transfer</span>
-                      </div>
-                      <span className="font-semibold text-ink text-sm sm:text-base">15%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
         </Tabs>
