@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true,
-        servicePrice: true,
+        price: true,
         gratuityAmount: true,
         status: true,
         createdAt: true
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculate totals
-    const totalRevenue = appointments.reduce((sum, apt) => sum + (apt.servicePrice || 0), 0)
+    const totalRevenue = appointments.reduce((sum, apt) => sum + (apt.price || 0), 0)
     const totalGratuity = appointments.reduce((sum, apt) => sum + (apt.gratuityAmount || 0), 0)
     const completedAppointments = appointments.filter(apt => apt.status === 'completed').length
 
