@@ -40,7 +40,7 @@ export function VoiceToText({
   const [transcribedText, setTranscribedText] = useState('')
   const [rewrittenText, setRewrittenText] = useState('')
   const [isRewriting, setIsRewriting] = useState(false)
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [recognition, setRecognition] = useState<any>(null)
   const [isSupported, setIsSupported] = useState(false)
   const [rewriteOptions, setRewriteOptions] = useState<RewriteOptions>({
     tone: 'professional',

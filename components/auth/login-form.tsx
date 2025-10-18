@@ -56,7 +56,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="border-border shadow-lg">
+    <Card className="border-border shadow-lg bg-white/95 backdrop-blur-sm">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-semibold text-center">Welcome back</CardTitle>
         <CardDescription className="text-center">Sign in to your PMU Pro account</CardDescription>
