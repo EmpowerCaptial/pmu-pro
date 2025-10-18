@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Send, Mail, MessageSquare, FileText, X, CheckCircle } from "lucide-react"
+import { Send, Mail, MessageSquare, FileText, X, CheckCircle, Mic, MicOff } from "lucide-react"
 import { getTemplateNames } from "@/lib/data/consent-form-templates"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { VoiceToText } from "@/components/voice/voice-to-text"
 
 interface ConsentFormModalProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
   const [customMessage, setCustomMessage] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [isSent, setIsSent] = useState(false)
+  const [showVoiceInput, setShowVoiceInput] = useState(false)
 
   const handleSend = async () => {
     if (!selectedForm) {
@@ -167,6 +169,15 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
     } finally {
       setIsSending(false)
     }
+  }
+
+  const handleTranscriptionComplete = (transcribedText: string) => {
+    setCustomMessage(transcribedText)
+    setShowVoiceInput(false)
+  }
+
+  const handleRewriteComplete = (rewrittenText: string) => {
+    setCustomMessage(rewrittenText)
   }
 
   const generateToken = () => {
@@ -331,7 +342,38 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
 
           {/* Custom Message */}
           <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-900">Custom Message (Optional)</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold text-gray-900">Custom Message (Optional)</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowVoiceInput(!showVoiceInput)}
+                className="flex items-center space-x-2"
+              >
+                {showVoiceInput ? (
+                  <>
+                    <MicOff className="h-4 w-4" />
+                    <span>Hide Voice Input</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="h-4 w-4" />
+                    <span>Voice Input</span>
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {showVoiceInput && (
+              <VoiceToText
+                onTranscriptionComplete={handleTranscriptionComplete}
+                onRewriteComplete={handleRewriteComplete}
+                placeholder="Click the microphone to dictate your custom message..."
+                className="mb-4"
+              />
+            )}
+            
             <Textarea
               placeholder="Add a personal message to include with the form..."
               value={customMessage}

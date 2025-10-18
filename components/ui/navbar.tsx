@@ -29,6 +29,7 @@ import {
   Bell,
   MessageSquare,
   MapPin,
+  Mic,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 
@@ -218,6 +219,12 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     <Link href="/portfolio" className="cursor-pointer">
                       <Briefcase className="mr-2 h-4 w-4" />
                       <span>Portfolio</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
+                    <Link href="/voice-demo" className="cursor-pointer">
+                      <Mic className="mr-2 h-4 w-4" />
+                      <span>Voice Demo</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="text-white hover:bg-white/20">

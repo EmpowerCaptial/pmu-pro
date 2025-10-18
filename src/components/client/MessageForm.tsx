@@ -5,8 +5,9 @@ import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare, Send, Mic, MicOff } from 'lucide-react';
 import { Client } from './ClientList';
+import { VoiceToText } from '@/components/voice/voice-to-text';
 
 interface MessageFormProps {
   client: Client | null;
@@ -18,6 +19,7 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
   const [messageType, setMessageType] = useState('appointment');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +59,15 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
     }
   };
 
+  const handleTranscriptionComplete = (transcribedText: string) => {
+    setMessage(transcribedText);
+    setShowVoiceInput(false);
+  };
+
+  const handleRewriteComplete = (rewrittenText: string) => {
+    setMessage(rewrittenText);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -76,7 +87,38 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
       </div>
 
       <div className="space-y-2">
-        <Label>Message</Label>
+        <div className="flex items-center justify-between">
+          <Label>Message</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowVoiceInput(!showVoiceInput)}
+            className="flex items-center space-x-2"
+          >
+            {showVoiceInput ? (
+              <>
+                <MicOff className="h-4 w-4" />
+                <span>Hide Voice Input</span>
+              </>
+            ) : (
+              <>
+                <Mic className="h-4 w-4" />
+                <span>Voice Input</span>
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {showVoiceInput && (
+          <VoiceToText
+            onTranscriptionComplete={handleTranscriptionComplete}
+            onRewriteComplete={handleRewriteComplete}
+            placeholder="Click the microphone to dictate your message..."
+            className="mb-4"
+          />
+        )}
+        
         <Textarea 
           value={message}
           onChange={(e) => setMessage(e.target.value)}

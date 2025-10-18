@@ -19,10 +19,13 @@ import {
   X,
   Trash2,
   Archive,
-  MoreVertical
+  MoreVertical,
+  Mic,
+  MicOff
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
+import { VoiceToText } from '@/components/voice/voice-to-text'
 import {
   Select,
   SelectContent,
@@ -90,6 +93,7 @@ export default function TeamMessagesPage() {
   const [messageSubject, setMessageSubject] = useState('')
   const [messageContent, setMessageContent] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [showVoiceInput, setShowVoiceInput] = useState(false)
   
   // Delete/Archive state
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
@@ -186,6 +190,15 @@ export default function TeamMessagesPage() {
     } finally {
       setIsSending(false)
     }
+  }
+
+  const handleTranscriptionComplete = (transcribedText: string) => {
+    setMessageContent(transcribedText)
+    setShowVoiceInput(false)
+  }
+
+  const handleRewriteComplete = (rewrittenText: string) => {
+    setMessageContent(rewrittenText)
   }
 
   const handleMarkAsRead = async (messageId: string) => {
@@ -422,7 +435,38 @@ export default function TeamMessagesPage() {
 
                   {/* Message Content */}
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="message">Message *</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowVoiceInput(!showVoiceInput)}
+                        className="flex items-center space-x-2"
+                      >
+                        {showVoiceInput ? (
+                          <>
+                            <MicOff className="h-4 w-4" />
+                            <span>Hide Voice Input</span>
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="h-4 w-4" />
+                            <span>Voice Input</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {showVoiceInput && (
+                      <VoiceToText
+                        onTranscriptionComplete={handleTranscriptionComplete}
+                        onRewriteComplete={handleRewriteComplete}
+                        placeholder="Click the microphone to dictate your team message..."
+                        className="mb-4"
+                      />
+                    )}
+                    
                     <Textarea
                       id="message"
                       placeholder="Type your message here..."
