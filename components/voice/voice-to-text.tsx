@@ -364,7 +364,7 @@ export function VoiceToText({
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
+    SpeechRecognition: any
+    webkitSpeechRecognition: any
   }
 }
