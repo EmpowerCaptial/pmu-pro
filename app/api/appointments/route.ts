@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        appointmentDate: 'desc'
+        startTime: 'desc'
       }
     })
 
