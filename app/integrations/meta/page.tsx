@@ -154,7 +154,7 @@ export default function MetaIntegrationPage() {
       window.location.href = facebookAuthUrl;
     } catch (error) {
       console.error('Facebook connection error:', error);
-      setError(`Failed to connect to Facebook: ${error.message}`);
+      setError(`Failed to connect to Facebook: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setLoading(false);
     }
   };
