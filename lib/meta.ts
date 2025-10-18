@@ -29,10 +29,17 @@ export interface InstagramAccount {
  * Exchange short-lived user token for long-lived token
  */
 export async function exchangeUserTokenForLongLived(userToken: string): Promise<LongLivedTokenResponse> {
+  const clientId = process.env.FACEBOOK_CLIENT_ID;
+  const clientSecret = process.env.FACEBOOK_CLIENT_SECRET;
+  
+  if (!clientId || !clientSecret) {
+    throw new Error('Facebook environment variables not configured');
+  }
+
   const url = new URL(`${FB_API}/oauth/access_token`);
   url.searchParams.set("grant_type", "fb_exchange_token");
-  url.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID!);
-  url.searchParams.set("client_secret", process.env.FACEBOOK_CLIENT_SECRET!);
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("client_secret", clientSecret);
   url.searchParams.set("fb_exchange_token", userToken);
   
   const res = await fetch(url);
