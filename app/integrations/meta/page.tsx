@@ -119,24 +119,42 @@ export default function MetaIntegrationPage() {
     try {
       // Get the correct redirect URI
       const redirectUri = `${window.location.origin}/integrations/meta/callback`;
+      const clientId = process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID;
+      
+      // Validate environment variable
+      if (!clientId) {
+        throw new Error('Facebook Client ID not configured');
+      }
       
       // Redirect to Facebook OAuth for seamless connection
       const facebookAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?` +
-        `client_id=${process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID}&` +
+        `client_id=${clientId}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic&` +
         `response_type=code&` +
         `state=${currentUser?.id || 'demo'}`;
       
+      console.log('=== FACEBOOK OAUTH DEBUG ===');
       console.log('Facebook OAuth URL:', facebookAuthUrl);
       console.log('Redirect URI:', redirectUri);
-      console.log('Client ID:', process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID);
+      console.log('Client ID:', clientId);
+      console.log('Current Origin:', window.location.origin);
+      console.log('============================');
+      
+      // Test if the URL is valid
+      try {
+        new URL(facebookAuthUrl);
+        console.log('✅ OAuth URL is valid');
+      } catch (urlError) {
+        console.error('❌ Invalid OAuth URL:', urlError);
+        throw new Error('Invalid OAuth URL generated');
+      }
       
       // Redirect to Facebook OAuth
       window.location.href = facebookAuthUrl;
     } catch (error) {
       console.error('Facebook connection error:', error);
-      setError("Failed to connect to Facebook. Please try again.");
+      setError(`Failed to connect to Facebook: ${error.message}`);
       setLoading(false);
     }
   };
