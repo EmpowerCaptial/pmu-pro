@@ -64,7 +64,7 @@ export function VoiceToText({
           toast.success("Recording started...")
         }
         
-        recognition.onresult = (event) => {
+        recognition.onresult = (event: any) => {
           let finalTranscript = ''
           let interimTranscript = ''
           
@@ -88,7 +88,7 @@ export function VoiceToText({
           }
         }
         
-        recognition.onerror = (event) => {
+        recognition.onerror = (event: any) => {
           setIsRecording(false)
           toast.error(`Recording error: ${event.error}`)
         }
