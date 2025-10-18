@@ -3,89 +3,45 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = "force-dynamic"
 
-// GET - Fetch all team members for a studio
+// GET /api/studio/team-members - Get team members for a studio
 export async function GET(request: NextRequest) {
   try {
     const userEmail = request.headers.get('x-user-email')
     
     if (!userEmail) {
-      return NextResponse.json({ error: 'User email required' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Find the requesting user
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        studioName: true,
-        selectedPlan: true
-      }
+    // Get the current user
+    const currentUser = await prisma.user.findUnique({
+      where: { email: userEmail }
     })
 
-    if (!user) {
+    if (!currentUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get all team members in this studio (including the owner)
+    // Get all team members in the same studio
     const teamMembers = await prisma.user.findMany({
       where: {
-        studioName: user.studioName
+        studioName: currentUser.studioName,
+        id: { not: currentUser.id } // Exclude the current user
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        specialties: true,
-        certifications: true,
         avatar: true,
-        phone: true,
         businessName: true,
-        studioName: true,
-        licenseNumber: true,
-        licenseState: true,
-        createdAt: true,
-        // Employment/payment fields
-        employmentType: true,
-        commissionRate: true,
-        boothRentAmount: true
-      },
-      orderBy: [
-        { role: 'asc' },
-        { name: 'asc' }
-      ]
+        createdAt: true
+      }
     })
-
-    // Transform to consistent format
-    const formattedMembers = teamMembers.map(member => ({
-      id: member.id,
-      name: member.name,
-      email: member.email,
-      role: member.role,
-      status: 'active', // All database users are active
-      specialties: member.specialties,
-      certifications: member.certifications,
-      avatar: member.avatar,
-      phone: member.phone,
-      businessName: member.businessName,
-      studioName: member.studioName,
-      licenseNumber: member.licenseNumber,
-      licenseState: member.licenseState,
-      invitedAt: member.createdAt.toISOString(),
-      joinedAt: member.createdAt.toISOString(),
-      // Employment/payment fields
-      employmentType: member.employmentType,
-      commissionRate: member.commissionRate,
-      boothRentAmount: member.boothRentAmount
-    }))
 
     return NextResponse.json({
       success: true,
-      teamMembers: formattedMembers,
-      studioName: user.studioName,
-      count: formattedMembers.length
+      teamMembers,
+      count: teamMembers.length
     })
 
   } catch (error) {
@@ -96,4 +52,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

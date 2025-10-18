@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import Stripe from 'stripe'
-
-// Initialize Stripe only if API key is available
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-07-30.basil',
-}) : null
 
 export const dynamic = "force-dynamic"
 
@@ -15,25 +9,19 @@ export async function GET(request: NextRequest) {
     const userEmail = request.headers.get('x-user-email')
     
     if (!userEmail) {
-      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Find user by email with minimal fields
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: {
-        id: true,
-        email: true,
-        stripeId: true,
-        stripeConnectAccountId: true
-      }
+    // Get the current user
+    const currentUser = await prisma.user.findUnique({
+      where: { email: userEmail }
     })
 
-    if (!user) {
+    if (!currentUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Calculate today's date range
+    // Calculate date range for today
     const now = new Date()
     const startOfDay = new Date(now)
     startOfDay.setHours(0, 0, 0, 0)
@@ -41,144 +29,45 @@ export async function GET(request: NextRequest) {
     const endOfDay = new Date(now)
     endOfDay.setHours(23, 59, 59, 999)
 
-    // Get today's appointments with minimal fields
-    const todaysAppointments = await prisma.appointment.findMany({
+    // Get appointments for today
+    const appointments = await prisma.appointment.findMany({
       where: {
-        userId: user.id,
-        startTime: {
+        userId: currentUser.id,
+        createdAt: {
           gte: startOfDay,
           lte: endOfDay
-        },
-        status: {
-          in: ['completed', 'confirmed']
         }
       },
       select: {
         id: true,
-        price: true,
-        status: true
+        servicePrice: true,
+        gratuityAmount: true,
+        status: true,
+        createdAt: true
       }
     })
 
-    // Calculate today's revenue
-    const todaysRevenue = todaysAppointments.reduce((sum, appointment) => {
-      return sum + Number(appointment.price || 0)
-    }, 0)
-
-    const transactionCount = todaysAppointments.length
-
-    // Get Stripe balance if user has Stripe Connect account
-    let stripeBalance = 0
-    let canPayout = false
-    
-    try {
-      if (user.stripeConnectAccountId && stripe) {
-        // Get Stripe Connect account balance
-        const balance = await stripe.balance.retrieve({
-          stripeAccount: user.stripeConnectAccountId
-        })
-        
-        // Calculate available balance (immediately available)
-        stripeBalance = balance.available.reduce((sum, item) => {
-          return sum + item.amount
-        }, 0) / 100 // Convert from cents to dollars
-        
-        // Check if payout is possible (minimum $1.00)
-        canPayout = stripeBalance >= 1.00
-      }
-    } catch (stripeError) {
-      console.error('Error fetching Stripe balance:', stripeError)
-      // Continue without Stripe data
-    }
-
-    // Calculate system balance (money in the system but not yet transferred to Stripe)
-    // This would be appointments that are completed but not yet processed for payout
-    const systemBalance = todaysRevenue * 0.1 // Example: 10% of today's revenue is system balance
+    // Calculate totals
+    const totalRevenue = appointments.reduce((sum, apt) => sum + (apt.servicePrice || 0), 0)
+    const totalGratuity = appointments.reduce((sum, apt) => sum + (apt.gratuityAmount || 0), 0)
+    const completedAppointments = appointments.filter(apt => apt.status === 'completed').length
 
     return NextResponse.json({
-      todaysRevenue,
-      stripeBalance,
-      systemBalance,
-      transactionCount,
-      canPayout,
-      date: startOfDay.toISOString()
+      success: true,
+      data: {
+        totalRevenue,
+        totalGratuity,
+        totalAppointments: appointments.length,
+        completedAppointments,
+        date: startOfDay
+      }
     })
 
   } catch (error) {
     console.error('Error fetching daily financial data:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch daily financial data',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch daily financial data' },
       { status: 500 }
     )
-  }}
-
-// POST /api/financial/daily - Process immediate payout
-export async function POST(request: NextRequest) {
-  try {
-    const userEmail = request.headers.get('x-user-email')
-    
-    if (!userEmail) {
-      return NextResponse.json({ error: 'Missing user email' }, { status: 401 })
-    }
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: {
-        id: true,
-        email: true,
-        stripeConnectAccountId: true
-      }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    if (!user.stripeConnectAccountId || !stripe) {
-      return NextResponse.json({ error: 'Stripe Connect account not set up' }, { status: 400 })
-    }
-
-    // Get current Stripe balance
-    const balance = await stripe.balance.retrieve({
-      stripeAccount: user.stripeConnectAccountId
-    })
-
-    const availableBalance = balance.available.reduce((sum, item) => {
-      return sum + item.amount
-    }, 0)
-
-    if (availableBalance < 100) { // $1.00 minimum in cents
-      return NextResponse.json({ error: 'Insufficient balance for payout' }, { status: 400 })
-    }
-
-    // Create instant payout
-    const payout = await stripe.transfers.create({
-      amount: availableBalance,
-      currency: 'usd',
-      destination: user.stripeConnectAccountId,
-      transfer_group: `payout_${Date.now()}`
-    }, {
-      stripeAccount: user.stripeConnectAccountId
-    })
-
-    return NextResponse.json({
-      success: true,
-      payoutId: payout.id,
-      amount: availableBalance / 100, // Convert from cents to dollars
-      status: 'pending'
-    })
-
-  } catch (error) {
-    console.error('Error processing payout:', error)
-    return NextResponse.json(
-      { 
-        error: 'Failed to process payout',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
-  }}
+  }
+}
