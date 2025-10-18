@@ -23,7 +23,6 @@ import {
   Briefcase,
   FileText,
   Bot,
-  Target,
   BarChart3,
   Crown,
   Package,
@@ -284,12 +283,6 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                     <Link href="/ai-settings" className="cursor-pointer">
                       <Bot className="mr-2 h-4 w-4" />
                       <span>AI Assistant</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="text-white hover:bg-white/20">
-                    <Link href="/brow-mapping" className="cursor-pointer">
-                      <Target className="mr-2 h-4 w-4" />
-                      <span>Brow Mapping Tool</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="text-white hover:bg-white/20">

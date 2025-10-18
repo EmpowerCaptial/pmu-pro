@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, Settings, User, Target } from "lucide-react"
+import { LogOut, Settings, User } from "lucide-react"
 import Link from "next/link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
@@ -89,12 +89,6 @@ export function DashboardHeader() {
                   <Link href="/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/brow-mapping" className="cursor-pointer">
-                    <Target className="mr-2 h-4 w-4" />
-                    <span>Brow Mapping Tool</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

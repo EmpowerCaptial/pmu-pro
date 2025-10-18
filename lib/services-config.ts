@@ -48,17 +48,6 @@ export const PMU_SERVICES: Service[] = [
     isCustomImage: false
   },
   {
-    id: 'eyebrow-mapping',
-    name: 'Eyebrow Mapping',
-    description: 'Eyebrow design and mapping consultation',
-    defaultDuration: 30,
-    defaultPrice: 75,
-    category: 'consultation',
-    isActive: true,
-    imageUrl: '/images/services/eyebrow-mapping-icon.svg',
-    isCustomImage: false
-  },
-  {
     id: 'consultation',
     name: 'Consultation',
     description: 'Initial consultation and skin analysis',
