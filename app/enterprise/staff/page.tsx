@@ -36,68 +36,7 @@ import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 type StaffRole = 'admin' | 'manager' | 'staff' | 'viewer'
 
-const mockStaffMembers: StaffMemberType[] = [
-  {
-    id: '1',
-    username: 'sarah@pmupro.com',
-    email: 'sarah@pmupro.com',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    role: 'director',
-    isActive: true,
-    lastLogin: new Date('2024-01-20T10:30:00Z'),
-    permissions: [],
-    customPermissions: [],
-    createdAt: new Date('2023-06-15T00:00:00Z'),
-    updatedAt: new Date(),
-    passwordSet: true
-  },
-  {
-    id: '2',
-    username: 'mike@pmupro.com',
-    email: 'mike@pmupro.com',
-    firstName: 'Mike',
-    lastName: 'Chen',
-    role: 'manager',
-    isActive: true,
-    lastLogin: new Date('2024-01-20T09:15:00Z'),
-    permissions: [],
-    customPermissions: [],
-    createdAt: new Date('2023-08-20T00:00:00Z'),
-    updatedAt: new Date(),
-    passwordSet: true
-  },
-  {
-    id: '3',
-    username: 'emma@pmupro.com',
-    email: 'emma@pmupro.com',
-    firstName: 'Emma',
-    lastName: 'Rodriguez',
-    role: 'representative',
-    isActive: true,
-    lastLogin: new Date('2024-01-19T16:45:00Z'),
-    permissions: [],
-    customPermissions: [],
-    createdAt: new Date('2023-11-10T00:00:00Z'),
-    updatedAt: new Date(),
-    passwordSet: true
-  },
-  {
-    id: '4',
-    username: 'lisa@pmupro.com',
-    email: 'lisa@pmupro.com',
-    firstName: 'Lisa',
-    lastName: 'Park',
-    role: 'representative',
-    isActive: false,
-    lastLogin: new Date('2024-01-18T14:20:00Z'),
-    permissions: [],
-    customPermissions: [],
-    createdAt: new Date('2024-01-15T00:00:00Z'),
-    updatedAt: new Date(),
-    passwordSet: false
-  }
-]
+const mockStaffMembers: StaffMemberType[] = []
 
 export default function EnterpriseStaffPage() {
   const { currentUser } = useDemoAuth()
