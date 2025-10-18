@@ -106,6 +106,27 @@ export default function CalendarIntegrationPage() {
     }
   };
 
+  const handleOutlookConnect = async () => {
+    setTestingConnection(true);
+    setError(null);
+
+    try {
+      // Get current user email
+      const userEmail = currentUser?.email;
+      if (!userEmail) {
+        setError("Please log in to connect your Outlook Calendar");
+        setTestingConnection(false);
+        return;
+      }
+
+      // Redirect to Outlook OAuth with user email
+      window.location.href = `/api/oauth/outlook/authorize?email=${encodeURIComponent(userEmail)}`;
+    } catch (error) {
+      setError("Failed to start Outlook Calendar connection");
+      setTestingConnection(false);
+    }
+  };
+
   const testConnection = async () => {
     if (!selectedProvider || !apiKey) {
       setError("Please select a provider and enter API key");
@@ -236,6 +257,44 @@ export default function CalendarIntegrationPage() {
           <p className="text-sm sm:text-base text-muted">Connect your existing booking systems with PMU Pro's calendar</p>
         </div>
 
+        {/* Integration Types */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h3 className="font-semibold text-green-900 text-sm sm:text-base">Easy OAuth Integration</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-green-800 mb-2">
+                No coding required! Just sign in with your account.
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <Badge className="bg-green-100 text-green-800 text-xs">Google Calendar</Badge>
+                <Badge className="bg-green-100 text-green-800 text-xs">Outlook Calendar</Badge>
+                <Badge className="bg-green-100 text-green-800 text-xs">Facebook/Meta</Badge>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Settings className="h-5 w-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-900 text-sm sm:text-base">API Key Integration</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-blue-800 mb-2">
+                Requires API key from your booking platform.
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <Badge className="bg-blue-100 text-blue-800 text-xs">Calendly</Badge>
+                <Badge className="bg-blue-100 text-blue-800 text-xs">Acuity</Badge>
+                <Badge className="bg-blue-100 text-blue-800 text-xs">Bookly</Badge>
+                <Badge className="bg-blue-100 text-blue-800 text-xs">SimplyBook</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Status Messages */}
         {error && (
           <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
@@ -315,6 +374,30 @@ export default function CalendarIntegrationPage() {
                         No API keys needed! Just sign in with your Google account.
                       </p>
                     </div>
+                  ) : selectedProvider === 'OUTLOOK_CALENDAR' ? (
+                    <div className="space-y-2">
+                      <Label className="text-sm sm:text-base">Outlook Calendar Connection</Label>
+                      <Button
+                        onClick={handleOutlookConnect}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white h-9 sm:h-10"
+                        disabled={testingConnection}
+                      >
+                        {testingConnection ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Connect with Outlook Calendar
+                          </>
+                        )}
+                      </Button>
+                      <p className="text-xs text-gray-600">
+                        No API keys needed! Just sign in with your Microsoft account.
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <Label htmlFor="apiKey" className="text-sm sm:text-base">API Key / Access Token</Label>
@@ -326,6 +409,11 @@ export default function CalendarIntegrationPage() {
                         onChange={(e) => setApiKey(e.target.value)}
                         className="force-white-bg force-gray-border force-dark-text h-9 sm:h-10 text-sm sm:text-base"
                       />
+                      <div className="bg-yellow-50 p-2 rounded-lg">
+                        <p className="text-xs text-yellow-800">
+                          <strong>Need help?</strong> Click the setup guide below for step-by-step instructions.
+                        </p>
+                      </div>
                     </div>
                   )}
 
@@ -394,11 +482,36 @@ export default function CalendarIntegrationPage() {
                       <p className="text-xs sm:text-sm text-blue-800 mb-2">
                         {getProviderInfo(selectedProvider)?.setupInstructions}
                       </p>
+                      
+                      {selectedProvider === 'CALENDLY' && (
+                        <div className="mt-3 space-y-2">
+                          <h5 className="font-medium text-blue-900 text-xs sm:text-sm">Step-by-Step Guide:</h5>
+                          <ol className="text-xs sm:text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                            <li>Log into your Calendly account</li>
+                            <li>Go to Settings → Integrations → API & Webhooks</li>
+                            <li>Click "Generate New Token"</li>
+                            <li>Copy the token and paste it above</li>
+                          </ol>
+                        </div>
+                      )}
+                      
+                      {selectedProvider === 'ACUITY_SCHEDULING' && (
+                        <div className="mt-3 space-y-2">
+                          <h5 className="font-medium text-blue-900 text-xs sm:text-sm">Step-by-Step Guide:</h5>
+                          <ol className="text-xs sm:text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                            <li>Log into your Acuity Scheduling account</li>
+                            <li>Go to Settings → Integrations → API</li>
+                            <li>Click "Generate API Credentials"</li>
+                            <li>Copy the API Key and paste it above</li>
+                          </ol>
+                        </div>
+                      )}
+                      
                       <a 
                         href={getProviderInfo(selectedProvider)?.apiDocumentation}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs sm:text-sm text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-xs sm:text-sm text-blue-600 hover:underline flex items-center gap-1 mt-2"
                       >
                         <ExternalLink className="h-3 w-3" />
                         API Documentation
@@ -424,6 +537,24 @@ export default function CalendarIntegrationPage() {
                       <>
                         <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Connect with Google
+                      </>
+                    )}
+                  </Button>
+                ) : selectedProvider === 'OUTLOOK_CALENDAR' ? (
+                  <Button
+                    onClick={handleOutlookConnect}
+                    disabled={testingConnection}
+                    className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                  >
+                    {testingConnection ? (
+                      <>
+                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        Connect with Outlook
                       </>
                     )}
                   </Button>

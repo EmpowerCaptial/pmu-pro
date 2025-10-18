@@ -28,7 +28,7 @@ export interface CalendarProvider {
 
 export const CALENDAR_PROVIDERS: CalendarProvider[] = [
   {
-    id: 'calendly',
+    id: 'CALENDLY',
     name: 'Calendly',
     description: 'Popular scheduling platform with extensive integrations',
     logo: '📅',
@@ -38,7 +38,7 @@ export const CALENDAR_PROVIDERS: CalendarProvider[] = [
     setupInstructions: 'Get your API key from Calendly Settings > Integrations > API & Webhooks'
   },
   {
-    id: 'acuity',
+    id: 'ACUITY_SCHEDULING',
     name: 'Acuity Scheduling',
     description: 'Professional scheduling solution for service businesses',
     logo: '⏰',
@@ -58,17 +58,17 @@ export const CALENDAR_PROVIDERS: CalendarProvider[] = [
     setupInstructions: 'Click "Connect with Google" to authorize access to your calendar. No API keys needed!'
   },
   {
-    id: 'outlook',
+    id: 'OUTLOOK_CALENDAR',
     name: 'Outlook Calendar',
     description: 'Microsoft Outlook calendar integration',
     logo: '📧',
     website: 'https://outlook.live.com',
     apiDocumentation: 'https://docs.microsoft.com/en-us/graph/api/resources/calendar',
     supportedFeatures: ['Two-way sync', 'Office 365', 'Event details', 'Attendees'],
-    setupInstructions: 'Register app in Azure AD and configure Microsoft Graph API'
+    setupInstructions: 'Click "Connect with Outlook" to authorize access to your calendar. No API keys needed!'
   },
   {
-    id: 'bookly',
+    id: 'BOOKLY',
     name: 'Bookly',
     description: 'Booking and scheduling software for service businesses',
     logo: '📖',
@@ -78,7 +78,7 @@ export const CALENDAR_PROVIDERS: CalendarProvider[] = [
     setupInstructions: 'Generate API key from Bookly Settings > API'
   },
   {
-    id: 'simplybook',
+    id: 'SIMPLYBOOK_ME',
     name: 'SimplyBook.me',
     description: 'Online booking system with extensive customization',
     logo: '📋',
