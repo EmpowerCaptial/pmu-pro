@@ -6,10 +6,11 @@ import { FormTemplate, ConsentFormType } from "@/types/consent-forms"
 export const CONSENT_FORM_TEMPLATES: Record<ConsentFormType, FormTemplate> = {
   "general-consent": {
     id: "general-consent",
-    name: "General Consent",
-    description: "General PMU procedure consent and acknowledgment",
+    name: "Comprehensive PMU Consent Form",
+    description: "Complete PMU procedure consent with medical history, risks, and aftercare",
     required: true,
     fields: [
+      // 1️⃣ Client Information
       {
         id: "clientName",
         label: "Full Legal Name",
@@ -23,51 +24,274 @@ export const CONSENT_FORM_TEMPLATES: Record<ConsentFormType, FormTemplate> = {
       },
       {
         id: "dateOfBirth",
-        label: "Date of Birth",
+        label: "Date of Birth (must be 18+)",
         type: "date",
         required: true,
         order: 2
       },
       {
-        id: "emergencyContact",
+        id: "clientPhone",
+        label: "Phone Number",
+        type: "phone",
+        required: true,
+        order: 3
+      },
+      {
+        id: "clientEmail",
+        label: "Email Address",
+        type: "email",
+        required: true,
+        order: 4
+      },
+      {
+        id: "clientAddress",
+        label: "Address",
+        type: "textarea",
+        required: true,
+        order: 5,
+        helpText: "Street address, city, state, zip code"
+      },
+      {
+        id: "emergencyContactName",
         label: "Emergency Contact Name",
         type: "text",
         required: true,
-        order: 3,
+        order: 6,
         validation: {
           minLength: 2,
           maxLength: 100
         }
       },
       {
-        id: "emergencyPhone",
+        id: "emergencyContactPhone",
         label: "Emergency Contact Phone",
         type: "phone",
         required: true,
-        order: 4
+        order: 7
       },
       {
-        id: "procedureConsent",
-        label: "I consent to the PMU procedure and understand the risks involved",
+        id: "driversLicense",
+        label: "Driver's License Number",
+        type: "text",
+        required: false,
+        order: 8,
+        helpText: "Required for tattoo procedures in Missouri"
+      },
+
+      // 2️⃣ Medical History & Contraindications
+      {
+        id: "pregnantBreastfeeding",
+        label: "Are you currently pregnant or breastfeeding?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No", "Not Applicable"],
+        order: 9,
+        helpText: "PMU is not recommended during pregnancy or breastfeeding"
+      },
+      {
+        id: "diabetes",
+        label: "Do you have diabetes (Type I or Type II)?",
+        type: "radio",
+        required: true,
+        options: ["Yes - Type I", "Yes - Type II", "No"],
+        order: 10,
+        helpText: "Diabetes may affect healing and requires physician clearance"
+      },
+      {
+        id: "bloodThinners",
+        label: "Are you taking blood thinners, Accutane, Retin-A, or have had Botox within 4 weeks?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 11,
+        helpText: "These medications/treatments may affect healing"
+      },
+      {
+        id: "autoimmuneDisorders",
+        label: "Do you have autoimmune disorders, HIV, or Hepatitis?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 12,
+        helpText: "These conditions may affect healing and require physician clearance"
+      },
+      {
+        id: "keloidScarring",
+        label: "Do you have a history of keloid scarring or hyperpigmentation?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 13,
+        helpText: "This may affect healing and final results"
+      },
+      {
+        id: "recentTreatments",
+        label: "Have you had recent chemical peels, laser treatments, or microneedling?",
+        type: "radio",
+        required: true,
+        options: ["Yes - within 4 weeks", "Yes - more than 4 weeks ago", "No"],
+        order: 14,
+        helpText: "Recent treatments may affect healing"
+      },
+      {
+        id: "allergies",
+        label: "Do you have any allergies? (lidocaine, epinephrine, pigments, latex, etc.)",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 15
+      },
+      {
+        id: "allergyDetails",
+        label: "If yes, please specify your allergies:",
+        type: "textarea",
+        required: false,
+        order: 16,
+        helpText: "Include food, medication, and environmental allergies"
+      },
+      {
+        id: "currentInfections",
+        label: "Do you have any current infections, cold sores, or acne on the treatment area?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 17,
+        helpText: "Active infections may prevent treatment"
+      },
+      {
+        id: "physicianCare",
+        label: "Are you currently under the care of a physician for any condition?",
+        type: "radio",
+        required: true,
+        options: ["Yes", "No"],
+        order: 18
+      },
+      {
+        id: "medicationDetails",
+        label: "If yes, please list current medications and conditions:",
+        type: "textarea",
+        required: false,
+        order: 19,
+        helpText: "Include all medications, dosages, and medical conditions"
+      },
+      {
+        id: "medicalAccuracy",
+        label: "I confirm that all medical information provided is accurate and complete",
         type: "checkbox",
         required: true,
-        order: 5,
+        order: 20,
         helpText: "You must check this box to proceed"
       },
+
+      // 3️⃣ Procedure Disclosure & Risks
       {
-        id: "aftercareConsent",
-        label: "I agree to follow all aftercare instructions provided",
+        id: "procedureUnderstanding",
+        label: "I understand that PMU is a form of tattooing where pigment is placed in the skin",
         type: "checkbox",
         required: true,
-        order: 6,
-        helpText: "Following aftercare is crucial for optimal results"
+        order: 21
+      },
+      {
+        id: "resultsUnderstanding",
+        label: "I understand that results can fade, change color, or need touch-ups",
+        type: "checkbox",
+        required: true,
+        order: 22
+      },
+      {
+        id: "risksUnderstanding",
+        label: "I understand the risks include allergic reaction, infection, scarring, or dissatisfaction",
+        type: "checkbox",
+        required: true,
+        order: 23
+      },
+      {
+        id: "healingUnderstanding",
+        label: "I understand that healing varies by skin type, age, and aftercare",
+        type: "checkbox",
+        required: true,
+        order: 24
+      },
+      {
+        id: "colorSettling",
+        label: "I understand that pigments may take 6-10 weeks to settle for final color",
+        type: "checkbox",
+        required: true,
+        order: 25
+      },
+      {
+        id: "sterilizationUnderstanding",
+        label: "I understand that the artist will follow all sterilization procedures and use disposable tools",
+        type: "checkbox",
+        required: true,
+        order: 26
+      },
+
+      // 4️⃣ Pre- & Post-Procedure Instructions
+      {
+        id: "preProcedureInstructions",
+        label: "I understand the pre-procedure instructions:",
+        type: "checkbox",
+        required: true,
+        order: 27,
+        helpText: "Avoid alcohol, caffeine, and blood thinners 24 hours prior. Avoid Retin-A, acids, or exfoliants near treatment area."
+      },
+      {
+        id: "aftercareInstructions",
+        label: "I understand the aftercare instructions:",
+        type: "checkbox",
+        required: true,
+        order: 28,
+        helpText: "Keep clean, dry, and avoid makeup, sun, and sweating for 7 days. No picking or scratching. Apply aftercare ointment as directed."
+      },
+      {
+        id: "followUpUnderstanding",
+        label: "I understand that follow-up in 6-8 weeks may be needed for touch-up",
+        type: "checkbox",
+        required: true,
+        order: 29
+      },
+
+      // 5️⃣ Photography & Media Release (Optional)
+      {
+        id: "photoConsent",
+        label: "I consent to before/after photos being used for educational or marketing purposes",
+        type: "radio",
+        required: true,
+        options: ["Yes, I consent", "No, I do not consent"],
+        order: 30,
+        helpText: "This is optional and will not affect your treatment"
+      },
+
+      // 6️⃣ Acknowledgment of Procedure & Waiver
+      {
+        id: "procedureAcknowledgment",
+        label: "I understand this is a permanent cosmetic tattoo procedure. Results may vary and require touch-ups.",
+        type: "checkbox",
+        required: true,
+        order: 31
+      },
+      {
+        id: "liabilityRelease",
+        label: "I release the artist, studio, and affiliates from any liability related to this procedure and its results",
+        type: "checkbox",
+        required: true,
+        order: 32
+      },
+      {
+        id: "fullConsent",
+        label: "I have read and understood all information provided and voluntarily consent to the PMU procedure",
+        type: "checkbox",
+        required: true,
+        order: 33,
+        helpText: "You must check this box to proceed"
       },
       {
         id: "clientSignature",
         label: "Digital Signature",
         type: "signature",
         required: true,
-        order: 7,
+        order: 34,
         helpText: "Please sign below to confirm your consent"
       }
     ]

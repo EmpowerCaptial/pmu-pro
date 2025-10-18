@@ -68,7 +68,7 @@ function generateConsentFormHTML(form: any): string {
   // Helper to format values for display
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) return 'Not provided'
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+    if (typeof value === 'boolean') return value ? '✓ Yes' : '✗ No'
     if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'None'
     if (typeof value === 'object') {
       // Handle nested objects like emergencyContact, medicalHistory
@@ -77,6 +77,29 @@ function generateConsentFormHTML(form: any): string {
         .join('<br>')
     }
     return String(value)
+  }
+
+  // Helper to get field value with proper formatting
+  const getFieldValue = (fieldId: string): string => {
+    const value = formData?.[fieldId]
+    if (value === null || value === undefined) return 'Not provided'
+    if (typeof value === 'boolean') return value ? '✓ Yes' : '✗ No'
+    return String(value)
+  }
+
+  // Helper to render a field with question and answer
+  const renderField = (field: any): string => {
+    const value = getFieldValue(field.id)
+    const isCheckbox = field.type === 'checkbox'
+    const isRadio = field.type === 'radio'
+    
+    return `
+      <div class="field">
+        <div class="question">${field.label}</div>
+        <div class="answer ${isCheckbox || isRadio ? 'checkbox-answer' : 'text-answer'}">${value}</div>
+        ${field.helpText ? `<div class="help-text">${field.helpText}</div>` : ''}
+      </div>
+    `
   }
 
   // Create HTML content for viewing/printing
@@ -90,7 +113,7 @@ function generateConsentFormHTML(form: any): string {
         body { 
           font-family: 'Georgia', serif; 
           margin: 0; 
-          line-height: 1.8; 
+          line-height: 1.6; 
           max-width: 850px;
           margin: 0 auto;
           padding: 40px;
@@ -115,73 +138,84 @@ function generateConsentFormHTML(form: any): string {
         }
         .client-info {
           background: #f8f4ff;
-          padding: 15px;
+          padding: 20px;
           border-radius: 8px;
           margin-bottom: 30px;
+          border: 2px solid #6B46C1;
         }
         .client-info strong { color: #6B46C1; }
         .section { 
-          margin-bottom: 30px;
+          margin-bottom: 40px;
           page-break-inside: avoid;
         }
         .section-title {
-          font-size: 20px;
+          font-size: 22px;
           color: #6B46C1;
-          border-bottom: 2px solid #e0e0e0;
+          border-bottom: 3px solid #6B46C1;
           padding-bottom: 10px;
-          margin-bottom: 20px;
+          margin-bottom: 25px;
+          font-weight: bold;
         }
         .field { 
-          margin-bottom: 20px;
-          padding: 15px;
+          margin-bottom: 25px;
+          padding: 20px;
           background: #fafafa;
-          border-left: 4px solid #6B46C1;
-          border-radius: 4px;
+          border-left: 5px solid #6B46C1;
+          border-radius: 6px;
+          border: 1px solid #e0e0e0;
         }
-        .label { 
+        .question { 
           font-weight: bold; 
           color: #6B46C1;
-          margin-bottom: 8px;
-          font-size: 14px;
+          margin-bottom: 10px;
+          font-size: 16px;
+          line-height: 1.4;
         }
-        .value { 
+        .answer { 
           color: #333;
-          font-size: 15px;
-          line-height: 1.6;
+          font-size: 16px;
+          line-height: 1.5;
+          margin-bottom: 8px;
         }
-        .consent-statement {
-          background: #fff9e6;
-          border: 2px solid #ffd700;
-          padding: 20px;
-          margin: 20px 0;
-          border-radius: 8px;
+        .checkbox-answer {
+          font-weight: bold;
+          font-size: 18px;
         }
-        .consent-statement h3 {
-          color: #b8860b;
-          margin-top: 0;
+        .text-answer {
+          background: white;
+          padding: 10px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+        }
+        .help-text {
+          font-style: italic;
+          color: #666;
+          font-size: 14px;
+          margin-top: 8px;
         }
         .signature-section { 
-          margin-top: 40px; 
+          margin-top: 50px; 
           border-top: 3px solid #6B46C1; 
           padding-top: 30px;
           page-break-inside: avoid;
         }
         .signature-section h3 {
           color: #6B46C1;
-          font-size: 20px;
+          font-size: 22px;
+          margin-bottom: 20px;
         }
         .signature-box {
-          border: 2px solid #6B46C1;
-          padding: 20px;
+          border: 3px solid #6B46C1;
+          padding: 30px;
           text-align: center;
           background: white;
           border-radius: 8px;
         }
         .signature-box img { 
-          max-width: 300px;
-          max-height: 150px;
-          border: 1px solid #ddd;
-          padding: 10px;
+          max-width: 400px;
+          max-height: 200px;
+          border: 2px solid #ddd;
+          padding: 15px;
           background: white;
         }
         .footer { 
@@ -195,15 +229,17 @@ function generateConsentFormHTML(form: any): string {
         .completed-badge { 
           background: #10b981;
           color: white;
-          padding: 10px 20px;
+          padding: 15px 30px;
           border-radius: 25px;
           font-weight: bold;
           display: inline-block;
-          margin-bottom: 15px;
+          margin-bottom: 20px;
+          font-size: 16px;
         }
         @media print {
           body { margin: 0; padding: 20px; }
           button { display: none; }
+          .section { page-break-inside: avoid; }
         }
       </style>
     </head>
@@ -221,48 +257,62 @@ function generateConsentFormHTML(form: any): string {
         <p><strong>Completed:</strong> ${form.completedAt ? new Date(form.completedAt).toLocaleString() : 'N/A'}</p>
       </div>
       
-      ${formData?.medicalHistory ? `
-        <div class="section">
-          <div class="section-title">Medical History</div>
-          <div class="field">
-            <div class="label">Allergies:</div>
-            <div class="value">${formatValue(formData.medicalHistory.allergies || form.allergies)}</div>
-          </div>
-          <div class="field">
-            <div class="label">Current Medications:</div>
-            <div class="value">${formatValue(formData.medicalHistory.medications || form.medications)}</div>
-          </div>
-          <div class="field">
-            <div class="label">Medical Conditions:</div>
-            <div class="value">${formatValue(formData.medicalHistory.conditions || form.skinConditions)}</div>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${formData?.emergencyContact ? `
-        <div class="section">
-          <div class="section-title">Emergency Contact</div>
-          <div class="field">
-            <div class="value">${typeof formData.emergencyContact === 'object' 
-              ? formatValue(formData.emergencyContact) 
-              : formData.emergencyContact || form.emergencyContact || 'Not provided'}</div>
-          </div>
-        </div>
-      ` : ''}
-      
-      <div class="consent-statement">
-        <h3>✓ Consent Acknowledgment</h3>
-        <p><strong>I, ${formData?.clientName || form.clientName},</strong> acknowledge that I have:</p>
-        <ul>
-          <li>Reviewed and understood the ${template.name}</li>
-          <li>Provided accurate medical and personal information</li>
-          <li>Had the opportunity to ask questions about the procedure</li>
-          <li>Understood the risks, benefits, and aftercare instructions</li>
-          <li>Voluntarily consent to the PMU procedure described</li>
-        </ul>
-        ${formData?.consentAcknowledged || formData?.consentGiven ? '<p><strong>✓ Full Consent Given</strong></p>' : ''}
-        ${formData?.photographyConsent || formData?.photoConsent ? '<p><strong>✓ Photography/Marketing Consent Given</strong></p>' : ''}
-      </div>
+      ${template.fields.map(field => {
+        // Group fields by sections
+        if (field.order <= 8) {
+          // Client Information section
+          if (field.order === 1) {
+            return `
+              <div class="section">
+                <div class="section-title">1️⃣ Client Information</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 9) {
+            return `${renderField(field)}
+              </div>
+              <div class="section">
+                <div class="section-title">2️⃣ Medical History & Contraindications</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 21) {
+            return `${renderField(field)}
+              </div>
+              <div class="section">
+                <div class="section-title">3️⃣ Procedure Disclosure & Risks</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 27) {
+            return `${renderField(field)}
+              </div>
+              <div class="section">
+                <div class="section-title">4️⃣ Pre- & Post-Procedure Instructions</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 30) {
+            return `${renderField(field)}
+              </div>
+              <div class="section">
+                <div class="section-title">5️⃣ Photography & Media Release</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 31) {
+            return `${renderField(field)}
+              </div>
+              <div class="section">
+                <div class="section-title">6️⃣ Acknowledgment of Procedure & Waiver</div>
+                ${renderField(field)}
+            `
+          } else if (field.order === 34) {
+            return `${renderField(field)}
+              </div>
+            `
+          } else {
+            return renderField(field)
+          }
+        } else {
+          return renderField(field)
+        }
+      }).join('')}
       
       ${form.clientSignature || formData?.clientSignature ? `
         <div class="signature-section">
@@ -270,7 +320,7 @@ function generateConsentFormHTML(form: any): string {
           <div class="signature-box">
             <p><strong>Client Signature:</strong></p>
             <img src="${form.clientSignature || formData.clientSignature}" alt="Client Signature" />
-            <p style="margin-top: 15px;"><strong>Date Signed:</strong> ${form.completedAt ? new Date(form.completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
+            <p style="margin-top: 20px;"><strong>Date Signed:</strong> ${form.completedAt ? new Date(form.completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
             <p><strong>IP Address:</strong> ${formData?.ipAddress || 'Not recorded'}</p>
           </div>
         </div>
