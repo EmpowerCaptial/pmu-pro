@@ -138,10 +138,11 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4">
       <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="order-1">
             <X className="h-4 w-4" />
           </Button>
+          <CardTitle className="text-lg font-semibold order-2 flex-1 text-center">{title}</CardTitle>
+          <div className="order-3 w-8"></div> {/* Spacer for centering */}
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -172,6 +173,15 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
                     </div>
                   </div>
                 )}
+                {/* Floating exit button over camera preview */}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClose}
+                  className="absolute top-2 left-2 bg-black/50 hover:bg-black/70 text-white border-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Camera Controls */}
@@ -206,6 +216,15 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
                     className="w-full h-full object-cover"
                   />
                 )}
+                {/* Floating exit button over captured image */}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClose}
+                  className="absolute top-2 left-2 bg-black/50 hover:bg-black/70 text-white border-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Action Buttons */}
