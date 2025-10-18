@@ -26,6 +26,8 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
   const { currentUser } = useDemoAuth()
   const [selectedForm, setSelectedForm] = useState("")
   const [sendMethod, setSendMethod] = useState<"email" | "sms">("email")
+  const [clientFirstName, setClientFirstName] = useState("")
+  const [clientLastName, setClientLastName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [customMessage, setCustomMessage] = useState("")
@@ -35,6 +37,11 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
   const handleSend = async () => {
     if (!selectedForm) {
       alert("Please select a form template")
+      return
+    }
+
+    if (!clientFirstName.trim() || !clientLastName.trim()) {
+      alert("Please enter the client's first and last name")
       return
     }
 
@@ -55,10 +62,11 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
       const token = generateToken()
       
       // Create consent form record
+      const fullClientName = `${clientFirstName.trim()} ${clientLastName.trim()}`
       const formData = {
         id: `form_${Date.now()}`,
         clientId: clientId || "new-client",
-        clientName: clientName || "New Client",
+        clientName: fullClientName,
         artistEmail: currentUser?.email || 'artist@example.com',
         formType: selectedForm,
         sendMethod,
@@ -270,6 +278,33 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
             </div>
           </div>
 
+          {/* Client Information */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-gray-900">Client Information</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-700">First Name *</Label>
+                <Input
+                  type="text"
+                  placeholder="Client's first name"
+                  value={clientFirstName}
+                  onChange={(e) => setClientFirstName(e.target.value)}
+                  className="w-full bg-white border-2 border-lavender/200 focus:border-lavender/500 text-gray-900 placeholder:text-gray-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-700">Last Name *</Label>
+                <Input
+                  type="text"
+                  placeholder="Client's last name"
+                  value={clientLastName}
+                  onChange={(e) => setClientLastName(e.target.value)}
+                  className="w-full bg-white border-2 border-lavender/200 focus:border-lavender/500 text-gray-900 placeholder:text-gray-500"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Contact Information */}
           <div className="space-y-3">
             <Label className="text-sm font-semibold text-gray-900">
@@ -319,6 +354,11 @@ export function ConsentFormModal({ isOpen, onClose, clientId, clientName }: Cons
                       <p className="text-sm text-gray-700">
                         {formTemplates.find(t => t.id === selectedForm)?.description}
                       </p>
+                      {(clientFirstName || clientLastName) && (
+                        <p className="text-sm text-lavender-700 font-medium mt-1">
+                          For: {clientFirstName} {clientLastName}
+                        </p>
+                      )}
                     </div>
                     <Badge variant="outline" className="border-lavender/300 text-lavender-700 bg-lavender/10">
                       {sendMethod.toUpperCase()}

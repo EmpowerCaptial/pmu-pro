@@ -332,10 +332,16 @@ export function DocumentViewer({ clientId, highlightFormId }: { clientId?: strin
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="details" className="w-full">
-                  <TabsList>
-                    <TabsTrigger value="details">Form Details</TabsTrigger>
-                    <TabsTrigger value="audit">Audit Trail</TabsTrigger>
-                    <TabsTrigger value="pdf">PDF Preview</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="details" className="bg-blue-100 hover:bg-blue-200 text-blue-800 data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                      Form Details
+                    </TabsTrigger>
+                    <TabsTrigger value="audit" className="bg-green-100 hover:bg-green-200 text-green-800 data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                      Audit Trail
+                    </TabsTrigger>
+                    <TabsTrigger value="pdf" className="bg-purple-100 hover:bg-purple-200 text-purple-800 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+                      PDF Preview
+                    </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="details" className="space-y-4">
