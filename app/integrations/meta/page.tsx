@@ -117,17 +117,25 @@ export default function MetaIntegrationPage() {
     setError(null);
     
     try {
+      // Get the correct redirect URI
+      const redirectUri = `${window.location.origin}/integrations/meta/callback`;
+      
       // Redirect to Facebook OAuth for seamless connection
       const facebookAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?` +
         `client_id=${process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID}&` +
-        `redirect_uri=${encodeURIComponent(window.location.origin + '/integrations/meta/callback')}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic&` +
         `response_type=code&` +
         `state=${currentUser?.id || 'demo'}`;
       
+      console.log('Facebook OAuth URL:', facebookAuthUrl);
+      console.log('Redirect URI:', redirectUri);
+      console.log('Client ID:', process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID);
+      
       // Redirect to Facebook OAuth
       window.location.href = facebookAuthUrl;
     } catch (error) {
+      console.error('Facebook connection error:', error);
       setError("Failed to connect to Facebook. Please try again.");
       setLoading(false);
     }
