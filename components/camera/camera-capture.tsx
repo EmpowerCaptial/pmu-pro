@@ -135,8 +135,8 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
   })
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4">
+      <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -155,8 +155,8 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
 
           {!isCapturing ? (
             <div className="space-y-4">
-              {/* Camera Preview */}
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square">
+              {/* Camera Preview - Larger, device-like size */}
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden w-full h-[70vh] min-h-[400px] max-h-[600px]">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -197,8 +197,8 @@ export function CameraCapture({ onCapture, onClose, title = "Take Photo", aspect
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Captured Image Preview */}
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square">
+              {/* Captured Image Preview - Larger, device-like size */}
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden w-full h-[70vh] min-h-[400px] max-h-[600px]">
                 {capturedImage && (
                   <img
                     src={capturedImage}
