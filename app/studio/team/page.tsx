@@ -1035,77 +1035,82 @@ export default function StudioTeamPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   {teamMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      {/* Member Info */}
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div key={member.id} className="flex flex-col p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors gap-3">
+                      {/* Top row: Avatar and basic info */}
+                      <div className="flex items-start space-x-3">
                         <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-xs font-medium text-gray-600">
                             {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center space-x-2 flex-wrap">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                             <h3 className="font-medium text-gray-900 text-sm truncate">{member.name}</h3>
-                            {getStatusBadge(member.status)}
-                            {/* Employment Type Badge */}
-                            {(member.role === 'instructor' || member.role === 'licensed') && member.employmentType && (
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs ${
-                                  member.employmentType === 'commissioned' 
-                                    ? 'bg-green-50 text-green-700 border-green-300'
-                                    : 'bg-blue-50 text-blue-700 border-blue-300'
-                                }`}
-                              >
-                                {member.employmentType === 'commissioned' 
-                                  ? `💰 ${member.commissionRate}% Commission`
-                                  : `🏢 $${member.boothRentAmount}/mo Rent`
-                                }
-                              </Badge>
-                            )}
-                            {/* Warning if employment not set */}
-                            {(member.role === 'instructor' || member.role === 'licensed') && !member.employmentType && (
-                              <div className="flex items-center gap-1 text-xs text-amber-600">
-                                <AlertTriangle className="h-3 w-3" />
-                                <span>Pay Type</span>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {getStatusBadge(member.status)}
+                              {/* Employment Type Badge */}
+                              {(member.role === 'instructor' || member.role === 'licensed') && member.employmentType && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    member.employmentType === 'commissioned' 
+                                      ? 'bg-green-50 text-green-700 border-green-300'
+                                      : 'bg-blue-50 text-blue-700 border-blue-300'
+                                  }`}
+                                >
+                                  {member.employmentType === 'commissioned' 
+                                    ? `💰 ${member.commissionRate}% Commission`
+                                    : `🏢 $${member.boothRentAmount}/mo Rent`
+                                  }
+                                </Badge>
+                              )}
+                              {/* Warning if employment not set */}
+                              {(member.role === 'instructor' || member.role === 'licensed') && !member.employmentType && (
+                                <div className="flex items-center gap-1 text-xs text-amber-600">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  <span>Pay Type</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-600 truncate">{member.email}</p>
+                          <p className="text-xs text-gray-600 truncate mt-1">{member.email}</p>
                         </div>
                       </div>
 
-                      {/* Role Dropdown */}
-                      <div className="flex items-center space-x-2">
-                        {member.role !== 'owner' && member.status === 'active' ? (
-                          <select
-                            value={member.role}
-                            onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 h-7 bg-white"
-                          >
-                            <option value="student">🎓 Student</option>
-                            <option value="licensed">🎨 Licensed Artist</option>
-                            <option value="instructor">🏆 Instructor</option>
-                          </select>
-                        ) : (
-                          <div className="text-xs text-gray-600 px-2 py-1">
-                            {member.role === 'owner' ? '👑 Owner' : getRoleDescription(member.role)}
-                          </div>
-                        )}
+                      {/* Bottom row: Role and actions */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {member.role !== 'owner' && member.status === 'active' ? (
+                            <select
+                              value={member.role}
+                              onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
+                              className="text-xs border border-gray-300 rounded px-2 py-1 h-7 bg-white"
+                            >
+                              <option value="student">🎓 Student</option>
+                              <option value="licensed">🎨 Licensed Artist</option>
+                              <option value="instructor">🏆 Instructor</option>
+                            </select>
+                          ) : (
+                            <div className="text-xs text-gray-600 px-2 py-1">
+                              {member.role === 'owner' ? '👑 Owner' : getRoleDescription(member.role)}
+                            </div>
+                          )}
+                        </div>
 
                         {/* Actions Dropdown */}
                         {member.role !== 'owner' && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="h-7 w-7 p-0 hover:bg-gray-50"
-                              >
-                                <MoreVertical className="h-3 w-3" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
+                          <div className="flex-shrink-0">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-7 w-7 p-0 hover:bg-gray-50"
+                                >
+                                  <MoreVertical className="h-3 w-3" />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
                               {/* Status Management */}
                               {member.status === 'pending' && (
@@ -1214,7 +1219,8 @@ export default function StudioTeamPage() {
                                 Remove from Team
                               </DropdownMenuItem>
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                            </DropdownMenu>
+                          </div>
                         )}
                       </div>
                     </div>
