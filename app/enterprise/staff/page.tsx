@@ -271,9 +271,10 @@ export default function EnterpriseStaffPage() {
               <CardContent className="p-3 sm:p-4">
                 <div className="space-y-3 sm:space-y-4">
                   {staffMembers.map((member) => (
-                    <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-3 sm:gap-0">
-                      <div className="flex items-center space-x-3 sm:space-x-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center">
+                    <div key={member.id} className="flex flex-col p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-all duration-200 gap-3">
+                      {/* Top row: Avatar, name, email */}
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-lavender to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-semibold text-sm sm:text-base">
                             {member.firstName[0]}{member.lastName[0]}
                           </span>
@@ -281,49 +282,54 @@ export default function EnterpriseStaffPage() {
                         <div className="min-w-0 flex-1">
                           <h3 className="font-semibold text-ink text-sm sm:text-base truncate">{member.firstName} {member.lastName}</h3>
                           <p className="text-xs sm:text-sm text-muted truncate">{member.email}</p>
-                          <div className="flex items-center space-x-2 mt-1 flex-wrap">
-                            <Badge className={`${getRoleColor(member.role)} text-xs sm:text-sm`}>
-                              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-                            </Badge>
-                            <Badge className={`${member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} text-xs sm:text-sm`}>
-                              {member.isActive ? <CheckCircle className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
-                              <span>{member.isActive ? 'Active' : 'Inactive'}</span>
-                            </Badge>
-                          </div>
+                        </div>
+                        {/* Actions dropdown - positioned absolutely on mobile */}
+                        <div className="flex-shrink-0">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
+                              >
+                                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                                <span className="text-xs sm:text-sm">Edit</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                                <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                                <span className="text-xs sm:text-sm">Permissions</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
+                                onClick={() => handleDeleteStaff(member.id)}
+                              >
+                                <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                <span className="text-xs sm:text-sm">Delete</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end space-x-2">
-                        <span className="text-xs sm:text-sm text-muted">
+                      
+                      {/* Bottom row: Badges and last active */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          <Badge className={`${getRoleColor(member.role)} text-xs`}>
+                            {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                          </Badge>
+                          <Badge className={`${member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} text-xs`}>
+                            {member.isActive ? <CheckCircle className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                            <span>{member.isActive ? 'Active' : 'Inactive'}</span>
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted">
                           Last active: {member.lastLogin ? new Date(member.lastLogin).toLocaleDateString() : 'Never'}
                         </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md hover:shadow-lg border border-gray-200"
-                            >
-                              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                              <span className="text-xs sm:text-sm">Edit</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                              <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                              <span className="text-xs sm:text-sm">Permissions</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600"
-                              onClick={() => handleDeleteStaff(member.id)}
-                            >
-                              <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                              <span className="text-xs sm:text-sm">Delete</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
                     </div>
                   ))}
@@ -345,50 +351,50 @@ export default function EnterpriseStaffPage() {
                 <div className="space-y-6">
                   {staffMembers.map((staff) => (
                     <div key={staff.id} className="p-4 bg-white rounded-lg border border-gray-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold text-lg">{staff.firstName} {staff.lastName}</h3>
-                          <p className="text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-base sm:text-lg truncate">{staff.firstName} {staff.lastName}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {staff.email} • Role: {staff.role}
                           </p>
                         </div>
-                        <Badge variant={staff.isActive ? 'default' : 'secondary'}>
+                        <Badge variant={staff.isActive ? 'default' : 'secondary'} className="flex-shrink-0">
                           {staff.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
                       
                       {/* Quick Permission Summary */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+                        <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                          <div className="text-lg sm:text-2xl font-bold text-green-600">
                             {staff.customPermissions?.filter(p => p.granted).length || 0}
                           </div>
-                          <div className="text-sm text-muted-foreground">Custom Permissions</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Custom Permissions</div>
                         </div>
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                          <div className="text-lg sm:text-2xl font-bold text-blue-600">
                             {staff.role === 'director' ? 'Full' : staff.role === 'manager' ? 'Enhanced' : 'Basic'}
                           </div>
-                          <div className="text-sm text-muted-foreground">Role Access</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Role Access</div>
                         </div>
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-purple-600">
+                        <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                          <div className="text-lg sm:text-2xl font-bold text-purple-600">
                             {staff.lastLogin ? new Date(staff.lastLogin).toLocaleDateString() : 'Never'}
                           </div>
-                          <div className="text-sm text-muted-foreground">Last Login</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Last Login</div>
                         </div>
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-orange-600">
+                        <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                          <div className="text-lg sm:text-2xl font-bold text-orange-600">
                             {staff.customPermissions?.length || 0}
                           </div>
-                          <div className="text-sm text-muted-foreground">Overrides</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Overrides</div>
                         </div>
                       </div>
 
                       {/* Permission Details */}
                       <div className="space-y-3">
                         <h4 className="font-medium">Key Permissions</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {[
                             { resource: 'users', action: 'delete', label: 'Delete Users' },
                             { resource: 'staff', action: 'create', label: 'Create Staff' },
@@ -451,13 +457,13 @@ export default function EnterpriseStaffPage() {
                     { user: 'Sarah Johnson', action: 'Added new staff member', time: '1 day ago', type: 'create' },
                     { user: 'Mike Chen', action: 'Generated monthly report', time: '2 days ago', type: 'report' }
                   ].map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
-                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-lavender flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs sm:text-sm font-medium text-ink truncate">{activity.user}</p>
                         <p className="text-xs sm:text-sm text-muted truncate">{activity.action}</p>
                       </div>
-                      <span className="text-xs text-muted">{activity.time}</span>
+                      <span className="text-xs text-muted flex-shrink-0">{activity.time}</span>
                     </div>
                   ))}
                 </div>
