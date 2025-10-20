@@ -379,7 +379,7 @@ export default function GeolocationSettingsPage() {
                 <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xs">2</div>
                 <div>
                   <p className="font-medium">Test Location</p>
-                  <p>Use the "Get My Location" button to test if you're within the 5-foot radius of your studio.</p>
+                  <p>Use the "Get My Location" button to test if you're within the 100-meter radius of your studio.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

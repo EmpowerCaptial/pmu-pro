@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Clock, Play, Pause, Square, MapPin, Timer } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Clock, Play, Pause, Square, MapPin, Timer, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,13 +34,27 @@ export function DatabaseTimeClock() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [location, setLocation] = useState<string>('')
+  const [locationStatus, setLocationStatus] = useState<{
+    withinRange: boolean
+    distance?: number
+    lastChecked?: string
+    autoClockOut?: boolean
+  }>({ withinRange: true })
+  
+  const monitoringIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const currentLocationRef = useRef<{lat: number, lng: number} | null>(null)
 
   // Get current location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`)
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }
+          currentLocationRef.current = coords
+          setLocation(`${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`)
         },
         () => {
           setLocation('Location not available')
@@ -48,6 +62,71 @@ export function DatabaseTimeClock() {
       )
     }
   }, [])
+
+  // Check location and auto-clock-out if needed
+  const checkLocationAndAutoClockOut = async () => {
+    if (!currentLocationRef.current || !currentUser || currentUser.role !== 'student') {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/time-tracking/check-location', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email || ''
+        },
+        body: JSON.stringify({
+          lat: currentLocationRef.current.lat,
+          lng: currentLocationRef.current.lng
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setLocationStatus({
+          withinRange: data.withinRange,
+          distance: data.distance,
+          lastChecked: new Date().toLocaleTimeString(),
+          autoClockOut: data.autoClockOut
+        })
+
+        // If auto-clock-out occurred, reload the session
+        if (data.autoClockOut) {
+          await loadCurrentSession()
+          setError(`⚠️ Automatically clocked out - you were ${data.distance?.toFixed(1)}m away from the studio`)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking location:', error)
+    }
+  }
+
+  // Start/stop geolocation monitoring
+  useEffect(() => {
+    // Only monitor for students who are clocked in
+    if (currentUser?.role === 'student' && currentSession && !currentSession.clockOutTime) {
+      // Start monitoring every 15 minutes (900,000 ms)
+      monitoringIntervalRef.current = setInterval(() => {
+        checkLocationAndAutoClockOut()
+      }, 15 * 60 * 1000)
+
+      // Also check immediately when component mounts
+      checkLocationAndAutoClockOut()
+
+      return () => {
+        if (monitoringIntervalRef.current) {
+          clearInterval(monitoringIntervalRef.current)
+        }
+      }
+    } else {
+      // Clear monitoring if not a student or not clocked in
+      if (monitoringIntervalRef.current) {
+        clearInterval(monitoringIntervalRef.current)
+        monitoringIntervalRef.current = null
+      }
+    }
+  }, [currentUser, currentSession])
 
   // Load current session on mount
   useEffect(() => {
@@ -179,6 +258,31 @@ export function DatabaseTimeClock() {
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
               {error}
+            </div>
+          )}
+
+          {/* Location Monitoring Status for Students */}
+          {currentUser?.role === 'student' && isClockedIn && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center space-x-2 mb-2">
+                <MapPin className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">Location Monitoring Active</span>
+              </div>
+              <div className="text-xs text-blue-700 space-y-1">
+                <p>• Checking your location every 15 minutes</p>
+                <p>• You'll be automatically clocked out if you leave the studio area</p>
+                {locationStatus.lastChecked && (
+                  <p>• Last checked: {locationStatus.lastChecked}</p>
+                )}
+                {locationStatus.distance !== undefined && (
+                  <div className="flex items-center space-x-2">
+                    <span>Distance from studio:</span>
+                    <Badge variant={locationStatus.withinRange ? "default" : "destructive"}>
+                      {locationStatus.distance.toFixed(1)}m {locationStatus.withinRange ? '(Within range)' : '(Outside range)'}
+                    </Badge>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
