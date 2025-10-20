@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
       // First, try to find Tyrone specifically (he's the main owner)
       let studioOwner = await prisma.user.findFirst({
         where: { 
-          email: 'Tyronejackboy@gmail.com', // Specific email to avoid confusion
+          email: { equals: 'tyronejackboy@gmail.com', mode: 'insensitive' }, // case-insensitive match
           studioName: user.studioName,
           role: 'owner',
-          businessName: { contains: 'Tyrone Jackson' } // Use unique business name
+          businessName: { contains: 'Tyrone Jackson', mode: 'insensitive' }
         },
         select: { id: true, name: true, email: true }
       })
