@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Get studio geolocation settings
     const studioSettings = await prisma.studioSettings.findUnique({
-      where: { studioName: currentUser.studioName }
+      where: { studioName: currentUser.studioName || undefined }
     })
 
     if (!studioSettings || !studioSettings.lat || !studioSettings.lng) {
