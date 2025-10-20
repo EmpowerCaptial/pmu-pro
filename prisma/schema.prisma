@@ -37,20 +37,18 @@ model User {
   certifications         String?
   experience             String?
   instagram              String?
-  facebook               String?
-  tiktok                 String?
-  twitter                String?
-  youtube                String?
   specialties            String?
   stripeConnectAccountId String?               @unique
   studioName             String?
   venmoUsername          String?
   website                String?
-  // Studio payment settings for hybrid model
-  employmentType         String? // "commissioned" or "booth_renter" - null for owners/students
-  commissionRate         Float? // Percentage (0-100) - for commissioned staff
-  boothRentAmount        Float? // Monthly rent amount - for booth renters
-  // emailNotifications     Json?               @default("{\"subscription\": true, \"payments\": true, \"settings\": true}")
+  boothRentAmount        Float?
+  commissionRate         Float?
+  employmentType         String?
+  facebook               String?
+  tiktok                 String?
+  twitter                String?
+  youtube                String?
   appointments           Appointment[]
   calendarIntegrations   CalendarIntegration[]
   clients                Client[]
@@ -62,19 +60,19 @@ model User {
   invoices               Invoice[]
   magicLinkTokens        MagicLinkToken[]
   metaConnections        MetaConnection[]
+  notifications          Notification[]
   orders                 Order[]
   portfolios             Portfolio[]
   procedures             Procedure[]
   products               Product[]
+  reviewLinks            ReviewLink[]
+  reviews                Review[]
+  assignedServices       ServiceAssignment[]   @relation("AssignedByUser")
+  serviceAssignments     ServiceAssignment[]   @relation("UserServiceAssignments")
   services               Service[]
   supportTickets         SupportTicket[]
-  notifications          Notification[]
-  serviceAssignments     ServiceAssignment[]   @relation("UserServiceAssignments")
-  assignedServices       ServiceAssignment[]   @relation("AssignedByUser")
-  sentMessages           TeamMessage[]         @relation("SentMessages")
   receivedMessages       TeamMessage[]         @relation("ReceivedMessages")
-  reviews                Review[]
-  reviewLinks            ReviewLink[]
+  sentMessages           TeamMessage[]         @relation("SentMessages")
   timeBlocks             TimeBlock[]
   timeTrackingSessions   TimeTrackingSession[]
 
@@ -268,25 +266,25 @@ model MetaConnection {
 }
 
 model CalendarIntegration {
-  id              String           @id @default(cuid())
-  userId          String
-  provider        CalendarProvider
-  providerName    String
-  apiKey          String?
-  accessToken     String?          // For OAuth integrations
-  refreshToken    String?          // For OAuth integrations
-  tokenExpiresAt  DateTime?        // For OAuth integrations
-  webhookUrl      String?
-  calendarId      String?
-  calendarName    String?
-  isActive        Boolean          @default(true)
-  syncDirection   SyncDirection    @default(BIDIRECTIONAL)
-  lastSyncAt      DateTime?
-  syncFrequency   Int              @default(15)
-  metadata        Json?            // Store additional provider-specific data
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String           @id @default(cuid())
+  userId         String
+  provider       CalendarProvider
+  providerName   String
+  apiKey         String?
+  webhookUrl     String?
+  calendarId     String?
+  calendarName   String?
+  isActive       Boolean          @default(true)
+  syncDirection  SyncDirection    @default(BIDIRECTIONAL)
+  lastSyncAt     DateTime?
+  syncFrequency  Int              @default(15)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  accessToken    String?
+  metadata       Json?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider, calendarId])
   @@index([userId])
@@ -303,9 +301,7 @@ model DepositPayment {
   remainingAmount       Decimal       @db.Decimal(10, 2)
   currency              String        @default("USD")
   status                DepositStatus @default(PENDING)
-  paymentMethod         String?       // "card", "klarna", "affirm", "afterpay", "in_person", "cash"
-  collectInPerson       Boolean       @default(false) // True if payment will be collected in person
-  allowFullPayment      Boolean       @default(false) // True if client can pay full amount upfront
+  paymentMethod         String?
   stripePaymentIntentId String?
   stripeSessionId       String?
   depositLink           String        @unique
@@ -317,6 +313,8 @@ model DepositPayment {
   notes                 String?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
+  allowFullPayment      Boolean       @default(false)
+  collectInPerson       Boolean       @default(false)
   client                Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -328,19 +326,18 @@ model DepositPayment {
 }
 
 model TeamMessage {
-  id          String   @id @default(cuid())
-  senderId    String   // User who sent the message
-  recipientId String   // User who receives the message
+  id          String    @id @default(cuid())
+  senderId    String
+  recipientId String
   subject     String?
-  message     String   // Message content
-  isRead      Boolean  @default(false)
+  message     String
+  isRead      Boolean   @default(false)
   readAt      DateTime?
-  isDeleted   Boolean  @default(false) // Soft delete for sender
-  isArchived  Boolean  @default(false) // Archive for recipient
-  createdAt   DateTime @default(now())
-  
-  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  isArchived  Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+  recipient   User      @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([recipientId])
@@ -416,23 +413,23 @@ model MarketingSync {
 }
 
 model CommissionTransaction {
-  id                String   @id @default(cuid())
-  ownerId           String   // Studio owner who owes the commission
-  staffId           String   // Staff member who earned the commission
-  appointmentId     String?  // Related appointment (if applicable)
-  amount            Float    // Total service amount (excluding gratuity)
-  gratuityAmount    Float    @default(0) // Gratuity/tip amount - goes 100% to staff for commissioned employees
-  commissionRate    Float    // Commission percentage at time of transaction
-  commissionAmount  Float    // Amount owed to staff member (from service, not including gratuity)
-  ownerAmount       Float    // Amount owner keeps (from service only)
-  staffTotalAmount  Float?   // Total amount staff receives (commission + 100% gratuity)
-  employmentType    String   // "commissioned" or "booth_renter" at time of transaction
-  status            String   @default("pending") // "pending", "paid", "cancelled"
-  paidAt            DateTime?
-  paidMethod        String?  // "cash", "check", "stripe", "venmo", etc.
-  notes             String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String    @id @default(cuid())
+  ownerId          String
+  staffId          String
+  appointmentId    String?
+  amount           Float
+  gratuityAmount   Float     @default(0)
+  commissionRate   Float
+  commissionAmount Float
+  ownerAmount      Float
+  staffTotalAmount Float?
+  employmentType   String
+  status           String    @default("pending")
+  paidAt           DateTime?
+  paidMethod       String?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([ownerId])
   @@index([staffId])
@@ -485,8 +482,8 @@ model Service {
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   procedures      Procedure[]
-  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignments     ServiceAssignment[]
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([category])
@@ -502,9 +499,9 @@ model ServiceAssignment {
   assignedBy     String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  assignedByUser User     @relation("AssignedByUser", fields: [assignedBy], references: [id], onDelete: Cascade)
   service        Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   user           User     @relation("UserServiceAssignments", fields: [userId], references: [id], onDelete: Cascade)
-  assignedByUser User     @relation("AssignedByUser", fields: [assignedBy], references: [id], onDelete: Cascade)
 
   @@unique([serviceId, userId])
   @@index([userId])
@@ -514,23 +511,10 @@ model ServiceAssignment {
 }
 
 model ConsentForm {
-  id                  String   @id @default(cuid())
+  id                  String    @id @default(cuid())
   userId              String?
-  clientId            String?  // Optional - may not have client record yet
-  clientName          String
-  artistEmail         String?
-  formType            String   // "general-consent", "medical-history", "brows", etc.
-  procedureType       String?  @default("")
-  sendMethod          String   @default("email") // "email" or "sms"
-  contactInfo         String?
-  customMessage       String?
-  token               String   @unique
-  expiresAt           DateTime
-  status              String   @default("sent") // "sent", "completed", "expired"
-  completedAt         DateTime?
-  sentAt              DateTime @default(now())
-  pdfUrl              String?
-  formData            Json?    // Store completed form data
+  clientId            String?
+  procedureType       String?   @default("")
   clientSignature     String?
   clientSignatureDate DateTime?
   artistSignature     String?
@@ -540,16 +524,29 @@ model ConsentForm {
   medications         String?
   skinConditions      String?
   previousProcedures  String?
-  consentGiven        Boolean  @default(true)
-  photographyConsent  Boolean  @default(false)
-  marketingConsent    Boolean  @default(false)
+  consentGiven        Boolean   @default(true)
+  photographyConsent  Boolean   @default(false)
+  marketingConsent    Boolean   @default(false)
   emergencyContact    String?
   additionalNotes     String?
-  formVersion         String   @default("1.0")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  client              Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user                User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formVersion         String    @default("1.0")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  artistEmail         String?
+  clientName          String
+  completedAt         DateTime?
+  contactInfo         String?
+  customMessage       String?
+  expiresAt           DateTime
+  formData            Json?
+  formType            String
+  pdfUrl              String?
+  sendMethod          String    @default("email")
+  sentAt              DateTime  @default(now())
+  status              String    @default("sent")
+  token               String    @unique
+  client              Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user                User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([clientId])
@@ -801,6 +798,138 @@ model InvoiceItem {
   @@map("invoice_items")
 }
 
+model Notification {
+  id             String   @id @default(cuid())
+  userId         String
+  type           String
+  title          String
+  message        String
+  isRead         Boolean  @default(false)
+  priority       String   @default("medium")
+  actionRequired Boolean  @default(false)
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Review {
+  id           String      @id @default(cuid())
+  userId       String
+  clientId     String?
+  clientName   String
+  clientEmail  String?
+  service      String
+  rating       Int
+  comment      String?
+  platform     String      @default("website")
+  status       String      @default("pending")
+  reviewLinkId String?
+  createdAt    DateTime    @default(now())
+  publishedAt  DateTime?
+  updatedAt    DateTime    @updatedAt
+  client       Client?     @relation(fields: [clientId], references: [id])
+  reviewLink   ReviewLink? @relation(fields: [reviewLinkId], references: [id])
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model ReviewLink {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  url       String   @unique
+  service   String
+  sentTo    Int      @default(0)
+  responses Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews   Review[]
+
+  @@map("review_links")
+}
+
+model TimeBlock {
+  id               String   @id @default(cuid())
+  userId           String
+  date             String
+  startTime        String
+  endTime          String
+  type             String
+  title            String
+  notes            String?
+  isRecurring      Boolean  @default(false)
+  recurringPattern String?
+  recurringEndDate String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([userId, date])
+  @@map("time_blocks")
+}
+
+model TimeTrackingSession {
+  id            String         @id @default(cuid())
+  userId        String
+  clockInTime   DateTime
+  clockOutTime  DateTime?
+  totalHours    Float?
+  location      String?
+  lat           Float?
+  lng           Float?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  breakSessions BreakSession[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clockInTime])
+  @@index([userId, clockInTime])
+  @@map("time_tracking_sessions")
+}
+
+model BreakSession {
+  id        String              @id @default(cuid())
+  sessionId String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Float?
+  reason    String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  session   TimeTrackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("break_sessions")
+}
+
+model StudioSettings {
+  id         String   @id @default(cuid())
+  studioName String   @unique
+  ownerEmail String
+  address    String
+  lat        Float
+  lng        Float
+  radius     Float    @default(100)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  updatedBy  String?
+
+  @@index([studioName])
+  @@index([ownerEmail])
+  @@map("studio_settings")
+}
+
 enum DocumentType {
   ID_DOCUMENT
   CONSENT_FORM
@@ -856,142 +985,4 @@ enum OrderStatus {
   shipped
   delivered
   cancelled
-}
-
-model Notification {
-  id             String   @id @default(cuid())
-  userId         String
-  type           String
-  title          String
-  message        String
-  isRead         Boolean  @default(false)
-  priority       String   @default("medium") // low, medium, high
-  actionRequired Boolean  @default(false)
-  metadata       Json? // Additional data like formId, clientId, etc.
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
-}
-
-model Review {
-  id            String   @id @default(cuid())
-  userId        String
-  clientId      String?
-  clientName    String
-  clientEmail   String?
-  service       String
-  rating        Int      // 1-5
-  comment       String?
-  platform      String   @default("website") // google, facebook, yelp, website
-  status        String   @default("pending") // pending, published, hidden
-  reviewLinkId  String?
-  createdAt     DateTime @default(now())
-  publishedAt   DateTime?
-  updatedAt     DateTime @updatedAt
-  
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client     Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  reviewLink ReviewLink?  @relation(fields: [reviewLinkId], references: [id], onDelete: SetNull)
-  
-  @@map("reviews")
-}
-
-model ReviewLink {
-  id         String   @id @default(cuid())
-  userId     String
-  name       String
-  url        String   @unique
-  service    String   // "All Services" or specific service name
-  sentTo     Int      @default(0)
-  responses  Int      @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews Review[]
-  
-  @@map("review_links")
-}
-
-model TimeBlock {
-  id                String   @id @default(cuid())
-  userId            String
-  date              String   // YYYY-MM-DD format
-  startTime         String   // HH:MM format (24-hour)
-  endTime           String   // HH:MM format (24-hour)
-  type              String   // 'unavailable' | 'break' | 'personal' | 'maintenance' | 'training'
-  title             String
-  notes             String?
-  isRecurring       Boolean  @default(false)
-  recurringPattern  String?  // 'daily' | 'weekly' | 'monthly'
-  recurringEndDate  String?  // YYYY-MM-DD format
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([date])
-  @@index([userId, date])
-  @@map("time_blocks")
-}
-
-model TimeTrackingSession {
-  id            String    @id @default(cuid())
-  userId        String
-  clockInTime   DateTime
-  clockOutTime  DateTime?
-  totalHours    Float?    // Calculated total hours worked
-  breakSessions BreakSession[]
-  location      String?   // Location where clocked in
-  lat           Float?    // Latitude
-  lng           Float?    // Longitude
-  notes         String?   // Optional notes
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([clockInTime])
-  @@index([userId, clockInTime])
-  @@map("time_tracking_sessions")
-}
-
-model BreakSession {
-  id          String   @id @default(cuid())
-  sessionId   String
-  startTime   DateTime
-  endTime     DateTime?
-  duration    Float?   // Calculated break duration in hours
-  reason      String?  // Reason for break
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  session TimeTrackingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  @@index([sessionId])
-  @@map("break_sessions")
-}
-
-model StudioSettings {
-  id          String   @id @default(cuid())
-  studioName  String   @unique // Studio name from owner's account
-  ownerEmail  String   // Owner's email
-  address     String   // Physical studio address
-  lat         Float    // Latitude
-  lng         Float    // Longitude
-  radius      Float    @default(100) // Geofencing radius in meters
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  updatedBy   String?  // Email of person who last updated
-
-  @@index([studioName])
-  @@index([ownerEmail])
-  @@map("studio_settings")
 }

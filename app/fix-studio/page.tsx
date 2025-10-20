@@ -19,15 +19,34 @@ export default function FixStudioPage() {
     try {
       const studioName = 'Universal Beauty Studio Academy'
       const businessName = 'Universal Beauty Studio - Tyrone Jackson'
+      const userEmail = 'tyronejackboy@gmail.com'
       
-      // Fix 1: Update current user
+      // Fix 1: Update database with correct studio names
+      addStatus('📊 Updating database with correct studio information...')
+      const dbUpdateResponse = await fetch('/api/admin/update-studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          studioName,
+          businessName
+        })
+      })
+      
+      if (dbUpdateResponse.ok) {
+        addStatus('✅ Database updated with correct studio names')
+      } else {
+        addStatus('⚠️ Could not update database')
+      }
+      
+      // Fix 2: Update current user in localStorage
       const demoUser = localStorage.getItem('demoUser')
       if (demoUser) {
         const user = JSON.parse(demoUser)
         user.studioName = studioName
         user.businessName = businessName
         localStorage.setItem('demoUser', JSON.stringify(user))
-        addStatus('✅ Updated current user studio names')
+        addStatus('✅ Updated current user studio names in localStorage')
       }
       
       // Fix 2: Update ALL team members

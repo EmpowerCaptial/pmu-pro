@@ -20,14 +20,16 @@ interface Appointment {
   clientEmail: string;
   clientPhone?: string;
   service: string;
-  date: string;
-  time: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  createdAt?: string;
+  time?: string;
   duration: number;
   price: number;
   deposit: number;
   status: string;
   paymentStatus: string;
-  createdAt: string;
 }
 
 interface DepositPayment {
@@ -77,7 +79,7 @@ export function AppointmentDetailsCard() {
     try {
       const response = await fetch('/api/deposit-payments', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'x-user-email': currentUser?.email || '',
           'Accept': 'application/json'
         }
       });
@@ -157,9 +159,16 @@ export function AppointmentDetailsCard() {
         ) : (
           <div className="space-y-2">
             {appointments.slice(0, 8).map((appointment) => {
-              const appointmentDate = new Date(appointment.date);
-              const isToday = appointmentDate.toDateString() === new Date().toDateString();
-              const isTomorrow = appointmentDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
+              // Handle different date field names and validate dates
+              const appointmentDateString = appointment.date || appointment.startTime || appointment.createdAt;
+              const appointmentDate = appointmentDateString ? new Date(appointmentDateString) : new Date();
+              
+              // Check if the date is valid
+              const isValidDate = !isNaN(appointmentDate.getTime());
+              const safeDate = isValidDate ? appointmentDate : new Date();
+              
+              const isToday = safeDate.toDateString() === new Date().toDateString();
+              const isTomorrow = safeDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
               
               return (
                 <div key={appointment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-lavender/30 transition-colors">
@@ -179,7 +188,7 @@ export function AppointmentDetailsCard() {
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           <span className="font-medium">
-                            {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(appointmentDate, 'MMM dd')} • {appointment.time}
+                            {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(safeDate, 'MMM dd')} • {appointment.time || 'TBD'}
                           </span>
                         </div>
                       </div>
