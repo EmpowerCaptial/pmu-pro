@@ -1,5 +1,5 @@
 // Feature access control for PMU Pro subscription plans
-export type SubscriptionPlan = 'basic' | 'premium' | 'trial' | 'inactive'
+export type SubscriptionPlan = 'basic' | 'premium' | 'studio' | 'trial' | 'inactive'
 
 export interface FeatureAccess {
   canAccess: boolean
@@ -52,104 +52,121 @@ export const FEATURE_ACCESS_CONFIG = {
   [FEATURES.BASIC.AI_CONTRAINDICATION_ANALYSIS]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.BASIC_PHOTO_ANALYSIS]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.CLIENT_MANAGEMENT]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.BASIC_REPORTS]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.EMAIL_SUPPORT]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.DOCUMENT_UPLOAD]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   [FEATURES.BASIC.STANDARD_FORMS]: {
     basic: true,
     premium: true,
+    studio: true,
     trial: true,
     inactive: false
   },
   
-  // Premium features
+  // Premium features - Studio gets ALL premium features
   [FEATURES.PREMIUM.ADVANCED_AI_ANALYSIS]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.PIGMENT_MATCHING]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.PORTFOLIO_SHARING]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.ADVANCED_ANALYTICS]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.PRIORITY_SUPPORT]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.CUSTOM_BRANDING]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.UNIFIED_SKIN_ANALYSIS]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.COLOR_CORRECTION_TOOL]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.PROCEL_ANALYSIS]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },
   [FEATURES.PREMIUM.ADVANCED_CLIENT_TOOLS]: {
     basic: false,
     premium: true,
+    studio: true,
     trial: false,
     inactive: false
   },

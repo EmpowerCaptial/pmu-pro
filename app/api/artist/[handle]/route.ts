@@ -10,6 +10,7 @@ export async function GET(
 ) {
   try {
     const handle = params.handle
+    console.log('🔍 Debug - Looking for artist with handle:', handle);
 
     // Get all users to find the one whose handle matches (business name or email)
     const users = await prisma.user.findMany({
@@ -35,6 +36,18 @@ export async function GET(
       }
     })
 
+    console.log('🔍 Debug - Found users:', users.map(u => ({
+      email: u.email,
+      businessName: (u as any).businessName,
+      emailHandle: u.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      businessHandle: (u as any).businessName ? (u as any).businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') : 'no-business-name'
+    })));
+
     // Find the user whose business name OR email matches the handle
     // Priority: Email handle (unique) > Business name handle (may conflict)
     
@@ -43,6 +56,8 @@ export async function GET(
       const emailHandle = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
       return emailHandle === handle.toLowerCase()
     })
+    
+    console.log('🔍 Debug - Email handle match:', artist ? 'FOUND' : 'NOT FOUND');
     
     // If no email match, try business name match
     if (!artist) {
@@ -58,9 +73,23 @@ export async function GET(
         
         return businessHandle === handle.toLowerCase()
       })
+      
+      console.log('🔍 Debug - Business name handle match:', artist ? 'FOUND' : 'NOT FOUND');
     }
 
     if (!artist) {
+      console.log('❌ Artist not found for handle:', handle);
+      console.log('Available handles:', users.map(u => ({
+        email: u.email,
+        emailHandle: u.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        businessName: (u as any).businessName,
+        businessHandle: (u as any).businessName ? (u as any).businessName
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '') : 'no-business-name'
+      })));
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 })
     }
 

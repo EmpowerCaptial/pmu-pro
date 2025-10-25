@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { NavBar } from "@/components/ui/navbar"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,24 @@ export default function SettingsPage() {
   })
 
   const [currentPlan, setCurrentPlan] = useState('starter') // Default to starter plan
+  
+  // Set current plan based on user's selectedPlan
+  useEffect(() => {
+    if ((currentUser as any)?.selectedPlan) {
+      // Map selectedPlan to feature-access plan types
+      const plan = (currentUser as any).selectedPlan
+      if (plan === 'studio') {
+        setCurrentPlan('studio')
+      } else if (plan === 'professional') {
+        setCurrentPlan('premium')
+      } else if (plan === 'starter') {
+        setCurrentPlan('basic')
+      } else {
+        setCurrentPlan('starter')
+      }
+    }
+  }, [currentUser])
+  
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',

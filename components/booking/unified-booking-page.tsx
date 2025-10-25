@@ -105,13 +105,19 @@ export function UnifiedBookingPage({ artistHandle }: UnifiedBookingPageProps) {
   useEffect(() => {
     const loadArtistData = async () => {
       try {
+        console.log('🔍 Debug - Fetching artist data for handle:', artistHandle);
         const response = await fetch(`/api/artist/${artistHandle}`)
         
+        console.log('🔍 Debug - API response status:', response.status);
+        
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('❌ API error:', errorData);
           throw new Error(`Failed to fetch artist data: ${response.statusText}`)
         }
 
         const data = await response.json()
+        console.log('✅ Artist data loaded:', data);
         let artistData = data.artist
 
         // Ensure specialties is always an array (fixes t.specialties.map is not a function)

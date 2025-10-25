@@ -74,8 +74,16 @@ export default function ShareBookingPage() {
     const businessName = (currentUser as any).businessName;
     const email = currentUser.email;
     
+    console.log('🔍 Debug - User data:', {
+      businessName,
+      email,
+      currentUser: currentUser
+    });
+    
     if (businessName || email) {
-      return generateUserHandle(businessName, email);
+      const handle = generateUserHandle(businessName, email);
+      console.log('🔍 Debug - Generated handle:', handle);
+      return handle;
     }
     return null; // No fallback - user must be authenticated
   }, [(currentUser as any)?.businessName, currentUser?.email]);
