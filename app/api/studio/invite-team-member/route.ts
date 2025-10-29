@@ -74,33 +74,56 @@ export async function POST(request: NextRequest) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(memberPassword, 12)
 
-    // Create the user account using raw SQL to avoid Prisma schema issues
-    const userId = `cmg${Date.now()}${Math.random().toString(36).substr(2, 9)}`
-    
-    await prisma.$executeRaw`
-      INSERT INTO "users" (
-        "id", "email", "name", "password", "role", "selectedPlan", 
-        "hasActiveSubscription", "isLicenseVerified", "businessName", "studioName",
-        "licenseNumber", "licenseState", "createdAt", "updatedAt"
-      ) VALUES (
-        ${userId}, ${memberEmail}, ${memberName}, ${hashedPassword}, ${memberRole}, 'studio',
-        true, ${memberRole === 'licensed' || memberRole === 'instructor'}, ${correctBusinessName}, ${correctStudioName},
-        ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''}, 
-        ${memberRole === 'licensed' || memberRole === 'instructor' ? 'PENDING' : ''},
-        NOW(), NOW()
+    // Create the user account using Prisma for better error handling
+    let newUser
+    try {
+      newUser = await prisma.user.create({
+        data: {
+          email: memberEmail,
+          name: memberName,
+          password: hashedPassword,
+          role: memberRole,
+          selectedPlan: 'studio',
+          hasActiveSubscription: true,
+          isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor',
+          subscriptionStatus: 'active',
+          businessName: correctBusinessName,
+          studioName: correctStudioName,
+          licenseNumber: (memberRole === 'licensed' || memberRole === 'instructor') ? 'PENDING' : 'N/A',
+          licenseState: (memberRole === 'licensed' || memberRole === 'instructor') ? 'PENDING' : 'N/A'
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          selectedPlan: true,
+          hasActiveSubscription: true,
+          isLicenseVerified: true,
+          businessName: true,
+          studioName: true
+        }
+      })
+      
+      console.log('✅ User created in database:', newUser.id)
+    } catch (dbError: any) {
+      console.error('❌ Database error creating user:', dbError)
+      
+      // Check for specific database errors
+      if (dbError.code === 'P2002') {
+        return NextResponse.json(
+          { error: 'A user with this email already exists in the database' },
+          { status: 409 }
+        )
+      }
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to add user to database',
+          details: dbError.message || 'Database insert failed'
+        },
+        { status: 500 }
       )
-    `
-    
-    const newUser = {
-      id: userId,
-      email: memberEmail,
-      name: memberName,
-      role: memberRole,
-      selectedPlan: 'studio',
-      hasActiveSubscription: true,
-      isLicenseVerified: memberRole === 'licensed' || memberRole === 'instructor',
-      businessName: correctBusinessName,
-      studioName: correctStudioName
     }
 
     // Create invitation email content based on role
@@ -194,7 +217,23 @@ export async function POST(request: NextRequest) {
       `
     }
 
-    await EmailService.sendEmail(emailContent)
+    // Send invitation email with separate error handling
+    try {
+      await EmailService.sendEmail(emailContent)
+      console.log('✅ Invitation email sent successfully')
+    } catch (emailError: any) {
+      console.error('❌ Email error:', emailError)
+      
+      // User was created successfully, but email failed
+      // Still return success but log the email error
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Team member created successfully, but invitation email failed to send',
+        userId: newUser.id,
+        warning: 'Please manually share the login credentials with the team member',
+        emailError: emailError.message
+      })
+    }
 
     return NextResponse.json({ 
       success: true, 
@@ -203,15 +242,16 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error sending team member invitation:', error)
+    console.error('Error in team member invitation:', error)
     
     // Provide more detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const errorDetails = {
-      error: 'Failed to send invitation',
+      error: 'Failed to process team member invitation',
       details: errorMessage,
       timestamp: new Date().toISOString()
     }
     
     return NextResponse.json(errorDetails, { status: 500 })
-  }}
+  }
+}

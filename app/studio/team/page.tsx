@@ -262,12 +262,18 @@ export default function StudioTeamPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to send invitation')
+        const errorMessage = errorData.error || errorData.details || 'Failed to send invitation'
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
       if (!result.success) {
-        throw new Error(result.error || 'Failed to send invitation')
+        throw new Error(result.error || result.warning || 'Failed to send invitation')
+      }
+      
+      // Show warning if email failed but user was created
+      if (result.warning) {
+        alert(`${result.message}\n\n${result.warning}\n\nUser ID: ${result.userId}`)
       }
 
       // Create new team member invitation
@@ -295,10 +301,14 @@ export default function StudioTeamPage() {
       setShowInviteForm(false)
       setIsInviting(false)
 
-      alert(`Invitation sent successfully to ${inviteName}! They will receive an email with their login credentials.`)
+      // Only show success if no warning was already shown
+      if (!result.warning) {
+        alert(`Invitation sent successfully to ${inviteName}! They will receive an email with their login credentials.`)
+      }
     } catch (error) {
       console.error('Error sending invitation:', error)
-      alert('Failed to send invitation. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation'
+      alert(`Failed to add team member:\n\n${errorMessage}\n\nPlease check:\n1. Email format is correct\n2. Password is at least 6 characters\n3. Email is not already registered`)
       setIsInviting(false)
     }
   }
