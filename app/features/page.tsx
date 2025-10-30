@@ -555,7 +555,8 @@ export default function FeaturesPage() {
     if (choice === 'artist') {
       router.push('/studio/team')
     } else if (choice === 'staff') {
-      router.push('/enterprise/staff')
+      // Both artist and staff team management uses /studio/team (database-backed)
+      router.push('/studio/team')
     }
   }
 

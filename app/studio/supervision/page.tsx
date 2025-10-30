@@ -1772,7 +1772,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                       <Button 
                         variant="outline" 
                         className="h-auto p-6 flex-col border-emerald-200/50 bg-white/90 hover:bg-emerald-50/80 text-emerald-700 hover:text-emerald-800 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl"
-                        onClick={() => router.push('/enterprise/staff')}
+                        onClick={() => router.push('/studio/team')}
                       >
                         <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
                           <Users className="h-6 w-6 text-emerald-600" />
