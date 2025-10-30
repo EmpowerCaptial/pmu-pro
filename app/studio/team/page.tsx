@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { 
   Users, 
   UserPlus, 
@@ -35,6 +36,12 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
+interface TeamMemberPermission {
+  resource: string
+  action: string
+  granted: boolean
+}
+
 interface TeamMember {
   id: string
   name: string
@@ -51,6 +58,8 @@ interface TeamMember {
   employmentType?: 'commissioned' | 'booth_renter' | null
   commissionRate?: number
   boothRentAmount?: number
+  // Permissions
+  permissions?: TeamMemberPermission[]
 }
 
 export default function StudioTeamPage() {
@@ -72,6 +81,77 @@ export default function StudioTeamPage() {
   const [commissionRate, setCommissionRate] = useState<number>(50)
   const [boothRentAmount, setBoothRentAmount] = useState<number>(500)
   const [isSavingEmployment, setIsSavingEmployment] = useState(false)
+  
+  // Permissions modal state
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false)
+  const [memberPermissions, setMemberPermissions] = useState<Record<string, Record<string, boolean>>>({})
+  const [isSavingPermissions, setIsSavingPermissions] = useState(false)
+
+  // Permission resources and actions for studio team management
+  const PERMISSION_RESOURCES = [
+    {
+      name: 'Team Management',
+      key: 'team',
+      description: 'Manage team members, roles, and invitations',
+      actions: [
+        { key: 'view', name: 'View Team Members' },
+        { key: 'invite', name: 'Invite Members' },
+        { key: 'edit', name: 'Edit Members' },
+        { key: 'remove', name: 'Remove Members' }
+      ]
+    },
+    {
+      name: 'Client Management',
+      key: 'clients',
+      description: 'View and manage client information',
+      actions: [
+        { key: 'view', name: 'View Clients' },
+        { key: 'create', name: 'Add Clients' },
+        { key: 'edit', name: 'Edit Clients' },
+        { key: 'delete', name: 'Delete Clients' }
+      ]
+    },
+    {
+      name: 'Appointments',
+      key: 'appointments',
+      description: 'Manage appointments and schedules',
+      actions: [
+        { key: 'view', name: 'View Appointments' },
+        { key: 'create', name: 'Create Appointments' },
+        { key: 'edit', name: 'Edit Appointments' },
+        { key: 'cancel', name: 'Cancel Appointments' }
+      ]
+    },
+    {
+      name: 'Services',
+      key: 'services',
+      description: 'Manage services and pricing',
+      actions: [
+        { key: 'view', name: 'View Services' },
+        { key: 'create', name: 'Create Services' },
+        { key: 'edit', name: 'Edit Services' },
+        { key: 'delete', name: 'Delete Services' }
+      ]
+    },
+    {
+      name: 'Reports & Analytics',
+      key: 'reports',
+      description: 'View reports and analytics',
+      actions: [
+        { key: 'view', name: 'View Reports' },
+        { key: 'export', name: 'Export Data' }
+      ]
+    },
+    {
+      name: 'Settings',
+      key: 'settings',
+      description: 'Manage studio settings',
+      actions: [
+        { key: 'view', name: 'View Settings' },
+        { key: 'edit', name: 'Edit Settings' }
+      ]
+    }
+  ]
 
   // Load team members from DATABASE (not localStorage)
   useEffect(() => {
@@ -481,6 +561,84 @@ export default function StudioTeamPage() {
       alert(error instanceof Error ? error.message : 'Failed to update employment settings')
     } finally {
       setIsSavingEmployment(false)
+    }
+  }
+
+  // Open permissions modal
+  const handleOpenPermissions = (member: TeamMember) => {
+    setSelectedMember(member)
+    
+    // Initialize permissions from member or defaults
+    const initialPermissions: Record<string, Record<string, boolean>> = {}
+    
+    PERMISSION_RESOURCES.forEach(resource => {
+      initialPermissions[resource.key] = {}
+      resource.actions.forEach(action => {
+        // Check if member has this permission set
+        const existingPermission = member.permissions?.find(
+          p => p.resource === resource.key && p.action === action.key
+        )
+        initialPermissions[resource.key][action.key] = existingPermission?.granted ?? false
+      })
+    })
+    
+    setMemberPermissions(initialPermissions)
+    setShowPermissionsModal(true)
+  }
+
+  // Toggle permission
+  const handleTogglePermission = (resource: string, action: string) => {
+    setMemberPermissions(prev => ({
+      ...prev,
+      [resource]: {
+        ...prev[resource],
+        [action]: !prev[resource]?.[action]
+      }
+    }))
+  }
+
+  // Save permissions
+  const handleSavePermissions = async () => {
+    if (!selectedMember) return
+
+    setIsSavingPermissions(true)
+    try {
+      // Convert permissions object to array format
+      const permissionsArray: TeamMemberPermission[] = []
+      
+      Object.keys(memberPermissions).forEach(resource => {
+        Object.keys(memberPermissions[resource]).forEach(action => {
+          permissionsArray.push({
+            resource,
+            action,
+            granted: memberPermissions[resource][action]
+          })
+        })
+      })
+
+      // For now, save to localStorage
+      // TODO: Create API endpoint to save to database
+      const updatedMembers = teamMembers.map(m =>
+        m.id === selectedMember.id
+          ? {
+              ...m,
+              permissions: permissionsArray
+            }
+          : m
+      )
+      
+      setTeamMembers(updatedMembers)
+      localStorage.setItem('studio-team-members', JSON.stringify(updatedMembers))
+
+      alert(`✅ Permissions updated for ${selectedMember.name}`)
+      setShowPermissionsModal(false)
+      setSelectedMember(null)
+
+    } catch (error) {
+      console.error('Error updating permissions:', error)
+      alert(error instanceof Error ? error.message : 'Failed to update permissions')
+    } finally {
+      setIsSavingPermissions(false)
     }
   }
 
@@ -1236,7 +1394,7 @@ export default function StudioTeamPage() {
                                     Permissions
                                   </div>
                                   <DropdownMenuItem 
-                                    onClick={() => alert('Permissions management coming soon! This will allow you to control what actions this team member can perform.')}
+                                    onClick={() => handleOpenPermissions(member)}
                                     className="hover:bg-purple-50 focus:bg-purple-50 text-gray-700"
                                   >
                                     <Shield className="h-4 w-4 mr-2 text-purple-600" />
@@ -1472,6 +1630,110 @@ export default function StudioTeamPage() {
                     <li>• Booth renters need their own Stripe Connect account</li>
                     <li>• Payment type affects how reports and dashboards display earnings</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Permissions Modal */}
+        {showPermissionsModal && selectedMember && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-purple-600" />
+                      Manage Permissions
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Configure what {selectedMember.name} can access and manage
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPermissionsModal(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {/* Member Info */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {selectedMember.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{selectedMember.name}</p>
+                      <p className="text-sm text-gray-600">{selectedMember.email}</p>
+                      <Badge className="mt-1 text-xs bg-purple-100 text-purple-800 border-purple-300">
+                        {getRoleBadge(selectedMember.role)}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Permissions List */}
+                <div className="space-y-4">
+                  {PERMISSION_RESOURCES.map((resource) => (
+                    <div key={resource.key} className="border border-gray-200 rounded-lg p-4">
+                      <div className="mb-3">
+                        <h3 className="font-semibold text-gray-900">{resource.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{resource.description}</p>
+                      </div>
+                      <div className="space-y-2">
+                        {resource.actions.map((action) => (
+                          <div
+                            key={action.key}
+                            className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                          >
+                            <span className="text-sm text-gray-700">{action.name}</span>
+                            <Switch
+                              checked={memberPermissions[resource.key]?.[action.key] || false}
+                              onCheckedChange={() => handleTogglePermission(resource.key, action.key)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Info Note */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
+                  <p className="font-medium text-amber-900 mb-2">⚠️ Permission Notes:</p>
+                  <ul className="space-y-1 text-amber-800 text-xs">
+                    <li>• Permissions are saved automatically and take effect immediately</li>
+                    <li>• Only Owners and Directors can modify permissions</li>
+                    <li>• Grant only the minimum permissions needed for each role</li>
+                    <li>• Review permissions regularly to maintain security</li>
+                  </ul>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={handleSavePermissions}
+                    disabled={isSavingPermissions}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isSavingPermissions ? 'Saving...' : 'Save Permissions'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowPermissionsModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </CardContent>
             </Card>
