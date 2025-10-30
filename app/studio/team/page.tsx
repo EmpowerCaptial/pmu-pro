@@ -41,7 +41,7 @@ interface TeamMember {
   status: 'pending' | 'active' | 'suspended'
   invitedAt: string
   joinedAt?: string
-  role: 'student' | 'licensed' | 'instructor' | 'owner'
+  role: 'student' | 'licensed' | 'instructor' | 'owner' | 'staff' | 'director' | 'hr' | 'manager'
   licenseNumber?: string
   licenseState?: string
   phone?: string
@@ -59,7 +59,7 @@ export default function StudioTeamPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
   const [invitePassword, setInvitePassword] = useState('')
-  const [inviteRole, setInviteRole] = useState<'student' | 'licensed' | 'instructor'>('student')
+  const [inviteRole, setInviteRole] = useState<'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager'>('student')
   const [isInviting, setIsInviting] = useState(false)
   const [addMode, setAddMode] = useState<'invite' | 'manual'>('invite') // New state for add mode
   const [isSyncing, setIsSyncing] = useState(false)
@@ -205,7 +205,7 @@ export default function StudioTeamPage() {
           status: 'active' as const,
           invitedAt: new Date().toISOString(),
           joinedAt: new Date().toISOString(),
-          role: instructor.role as 'student' | 'licensed' | 'instructor' | 'owner',
+          role: instructor.role as 'student' | 'licensed' | 'instructor' | 'owner' | 'staff' | 'director' | 'hr' | 'manager',
           licenseNumber: instructor.licenseNumber,
           licenseState: instructor.licenseState,
           phone: instructor.phone,
@@ -404,7 +404,14 @@ export default function StudioTeamPage() {
       setInviteRole('student')
       setShowInviteForm(false)
 
-      alert(`${inviteRole === 'instructor' ? 'Instructor' : inviteRole === 'licensed' ? 'Licensed Artist' : 'Student'} added to team successfully!\n\nLogin credentials:\nEmail: ${inviteEmail}\nPassword: ${defaultPassword}`)
+      const roleDisplayName = inviteRole === 'instructor' ? 'Instructor' : 
+                              inviteRole === 'licensed' ? 'Licensed Artist' : 
+                              inviteRole === 'student' ? 'Student' :
+                              inviteRole === 'staff' ? 'Staff' :
+                              inviteRole === 'director' ? 'Director' :
+                              inviteRole === 'hr' ? 'HR' :
+                              inviteRole === 'manager' ? 'Manager' : 'Team Member'
+      alert(`${roleDisplayName} added to team successfully!\n\nLogin credentials:\nEmail: ${inviteEmail}\nPassword: ${defaultPassword}`)
     } catch (error) {
       console.error('Error adding team member manually:', error)
       alert('Failed to add team member. Please try again.')
@@ -529,7 +536,7 @@ export default function StudioTeamPage() {
     }
   }
 
-  const handleChangeTeamMemberRole = (memberId: string, newRole: 'student' | 'licensed' | 'instructor') => {
+  const handleChangeTeamMemberRole = (memberId: string, newRole: 'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager') => {
     const member = teamMembers.find(m => m.id === memberId)
     if (!member) return
     
@@ -588,7 +595,12 @@ export default function StudioTeamPage() {
     }
     
     const roleText = newRole === 'licensed' ? 'Licensed Artist' : 
-                    newRole === 'instructor' ? 'Instructor' : 'Student'
+                    newRole === 'instructor' ? 'Instructor' : 
+                    newRole === 'student' ? 'Student' :
+                    newRole === 'staff' ? 'Staff' :
+                    newRole === 'director' ? 'Director' :
+                    newRole === 'hr' ? 'HR' :
+                    newRole === 'manager' ? 'Manager' : 'Team Member'
     alert(`${member.name} has been changed to ${roleText} status!`)
   }
 
@@ -676,6 +688,14 @@ export default function StudioTeamPage() {
         return <Badge className="bg-green-100 text-green-800 border-green-300 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Licensed Artist</Badge>
       case 'student':
         return <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-xs"><User className="h-3 w-3 mr-1" />Student</Badge>
+      case 'staff':
+        return <Badge className="bg-gray-100 text-gray-800 border-gray-300 text-xs"><User className="h-3 w-3 mr-1" />Staff</Badge>
+      case 'director':
+        return <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-xs"><Crown className="h-3 w-3 mr-1" />Director</Badge>
+      case 'hr':
+        return <Badge className="bg-pink-100 text-pink-800 border-pink-300 text-xs"><Users className="h-3 w-3 mr-1" />HR</Badge>
+      case 'manager':
+        return <Badge className="bg-cyan-100 text-cyan-800 border-cyan-300 text-xs"><Settings className="h-3 w-3 mr-1" />Manager</Badge>
       default:
         return <Badge variant="outline" className="text-xs">{role}</Badge>
     }
@@ -691,6 +711,14 @@ export default function StudioTeamPage() {
         return 'Independent client work with regular booking system'
       case 'student':
         return 'Requires supervision for all procedures'
+      case 'staff':
+        return 'Administrative and operational support'
+      case 'director':
+        return 'Management and oversight responsibilities'
+      case 'hr':
+        return 'Human resources and personnel management'
+      case 'manager':
+        return 'Team and operations coordination'
       default:
         return ''
     }
@@ -972,17 +1000,25 @@ export default function StudioTeamPage() {
                 <select
                   id="member-role"
                   value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as 'student' | 'licensed' | 'instructor')}
+                  onChange={(e) => setInviteRole(e.target.value as 'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager')}
                   className="w-full mt-1 p-3 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm"
                 >
                   <option value="student">Student/Apprentice - Requires supervision for all procedures</option>
                   <option value="licensed">Licensed Artist - Independent client work</option>
                   <option value="instructor">Instructor - Can supervise students and manage availability</option>
+                  <option value="staff">Staff - Administrative and support role</option>
+                  <option value="director">Director - Management and oversight role</option>
+                  <option value="hr">Human Resources - HR and personnel management</option>
+                  <option value="manager">Manager - Team and operations management</option>
                 </select>
                 <p className="text-xs text-gray-600 mt-2">
                   {inviteRole === 'student' && 'Students will use the supervision booking system and require instructor oversight for all procedures.'}
                   {inviteRole === 'licensed' && 'Licensed artists will use the regular booking system and can work independently with clients.'}
                   {inviteRole === 'instructor' && 'Instructors can supervise students, manage their availability, and access instructor management features.'}
+                  {inviteRole === 'staff' && 'Staff members provide administrative and operational support for studio activities.'}
+                  {inviteRole === 'director' && 'Directors have management and oversight responsibilities for studio operations.'}
+                  {inviteRole === 'hr' && 'HR team members handle human resources and personnel management functions.'}
+                  {inviteRole === 'manager' && 'Managers oversee team operations and coordinate studio activities.'}
                 </p>
               </div>
               
