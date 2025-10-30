@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all team members in the same studio
-    const teamMembers = await prisma.user.findMany({
+    const dbTeamMembers = await prisma.user.findMany({
       where: {
         studioName: currentUser.studioName,
         id: { not: currentUser.id } // Exclude the current user
@@ -34,9 +34,18 @@ export async function GET(request: NextRequest) {
         role: true,
         avatar: true,
         businessName: true,
+        studioName: true,
         createdAt: true
       }
     })
+
+    // Format team members with required fields for frontend
+    const teamMembers = dbTeamMembers.map(member => ({
+      ...member,
+      status: 'active' as const,
+      invitedAt: member.createdAt?.toISOString() || new Date().toISOString(),
+      joinedAt: member.createdAt?.toISOString() || new Date().toISOString()
+    }))
 
     return NextResponse.json({
       success: true,
