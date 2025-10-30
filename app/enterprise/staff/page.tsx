@@ -21,7 +21,8 @@ import {
   XCircle,
   Edit,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  AlertTriangle
 } from 'lucide-react'
 import { PermissionManager } from '@/components/staff/permission-manager'
 import { StaffMember as StaffMemberType, StaffPermission, hasPermission, setStaffPermission } from '@/lib/staff-auth'
@@ -113,6 +114,9 @@ export default function EnterpriseStaffPage() {
       return
     }
 
+    // WARNING: This uses in-memory storage and will be lost on refresh!
+    alert('⚠️ WARNING: Enterprise Staff uses in-memory storage and data will be lost on refresh.\n\nUse "Studio Team Management" (/studio/team) for database-backed team management with persistent storage.')
+    
     const staffMember: StaffMemberType = {
       id: `staff-${Date.now()}`,
       username: newStaffMember.email,
@@ -137,7 +141,7 @@ export default function EnterpriseStaffPage() {
       department: '',
       phone: ''
     })
-    alert('Staff member added successfully!')
+    alert('Staff member added to memory successfully! But remember: data is lost on refresh.')
   }
 
   const handleEditStaff = (staffId: string) => {
@@ -164,6 +168,28 @@ export default function EnterpriseStaffPage() {
     <div className="min-h-screen bg-gradient-to-br from-ivory via-background to-beige">
       <NavBar currentPath="/enterprise/staff" user={user} />
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl relative z-10">
+        {/* Warning Banner */}
+        <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-md">
+          <div className="flex items-start">
+            <AlertTriangle className="h-6 w-6 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-yellow-800 mb-1">
+                ⚠️ In-Memory Storage Warning
+              </h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                This page uses in-memory storage. All data will be lost when you refresh the page or restart the server.
+              </p>
+              <Button
+                onClick={() => router.push('/studio/team')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+              >
+                Use Studio Team Management (Database-Backed)
+              </Button>
+            </div>
+          </div>
+        </div>
+        
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
