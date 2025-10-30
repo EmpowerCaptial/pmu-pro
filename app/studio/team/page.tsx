@@ -1424,13 +1424,16 @@ export default function StudioTeamPage() {
                                 Account Actions
                               </div>
                               
-                              <DropdownMenuItem 
-                                onClick={() => handleSeparateTeamMember(member.id)}
-                                className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
-                              >
-                                <User className="h-4 w-4 mr-2 text-blue-600" />
-                                Separate from Studio
-                              </DropdownMenuItem>
+                              {/* Separate from Studio - Only for instructors and licensed artists */}
+                              {(member.role === 'instructor' || member.role === 'licensed') && (
+                                <DropdownMenuItem 
+                                  onClick={() => handleSeparateTeamMember(member.id)}
+                                  className="hover:bg-blue-50 focus:bg-blue-50 text-gray-700"
+                                >
+                                  <User className="h-4 w-4 mr-2 text-blue-600" />
+                                  Separate from Studio
+                                </DropdownMenuItem>
+                              )}
                               
                               <DropdownMenuItem 
                                 onClick={() => handleRemoveTeamMember(member.id)}
