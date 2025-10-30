@@ -23,7 +23,8 @@ import {
   MoreVertical,
   Settings,
   DollarSign,
-  X
+  X,
+  Shield
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -1225,6 +1226,22 @@ export default function StudioTeamPage() {
                                       Make Instructor
                                     </DropdownMenuItem>
                                   )}
+                                </>
+                              )}
+                              
+                              {/* Permissions - Only for staff, hr, director, and manager roles */}
+                              {(member.role === 'staff' || member.role === 'hr' || member.role === 'director' || member.role === 'manager') && member.status === 'active' && (
+                                <>
+                                  <div className="px-2 py-1.5 text-xs font-medium text-gray-500 border-t border-gray-100 mt-1">
+                                    Permissions
+                                  </div>
+                                  <DropdownMenuItem 
+                                    onClick={() => alert('Permissions management coming soon! This will allow you to control what actions this team member can perform.')}
+                                    className="hover:bg-purple-50 focus:bg-purple-50 text-gray-700"
+                                  >
+                                    <Shield className="h-4 w-4 mr-2 text-purple-600" />
+                                    Manage Permissions
+                                  </DropdownMenuItem>
                                 </>
                               )}
                               
