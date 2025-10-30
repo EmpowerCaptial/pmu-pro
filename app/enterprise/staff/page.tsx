@@ -296,11 +296,17 @@ export default function EnterpriseStaffPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-40 bg-white border-gray-200 shadow-lg">
-                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                                onClick={() => handleEditStaff(member.id)}
+                              >
                                 <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                                 <span className="text-xs sm:text-sm">Edit</span>
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50"
+                                onClick={() => setSelectedStaffForPermissions(member)}
+                              >
                                 <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                                 <span className="text-xs sm:text-sm">Permissions</span>
                               </DropdownMenuItem>
