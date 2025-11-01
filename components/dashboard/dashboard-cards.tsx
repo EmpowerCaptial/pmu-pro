@@ -26,6 +26,7 @@ import {
   GraduationCap,
   Shield,
   Calendar,
+  MapPin,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -432,6 +433,19 @@ export function DashboardCards() {
                     </div>
                   </div>
                 </Link>
+                <Link href="/studio/room-booking" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 sm:py-3 px-2 sm:px-3 text-center">
+                      <span className="text-white font-bold text-xs sm:text-sm text-shadow-lg shadow-black/50">
+                        🏥 Book Room
+                      </span>
+                      <p className="text-teal-100 text-xs mt-1">
+                        Treatment rooms
+                      </p>
+                    </div>
+                  </div>
+                </Link>
                 
                 <Link href="/studio/commissions" className="w-full">
                   <div className="relative group cursor-pointer">
@@ -750,7 +764,7 @@ export function DashboardCards() {
               </div>
               
               {/* Management Options Grid */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-4">
                 <Link href="/studio/team" className="w-full">
                   <div className="relative group cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
@@ -768,6 +782,17 @@ export function DashboardCards() {
                     <div className="relative z-10 py-2 px-3 text-center">
                       <span className="text-white font-semibold text-xs">
                         🎯 Services
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="/studio/room-booking" className="w-full">
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10 py-2 px-3 text-center">
+                      <span className="text-white font-semibold text-xs">
+                        🏥 Rooms
                       </span>
                     </div>
                   </div>

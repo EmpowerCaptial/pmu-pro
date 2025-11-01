@@ -93,6 +93,7 @@ export default function StudioTeamPage() {
       name: 'Team Management',
       key: 'team',
       description: 'Manage team members, roles, and invitations',
+      color: 'purple',
       actions: [
         { key: 'view', name: 'View Team Members' },
         { key: 'invite', name: 'Invite Members' },
@@ -104,6 +105,7 @@ export default function StudioTeamPage() {
       name: 'Client Management',
       key: 'clients',
       description: 'View and manage client information',
+      color: 'blue',
       actions: [
         { key: 'view', name: 'View Clients' },
         { key: 'create', name: 'Add Clients' },
@@ -115,6 +117,7 @@ export default function StudioTeamPage() {
       name: 'Appointments',
       key: 'appointments',
       description: 'Manage appointments and schedules',
+      color: 'green',
       actions: [
         { key: 'view', name: 'View Appointments' },
         { key: 'create', name: 'Create Appointments' },
@@ -126,6 +129,7 @@ export default function StudioTeamPage() {
       name: 'Services',
       key: 'services',
       description: 'Manage services and pricing',
+      color: 'orange',
       actions: [
         { key: 'view', name: 'View Services' },
         { key: 'create', name: 'Create Services' },
@@ -137,6 +141,7 @@ export default function StudioTeamPage() {
       name: 'Reports & Analytics',
       key: 'reports',
       description: 'View reports and analytics',
+      color: 'indigo',
       actions: [
         { key: 'view', name: 'View Reports' },
         { key: 'export', name: 'Export Data' }
@@ -146,9 +151,22 @@ export default function StudioTeamPage() {
       name: 'Settings',
       key: 'settings',
       description: 'Manage studio settings',
+      color: 'gray',
       actions: [
         { key: 'view', name: 'View Settings' },
         { key: 'edit', name: 'Edit Settings' }
+      ]
+    },
+    {
+      name: 'Room Booking',
+      key: 'room_booking',
+      description: 'Book treatment rooms and manage room schedules',
+      color: 'teal',
+      actions: [
+        { key: 'view', name: 'View Room Schedule' },
+        { key: 'book', name: 'Book Treatment Room' },
+        { key: 'cancel', name: 'Cancel Room Booking' },
+        { key: 'manage', name: 'Manage All Bookings' }
       ]
     }
   ]
@@ -595,6 +613,22 @@ export default function StudioTeamPage() {
         [action]: !prev[resource]?.[action]
       }
     }))
+  }
+
+  // Get color for resource toggles
+  const getToggleColorClass = (color: string, isChecked: boolean) => {
+    if (!isChecked) return 'data-[state=unchecked]:bg-gray-300'
+    
+    const colorMap: Record<string, string> = {
+      purple: 'data-[state=checked]:bg-purple-600',
+      blue: 'data-[state=checked]:bg-blue-600',
+      green: 'data-[state=checked]:bg-green-600',
+      orange: 'data-[state=checked]:bg-orange-600',
+      indigo: 'data-[state=checked]:bg-indigo-600',
+      gray: 'data-[state=checked]:bg-gray-600',
+      teal: 'data-[state=checked]:bg-teal-600'
+    }
+    return colorMap[color] || 'data-[state=checked]:bg-purple-600'
   }
 
   // Save permissions
@@ -1702,6 +1736,7 @@ export default function StudioTeamPage() {
                             <Switch
                               checked={memberPermissions[resource.key]?.[action.key] || false}
                               onCheckedChange={() => handleTogglePermission(resource.key, action.key)}
+                              className={getToggleColorClass(resource.color || 'purple', memberPermissions[resource.key]?.[action.key] || false)}
                             />
                           </div>
                         ))}
