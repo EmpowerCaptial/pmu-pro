@@ -2040,6 +2040,43 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           <TabsContent value="find">
             <div className="space-y-6">
 
+              {/* Room Booking Card - For students/apprentices */}
+              {userRole === 'APPRENTICE' && (
+                <Card className="relative overflow-hidden border-teal/50 shadow-2xl bg-gradient-to-br from-white/95 to-teal/20 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal/10 to-transparent"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="text-2xl font-bold text-ink flex items-center gap-2">
+                      <MapPin className="h-6 w-6 text-teal-600" />
+                      Book Treatment Room First
+                    </CardTitle>
+                    <CardDescription className="text-ink/70 font-medium">
+                      Secure your treatment room before booking a supervision session
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center">
+                          <MapPin className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-ink">Treatment Room Booking</p>
+                          <p className="text-sm text-ink/70">1 hr 15 min slots • 9am - 6pm</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => router.push('/studio/room-booking')}
+                        className="bg-teal-600 hover:bg-teal-700 text-white"
+                        size="lg"
+                      >
+                        <Calendar className="h-5 w-5 mr-2" />
+                        Book Room Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Instructor Selection */}
                 <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                   <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
