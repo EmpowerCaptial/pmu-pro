@@ -362,14 +362,23 @@ export default function RoomBookingPage() {
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="service-type">Service Type (Optional)</Label>
+                  <Label htmlFor="service-type">
+                    Service Type {currentUser?.role === 'student' ? '(Required)' : '(Optional)'}
+                  </Label>
                   <Input
                     id="service-type"
                     value={bookingFormData.serviceType}
                     onChange={(e) => setBookingFormData({ ...bookingFormData, serviceType: e.target.value })}
-                    placeholder="e.g., PMU, Lash Extension"
+                    placeholder={currentUser?.role === 'student' ? 'ProCell' : 'e.g., PMU, Lash Extension'}
                     className="mt-1"
+                    required={currentUser?.role === 'student'}
                   />
+                  {currentUser?.role === 'student' && (
+                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Students can only book rooms for ProCell services
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -387,7 +396,7 @@ export default function RoomBookingPage() {
               <div className="flex gap-3 pt-2">
                 <Button
                   onClick={handleBookRoom}
-                  disabled={!bookingFormData.startTime || isSubmitting}
+                  disabled={!bookingFormData.startTime || isSubmitting || (currentUser?.role === 'student' && !bookingFormData.serviceType)}
                   className="flex-1 bg-teal-600 hover:bg-teal-700"
                 >
                   {isSubmitting ? 'Booking...' : 'Confirm Booking'}
@@ -511,6 +520,7 @@ export default function RoomBookingPage() {
                 <p className="font-semibold">Important Notes:</p>
                 <ul className="space-y-1 text-xs text-blue-800">
                   <li>• Each time slot is 1 hour and 15 minutes (1 hour for service, 15 minutes for cleanup)</li>
+                  <li>• Students can only book treatment rooms for ProCell services</li>
                   <li>• Licensed estheticians must have a booth rent agreement on file</li>
                   <li>• You can only cancel your own bookings (or all bookings if you're an Owner, Director, or Manager)</li>
                   <li>• Bookings are confirmed immediately upon creation</li>

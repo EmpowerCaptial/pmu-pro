@@ -108,6 +108,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if student is booking ProCell service only
+    if (currentUser.role === 'student') {
+      if (!serviceType) {
+        return NextResponse.json(
+          { error: 'Students must specify a service type when booking rooms' },
+          { status: 400 }
+        )
+      }
+      // Check if the service contains "ProCell" (case-insensitive)
+      if (!serviceType.toLowerCase().includes('procell') && 
+          !serviceType.toLowerCase().includes('proc cell') && 
+          !serviceType.toLowerCase().includes('proc-cell')) {
+        return NextResponse.json(
+          { error: 'Students can only book treatment rooms for ProCell services' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Check for overlapping bookings
     const overlappingBooking = await prisma.roomBooking.findFirst({
       where: {
