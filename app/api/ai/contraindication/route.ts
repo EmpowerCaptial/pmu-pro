@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = "force-dynamic"
 
 interface ContraindicationResult {
-  recommendation: 'safe' | 'caution' | 'not_recommended'
+  status: 'safe' | 'precaution' | 'contraindicated'
   confidence: number
+  reasoning: string
+  recommendations: string[]
   riskFactors: string[]
 }
 
@@ -39,7 +41,7 @@ const CONTRAINDICATION_DATA = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { clientName, medicalConditions, medications, prescriptionMedications } = body
+    const { clientName, medicalConditions, medications, prescriptions } = body
 
     if (!clientName) {
       return NextResponse.json(
@@ -48,28 +50,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const allInfo = `${medicalConditions || ''} ${medications || ''} ${prescriptionMedications || ''}`.toLowerCase()
+    const allInfo = `${medicalConditions || ''} ${medications || ''} ${prescriptions || ''}`.toLowerCase()
 
     const result: ContraindicationResult = {
-      recommendation: 'safe',
+      status: 'safe',
       confidence: 85,
+      reasoning: '',
+      recommendations: [],
       riskFactors: []
     }
 
     // Check for absolute contraindications
     for (const condition of CONTRAINDICATION_DATA.absolute) {
       if (allInfo.includes(condition.toLowerCase())) {
-        result.recommendation = 'not_recommended'
+        result.status = 'contraindicated'
         result.confidence = 95
         result.riskFactors.push(condition)
       }
     }
 
     // Check for relative contraindications
-    if (result.recommendation === 'safe') {
+    if (result.status === 'safe') {
       for (const condition of CONTRAINDICATION_DATA.relative) {
         if (allInfo.includes(condition.toLowerCase())) {
-          result.recommendation = 'caution'
+          result.status = 'precaution'
           result.confidence = 80
           result.riskFactors.push(condition)
         }
@@ -77,14 +81,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Check medications
-    if (result.recommendation === 'safe') {
+    if (result.status === 'safe') {
       for (const med of CONTRAINDICATION_DATA.medications) {
         if (allInfo.includes(med.toLowerCase())) {
-          result.recommendation = 'caution'
+          result.status = 'precaution'
           result.confidence = 75
           result.riskFactors.push(med)
         }
       }
+    }
+
+    // Generate reasoning and recommendations based on status
+    if (result.status === 'contraindicated') {
+      result.reasoning = `Based on the medical information provided, absolute contraindications have been identified. PMU procedures are NOT RECOMMENDED at this time. The client should consult with their healthcare provider before proceeding with any permanent makeup or tattoo procedures.`
+      result.recommendations = [
+        'Consult with healthcare provider before proceeding',
+        'Wait until contraindicating conditions are resolved',
+        'Consider alternative temporary solutions',
+        'Document all medical consultations'
+      ]
+    } else if (result.status === 'precaution') {
+      result.reasoning = `Based on the medical information provided, relative contraindications or caution factors have been identified. While not absolute contraindications, these conditions require special consideration and may necessitate modifications to the PMU procedure protocol. Physician clearance is recommended before proceeding.`
+      result.recommendations = [
+        'Obtain physician clearance before proceeding',
+        'Use modified pigment and technique',
+        'Consider longer healing time expectations',
+        'Monitor client closely during healing',
+        'Document all precautions taken'
+      ]
+    } else {
+      result.reasoning = `Based on the medical information provided, no significant contraindications have been identified. The client appears to be a suitable candidate for PMU procedures following standard protocols.`
+      result.recommendations = [
+        'Follow standard PMU protocols',
+        'Complete intake forms and consent',
+        'Provide post-procedure care instructions',
+        'Schedule appropriate follow-up appointments'
+      ]
     }
 
     return NextResponse.json({
