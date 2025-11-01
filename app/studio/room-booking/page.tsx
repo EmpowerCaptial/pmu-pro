@@ -100,7 +100,7 @@ export default function RoomBookingPage() {
         if (response.ok) {
           const data = await response.json()
           // Filter bookings for the selected date
-          const dateBookings = data.bookings.filter((booking: RoomBooking) => {
+          const dateBookings = (data.bookings || []).filter((booking: RoomBooking) => {
             const bookingDate = new Date(booking.bookingDate).toISOString().split('T')[0]
             return bookingDate === selectedDate
           })
@@ -157,7 +157,7 @@ export default function RoomBookingPage() {
       })
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json()
-        const dateBookings = bookingsData.bookings.filter((booking: RoomBooking) => {
+        const dateBookings = (bookingsData.bookings || []).filter((booking: RoomBooking) => {
           const bookingDate = new Date(booking.bookingDate).toISOString().split('T')[0]
           return bookingDate === selectedDate
         })
@@ -199,7 +199,7 @@ export default function RoomBookingPage() {
       })
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json()
-        const dateBookings = bookingsData.bookings.filter((booking: RoomBooking) => {
+        const dateBookings = (bookingsData.bookings || []).filter((booking: RoomBooking) => {
           const bookingDate = new Date(booking.bookingDate).toISOString().split('T')[0]
           return bookingDate === selectedDate
         })
