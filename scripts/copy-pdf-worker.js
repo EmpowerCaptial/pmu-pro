@@ -20,7 +20,12 @@ if (!fs.existsSync(sourcePath)) {
   const fallbackDir = path.dirname(fallbackPackagePath)
   sourcePath = path.join(fallbackDir, 'legacy', 'build', 'pdf.worker.min.js')
 }
-const destinationPath = path.resolve(__dirname, '..', 'public', 'pdf.worker.min.js')
+
+const destinationDir = path.resolve(__dirname, '..', 'public')
+const defaultDestinationPath = path.join(destinationDir, 'pdf.worker.min.js')
+const versionedDestinationPath = path.join(destinationDir, `pdf.worker.${version}.min.js`)
+const generatedDir = path.resolve(__dirname, '..', 'generated')
+const versionMetaPath = path.join(generatedDir, 'pdfjs-worker-version.json')
 
 function copyWorker() {
   try {
@@ -29,8 +34,13 @@ function copyWorker() {
       return
     }
 
-    fs.mkdirSync(path.dirname(destinationPath), { recursive: true })
-    fs.copyFileSync(sourcePath, destinationPath)
+    fs.mkdirSync(destinationDir, { recursive: true })
+    fs.copyFileSync(sourcePath, defaultDestinationPath)
+    fs.copyFileSync(sourcePath, versionedDestinationPath)
+
+    fs.mkdirSync(generatedDir, { recursive: true })
+    fs.writeFileSync(versionMetaPath, JSON.stringify({ version }, null, 2))
+
     console.log(`✅ Copied pdf.worker.min.js v${version} to public directory`)
   } catch (error) {
     console.error('❌ Failed to copy pdf.worker.min.js:', error)

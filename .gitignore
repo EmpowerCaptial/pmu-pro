@@ -9,7 +9,8 @@
 
 # production
 /build
-/public/pdf.worker.min.js
+/public/pdf.worker*.js
+/generated/
 
 # debug
 npm-debug.log*

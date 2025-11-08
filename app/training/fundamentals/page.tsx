@@ -26,6 +26,9 @@ import {
   Eye,
   Search
 } from 'lucide-react'
+import workerMeta from '@/generated/pdfjs-worker-version.json'
+
+const workerSrc = `/pdf.worker.${workerMeta.version}.min.js`
 
 const TrainingPdfViewer = dynamic(
   () => import('@/components/training/pdf-viewer').then(mod => mod.TrainingPdfViewer),
@@ -178,7 +181,7 @@ export default function FundamentalsTrainingPortal() {
         throw new Error('Failed to load pdfjs library for indexing')
       }
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc
 
       const arrayBuffer = await file.arrayBuffer()
       loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })

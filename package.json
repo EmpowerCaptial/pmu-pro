@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/copy-pdf-worker.js && next dev",
     "build": "node scripts/update-pwa-version.js && node scripts/copy-pdf-worker.js && prisma generate && next build",
     "vercel-build": "prisma generate && prisma db push --accept-data-loss && next build",
     "start": "next start",
