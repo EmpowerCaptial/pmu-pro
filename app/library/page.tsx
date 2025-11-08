@@ -14,6 +14,10 @@ import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { upload } from '@vercel/blob/client'
 
+const RESOURCE_PREFIX = 'resource-library'
+const MAX_UPLOAD_BYTES = 150 * 1024 * 1024
+const MAX_UPLOAD_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024))
+
 interface UploadedResource {
   id: string
   title: string
@@ -65,8 +69,6 @@ export default function LibraryPage() {
       staticResource: resource
     }))
   ), [staticPdfResources])
-
-  const RESOURCE_PREFIX = 'resource-library'
 
   const fetchUploadedResources = async () => {
     try {
@@ -257,6 +259,11 @@ export default function LibraryPage() {
       return
     }
 
+    if (uploadFile.size > MAX_UPLOAD_BYTES) {
+      setUploadError(`This PDF is ${formatFileSize(uploadFile.size)}. Please keep uploads at or below ${MAX_UPLOAD_MB} MB.`)
+      return
+    }
+
     const normalizedTitle = (uploadTitle || uploadFile.name.replace(/\.pdf$/i, '')).trim() || 'Training Resource'
     const safeSegment = normalizedTitle
       .toLowerCase()
@@ -299,8 +306,11 @@ export default function LibraryPage() {
     } catch (error) {
       console.error('Upload error:', error)
       const message = error instanceof Error ? error.message : 'Failed to upload resource'
-      if (message.includes('413') || message.toLowerCase().includes('size')) {
-        setUploadError('This PDF is too large to upload. Please keep files under 50MB.')
+      const lower = message.toLowerCase()
+      if (message.includes('413') || lower.includes('size') || lower.includes('too large')) {
+        setUploadError(`This PDF is too large. Please keep files at or below ${MAX_UPLOAD_MB} MB.`)
+      } else if (lower.includes('access denied') || lower.includes('token')) {
+        setUploadError(`Upload blocked. The file might exceed the ${MAX_UPLOAD_MB} MB limit or the session expired—please try again or split the PDF into smaller sections.`)
       } else {
         setUploadError(message)
       }
@@ -320,6 +330,13 @@ export default function LibraryPage() {
     if (file.type !== 'application/pdf') {
       setUploadError('Only PDF files are allowed.')
       event.target.value = ''
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadError(`This PDF is ${formatFileSize(file.size)}. Please choose a file at or below ${MAX_UPLOAD_MB} MB.`)
+      event.target.value = ''
+      setUploadFile(null)
+      setUploadProgress(null)
       return
     }
     setUploadError(null)
@@ -441,7 +458,7 @@ export default function LibraryPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Upload PDF files up to 50MB. Students and staff will see them immediately in the library list.
+                    Upload PDF files up to {MAX_UPLOAD_MB} MB. Students and staff will see them immediately in the library list.
                   </p>
                   {uploadProgress !== null && (
                     <div className="text-xs text-lavender font-medium">

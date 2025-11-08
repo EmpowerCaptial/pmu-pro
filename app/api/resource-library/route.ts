@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 
 const RESOURCE_PREFIX = 'resource-library'
 const ALLOWED_UPLOAD_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin']
+const MAX_RESOURCE_BYTES = 150 * 1024 * 1024 // 150MB
 
 function toCategory(fileType: string) {
   if (!fileType.startsWith(RESOURCE_PREFIX)) return 'general'
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
 
         return {
           allowedContentTypes: ['application/pdf'],
-          maximumSizeInBytes: 50 * 1024 * 1024,
+          maximumSizeInBytes: MAX_RESOURCE_BYTES,
           tokenPayload: JSON.stringify({
             userId: user.id,
             uploaderName: user.name || user.email,
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
               fileName: metadata.title,
               fileUrl: blob.url,
               fileType: `${RESOURCE_PREFIX}:${metadata.category || 'general'}`,
-              fileSize: metadata.fileSize || 0,
+              fileSize: (blob as any).size ?? metadata.fileSize ?? 0,
               mimeType: blob.contentType || 'application/pdf',
               isTemporary: false
             }
