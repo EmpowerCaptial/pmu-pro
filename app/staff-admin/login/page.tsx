@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, Eye, EyeOff, Lock, AlertTriangle, Users, Crown, UserCheck } from 'lucide-react'
-import { validateStaffLogin, type StaffMember, getStaffMembers } from '@/lib/staff-auth'
+import { 
+  validateStaffLogin, 
+  type StaffMember, 
+  getStaffMembers, 
+  createStaffMember, 
+  setStaffPassword 
+} from '@/lib/staff-auth'
 
 export default function StaffAdminLoginPage() {
   const [username, setUsername] = useState('')
@@ -17,6 +23,64 @@ export default function StaffAdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  useEffect(() => {
+    const seedAccounts = [
+      {
+        username: 'admin',
+        email: 'admin@pmupro.com',
+        firstName: 'Super',
+        lastName: 'Admin',
+        role: 'director' as const,
+        password: 'pmupro2024'
+      },
+      {
+        username: 'director1',
+        email: 'director1@pmupro.com',
+        firstName: 'Primary',
+        lastName: 'Director',
+        role: 'director' as const,
+        password: 'director2024'
+      },
+      {
+        username: 'manager1',
+        email: 'manager1@pmupro.com',
+        firstName: 'Studio',
+        lastName: 'Manager',
+        role: 'manager' as const,
+        password: 'manager2024'
+      },
+      {
+        username: 'rep1',
+        email: 'rep1@pmupro.com',
+        firstName: 'Client',
+        lastName: 'Representative',
+        role: 'representative' as const,
+        password: 'representative2024'
+      }
+    ]
+
+    const existingStaff = getStaffMembers()
+
+    seedAccounts.forEach(account => {
+      if (!existingStaff.find(staff => staff.username === account.username)) {
+        const newStaff = createStaffMember({
+          username: account.username,
+          email: account.email,
+          firstName: account.firstName,
+          lastName: account.lastName,
+          role: account.role,
+          isActive: true,
+          permissions: []
+        })
+
+        setStaffPassword(newStaff.username, account.password)
+        newStaff.passwordSet = true
+      } else {
+        setStaffPassword(account.username, account.password)
+      }
+    })
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
