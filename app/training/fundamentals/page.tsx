@@ -168,7 +168,16 @@ export default function FundamentalsTrainingPortal() {
     let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf') | null = null
     let loadingTask: any = null
     try {
-      pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
+      try {
+        // @ts-expect-error - bundle pdf.js from react-pdf's dependency tree when available
+        pdfjsLib = await import('react-pdf/node_modules/pdfjs-dist/legacy/build/pdf')
+      } catch (error) {
+        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
+      }
+      if (!pdfjsLib) {
+        throw new Error('Failed to load pdfjs library for indexing')
+      }
+
       pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
       const arrayBuffer = await file.arrayBuffer()
