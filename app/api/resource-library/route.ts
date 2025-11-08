@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { put } from '@vercel/blob'
+import { handleUpload } from '@vercel/blob/client'
 
 export const dynamic = 'force-dynamic'
 
 const RESOURCE_PREFIX = 'resource-library'
-const ALLOWED_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin']
+const ALLOWED_UPLOAD_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin']
 
 function toCategory(fileType: string) {
   if (!fileType.startsWith(RESOURCE_PREFIX)) return 'general'
@@ -54,69 +54,88 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const userEmail = request.headers.get('x-user-email')
-    if (!userEmail) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const rawBody = await request.json()
 
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true, email: true, name: true, role: true }
-    })
+    const response = await handleUpload({
+      request,
+      body: rawBody,
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        const userEmail = request.headers.get('x-user-email')
+        if (!userEmail) {
+          throw new Error('Unauthorized')
+        }
 
-    if (!user || !ALLOWED_ROLES.includes(user.role?.toLowerCase() || '')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+        const user = await prisma.user.findUnique({
+          where: { email: userEmail },
+          select: { id: true, email: true, name: true, role: true }
+        })
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
-    const category = sanitizeCategory(formData.get('category') as string | null)
-    const title = (formData.get('title') as string | null)?.trim()
+        if (!user || !ALLOWED_UPLOAD_ROLES.includes(user.role?.toLowerCase() || '')) {
+          throw new Error('Forbidden')
+        }
 
-    if (!file) {
-      return NextResponse.json({ error: 'File is required' }, { status: 400 })
-    }
+        let payload: { category?: string; title?: string; fileSize?: number; originalFilename?: string } = {}
+        if (clientPayload) {
+          try {
+            payload = JSON.parse(clientPayload)
+          } catch (error) {
+            console.warn('Failed to parse client payload for resource upload:', error)
+          }
+        }
 
-    if (file.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 })
-    }
+        if (!pathname.startsWith(`${RESOURCE_PREFIX}/`)) {
+          throw new Error('Invalid upload destination')
+        }
 
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size must be under 50MB' }, { status: 400 })
-    }
+        const category = sanitizeCategory(payload.category || 'general')
+        const normalizedTitle = (payload.title || payload.originalFilename || 'Resource Document').trim()
+        const safeTitle = normalizedTitle.length > 180 ? `${normalizedTitle.slice(0, 177)}...` : normalizedTitle
 
-    const fileNameSafe = file.name.replace(/[^a-z0-9.\-]/gi, '_')
-    const blobKey = `${RESOURCE_PREFIX}/${user.id}/${Date.now()}-${fileNameSafe}`
+        return {
+          allowedContentTypes: ['application/pdf'],
+          maximumSizeInBytes: 50 * 1024 * 1024,
+          tokenPayload: JSON.stringify({
+            userId: user.id,
+            uploaderName: user.name || user.email,
+            category,
+            title: safeTitle,
+            fileSize: payload.fileSize || 0,
+            originalFilename: payload.originalFilename || safeTitle
+          }),
+          cacheControlMaxAge: 60 * 60 * 24 * 30 // 30 days
+        }
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        if (!tokenPayload) return
 
-    const blob = await put(blobKey, file, { access: 'public' })
-
-    const created = await prisma.fileUpload.create({
-      data: {
-        userId: user.id,
-        fileName: title || file.name,
-        fileUrl: blob.url,
-        fileType: `${RESOURCE_PREFIX}:${category}`,
-        fileSize: file.size,
-        mimeType: file.type,
-        isTemporary: false
+        try {
+          const metadata = JSON.parse(tokenPayload)
+          await prisma.fileUpload.create({
+            data: {
+              userId: metadata.userId,
+              fileName: metadata.title,
+              fileUrl: blob.url,
+              fileType: `${RESOURCE_PREFIX}:${metadata.category || 'general'}`,
+              fileSize: metadata.fileSize || 0,
+              mimeType: blob.contentType || 'application/pdf',
+              isTemporary: false
+            }
+          })
+        } catch (error) {
+          console.error('Failed to record resource upload:', error)
+        }
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      resource: {
-        id: created.id,
-        title: created.fileName,
-        url: created.fileUrl,
-        fileType: created.mimeType,
-        fileSize: created.fileSize,
-        category,
-        uploadedAt: created.createdAt,
-        uploadedBy: user.name || user.email
-      }
-    }, { status: 201 })
+    if (response.type === 'blob.generate-client-token') {
+      return NextResponse.json(response)
+    }
+
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Resource library upload error:', error)
-    return NextResponse.json({ success: false, error: 'Failed to upload resource' }, { status: 500 })
+    console.error('Resource library upload handler error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to upload resource'
+    const status = message === 'Unauthorized' ? 401 : message === 'Forbidden' ? 403 : 500
+    return NextResponse.json({ success: false, error: message }, { status })
   }
 }

@@ -12,6 +12,7 @@ import { getAllPDFResources, PDFResource } from '@/lib/pdf-generator'
 import Link from 'next/link'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { upload } from '@vercel/blob/client'
 
 interface UploadedResource {
   id: string
@@ -51,6 +52,7 @@ export default function LibraryPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [resourceError, setResourceError] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   
   const staticPdfResources = useMemo(() => getAllPDFResources(), [])
   const staticResources: LibraryResource[] = useMemo(() => (
@@ -63,6 +65,8 @@ export default function LibraryPage() {
       staticResource: resource
     }))
   ), [staticPdfResources])
+
+  const RESOURCE_PREFIX = 'resource-library'
 
   const fetchUploadedResources = async () => {
     try {
@@ -248,28 +252,41 @@ export default function LibraryPage() {
       return
     }
 
-    const formData = new FormData()
-    formData.append('file', uploadFile)
-    formData.append('category', uploadCategory)
-    if (uploadTitle.trim()) {
-      formData.append('title', uploadTitle.trim())
+    if (uploadFile.type !== 'application/pdf') {
+      setUploadError('Only PDF files are allowed.')
+      return
     }
 
+    const normalizedTitle = (uploadTitle || uploadFile.name.replace(/\.pdf$/i, '')).trim() || 'Training Resource'
+    const safeSegment = normalizedTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+    const fileName = `${safeSegment || 'resource'}-${Date.now()}.pdf`
+    const userIdentifier = currentUser.id || currentUser.email.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'user'
+    const pathname = `${RESOURCE_PREFIX}/${userIdentifier}/${fileName}`
+
+    const clientPayload = JSON.stringify({
+      title: normalizedTitle,
+      category: uploadCategory,
+      fileSize: uploadFile.size,
+      originalFilename: uploadFile.name
+    })
+
     setIsLoadingUploads(true)
+    setUploadProgress(0)
     try {
-      const response = await fetch('/api/resource-library', {
-        method: 'POST',
+      await upload(pathname, uploadFile, {
+        access: 'public',
+        contentType: 'application/pdf',
+        handleUploadUrl: '/api/resource-library',
         headers: {
           'x-user-email': currentUser.email
         },
-        body: formData
+        clientPayload,
+        multipart: uploadFile.size > 15 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => setUploadProgress(Math.round(percentage))
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data?.error || 'Upload failed')
-      }
 
       setUploadSuccess('Resource uploaded successfully.')
       setUploadFile(null)
@@ -281,9 +298,15 @@ export default function LibraryPage() {
       await fetchUploadedResources()
     } catch (error) {
       console.error('Upload error:', error)
-      setUploadError(error instanceof Error ? error.message : 'Failed to upload resource')
+      const message = error instanceof Error ? error.message : 'Failed to upload resource'
+      if (message.includes('413') || message.toLowerCase().includes('size')) {
+        setUploadError('This PDF is too large to upload. Please keep files under 50MB.')
+      } else {
+        setUploadError(message)
+      }
     } finally {
       setIsLoadingUploads(false)
+      setUploadProgress(null)
     }
   }
 
@@ -291,6 +314,7 @@ export default function LibraryPage() {
     const file = event.target.files?.[0]
     if (!file) {
       setUploadFile(null)
+      setUploadProgress(null)
       return
     }
     if (file.type !== 'application/pdf') {
@@ -300,6 +324,7 @@ export default function LibraryPage() {
     }
     setUploadError(null)
     setUploadFile(file)
+    setUploadProgress(null)
     if (!uploadTitle) {
       setUploadTitle(file.name.replace(/\.pdf$/i, ''))
     }
@@ -418,6 +443,11 @@ export default function LibraryPage() {
                   <p className="text-xs text-muted-foreground">
                     Upload PDF files up to 50MB. Students and staff will see them immediately in the library list.
                   </p>
+                  {uploadProgress !== null && (
+                    <div className="text-xs text-lavender font-medium">
+                      Uploading… {uploadProgress}%
+                    </div>
+                  )}
                 </div>
 
                 {(uploadError || uploadSuccess) && (
