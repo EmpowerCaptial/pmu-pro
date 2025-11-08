@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,79 +8,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, Eye, EyeOff, Lock, AlertTriangle, Users, Crown, UserCheck } from 'lucide-react'
-import { 
-  validateStaffLogin, 
-  type StaffMember, 
-  getStaffMembers, 
-  createStaffMember, 
-  setStaffPassword 
-} from '@/lib/staff-auth'
+
+type StaffSession = {
+  id: string
+  name?: string | null
+  email?: string | null
+  role: string
+  businessName?: string | null
+  studioName?: string | null
+  permissions?: any
+}
 
 export default function StaffAdminLoginPage() {
-  const [username, setUsername] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-
-  useEffect(() => {
-    const seedAccounts = [
-      {
-        username: 'admin',
-        email: 'admin@pmupro.com',
-        firstName: 'Super',
-        lastName: 'Admin',
-        role: 'director' as const,
-        password: 'pmupro2024'
-      },
-      {
-        username: 'director1',
-        email: 'director1@pmupro.com',
-        firstName: 'Primary',
-        lastName: 'Director',
-        role: 'director' as const,
-        password: 'director2024'
-      },
-      {
-        username: 'manager1',
-        email: 'manager1@pmupro.com',
-        firstName: 'Studio',
-        lastName: 'Manager',
-        role: 'manager' as const,
-        password: 'manager2024'
-      },
-      {
-        username: 'rep1',
-        email: 'rep1@pmupro.com',
-        firstName: 'Client',
-        lastName: 'Representative',
-        role: 'representative' as const,
-        password: 'representative2024'
-      }
-    ]
-
-    const existingStaff = getStaffMembers()
-
-    seedAccounts.forEach(account => {
-      if (!existingStaff.find(staff => staff.username === account.username)) {
-        const newStaff = createStaffMember({
-          username: account.username,
-          email: account.email,
-          firstName: account.firstName,
-          lastName: account.lastName,
-          role: account.role,
-          isActive: true,
-          permissions: []
-        })
-
-        setStaffPassword(newStaff.username, account.password)
-        newStaff.passwordSet = true
-      } else {
-        setStaffPassword(account.username, account.password)
-      }
-    })
-  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,45 +33,46 @@ export default function StaffAdminLoginPage() {
     setError('')
 
     try {
-      const staffMember = validateStaffLogin(username, password)
-      
-      if (staffMember) {
-        // Check if this is a new user who needs to set their password
-        const allStaff = getStaffMembers()
-        const fullStaffMember = allStaff.find(s => s.id === staffMember.id)
-        
-        if (fullStaffMember && !fullStaffMember.passwordSet) {
-          // Store minimal auth data and redirect to password change
+      const response = await fetch('/api/staff/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ identifier, password })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (data?.needsPasswordChange && data?.staff) {
           localStorage.setItem('staffAuth', JSON.stringify({
-            id: staffMember.id,
-            username: staffMember.username,
-            role: staffMember.role,
-            firstName: staffMember.firstName,
-            lastName: staffMember.lastName,
-            permissions: staffMember.permissions,
+            ...data.staff,
+            permissions: [],
             timestamp: Date.now(),
             needsPasswordChange: true
           }))
-          
           router.push('/staff-admin/change-password')
           return
         }
-        
-        // Store authentication in localStorage (in production, use proper session management)
-        localStorage.setItem('staffAuth', JSON.stringify({
-          id: staffMember.id,
-          username: staffMember.username,
-          role: staffMember.role,
-          firstName: staffMember.firstName,
-          lastName: staffMember.lastName,
-          permissions: staffMember.permissions,
-          timestamp: Date.now()
-        }))
-        
-        router.push('/staff-admin/dashboard')
-      } else {
-        setError('Invalid credentials. Access denied.')
+
+        setError(data?.error || 'Invalid credentials. Access denied.')
+        return
       }
+
+      const staff = data.staff as StaffSession
+
+      localStorage.setItem('staffAuth', JSON.stringify({
+        id: staff.id,
+        name: staff.name,
+        email: staff.email,
+        role: staff.role,
+        businessName: (staff as any).businessName,
+        studioName: (staff as any).studioName,
+        permissions: staff.permissions ?? [],
+        timestamp: Date.now()
+      }))
+
+      router.push('/staff-admin/dashboard')
     } catch (error) {
       setError('Login failed. Please try again.')
     } finally {
@@ -156,13 +102,13 @@ export default function StaffAdminLoginPage() {
         <CardContent className="space-y-4">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-gray-200">Username</Label>
+              <Label htmlFor="identifier" className="text-gray-200">Email or Username</Label>
               <Input
-                id="username"
+                id="identifier"
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter admin username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="Enter your staff email or username"
                 className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
                 required
               />
@@ -214,45 +160,19 @@ export default function StaffAdminLoginPage() {
               ) : (
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4" />
-                  Access System
+                  Sign In
                 </div>
               )}
             </Button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-4 p-3 bg-gray-700/50 rounded-lg border border-gray-600">
-            <h4 className="text-sm font-semibold text-gray-200 mb-2">Demo Credentials:</h4>
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center gap-2">
-                <Crown className="w-3 h-3 text-yellow-400" />
-                <span className="text-gray-300">Director:</span>
-                <span className="text-gray-400">admin/pmupro2024</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Crown className="w-3 h-3 text-yellow-400" />
-                <span className="text-gray-300">Director:</span>
-                <span className="text-gray-400">director1/director2024</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-3 h-3 text-blue-400" />
-                <span className="text-gray-300">Manager:</span>
-                <span className="text-gray-400">manager1/manager2024</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <UserCheck className="w-3 h-3 text-green-400" />
-                <span className="text-gray-300">Representative:</span>
-                <span className="text-gray-400">rep1/representative2024</span>
-              </div>
-            </div>
-          </div>
-
           <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-700">
             <p>⚠️ This is a restricted administrative area</p>
-            <p>Unauthorized access attempts will be logged</p>
+            <p>Unauthorized access attempts are logged and monitored</p>
           </div>
         </CardContent>
       </Card>
     </div>
   )
 }
+
