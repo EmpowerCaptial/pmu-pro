@@ -369,11 +369,11 @@ const professionalFeatures = [
   {
     id: 'training',
     title: 'Training',
-    description: 'Staff education',
+    description: 'Structured education for apprentices and staff',
     icon: Award,
     href: '/training',
     color: 'bg-gradient-to-br from-purple-600 to-purple-700',
-    status: 'coming-soon',
+    status: 'active',
     category: 'professional'
   }
 ]
@@ -420,6 +420,11 @@ const getFilteredFeatures = (userPlan: string, userRole?: string) => {
     
     // Portfolio sharing - Professional and Studio
     if (feature.id === 'portfolio') {
+      return userPlan === 'professional' || userPlan === 'studio' || userPlan === 'enterprise'
+    }
+
+    // Training hub - Professional, Studio, Enterprise
+    if (feature.id === 'training') {
       return userPlan === 'professional' || userPlan === 'studio' || userPlan === 'enterprise'
     }
     
