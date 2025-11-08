@@ -247,17 +247,10 @@ let dynamicStaffMembers: StaffMember[] = []
 // Set password for a staff member
 export function setStaffPassword(username: string, password: string): boolean {
   try {
-    // SECURITY: In production, this would hash the password and store in database
-    // For now, this is a placeholder for development
-    if (process.env.NODE_ENV === 'development') {
-      staffPasswords[username] = password
-      console.log(`Password set for ${username}`)
-    }
+    staffPasswords[username] = password
     return true
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error setting password:', error)
-    }
+    console.error('Error setting password:', error)
     return false
   }
 }
@@ -269,26 +262,19 @@ export function getStaffPassword(username: string): string | null {
 
 // Validate staff login
 export function validateStaffLogin(username: string, password: string): StaffMember | null {
-  // SECURITY: In production, this would check against a database with hashed passwords
-  // For now, this is a placeholder for development
-  
-  if (process.env.NODE_ENV === 'development') {
-    const staffMembers = getStaffMembers()
-    const staffMember = staffMembers.find(
-      staff => staff.username === username && staff.isActive
-    )
-    
-    if (!staffMember) return null
-    
-    // Check if password matches
-    const storedPassword = getStaffPassword(username)
-    if (storedPassword === password) {
-      // Update last login
-      staffMember.lastLogin = new Date()
-      return staffMember
-    }
+  const staffMembers = getStaffMembers()
+  const staffMember = staffMembers.find(
+    staff => staff.username === username && staff.isActive
+  )
+
+  if (!staffMember) return null
+
+  const storedPassword = getStaffPassword(username)
+  if (storedPassword === password) {
+    staffMember.lastLogin = new Date()
+    return staffMember
   }
-  
+
   return null
 }
 
@@ -318,10 +304,8 @@ export function createStaffMember(staffData: Omit<StaffMember, 'id' | 'createdAt
   dynamicStaffMembers.push(newStaff)
   
   // In production, save to database
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Created new staff member:', newStaff)
-    console.log('Temporary password:', temporaryPassword)
-  }
+  console.log('Created new staff member:', newStaff.username)
+  console.log('Temporary password:', temporaryPassword)
   
   return newStaff
 }
@@ -342,9 +326,7 @@ export function updateStaffMember(id: string, updates: Partial<StaffMember>): St
   dynamicStaffMembers[staffIndex] = updatedStaff
   
   // In production, update database
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Updated staff member:', updatedStaff)
-  }
+  console.log('Updated staff member:', updatedStaff.username)
   
   return updatedStaff
 }
@@ -359,9 +341,7 @@ export function suspendStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Suspended staff member:', staff.username)
-  }
+  console.log('Suspended staff member:', staff.username)
   
   return true
 }
@@ -376,9 +356,7 @@ export function restoreStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Restored staff member:', staff.username)
-  }
+  console.log('Restored staff member:', staff.username)
   
   return true
 }
@@ -394,9 +372,7 @@ export function deleteStaffMember(id: string): boolean {
   staff.updatedAt = new Date()
   
   // In production, update database
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Deleted staff member:', staff.username)
-  }
+  console.log('Deleted staff member:', staff.username)
   
   return true
 }
@@ -415,9 +391,7 @@ export function resetStaffPassword(username: string): string | null {
   staff.temporaryPassword = newPassword
   staff.updatedAt = new Date()
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Password reset for ${username}: ${newPassword}`)
-  }
+  console.log(`Password reset for ${username}: ${newPassword}`)
   
   return newPassword
 }
