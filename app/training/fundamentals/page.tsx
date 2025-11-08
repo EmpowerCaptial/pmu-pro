@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, ChangeEvent, FormEvent } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
-import { Document, Page, pdfjs } from 'react-pdf'
 import {
   BookOpen,
   FileText,
@@ -27,7 +27,17 @@ import {
   Search
 } from 'lucide-react'
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
+const TrainingPdfViewer = dynamic(
+  () => import('@/components/training/pdf-viewer').then(mod => mod.TrainingPdfViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center rounded-md border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600">
+        Loading PDF viewer…
+      </div>
+    )
+  }
+)
 
 interface Assignment {
   id: string
@@ -155,10 +165,15 @@ export default function FundamentalsTrainingPortal() {
 
   const indexPdfText = async (file: File) => {
     setIsIndexingPdf(true)
-    const loadingTask = pdfjs.getDocument({ data: await file.arrayBuffer() })
-    let pdf: pdfjs.PDFDocumentProxy | null = null
+    let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf') | null = null
+    let loadingTask: any = null
     try {
-      pdf = await loadingTask.promise
+      pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`
+
+      const arrayBuffer = await file.arrayBuffer()
+      loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
+      const pdf = await loadingTask.promise
 
       setPdfNumPages(pdf.numPages)
 
@@ -178,9 +193,8 @@ export default function FundamentalsTrainingPortal() {
       setUploadError('Failed to process PDF text. Please try another file or re-upload.')
       resetPdfState()
     } finally {
-      await loadingTask.destroy()
-      if (pdf) {
-        pdf.destroy()
+      if (loadingTask) {
+        await loadingTask.destroy().catch(() => {})
       }
       setIsIndexingPdf(false)
     }
@@ -463,23 +477,22 @@ export default function FundamentalsTrainingPortal() {
                             <span>Page {currentPdfPage} of {pdfNumPages || '—'}</span>
                           </div>
                           <div className="max-h-[600px] overflow-auto bg-white">
-                            <Document
-                              file={pdfObjectUrl || undefined}
-                              onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
-                              onLoadError={(error) => {
+                            <TrainingPdfViewer
+                              fileUrl={pdfObjectUrl}
+                              pageNumber={currentPdfPage}
+                              onDocumentLoadSuccess={(numPages) => {
+                                setPdfNumPages(numPages)
+                                if (currentPdfPage > numPages) {
+                                  setCurrentPdfPage(numPages)
+                                  setPageInput(String(numPages))
+                                }
+                              }}
+                              onDocumentLoadError={(error) => {
                                 console.error('PDF load error:', error)
                                 setUploadError('Could not display the PDF. Please re-upload the file.')
                                 resetPdfState()
                               }}
-                              className="flex justify-center"
-                            >
-                              <Page
-                                pageNumber={currentPdfPage}
-                                width={760}
-                                renderAnnotationLayer={false}
-                                renderTextLayer
-                              />
-                            </Document>
+                            />
                           </div>
                           {pdfNumPages > 1 && (
                             <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 text-xs text-gray-600">
