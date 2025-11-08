@@ -357,7 +357,7 @@ export default function LibraryPage() {
         </div>
 
         {canManageResources && (
-          <Card className="mb-8 border-lavender/40 shadow-md bg-white/80 backdrop-blur">
+          <Card id="upload-resources" className="mb-8 border-lavender/40 shadow-md bg-white/80 backdrop-blur">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl text-foreground">
                 <UploadCloud className="h-5 w-5 text-lavender" />
