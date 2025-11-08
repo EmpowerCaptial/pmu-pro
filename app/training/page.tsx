@@ -144,6 +144,15 @@ const QUICK_ACTIONS: QuickAction[] = [
     icon: BookOpen,
     badge: 'Resources',
     colorClass: 'bg-amber-50 text-amber-700'
+  },
+  {
+    id: 'resource-library',
+    title: 'Resource Library',
+    description: 'Browse official compliance documents and training materials.',
+    href: '/library',
+    icon: FileText,
+    badge: 'Library',
+    colorClass: 'bg-indigo-50 text-indigo-700'
   }
 ]
 
