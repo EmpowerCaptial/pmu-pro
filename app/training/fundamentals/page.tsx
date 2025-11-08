@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   BookOpen,
   FileText,
@@ -48,6 +50,7 @@ interface Assignment {
   description: string
   dueDate: string
   status: 'pending' | 'submitted' | 'graded'
+  rubric?: string
 }
 
 interface LectureVideo {
@@ -64,21 +67,24 @@ const STUDENT_ASSIGNMENTS: Assignment[] = [
     title: 'Sanitation & Safety Quiz',
     description: 'Demonstrate knowledge of BBP standards, workstation setup, and sterilization requirements.',
     dueDate: 'Due Nov 18, 2025',
-    status: 'pending'
+    status: 'pending',
+    rubric: 'Score each section (Sanitation, PPE, Workstation Prep) out of 10. Passing requires 24/30 with no section below 6.'
   },
   {
     id: 'brow-map',
     title: 'Brow Mapping Practice Upload',
     description: 'Submit before/after photos of brow mapping on practice skin with measurement notes.',
     dueDate: 'Due Nov 22, 2025',
-    status: 'submitted'
+    status: 'submitted',
+    rubric: '• Landmarks identified (5 pts)\n• Symmetry within 1 mm (10 pts)\n• Photo clarity (5 pts)\n• Notes cite mapping tool + reference lines (5 pts).'
   },
   {
     id: 'contraindication-journal',
     title: 'Contraindication Case Journal',
     description: 'Log three mock consultation scenarios and note go/no-go decisions with supporting evidence.',
     dueDate: 'Due Nov 25, 2025',
-    status: 'graded'
+    status: 'graded',
+    rubric: 'Case completeness (10 pts), risk analysis accuracy (10 pts), recommendation clarity (10 pts). Passing ≥ 24/30.'
   }
 ]
 
@@ -115,7 +121,24 @@ const STUDENT_PROGRESS = {
 export default function FundamentalsTrainingPortal() {
   const { currentUser } = useDemoAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const generatedVideoUrls = useRef<string[]>([])
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
+  const [studentAssignments, setStudentAssignments] = useState<Assignment[]>(STUDENT_ASSIGNMENTS)
+  const [openRubricId, setOpenRubricId] = useState<string | null>(null)
+  const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null)
+  const [assignmentError, setAssignmentError] = useState<string | null>(null)
+  const [newAssignmentTitle, setNewAssignmentTitle] = useState('')
+  const [newAssignmentDescription, setNewAssignmentDescription] = useState('')
+  const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('')
+  const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
+  const [lectureVideos, setLectureVideos] = useState<LectureVideo[]>(LECTURE_VIDEOS)
+  const [newVideoTitle, setNewVideoTitle] = useState('')
+  const [newVideoDescription, setNewVideoDescription] = useState('')
+  const [newVideoDuration, setNewVideoDuration] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
+  const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [pdfObjectUrl, setPdfObjectUrl] = useState<string | null>(null)
   const [pdfFileName, setPdfFileName] = useState<string | null>(null)
   const [pdfNumPages, setPdfNumPages] = useState<number>(0)
@@ -150,6 +173,13 @@ export default function FundamentalsTrainingPortal() {
     }
   }, [pdfObjectUrl])
 
+  useEffect(() => {
+    return () => {
+      generatedVideoUrls.current.forEach(url => URL.revokeObjectURL(url))
+      generatedVideoUrls.current = []
+    }
+  }, [])
+
   const resetPdfState = () => {
     setPdfObjectUrl(null)
     setPdfFileName(null)
@@ -164,6 +194,75 @@ export default function FundamentalsTrainingPortal() {
 
   const handleUploadButtonClick = () => {
     fileInputRef.current?.click()
+  }
+
+  const handleVideoButtonClick = () => {
+    videoInputRef.current?.click()
+  }
+
+  const handleVideoFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    setVideoUploadError(null)
+    setVideoUploadSuccess(null)
+
+    if (!file) {
+      setVideoFile(null)
+      return
+    }
+
+    if (!file.type.startsWith('video/')) {
+      setVideoFile(null)
+      setVideoUploadError('Please choose a video file (mp4, mov, or similar).')
+      return
+    }
+
+    setVideoFile(file)
+    if (!newVideoTitle) {
+      const titleFromFile = file.name.replace(/\.[^/.]+$/, '')
+      setNewVideoTitle(titleFromFile)
+    }
+  }
+
+  const handleVideoUploadSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setVideoUploadError(null)
+    setVideoUploadSuccess(null)
+
+    if (!videoFile) {
+      setVideoUploadError('Select a video file before uploading.')
+      return
+    }
+
+    const trimmedTitle = (newVideoTitle || videoFile.name).trim()
+    if (!trimmedTitle) {
+      setVideoUploadError('Provide a title for students to recognise this lesson.')
+      return
+    }
+
+    const description = newVideoDescription.trim() || 'Instructor uploaded lesson recording.'
+    const duration = newVideoDuration.trim() || 'Self-paced'
+
+    const objectUrl = URL.createObjectURL(videoFile)
+    generatedVideoUrls.current.push(objectUrl)
+
+    const newVideo: LectureVideo = {
+      id: `video-${Date.now()}`,
+      title: trimmedTitle,
+      description,
+      duration,
+      url: objectUrl
+    }
+
+    setLectureVideos(prev => [newVideo, ...prev])
+    setVideoUploadSuccess('Video queued for students in the lecture library.')
+    if (videoInputRef.current) {
+      videoInputRef.current.value = ''
+    }
+    setVideoFile(null)
+    setNewVideoTitle('')
+    setNewVideoDescription('')
+    setNewVideoDuration('')
   }
 
   const indexPdfText = async (file: File) => {
@@ -242,6 +341,45 @@ export default function FundamentalsTrainingPortal() {
     await indexPdfText(file)
   }
 
+  const handleAssignmentCreate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+
+    if (!newAssignmentTitle.trim()) {
+      setAssignmentError('Add a title before publishing the assignment.')
+      return
+    }
+
+    const description = newAssignmentDescription.trim() || 'Follow the instructions provided in class and upload proof of completion.'
+    const rubric = newAssignmentRubric.trim()
+
+    let dueDateLabel = 'Due date shared in class'
+    if (newAssignmentDueDate) {
+      const dueDate = new Date(newAssignmentDueDate)
+      if (!Number.isNaN(dueDate.getTime())) {
+        dueDateLabel = `Due ${dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+      }
+    }
+
+    const newAssignment: Assignment = {
+      id: `assignment-${Date.now()}`,
+      title: newAssignmentTitle.trim(),
+      description,
+      dueDate: dueDateLabel,
+      status: 'pending',
+      rubric: rubric || undefined
+    }
+
+    setStudentAssignments(prev => [newAssignment, ...prev])
+    setAssignmentSuccess('Assignment posted for students. It now appears in their portal.')
+    setNewAssignmentTitle('')
+    setNewAssignmentDescription('')
+    setNewAssignmentDueDate('')
+    setNewAssignmentRubric('')
+    setOpenRubricId(newAssignment.id)
+  }
+
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!searchTerm.trim()) {
@@ -294,6 +432,13 @@ export default function FundamentalsTrainingPortal() {
           className="hidden"
           onChange={handleFileChange}
         />
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={handleVideoFileChange}
+        />
         <Card className="border-purple-200 bg-white shadow-lg mb-8">
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -332,7 +477,7 @@ export default function FundamentalsTrainingPortal() {
                     <CardDescription className="text-gray-600">Submit required coursework and track your status.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {STUDENT_ASSIGNMENTS.map(assignment => (
+                    {studentAssignments.map(assignment => (
                       <Card key={assignment.id} className="border border-gray-200 shadow-sm">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -363,11 +508,25 @@ export default function FundamentalsTrainingPortal() {
                               <Button size="sm" variant="outline">
                                 <Upload className="h-4 w-4 mr-1" /> Upload Work
                               </Button>
-                              <Button size="sm" variant="secondary">
-                                <Eye className="h-4 w-4 mr-1" /> View Rubric
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() =>
+                                  assignment.rubric &&
+                                  setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                }
+                                disabled={!assignment.rubric}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
                               </Button>
                             </div>
                           </div>
+                          {assignment.rubric && openRubricId === assignment.id && (
+                            <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                              {assignment.rubric}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
@@ -380,7 +539,12 @@ export default function FundamentalsTrainingPortal() {
                     <CardDescription className="text-gray-600">Watch recorded modules before attending hands-on sessions.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 md:grid-cols-2">
-                    {LECTURE_VIDEOS.map(video => (
+                    {lectureVideos.length === 0 && (
+                      <div className="md:col-span-2 rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 text-center">
+                        Instructors have not uploaded any lecture recordings yet. New videos will appear here as soon as they are published.
+                      </div>
+                    )}
+                    {lectureVideos.map(video => (
                       <Card key={video.id} className="border border-gray-200 shadow-sm">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-center gap-2">
@@ -391,7 +555,9 @@ export default function FundamentalsTrainingPortal() {
                           <div className="flex items-center justify-between text-sm text-gray-500">
                             <span>{video.duration}</span>
                             <Button size="sm" asChild>
-                              <Link href={video.url}>Watch</Link>
+                              <a href={video.url} target="_blank" rel="noopener noreferrer">
+                                Watch
+                              </a>
                             </Button>
                           </div>
                         </CardContent>
@@ -621,28 +787,220 @@ export default function FundamentalsTrainingPortal() {
                   </div>
 
                   <Card className="border border-dashed border-purple-300 bg-purple-50">
-                    <CardContent className="p-6 space-y-4 text-center">
-                      <Upload className="h-8 w-8 text-purple-600 mx-auto" />
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-semibold text-purple-900">Upload Lecture Video or Resources</h3>
-                        <p className="text-sm text-purple-800">Attach MP4 lessons, slide decks, or assignment PDFs. Uploaded PDFs are instantly available in the student portal with full-text search.</p>
+                    <CardHeader className="text-center space-y-2">
+                      <CardTitle className="text-lg font-semibold text-purple-900">Lecture Library Uploads</CardTitle>
+                      <CardDescription className="text-purple-800">
+                        Publish on-demand video lessons and downloadable handouts for apprentices to review.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left">
+                          <div className="flex items-center gap-2 text-purple-900 font-semibold">
+                            <Video className="h-5 w-5 text-purple-600" />
+                            Upload Lecture Video
+                          </div>
+                          <p className="text-sm text-purple-700">
+                            Accepts MP4, MOV, and most browser-ready formats. Videos are added to the Lecture Library immediately for students.
+                          </p>
+                          <form onSubmit={handleVideoUploadSubmit} className="space-y-3">
+                            <div>
+                              <Label htmlFor="video-title">Video title</Label>
+                              <Input
+                                id="video-title"
+                                placeholder="e.g., Module 4: Machine Fundamentals"
+                                value={newVideoTitle}
+                                onChange={(event) => {
+                                  setNewVideoTitle(event.target.value)
+                                  setVideoUploadError(null)
+                                  setVideoUploadSuccess(null)
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="video-duration">Duration (optional)</Label>
+                              <Input
+                                id="video-duration"
+                                placeholder="45 min"
+                                value={newVideoDuration}
+                                onChange={(event) => {
+                                  setNewVideoDuration(event.target.value)
+                                  setVideoUploadError(null)
+                                  setVideoUploadSuccess(null)
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="video-description">Lesson summary (optional)</Label>
+                              <Textarea
+                                id="video-description"
+                                rows={3}
+                                placeholder="Outline the key objectives, demo segments, or supplies used in the recording."
+                                value={newVideoDescription}
+                                onChange={(event) => {
+                                  setNewVideoDescription(event.target.value)
+                                  setVideoUploadError(null)
+                                  setVideoUploadSuccess(null)
+                                }}
+                              />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleVideoButtonClick}
+                                className="bg-white"
+                              >
+                                {videoFile ? 'Replace Video' : 'Select Video'}
+                              </Button>
+                              {videoFile && (
+                                <span className="text-xs text-purple-700">Selected file: {videoFile.name}</span>
+                              )}
+                            </div>
+                            <Button
+                              type="submit"
+                              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                              Publish Video
+                            </Button>
+                          </form>
+                          {videoUploadError && (
+                            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                              {videoUploadError}
+                            </div>
+                          )}
+                          {videoUploadSuccess && (
+                            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+                              {videoUploadSuccess}
+                            </div>
+                          )}
+                        </div>
+                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left">
+                          <div className="flex items-center gap-2 text-purple-900 font-semibold">
+                            <FileText className="h-5 w-5 text-purple-600" />
+                            Upload Handouts & Rubrics
+                          </div>
+                          <p className="text-sm text-purple-700">
+                            Upload a PDF workbook, slide deck, or rubric. Students can instantly keyword search the content in their portal.
+                          </p>
+                          <div className="space-y-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="bg-white"
+                              onClick={handleUploadButtonClick}
+                              disabled={isIndexingPdf}
+                            >
+                              {isIndexingPdf ? 'Processing PDF…' : 'Upload PDF'}
+                            </Button>
+                            {pdfFileName ? (
+                              <span className="text-xs font-medium text-purple-800">
+                                Current PDF: {pdfFileName}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-purple-700">No PDF uploaded yet.</span>
+                            )}
+                            <p className="text-xs text-purple-700">
+                              Max file size 150&nbsp;MB. Allow a few moments for indexing so students can search by keyword.
+                            </p>
+                            {uploadError && (
+                              <span className="text-xs text-red-600">{uploadError}</span>
+                            )}
+                            {isIndexingPdf && (
+                              <span className="text-xs text-purple-700">
+                                Indexing document text for student search…
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center gap-2">
-                        <Button
-                          variant="outline"
-                          className="bg-white"
-                          onClick={handleUploadButtonClick}
-                          disabled={isIndexingPdf}
-                        >
-                          {isIndexingPdf ? 'Processing…' : 'Upload Files'}
-                        </Button>
-                        {pdfFileName && (
-                          <span className="text-xs font-medium text-purple-800">Current PDF: {pdfFileName}</span>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-semibold text-gray-900">Create Assignment & Rubric</CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Publish coursework, deadlines, and scoring criteria. Students see new assignments instantly.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleAssignmentCreate} className="space-y-4 text-left">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-1">
+                            <Label htmlFor="assignment-title">Assignment title</Label>
+                            <Input
+                              id="assignment-title"
+                              placeholder="e.g., Live Model Brow Design"
+                              value={newAssignmentTitle}
+                              onChange={(event) => {
+                                setNewAssignmentTitle(event.target.value)
+                                setAssignmentError(null)
+                                setAssignmentSuccess(null)
+                              }}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="assignment-due-date">Due date</Label>
+                            <Input
+                              id="assignment-due-date"
+                              type="date"
+                              value={newAssignmentDueDate}
+                              onChange={(event) => {
+                                setNewAssignmentDueDate(event.target.value)
+                                setAssignmentError(null)
+                                setAssignmentSuccess(null)
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="assignment-description">Assignment overview</Label>
+                          <Textarea
+                            id="assignment-description"
+                            rows={3}
+                            placeholder="Clarify deliverables, reference materials, and what students should upload."
+                            value={newAssignmentDescription}
+                            onChange={(event) => {
+                              setNewAssignmentDescription(event.target.value)
+                              setAssignmentError(null)
+                              setAssignmentSuccess(null)
+                            }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="assignment-rubric">Rubric / evaluation criteria</Label>
+                          <Textarea
+                            id="assignment-rubric"
+                            rows={4}
+                            placeholder="Break down grading categories, points, and minimum passing thresholds."
+                            value={newAssignmentRubric}
+                            onChange={(event) => {
+                              setNewAssignmentRubric(event.target.value)
+                              setAssignmentError(null)
+                              setAssignmentSuccess(null)
+                            }}
+                          />
+                        </div>
+                        {assignmentError && (
+                          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {assignmentError}
+                          </div>
                         )}
-                        {uploadError && (
-                          <span className="text-xs text-red-600">{uploadError}</span>
+                        {assignmentSuccess && (
+                          <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                            {assignmentSuccess}
+                          </div>
                         )}
-                      </div>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-xs text-gray-500">
+                            Tip: include rubric language students will recognise. The button above the assignment now reveals the rubric in their portal.
+                          </p>
+                          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                            Publish Assignment
+                          </Button>
+                        </div>
+                      </form>
                     </CardContent>
                   </Card>
                 </CardContent>
