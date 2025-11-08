@@ -63,15 +63,15 @@ const AUDIENCE_FILTERS = [
 
 const TRAINING_TRACKS: TrainingTrack[] = [
   {
-    id: 'foundations',
-    title: 'Apprentice Foundations',
+    id: 'fundamentals-foundations',
+    title: 'Fundamentals & Foundations of PMU Application',
     level: 'Level 1',
     audience: ['apprentice', 'student'],
     duration: '6 weeks',
     competencies: ['Sanitation & Infection Control', 'PMU Fundamentals', 'Contraindication Screening'],
     cpdHours: 24,
-    link: '/studio/supervision',
-    description: 'Structured onboarding curriculum for new apprentices covering sanitation, safety, and PMU fundamentals.'
+    link: '/training/fundamentals',
+    description: 'Structured onboarding curriculum that guides new apprentices through core PMU theory, sanitation standards, and supervised practice requirements.'
   },
   {
     id: 'advanced-brows',
