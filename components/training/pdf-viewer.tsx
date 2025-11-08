@@ -2,9 +2,8 @@
 
 import { memo, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import pdfWorkerSrc from 'pdfjs-dist/legacy/build/pdf.worker.min.js?url'
 
-pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
 interface TrainingPdfViewerProps {
   fileUrl: string | null

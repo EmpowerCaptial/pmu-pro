@@ -26,7 +26,6 @@ import {
   Eye,
   Search
 } from 'lucide-react'
-import pdfWorkerSrc from 'pdfjs-dist/legacy/build/pdf.worker.min.js?url'
 
 const TrainingPdfViewer = dynamic(
   () => import('@/components/training/pdf-viewer').then(mod => mod.TrainingPdfViewer),
@@ -170,7 +169,7 @@ export default function FundamentalsTrainingPortal() {
     let loadingTask: any = null
     try {
       pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
       const arrayBuffer = await file.arrayBuffer()
       loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
