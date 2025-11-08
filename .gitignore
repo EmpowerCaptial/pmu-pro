@@ -10,6 +10,7 @@
 # production
 /build
 /public/pdf.worker*.js
+/public/pdf.worker*.mjs
 /generated/
 
 # debug

@@ -4,7 +4,8 @@ import { memo, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import workerMeta from '@/generated/pdfjs-worker-version.json'
 
-const workerSrc = `/pdf.worker.${workerMeta.version}.min.js`
+const workerExtension = workerMeta.extension ?? 'js'
+const workerSrc = `/pdf.worker.${workerMeta.version}.min.${workerExtension}`
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc
 
 interface TrainingPdfViewerProps {
