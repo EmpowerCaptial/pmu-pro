@@ -219,7 +219,11 @@ https://www.thepmuguide.com/staff-admin/login
 
 ### **1. First Login**
 1. Navigate to `https://www.thepmuguide.com/staff-admin/login`
-2. Use demo credentials: `admin` / `pmupro2024`
+1. **Super Admin**
+   - Configure credentials via environment variables: `STAFF_SUPER_ADMIN_USERNAME` and either `STAFF_SUPER_ADMIN_PASSWORD` (plain text) or `STAFF_SUPER_ADMIN_PASSWORD_HASH` (bcrypt hash).
+   - Role defaults to **Director** with full access.
+   - Recommended approach is to create a real staff record in the database and disable the super admin fallback once operations are established.
+2. Sign in with a provisioned staff account (director/manager/representative). Use the “Create Staff” workflow or seed scripts to add authorized users.
 3. Explore the dashboard and features
 
 ### **2. Add Your Staff**
