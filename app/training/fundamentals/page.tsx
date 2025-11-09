@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, ChangeEvent, FormEvent, useMemo } from 'react'
+import { useState, useRef, useEffect, ChangeEvent, FormEvent, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { NavBar } from '@/components/ui/navbar'
@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { upload } from '@vercel/blob/client'
 import {
   BookOpen,
   FileText,
@@ -77,6 +78,9 @@ interface LectureVideo {
   duration: string
   description: string
   url: string
+  fileSize?: number
+  uploadedAt?: string
+  uploadedBy?: string
 }
 
 interface CourseWeek {
@@ -296,29 +300,7 @@ const COURSE_WEEKS: CourseWeek[] = [
 
 const COURSE_TOTAL_HOURS = COURSE_WEEKS.reduce((sum, week) => sum + week.targetHours, 0)
 
-const LECTURE_VIDEOS: LectureVideo[] = [
-  {
-    id: 'module-1',
-    title: 'Module 1: Foundations of PMU Application',
-    duration: '32 min',
-    description: 'Overview of skin anatomy, sanitation protocols, and consultation workflow for first-time clients.',
-    url: '#'
-  },
-  {
-    id: 'module-2',
-    title: 'Module 2: Brow Mapping & Color Theory',
-    duration: '45 min',
-    description: 'Live demonstration of brow design mapping, Fitzpatrick assessment, and pigment selection strategy.',
-    url: '#'
-  },
-  {
-    id: 'module-3',
-    title: 'Module 3: Needle Selection & Machine Setup',
-    duration: '27 min',
-    description: 'Step-by-step walkthrough of machine calibration, cartridge safety, and depth control best practices.',
-    url: '#'
-  }
-]
+const LECTURE_VIDEOS: LectureVideo[] = []
 
 const STUDENT_PROGRESS = {
   overallCompletion: 62,
@@ -330,7 +312,6 @@ export default function FundamentalsTrainingPortal() {
   const { currentUser } = useDemoAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
-  const generatedVideoUrls = useRef<string[]>([])
   const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(COURSE_WEEKS)
   const [selectedWeekId, setSelectedWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
@@ -344,12 +325,15 @@ export default function FundamentalsTrainingPortal() {
   const [newAssignmentHours, setNewAssignmentHours] = useState<string>('')
   const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
   const [lectureVideos, setLectureVideos] = useState<LectureVideo[]>(LECTURE_VIDEOS)
+  const [isLoadingVideos, setIsLoadingVideos] = useState<boolean>(false)
+  const [videoError, setVideoError] = useState<string | null>(null)
   const [newVideoTitle, setNewVideoTitle] = useState('')
   const [newVideoDescription, setNewVideoDescription] = useState('')
   const [newVideoDuration, setNewVideoDuration] = useState('')
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
+  const [videoUploadProgress, setVideoUploadProgress] = useState<number | null>(null)
   const [pdfObjectUrl, setPdfObjectUrl] = useState<string | null>(null)
   const [pdfFileName, setPdfFileName] = useState<string | null>(null)
   const [pdfNumPages, setPdfNumPages] = useState<number>(0)
@@ -376,10 +360,97 @@ export default function FundamentalsTrainingPortal() {
   const [instructorActivityBanner, setInstructorActivityBanner] = useState<
     { type: 'success' | 'warning'; message: string } | null
   >(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [videoPendingDelete, setVideoPendingDelete] = useState<LectureVideo | null>(null)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeletingVideo, setIsDeletingVideo] = useState(false)
   const totalCourseHours = useMemo(
     () => courseWeeks.reduce((sum, week) => sum + week.targetHours, 0),
     [courseWeeks]
   )
+  const MAX_VIDEO_MB = 500
+  const VIDEO_UPLOAD_PREFIX = 'training-video'
+  const userRole = currentUser?.role?.toLowerCase() || 'guest'
+  const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
+  const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
+  const ACTIVITY_ICON_MAP = {
+    attendance: ClipboardList,
+    grade: PenSquare,
+    schedule: CalendarCheck
+  } as const
+
+  const fetchTrainingVideos = useCallback(
+    async (showSpinner = true) => {
+      if (!currentUser?.email) {
+        setLectureVideos([])
+        return
+      }
+      if (showSpinner) {
+        setIsLoadingVideos(true)
+      }
+      setVideoError(null)
+      try {
+        const response = await fetch('/api/training/videos', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.error || 'Unable to load training videos.')
+        }
+        const videos: LectureVideo[] = (data.videos || []).map((video: any) => ({
+          id: video.id,
+          title: video.title,
+          description: video.description || 'Instructor uploaded lesson recording.',
+          duration: video.duration || 'Self-paced',
+          url: video.url,
+          fileSize: video.fileSize,
+          uploadedAt: video.uploadedAt,
+          uploadedBy: video.uploadedBy
+        }))
+        setLectureVideos(videos)
+      } catch (error) {
+        console.error('Failed to fetch training videos:', error)
+        setVideoError(error instanceof Error ? error.message : 'Unable to load training videos.')
+        setLectureVideos([])
+      } finally {
+        if (showSpinner) {
+          setIsLoadingVideos(false)
+        }
+      }
+    },
+    [currentUser?.email]
+  )
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes || bytes <= 0) return ''
+    const units = ['bytes', 'KB', 'MB', 'GB']
+    let size = bytes
+    let unitIndex = 0
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024
+      unitIndex++
+    }
+    const value = size % 1 === 0 ? size.toFixed(0) : size.toFixed(1)
+    return `${value} ${units[unitIndex]}`
+  }
+
+  const formatDateTime = (value?: string) => {
+    if (!value) return ''
+    try {
+      return new Date(value).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return value
+    }
+  }
 
   const user = currentUser ? {
     name: currentUser.name,
@@ -391,13 +462,6 @@ export default function FundamentalsTrainingPortal() {
     email: 'student@pmupro.com',
     initials: 'PA'
   }
-
-const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
-const ACTIVITY_ICON_MAP = {
-  attendance: ClipboardList,
-  grade: PenSquare,
-  schedule: CalendarCheck
-} as const
   const hasUploadedPdf = Boolean(pdfObjectUrl)
 
   useEffect(() => {
@@ -409,11 +473,8 @@ const ACTIVITY_ICON_MAP = {
   }, [pdfObjectUrl, pdfSourceType])
 
   useEffect(() => {
-    return () => {
-      generatedVideoUrls.current.forEach(url => URL.revokeObjectURL(url))
-      generatedVideoUrls.current = []
-    }
-  }, [])
+    fetchTrainingVideos()
+  }, [fetchTrainingVideos])
 
   useEffect(() => {
     let isMounted = true
@@ -502,6 +563,7 @@ const ACTIVITY_ICON_MAP = {
     event.target.value = ''
     setVideoUploadError(null)
     setVideoUploadSuccess(null)
+    setVideoUploadProgress(null)
 
     if (!file) {
       setVideoFile(null)
@@ -514,6 +576,12 @@ const ACTIVITY_ICON_MAP = {
       return
     }
 
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      setVideoFile(null)
+      setVideoUploadError(`Video exceeds the ${MAX_VIDEO_MB} MB limit.`)
+      return
+    }
+
     setVideoFile(file)
     if (!newVideoTitle) {
       const titleFromFile = file.name.replace(/\.[^/.]+$/, '')
@@ -521,45 +589,100 @@ const ACTIVITY_ICON_MAP = {
     }
   }
 
-  const handleVideoUploadSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleVideoUploadSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setVideoUploadError(null)
     setVideoUploadSuccess(null)
+
+    if (!currentUser?.email) {
+      setVideoUploadError('You must be logged in to upload videos.')
+      return
+    }
 
     if (!videoFile) {
       setVideoUploadError('Select a video file before uploading.')
       return
     }
 
-    const trimmedTitle = (newVideoTitle || videoFile.name).trim()
-    if (!trimmedTitle) {
-      setVideoUploadError('Provide a title for students to recognise this lesson.')
-      return
+    const trimmedTitle = (newVideoTitle || videoFile.name.replace(/\.[^/.]+$/, '')).trim() || 'Lecture Video'
+    const description = newVideoDescription.trim()
+    const durationLabel = newVideoDuration.trim()
+    const extension = videoFile.name.split('.').pop()?.toLowerCase() || 'mp4'
+    const safeSegment = trimmedTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const userIdentifier =
+      (currentUser.id || currentUser.email || 'user').replace(/[^a-z0-9]/gi, '').toLowerCase() || 'user'
+    const pathname = `${VIDEO_UPLOAD_PREFIX}/${userIdentifier}/${safeSegment || 'lecture'}-${Date.now()}.${extension}`
+
+    setVideoUploadProgress(0)
+    try {
+      await upload(pathname, videoFile, {
+        access: 'public',
+        contentType: videoFile.type || 'video/mp4',
+        handleUploadUrl: '/api/training/videos',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        clientPayload: JSON.stringify({
+          title: trimmedTitle,
+          description,
+          durationLabel,
+          fileSize: videoFile.size,
+          originalFilename: videoFile.name
+        }),
+        multipart: videoFile.size > 15 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => setVideoUploadProgress(Math.round(percentage))
+      })
+
+      setVideoUploadSuccess('Video uploaded successfully.')
+      if (videoInputRef.current) {
+        videoInputRef.current.value = ''
+      }
+      setVideoFile(null)
+      setNewVideoTitle('')
+      setNewVideoDescription('')
+      setNewVideoDuration('')
+      await fetchTrainingVideos(false)
+    } catch (error) {
+      console.error('Training video upload failed:', error)
+      setVideoUploadError(error instanceof Error ? error.message : 'Failed to upload the video.')
+    } finally {
+      setVideoUploadProgress(null)
     }
+  }
 
-    const description = newVideoDescription.trim() || 'Instructor uploaded lesson recording.'
-    const duration = newVideoDuration.trim() || 'Self-paced'
+  const openDeleteDialog = (video: LectureVideo) => {
+    setVideoPendingDelete(video)
+    setDeleteConfirmText('')
+    setDeleteError(null)
+    setIsDeleteDialogOpen(true)
+  }
 
-    const objectUrl = URL.createObjectURL(videoFile)
-    generatedVideoUrls.current.push(objectUrl)
-
-    const newVideo: LectureVideo = {
-      id: `video-${Date.now()}`,
-      title: trimmedTitle,
-      description,
-      duration,
-      url: objectUrl
+  const handleDeleteVideo = async () => {
+    if (!videoPendingDelete || !currentUser?.email) return
+    setDeleteError(null)
+    setIsDeletingVideo(true)
+    try {
+      const response = await fetch(`/api/training/videos/${videoPendingDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result?.error || 'Failed to delete the video.')
+      }
+      setIsDeleteDialogOpen(false)
+      setVideoPendingDelete(null)
+      setDeleteConfirmText('')
+      await fetchTrainingVideos(false)
+    } catch (error) {
+      console.error('Failed to delete training video:', error)
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete the video.')
+    } finally {
+      setIsDeletingVideo(false)
     }
-
-    setLectureVideos(prev => [newVideo, ...prev])
-    setVideoUploadSuccess('Video queued for students in the lecture library.')
-    if (videoInputRef.current) {
-      videoInputRef.current.value = ''
-    }
-    setVideoFile(null)
-    setNewVideoTitle('')
-    setNewVideoDescription('')
-    setNewVideoDuration('')
   }
 
   const indexPdfFromArrayBuffer = async (arrayBuffer: ArrayBuffer, origin: 'upload' | 'remote') => {
@@ -1025,31 +1148,62 @@ const ACTIVITY_ICON_MAP = {
                     <CardTitle className="text-xl font-semibold text-gray-900">Lecture Library</CardTitle>
                     <CardDescription className="text-gray-600">Watch recorded modules before attending hands-on sessions.</CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-4 md:grid-cols-2">
-                    {lectureVideos.length === 0 && (
-                      <div className="md:col-span-2 rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 text-center">
-                        Instructors have not uploaded any lecture recordings yet. New videos will appear here as soon as they are published.
+                  <CardContent className="space-y-4">
+                    {isLoadingVideos && (
+                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                        Loading lecture videos…
                       </div>
                     )}
-                    {lectureVideos.map(video => (
-                      <Card key={video.id} className="border border-gray-200 shadow-sm">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Video className="h-5 w-5 text-purple-600" />
-                            <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
-                          </div>
-                          <p className="text-sm text-gray-600 leading-relaxed">{video.description}</p>
-                          <div className="flex items-center justify-between text-sm text-gray-500">
-                            <span>{video.duration}</span>
-                            <Button size="sm" asChild>
-                              <a href={video.url} target="_blank" rel="noopener noreferrer">
-                                Watch
-                              </a>
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {videoError && (
+                      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        {videoError}
+                      </div>
+                    )}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {lectureVideos.length === 0 && !isLoadingVideos && !videoError && (
+                        <div className="md:col-span-2 rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 text-center">
+                          Instructors have not uploaded any lecture recordings yet. New videos will appear here as soon as they are published.
+                        </div>
+                      )}
+                      {lectureVideos.map(video => (
+                        <Card key={video.id} className="border border-gray-200 shadow-sm">
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Video className="h-5 w-5 text-purple-600" />
+                              <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed">{video.description || 'Instructor uploaded lesson recording.'}</p>
+                            <div className="text-xs text-gray-500 space-y-1">
+                              <div className="flex flex-wrap gap-2">
+                                <span><strong>Duration:</strong> {video.duration || 'Self-paced'}</span>
+                                {video.fileSize ? <span><strong>Size:</strong> {formatFileSize(video.fileSize)}</span> : null}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {video.uploadedBy && <span><strong>Instructor:</strong> {video.uploadedBy}</span>}
+                                {video.uploadedAt && <span><strong>Uploaded:</strong> {formatDateTime(video.uploadedAt)}</span>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button size="sm" asChild className="flex-1">
+                                <a href={video.url} target="_blank" rel="noopener noreferrer">
+                                  Watch
+                                </a>
+                              </Button>
+                              {canManageVideos && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                  onClick={() => openDeleteDialog(video)}
+                                >
+                                  Delete
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -1543,7 +1697,7 @@ const ACTIVITY_ICON_MAP = {
                             Upload Lecture Video
                           </div>
                           <p className="text-sm text-purple-700">
-                            Accepts MP4, MOV, and most browser-ready formats. Videos are added to the Lecture Library immediately for students.
+                            Accepts MP4, MOV, and most browser-ready formats. Videos are added to the Lecture Library immediately for students. Maximum file size {MAX_VIDEO_MB} MB.
                           </p>
                           <form onSubmit={handleVideoUploadSubmit} className="space-y-3">
                             <div>
@@ -1605,6 +1759,11 @@ const ACTIVITY_ICON_MAP = {
                             >
                               Publish Video
                             </Button>
+                            {videoUploadProgress !== null && (
+                              <span className="text-xs text-purple-700">
+                                Uploading… {videoUploadProgress}%
+                              </span>
+                            )}
                           </form>
                           {videoUploadError && (
                             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -1832,6 +1991,72 @@ const ACTIVITY_ICON_MAP = {
           </TabsContent>
         </Tabs>
       </main>
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open)
+          if (!open) {
+            setVideoPendingDelete(null)
+            setDeleteConfirmText('')
+            setDeleteError(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Lecture Video</DialogTitle>
+            <DialogDescription>
+              {videoPendingDelete
+                ? `This will permanently remove "${videoPendingDelete.title}" from the lecture library.`
+                : 'This will permanently remove the selected lecture video from the library.'}
+            </DialogDescription>
+          </DialogHeader>
+          {videoPendingDelete && (
+            <div className="space-y-3 text-sm text-gray-700">
+              <p>
+                Type <span className="font-semibold text-gray-900">"{videoPendingDelete.title}"</span> to confirm deletion.
+              </p>
+              <Input
+                value={deleteConfirmText}
+                onChange={(event) => setDeleteConfirmText(event.target.value)}
+                placeholder={videoPendingDelete.title}
+              />
+              {deleteError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {deleteError}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false)
+                setVideoPendingDelete(null)
+                setDeleteConfirmText('')
+                setDeleteError(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !videoPendingDelete ||
+                deleteConfirmText.trim() !== videoPendingDelete.title ||
+                isDeletingVideo
+              }
+              onClick={handleDeleteVideo}
+            >
+              {isDeletingVideo ? 'Deleting…' : 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
