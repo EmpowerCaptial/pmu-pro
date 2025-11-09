@@ -299,14 +299,14 @@ export default function TrainingPage() {
   const secondaryCta = (() => {
     if (heroVariant === 'owner') {
       return {
-        href: '#instructor-console',
-        label: 'Go to Instructor Console',
+        href: '/training/fundamentals?view=instructor',
+        label: 'Open Instructor Console',
         icon: Users
       }
     }
     if (heroVariant === 'student' && showInstructorConsole) {
       return {
-        href: '#instructor-console',
+        href: '/training/fundamentals?view=instructor',
         label: 'Instructor Console',
         icon: Users
       }
@@ -555,14 +555,23 @@ export default function TrainingPage() {
 
         {showInstructorConsole && (
           <section id="instructor-console" className="mb-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Instructor Console</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Upload curriculum, manage grades and attendance, and keep compliance records inspection-ready.
                 </p>
               </div>
-              <Badge className="bg-indigo-100 text-indigo-700 border border-indigo-200">Instructor Access</Badge>
+              <div className="flex items-center gap-3">
+                <Badge className="bg-indigo-100 text-indigo-700 border border-indigo-200">Instructor Access</Badge>
+                <Button
+                  asChild
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  size="sm"
+                >
+                  <Link href="/training/fundamentals?view=instructor">Launch Console</Link>
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
