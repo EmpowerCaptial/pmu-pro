@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, ChangeEvent, FormEvent } from 'react'
+import { useState, useRef, useEffect, ChangeEvent, FormEvent, useMemo } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { NavBar } from '@/components/ui/navbar'
@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import {
   BookOpen,
   FileText,
@@ -60,6 +67,8 @@ interface Assignment {
   dueDate: string
   status: 'pending' | 'submitted' | 'graded'
   rubric?: string
+  estimatedHours?: number
+  weekId?: string
 }
 
 interface LectureVideo {
@@ -70,32 +79,222 @@ interface LectureVideo {
   url: string
 }
 
-const STUDENT_ASSIGNMENTS: Assignment[] = [
+interface CourseWeek {
+  id: string
+  order: number
+  title: string
+  summary: string
+  targetHours: number
+  assignments: Assignment[]
+}
+
+const COURSE_WEEKS: CourseWeek[] = [
   {
-    id: 'safety-quiz',
-    title: 'Sanitation & Safety Quiz',
-    description: 'Demonstrate knowledge of BBP standards, workstation setup, and sterilization requirements.',
-    dueDate: 'Due Nov 18, 2025',
-    status: 'pending',
-    rubric: 'Score each section (Sanitation, PPE, Workstation Prep) out of 10. Passing requires 24/30 with no section below 6.'
+    id: 'week-1',
+    order: 1,
+    title: 'Week 1 • Orientation & Safety Foundations',
+    summary: 'Orientation, OSHA/BBP review, sanitation rituals, workstation setup, and client intake basics.',
+    targetHours: 10,
+    assignments: [
+      {
+        id: 'week1-safety-quiz',
+        weekId: 'week-1',
+        title: 'Sanitation & Safety Quiz',
+        description: 'Demonstrate knowledge of BBP standards, workstation setup, and sterilization requirements.',
+        dueDate: 'Due Week 1 Friday',
+        status: 'pending',
+        rubric: 'Score each section (Sanitation, PPE, Workstation Prep) out of 10. Passing requires 24/30 with no section below 6.',
+        estimatedHours: 4
+      },
+      {
+        id: 'week1-workstation-drill',
+        weekId: 'week-1',
+        title: 'Workstation Setup & BBP Drill',
+        description: 'Record your full workstation setup, sanitation reset, and tool breakdown following the studio checklist.',
+        dueDate: 'Due Week 1 Sunday',
+        status: 'pending',
+        rubric: 'Workstation layout (10 pts), sanitation protocol adherence (10 pts), BBP disposal compliance (10 pts). Passing ≥ 25/30.',
+        estimatedHours: 6
+      }
+    ]
   },
   {
-    id: 'brow-map',
-    title: 'Brow Mapping Practice Upload',
-    description: 'Submit before/after photos of brow mapping on practice skin with measurement notes.',
-    dueDate: 'Due Nov 22, 2025',
-    status: 'submitted',
-    rubric: '• Landmarks identified (5 pts)\n• Symmetry within 1 mm (10 pts)\n• Photo clarity (5 pts)\n• Notes cite mapping tool + reference lines (5 pts).'
+    id: 'week-2',
+    order: 2,
+    title: 'Week 2 • Brow Mapping & Color Theory',
+    summary: 'Mapping ratios, facial symmetry, pigment undertones, and Fitzpatrick/skin depth considerations.',
+    targetHours: 12,
+    assignments: [
+      {
+        id: 'week2-brow-map',
+        weekId: 'week-2',
+        title: 'Brow Mapping Practice Upload',
+        description: 'Submit before/after photos of brow mapping on practice skin with measurement notes.',
+        dueDate: 'Due Week 2 Saturday',
+        status: 'pending',
+        rubric: 'Landmarks identified (5 pts), symmetry within 1 mm (10 pts), photo clarity (5 pts), notes cite mapping tools (5 pts).',
+        estimatedHours: 6
+      },
+      {
+        id: 'week2-pigment-plan',
+        weekId: 'week-2',
+        title: 'Color Theory Pigment Plan',
+        description: 'Build a pigment plan for three skin profiles, including undertone analysis and neutralizer selections.',
+        dueDate: 'Due Week 2 Sunday',
+        status: 'pending',
+        rubric: 'Undertone accuracy (10 pts), pigment justification (10 pts), modifier/neutralizer plan (10 pts).',
+        estimatedHours: 6
+      }
+    ]
   },
   {
-    id: 'contraindication-journal',
-    title: 'Contraindication Case Journal',
-    description: 'Log three mock consultation scenarios and note go/no-go decisions with supporting evidence.',
-    dueDate: 'Due Nov 25, 2025',
-    status: 'graded',
-    rubric: 'Case completeness (10 pts), risk analysis accuracy (10 pts), recommendation clarity (10 pts). Passing ≥ 24/30.'
+    id: 'week-3',
+    order: 3,
+    title: 'Week 3 • Client Intake & Contraindication Screening',
+    summary: 'Consent forms, medical red flags, communication scripts, and risk mitigation planning.',
+    targetHours: 11,
+    assignments: [
+      {
+        id: 'week3-contraindication-journal',
+        weekId: 'week-3',
+        title: 'Contraindication Case Journal',
+        description: 'Log three mock consultation scenarios and note go/no-go decisions with supporting evidence.',
+        dueDate: 'Due Week 3 Friday',
+        status: 'pending',
+        rubric: 'Case completeness (10 pts), risk analysis accuracy (10 pts), recommendation clarity (10 pts). Passing ≥ 24/30.',
+        estimatedHours: 6
+      },
+      {
+        id: 'week3-intake-roleplay',
+        weekId: 'week-3',
+        title: 'Intake Form Roleplay Reflection',
+        description: 'Complete an intake roleplay with a peer or director and submit your annotated intake form with reflection notes.',
+        dueDate: 'Due Week 3 Sunday',
+        status: 'pending',
+        rubric: 'Form accuracy (10 pts), contraindication follow-up questions (10 pts), reflection depth (10 pts).',
+        estimatedHours: 5
+      }
+    ]
+  },
+  {
+    id: 'week-4',
+    order: 4,
+    title: 'Week 4 • Machine Technique & Needle Control',
+    summary: 'Machine calibration, stroke practice, depth control, and anesthetic protocols.',
+    targetHours: 12,
+    assignments: [
+      {
+        id: 'week4-machine-calibration',
+        weekId: 'week-4',
+        title: 'Machine Calibration Lab Report',
+        description: 'Document voltage tests, stroke patterns, and cartridge selections for three procedure types.',
+        dueDate: 'Due Week 4 Friday',
+        status: 'pending',
+        rubric: 'Calibration benchmarks (10 pts), stroke analysis (10 pts), safety notes (10 pts).',
+        estimatedHours: 6
+      },
+      {
+        id: 'week4-stroke-practice',
+        weekId: 'week-4',
+        title: 'Stroke Practice on Latex',
+        description: 'Upload photos of stroke patterns on latex skin with notes on needle angle, speed, and depth control.',
+        dueDate: 'Due Week 4 Sunday',
+        status: 'pending',
+        rubric: 'Consistency (10 pts), depth control (10 pts), documentation quality (10 pts).',
+        estimatedHours: 6
+      }
+    ]
+  },
+  {
+    id: 'week-5',
+    order: 5,
+    title: 'Week 5 • Service Delivery & Client Communication',
+    summary: 'Pre/post care, anesthetic strategy, client communication, and emergency protocols.',
+    targetHours: 12,
+    assignments: [
+      {
+        id: 'week5-anesthetic-checklist',
+        weekId: 'week-5',
+        title: 'Anesthetic Protocol Checklist',
+        description: 'Create a protocol covering topical vs. secondary anesthetics, including timing and contraindications.',
+        dueDate: 'Due Week 5 Friday',
+        status: 'pending',
+        rubric: 'Protocol completeness (10 pts), timing accuracy (10 pts), contraindication safeguards (10 pts).',
+        estimatedHours: 7
+      },
+      {
+        id: 'week5-client-communication',
+        weekId: 'week-5',
+        title: 'Client Communication Roleplay',
+        description: 'Record a mock consultation handling client concerns about pain, healing, and pricing.',
+        dueDate: 'Due Week 5 Sunday',
+        status: 'pending',
+        rubric: 'Empathy & clarity (10 pts), policy alignment (10 pts), follow-up plan (10 pts).',
+        estimatedHours: 5
+      }
+    ]
+  },
+  {
+    id: 'week-6',
+    order: 6,
+    title: 'Week 6 • Live Model Preparation & Supervision',
+    summary: 'Mock procedures, station efficiency, photography standards, and supervised practice readiness.',
+    targetHours: 11,
+    assignments: [
+      {
+        id: 'week6-mock-procedure',
+        weekId: 'week-6',
+        title: 'Mock Procedure Dry Run',
+        description: 'Simulate a full procedure on latex or mannequin, including timing, sanitation resets, and documentation.',
+        dueDate: 'Due Week 6 Friday',
+        status: 'pending',
+        rubric: 'Timeline accuracy (10 pts), sanitation resets (10 pts), documentation completeness (10 pts).',
+        estimatedHours: 6
+      },
+      {
+        id: 'week6-healing-analysis',
+        weekId: 'week-6',
+        title: 'Healing Timeline Analysis',
+        description: 'Analyze a past model’s healing photos and produce a touch-up plan with pigment adjustments.',
+        dueDate: 'Due Week 6 Sunday',
+        status: 'pending',
+        rubric: 'Observation detail (10 pts), corrective plan (10 pts), client communication (10 pts).',
+        estimatedHours: 5
+      }
+    ]
+  },
+  {
+    id: 'week-7',
+    order: 7,
+    title: 'Week 7 • Capstone & Portfolio (Half Week)',
+    summary: 'Capstone evaluation, portfolio submission, and exit interview preparation.',
+    targetHours: 7,
+    assignments: [
+      {
+        id: 'week7-capstone-eval',
+        weekId: 'week-7',
+        title: 'Capstone Live Model Evaluation',
+        description: 'Complete your supervised live model or detailed case study for capstone review.',
+        dueDate: 'Due Week 7 Wednesday',
+        status: 'pending',
+        rubric: 'Technique execution (15 pts), sanitation compliance (10 pts), client comfort documentation (10 pts).',
+        estimatedHours: 4
+      },
+      {
+        id: 'week7-portfolio-exit',
+        weekId: 'week-7',
+        title: 'Portfolio & Exit Interview Prep',
+        description: 'Compile before/after images, reflective journal entries, and submit the exit interview readiness checklist.',
+        dueDate: 'Due Week 7 Friday',
+        status: 'pending',
+        rubric: 'Portfolio completeness (10 pts), reflection insight (10 pts), readiness checklist (10 pts).',
+        estimatedHours: 3
+      }
+    ]
   }
 ]
+
+const COURSE_TOTAL_HOURS = COURSE_WEEKS.reduce((sum, week) => sum + week.targetHours, 0)
 
 const LECTURE_VIDEOS: LectureVideo[] = [
   {
@@ -132,14 +331,17 @@ export default function FundamentalsTrainingPortal() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const generatedVideoUrls = useRef<string[]>([])
+  const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(COURSE_WEEKS)
+  const [selectedWeekId, setSelectedWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
-  const [studentAssignments, setStudentAssignments] = useState<Assignment[]>(STUDENT_ASSIGNMENTS)
   const [openRubricId, setOpenRubricId] = useState<string | null>(null)
   const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null)
   const [assignmentError, setAssignmentError] = useState<string | null>(null)
   const [newAssignmentTitle, setNewAssignmentTitle] = useState('')
   const [newAssignmentDescription, setNewAssignmentDescription] = useState('')
   const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('')
+  const [newAssignmentWeekId, setNewAssignmentWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
+  const [newAssignmentHours, setNewAssignmentHours] = useState<string>('')
   const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
   const [lectureVideos, setLectureVideos] = useState<LectureVideo[]>(LECTURE_VIDEOS)
   const [newVideoTitle, setNewVideoTitle] = useState('')
@@ -174,6 +376,10 @@ export default function FundamentalsTrainingPortal() {
   const [instructorActivityBanner, setInstructorActivityBanner] = useState<
     { type: 'success' | 'warning'; message: string } | null
   >(null)
+  const totalCourseHours = useMemo(
+    () => courseWeeks.reduce((sum, week) => sum + week.targetHours, 0),
+    [courseWeeks]
+  )
 
   const user = currentUser ? {
     name: currentUser.name,
@@ -469,6 +675,20 @@ const ACTIVITY_ICON_MAP = {
       return
     }
 
+    const targetWeekId = newAssignmentWeekId || courseWeeks[0]?.id
+    if (!targetWeekId) {
+      setAssignmentError('Select a course week before posting the assignment.')
+      return
+    }
+
+    const parsedHours = newAssignmentHours.trim()
+      ? parseFloat(newAssignmentHours.trim())
+      : undefined
+    if (parsedHours !== undefined && (Number.isNaN(parsedHours) || parsedHours < 0)) {
+      setAssignmentError('Enter a valid number of estimated hours (e.g., 6 or 6.5).')
+      return
+    }
+
     const description = newAssignmentDescription.trim() || 'Follow the instructions provided in class and upload proof of completion.'
     const rubric = newAssignmentRubric.trim()
 
@@ -486,11 +706,28 @@ const ACTIVITY_ICON_MAP = {
       description,
       dueDate: dueDateLabel,
       status: 'pending',
-      rubric: rubric || undefined
+      rubric: rubric || undefined,
+      estimatedHours: parsedHours,
+      weekId: targetWeekId
     }
 
-    setStudentAssignments(prev => [newAssignment, ...prev])
-    setAssignmentSuccess('Assignment posted for students. It now appears in their portal.')
+    const targetWeek = courseWeeks.find(week => week.id === targetWeekId)
+
+    setCourseWeeks(prev =>
+      prev.map(week =>
+        week.id === targetWeekId
+          ? { ...week, assignments: [newAssignment, ...week.assignments] }
+          : week
+      )
+    )
+    setAssignmentSuccess(
+      targetWeek
+        ? `Assignment posted for students in ${targetWeek.title}. It now appears under Weekly Assignments.`
+        : 'Assignment posted for students. It now appears in their portal.'
+    )
+    setSelectedWeekId(targetWeekId)
+    setNewAssignmentWeekId(targetWeekId)
+    setNewAssignmentHours('')
     setNewAssignmentTitle('')
     setNewAssignmentDescription('')
     setNewAssignmentDueDate('')
@@ -669,62 +906,117 @@ const ACTIVITY_ICON_MAP = {
                 <Card className="border-gray-200">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-gray-900">Assignments</CardTitle>
-                    <CardDescription className="text-gray-600">Submit required coursework and track your status.</CardDescription>
+                    <CardDescription className="text-gray-600">
+                      Submit required coursework and track your weekly progress. This is a 6.5-week, {totalCourseHours}-hour certification.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {studentAssignments.map(assignment => (
-                      <Card key={assignment.id} className="border border-gray-200 shadow-sm">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-purple-600" />
-                                {assignment.title}
-                              </h3>
-                              <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900">
+                      <span className="font-semibold">Course Pace:</span>{' '}
+                      Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
+                    </div>
+                    <Tabs
+                      value={selectedWeekId}
+                      onValueChange={(value) => setSelectedWeekId(value as string)}
+                      className="space-y-4"
+                    >
+                      <TabsList className="flex w-full max-w-full overflow-x-auto rounded-lg bg-purple-100/70 p-1">
+                        {courseWeeks.map(week => (
+                          <TabsTrigger
+                            key={week.id}
+                            value={week.id}
+                            className="whitespace-nowrap"
+                          >
+                            Week {week.order}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      {courseWeeks.map(week => {
+                        const actualHours = week.assignments.reduce(
+                          (hours, assignment) => hours + (assignment.estimatedHours ?? 0),
+                          0
+                        )
+                        const displayHours = actualHours || week.targetHours
+                        return (
+                          <TabsContent key={week.id} value={week.id} className="space-y-4">
+                            <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
+                              <p className="text-sm font-semibold text-purple-900">{week.title}</p>
+                              <p className="text-sm text-purple-800">{week.summary}</p>
+                              <p className="text-xs text-purple-700">
+                                Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
+                              </p>
                             </div>
-                            <Badge
-                              className={
-                                assignment.status === 'graded'
-                                  ? 'bg-green-100 text-green-700 border border-green-200'
-                                  : assignment.status === 'submitted'
-                                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                                  : 'bg-amber-100 text-amber-700 border border-amber-200'
-                              }
-                            >
-                              {assignment.status === 'graded' && 'Graded'}
-                              {assignment.status === 'submitted' && 'Submitted'}
-                              {assignment.status === 'pending' && 'Pending'}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
-                            <span>{assignment.dueDate}</span>
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="outline">
-                                <Upload className="h-4 w-4 mr-1" /> Upload Work
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={() =>
-                                  assignment.rubric &&
-                                  setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
-                                }
-                                disabled={!assignment.rubric}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
-                              </Button>
-                            </div>
-                          </div>
-                          {assignment.rubric && openRubricId === assignment.id && (
-                            <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
-                              {assignment.rubric}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
+
+                            {week.assignments.length === 0 ? (
+                              <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                                No assignments published for this week yet.
+                              </div>
+                            ) : (
+                              week.assignments.map(assignment => (
+                                <Card key={assignment.id} className="border border-gray-200 shadow-sm">
+                                  <CardContent className="p-4 space-y-3">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                      <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                          <FileText className="h-5 w-5 text-purple-600" />
+                                          {assignment.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                      </div>
+                                      <Badge
+                                        className={
+                                          assignment.status === 'graded'
+                                            ? 'bg-green-100 text-green-700 border border-green-200'
+                                            : assignment.status === 'submitted'
+                                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                            : 'bg-amber-100 text-amber-700 border border-amber-200'
+                                        }
+                                      >
+                                        {assignment.status === 'graded' && 'Graded'}
+                                        {assignment.status === 'submitted' && 'Submitted'}
+                                        {assignment.status === 'pending' && 'Pending'}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span>{assignment.dueDate}</span>
+                                        {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
+                                          <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
+                                            ~{assignment.estimatedHours} hrs
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button size="sm" variant="outline">
+                                          <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={() =>
+                                            assignment.rubric &&
+                                            setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                          }
+                                          disabled={!assignment.rubric}
+                                        >
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {assignment.rubric && openRubricId === assignment.id && (
+                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                        {assignment.rubric}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              ))
+                            )}
+                          </TabsContent>
+                        )
+                      })}
+                    </Tabs>
                   </CardContent>
                 </Card>
 
@@ -1376,8 +1668,8 @@ const ACTIVITY_ICON_MAP = {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleAssignmentCreate} className="space-y-4 text-left">
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div className="space-y-1">
+                        <div className="grid gap-4 md:grid-cols-3">
+                          <div className="space-y-1 md:col-span-2">
                             <Label htmlFor="assignment-title">Assignment title</Label>
                             <Input
                               id="assignment-title"
@@ -1391,6 +1683,23 @@ const ACTIVITY_ICON_MAP = {
                             />
                           </div>
                           <div className="space-y-1">
+                            <Label htmlFor="assignment-week">Course week</Label>
+                            <Select value={newAssignmentWeekId} onValueChange={setNewAssignmentWeekId}>
+                              <SelectTrigger id="assignment-week" className="w-full">
+                                <SelectValue placeholder="Select week" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {courseWeeks.map(week => (
+                                  <SelectItem key={week.id} value={week.id}>
+                                    Week {week.order}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-1">
                             <Label htmlFor="assignment-due-date">Due date</Label>
                             <Input
                               id="assignment-due-date"
@@ -1398,6 +1707,23 @@ const ACTIVITY_ICON_MAP = {
                               value={newAssignmentDueDate}
                               onChange={(event) => {
                                 setNewAssignmentDueDate(event.target.value)
+                                setAssignmentError(null)
+                                setAssignmentSuccess(null)
+                              }}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="assignment-hours">Estimated hours (optional)</Label>
+                            <Input
+                              id="assignment-hours"
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              step="0.5"
+                              placeholder="e.g., 6"
+                              value={newAssignmentHours}
+                              onChange={(event) => {
+                                setNewAssignmentHours(event.target.value)
                                 setAssignmentError(null)
                                 setAssignmentSuccess(null)
                               }}
