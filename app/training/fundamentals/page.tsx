@@ -14,6 +14,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
+import {
   BookOpen,
   FileText,
   GraduationCap,
@@ -151,6 +159,21 @@ export default function FundamentalsTrainingPortal() {
   const [searchResults, setSearchResults] = useState<number[]>([])
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isLoadingResourcePdf, setIsLoadingResourcePdf] = useState<boolean>(false)
+  const [resourcePdfError, setResourcePdfError] = useState<string | null>(null)
+  const [pdfSourceType, setPdfSourceType] = useState<'remote' | 'upload' | null>(null)
+  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false)
+  const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [attendanceForm, setAttendanceForm] = useState({ session: '', date: '', notes: '' })
+  const [gradeForm, setGradeForm] = useState({ student: '', assignment: '', score: '', feedback: '' })
+  const [scheduleForm, setScheduleForm] = useState({ student: '', instructor: '', date: '', time: '', notes: '' })
+  const [instructorActivityLog, setInstructorActivityLog] = useState<
+    { type: 'attendance' | 'grade' | 'schedule'; title: string; timestamp: string; summary: string }[]
+  >([])
+  const [instructorActivityBanner, setInstructorActivityBanner] = useState<
+    { type: 'success' | 'warning'; message: string } | null
+  >(null)
 
   const user = currentUser ? {
     name: currentUser.name,
@@ -163,16 +186,21 @@ export default function FundamentalsTrainingPortal() {
     initials: 'PA'
   }
 
-  const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
+const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
+const ACTIVITY_ICON_MAP = {
+  attendance: ClipboardList,
+  grade: PenSquare,
+  schedule: CalendarCheck
+} as const
   const hasUploadedPdf = Boolean(pdfObjectUrl)
 
   useEffect(() => {
     return () => {
-      if (pdfObjectUrl) {
+      if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
         URL.revokeObjectURL(pdfObjectUrl)
       }
     }
-  }, [pdfObjectUrl])
+  }, [pdfObjectUrl, pdfSourceType])
 
   useEffect(() => {
     return () => {
@@ -181,7 +209,68 @@ export default function FundamentalsTrainingPortal() {
     }
   }, [])
 
+  useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
+    async function fetchTrainingTextbook() {
+      setIsLoadingResourcePdf(true)
+      setResourcePdfError(null)
+      try {
+        const response = await fetch('/api/resource-library', {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        if (!response.ok) {
+          throw new Error('Failed to load resource library.')
+        }
+        const data = await response.json()
+        const resources: any[] = data.resources || []
+        const trainingPdf = resources.find(resource => resource.category === 'training')
+        if (trainingPdf && isMounted) {
+          setPdfSourceType('remote')
+          setPdfObjectUrl(trainingPdf.url)
+          setPdfFileName(trainingPdf.title || 'Training Textbook')
+          setCurrentPdfPage(1)
+          setPageInput('1')
+          setSearchTerm('')
+          setSearchResults([])
+          setSearchPerformed(false)
+          try {
+            await indexPdfFromRemote(trainingPdf.url)
+          } catch {
+            /* error handled within index function */
+          }
+        } else if (isMounted && !trainingPdf) {
+          setResourcePdfError('No official training textbook has been uploaded yet.')
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return
+        console.error('Failed to load training resource PDF:', error)
+        if (isMounted) {
+          setResourcePdfError('Unable to load the official training textbook. Instructors can re-upload the PDF from the console.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingResourcePdf(false)
+        }
+      }
+    }
+
+    fetchTrainingTextbook()
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [])
+
   const resetPdfState = () => {
+    if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(pdfObjectUrl)
+    }
     setPdfObjectUrl(null)
     setPdfFileName(null)
     setPdfNumPages(0)
@@ -191,6 +280,7 @@ export default function FundamentalsTrainingPortal() {
     setSearchTerm('')
     setSearchResults([])
     setSearchPerformed(false)
+    setPdfSourceType(null)
   }
 
   const handleUploadButtonClick = () => {
@@ -266,7 +356,7 @@ export default function FundamentalsTrainingPortal() {
     setNewVideoDuration('')
   }
 
-  const indexPdfText = async (file: File) => {
+  const indexPdfFromArrayBuffer = async (arrayBuffer: ArrayBuffer, origin: 'upload' | 'remote') => {
     setIsIndexingPdf(true)
     let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf') | null = null
     let loadingTask: any = null
@@ -283,7 +373,6 @@ export default function FundamentalsTrainingPortal() {
 
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc
 
-      const arrayBuffer = await file.arrayBuffer()
       loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
       const pdf = await loadingTask.promise
 
@@ -300,15 +389,42 @@ export default function FundamentalsTrainingPortal() {
       }
 
       setPageTexts(textIndex)
+      if (origin === 'upload') {
+        setUploadError(null)
+      } else {
+        setResourcePdfError(null)
+      }
     } catch (error) {
       console.error('Error indexing PDF:', error)
-      setUploadError('Failed to process PDF text. Please try another file or re-upload.')
-      resetPdfState()
+      if (origin === 'upload') {
+        setUploadError('Failed to process PDF text. Please try another file or re-upload.')
+        resetPdfState()
+      } else {
+        setResourcePdfError('Unable to index the training textbook for search. You can still read the PDF, but keyword search is inactive.')
+      }
     } finally {
       if (loadingTask) {
         await loadingTask.destroy().catch(() => {})
       }
       setIsIndexingPdf(false)
+    }
+  }
+
+  const indexPdfText = async (file: File) => {
+    await indexPdfFromArrayBuffer(await file.arrayBuffer(), 'upload')
+  }
+
+  const indexPdfFromRemote = async (url: string) => {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error('Failed to download remote PDF')
+      }
+      const arrayBuffer = await response.arrayBuffer()
+      await indexPdfFromArrayBuffer(arrayBuffer, 'remote')
+    } catch (error) {
+      console.error('Error fetching remote PDF for indexing:', error)
+      setResourcePdfError('Unable to index the training textbook for search. You can still read the PDF, but keyword search is inactive.')
     }
   }
 
@@ -326,7 +442,7 @@ export default function FundamentalsTrainingPortal() {
     }
 
     setUploadError(null)
-    if (pdfObjectUrl) {
+    if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
       URL.revokeObjectURL(pdfObjectUrl)
     }
 
@@ -340,6 +456,7 @@ export default function FundamentalsTrainingPortal() {
     setSearchPerformed(false)
 
     await indexPdfText(file)
+    setPdfSourceType('upload')
   }
 
   const handleAssignmentCreate = (event: FormEvent<HTMLFormElement>) => {
@@ -419,6 +536,83 @@ export default function FundamentalsTrainingPortal() {
     const targetPage = Math.min(Math.max(parsed, 1), pdfNumPages)
     setCurrentPdfPage(targetPage)
     setPageInput(String(targetPage))
+  }
+
+  const recordInstructorActivity = (
+    type: 'attendance' | 'grade' | 'schedule',
+    title: string,
+    summary: string
+  ) => {
+    setInstructorActivityLog(prev => [
+      { type, title, summary, timestamp: new Date().toLocaleString() },
+      ...prev
+    ].slice(0, 6))
+    setInstructorActivityBanner({
+      type: 'success',
+      message:
+        type === 'attendance'
+          ? 'Attendance saved for your records.'
+          : type === 'grade'
+            ? 'Grades posted for the student.'
+            : 'Supervision session pencilled in. Directors can confirm availability in Supervision.'
+    })
+    setTimeout(() => setInstructorActivityBanner(null), 4000)
+  }
+
+  const handleAttendanceSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!attendanceForm.session || !attendanceForm.date) {
+      setInstructorActivityBanner({
+        type: 'warning',
+        message: 'Enter a session title and date before saving attendance.'
+      })
+      return
+    }
+    recordInstructorActivity(
+      'attendance',
+      `${attendanceForm.session} (${attendanceForm.date})`,
+      attendanceForm.notes ? attendanceForm.notes : 'Attendance recorded.'
+    )
+    setAttendanceDialogOpen(false)
+    setAttendanceForm({ session: '', date: '', notes: '' })
+  }
+
+  const handleGradeSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!gradeForm.student || !gradeForm.assignment || !gradeForm.score) {
+      setInstructorActivityBanner({
+        type: 'warning',
+        message: 'Provide a student, assignment, and score before posting grades.'
+      })
+      return
+    }
+    recordInstructorActivity(
+      'grade',
+      `${gradeForm.student} • ${gradeForm.assignment}`,
+      gradeForm.feedback
+        ? `${gradeForm.score} – ${gradeForm.feedback}`
+        : `${gradeForm.score} submitted.`
+    )
+    setGradeDialogOpen(false)
+    setGradeForm({ student: '', assignment: '', score: '', feedback: '' })
+  }
+
+  const handleScheduleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!scheduleForm.student || !scheduleForm.instructor || !scheduleForm.date || !scheduleForm.time) {
+      setInstructorActivityBanner({
+        type: 'warning',
+        message: 'Complete student, instructor, date, and time fields before scheduling.'
+      })
+      return
+    }
+    recordInstructorActivity(
+      'schedule',
+      `${scheduleForm.student} ⇄ ${scheduleForm.instructor}`,
+      `${scheduleForm.date} at ${scheduleForm.time}${scheduleForm.notes ? ` – ${scheduleForm.notes}` : ''}`
+    )
+    setScheduleDialogOpen(false)
+    setScheduleForm({ student: '', instructor: '', date: '', time: '', notes: '' })
   }
 
   return (
@@ -579,13 +773,25 @@ export default function FundamentalsTrainingPortal() {
                       </div>
                     )}
 
+                    {isLoadingResourcePdf && (
+                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                        Loading the official training textbook from the resource library…
+                      </div>
+                    )}
+
+                    {resourcePdfError && (
+                      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                        {resourcePdfError}
+                      </div>
+                    )}
+
                     {uploadError && (
                       <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                         {uploadError}
                       </div>
                     )}
 
-                    {!hasUploadedPdf && !isIndexingPdf && (
+                    {!hasUploadedPdf && !isIndexingPdf && !isLoadingResourcePdf && (
                       <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
                         Instructors can upload the course PDF from the Instructor Console. Once added, it will appear here with full keyword search.
                       </div>
@@ -766,23 +972,266 @@ export default function FundamentalsTrainingPortal() {
                   <CardDescription className="text-gray-600">Track class participation, grade submissions, and upload lecture updates.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  {instructorActivityBanner && (
+                    <div
+                      className={`rounded-md border px-3 py-2 text-sm ${
+                        instructorActivityBanner.type === 'success'
+                          ? 'border-green-200 bg-green-50 text-green-700'
+                          : 'border-amber-200 bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      {instructorActivityBanner.message}
+                    </div>
+                  )}
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <Card className="border border-gray-200 shadow-sm">
-                      <CardContent className="p-4 space-y-2">
+                      <CardContent className="p-4 space-y-3">
                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                           <ClipboardList className="h-5 w-5 text-purple-600" /> Attendance Logs
                         </div>
-                        <p className="text-sm text-gray-600">Review sign-ins for in-person practicums and virtual lectures. Export attendance for compliance.</p>
-                        <Button size="sm" variant="outline">Open Attendance Sheet</Button>
+                        <p className="text-sm text-gray-600">
+                          Log which apprentices attended live practicums or virtual lectures. Export attendance history for compliance audits.
+                        </p>
+                        <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              Record Attendance
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Record Attendance</DialogTitle>
+                              <DialogDescription>
+                                Track which apprentices were present. Attendance logs remain visible in this console for quick review.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                              <div className="space-y-1">
+                                <Label htmlFor="attendance-session">Session / Module</Label>
+                                <Input
+                                  id="attendance-session"
+                                  value={attendanceForm.session}
+                                  onChange={(event) =>
+                                    setAttendanceForm(prev => ({ ...prev, session: event.target.value }))
+                                  }
+                                  placeholder="e.g., Module 3: Needle Depth Practicum"
+                                />
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label htmlFor="attendance-date">Date</Label>
+                                  <Input
+                                    id="attendance-date"
+                                    type="date"
+                                    value={attendanceForm.date}
+                                    onChange={(event) =>
+                                      setAttendanceForm(prev => ({ ...prev, date: event.target.value }))
+                                    }
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label htmlFor="attendance-notes">Notes (optional)</Label>
+                                  <Textarea
+                                    id="attendance-notes"
+                                    rows={3}
+                                    placeholder="List attendees or special observations."
+                                    value={attendanceForm.notes}
+                                    onChange={(event) =>
+                                      setAttendanceForm(prev => ({ ...prev, notes: event.target.value }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                  Save Attendance
+                                </Button>
+                                <Button variant="ghost" type="button" asChild>
+                                  <Link href="/studio/supervision">View Supervision Roster</Link>
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
                     <Card className="border border-gray-200 shadow-sm">
-                      <CardContent className="p-4 space-y-2">
+                      <CardContent className="p-4 space-y-3">
                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                           <PenSquare className="h-5 w-5 text-purple-600" /> Grade Submissions
                         </div>
-                        <p className="text-sm text-gray-600">Review uploaded practice work, apply rubric scoring, and leave feedback for apprentices.</p>
-                        <Button size="sm" variant="outline">Open Gradebook</Button>
+                        <p className="text-sm text-gray-600">
+                          Apply rubric scores, leave coaching notes, and confirm whether assignments meet competency thresholds.
+                        </p>
+                        <Dialog open={gradeDialogOpen} onOpenChange={setGradeDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              Open Gradebook
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Post Assignment Grades</DialogTitle>
+                              <DialogDescription>
+                                Document rubric scores and qualitative feedback. Students see updates instantly in their portal.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleGradeSubmit} className="space-y-4">
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label htmlFor="grade-student">Student</Label>
+                                  <Input
+                                    id="grade-student"
+                                    value={gradeForm.student}
+                                    onChange={(event) =>
+                                      setGradeForm(prev => ({ ...prev, student: event.target.value }))
+                                    }
+                                    placeholder="e.g., Tierra Williams"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label htmlFor="grade-assignment">Assignment</Label>
+                                  <Input
+                                    id="grade-assignment"
+                                    value={gradeForm.assignment}
+                                    onChange={(event) =>
+                                      setGradeForm(prev => ({ ...prev, assignment: event.target.value }))
+                                    }
+                                    placeholder="e.g., Brow Mapping Upload"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label htmlFor="grade-score">Score / Outcome</Label>
+                                  <Input
+                                    id="grade-score"
+                                    value={gradeForm.score}
+                                    onChange={(event) =>
+                                      setGradeForm(prev => ({ ...prev, score: event.target.value }))
+                                    }
+                                    placeholder="e.g., 27 / 30"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label htmlFor="grade-feedback">Feedback</Label>
+                                  <Textarea
+                                    id="grade-feedback"
+                                    rows={3}
+                                    placeholder="Highlight strengths, adjustments, and next steps."
+                                    value={gradeForm.feedback}
+                                    onChange={(event) =>
+                                      setGradeForm(prev => ({ ...prev, feedback: event.target.value }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                  Save Grade
+                                </Button>
+                                <Button variant="ghost" type="button" asChild>
+                                  <Link href="#student-portal">Preview Student View</Link>
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                          <CalendarCheck className="h-5 w-5 text-purple-600" /> Supervision Scheduler
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Coordinate 1:1 supervision blocks with Directors or Senior Instructors. Logged sessions appear in the activity timeline.
+                        </p>
+                        <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              Draft Session
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Schedule Supervision</DialogTitle>
+                              <DialogDescription>
+                                Draft a supervision request before confirming availability in the Supervision hub.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleScheduleSubmit} className="space-y-4">
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label htmlFor="schedule-student">Student</Label>
+                                  <Input
+                                    id="schedule-student"
+                                    value={scheduleForm.student}
+                                    onChange={(event) =>
+                                      setScheduleForm(prev => ({ ...prev, student: event.target.value }))
+                                    }
+                                    placeholder="e.g., Careya Garcia"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label htmlFor="schedule-instructor">Instructor / Director</Label>
+                                  <Input
+                                    id="schedule-instructor"
+                                    value={scheduleForm.instructor}
+                                    onChange={(event) =>
+                                      setScheduleForm(prev => ({ ...prev, instructor: event.target.value }))
+                                    }
+                                    placeholder="e.g., Director Jackson"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="space-y-1">
+                                  <Label htmlFor="schedule-date">Date</Label>
+                                  <Input
+                                    id="schedule-date"
+                                    type="date"
+                                    value={scheduleForm.date}
+                                    onChange={(event) =>
+                                      setScheduleForm(prev => ({ ...prev, date: event.target.value }))
+                                    }
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label htmlFor="schedule-time">Start Time</Label>
+                                  <Input
+                                    id="schedule-time"
+                                    type="time"
+                                    value={scheduleForm.time}
+                                    onChange={(event) =>
+                                      setScheduleForm(prev => ({ ...prev, time: event.target.value }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <Label htmlFor="schedule-notes">Session Notes (optional)</Label>
+                                <Textarea
+                                  id="schedule-notes"
+                                  rows={3}
+                                  placeholder="Outline objectives, model prep, or required supplies."
+                                  value={scheduleForm.notes}
+                                  onChange={(event) =>
+                                    setScheduleForm(prev => ({ ...prev, notes: event.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                  Save Draft
+                                </Button>
+                                <Button variant="ghost" type="button" asChild>
+                                  <Link href="/studio/supervision">Open Supervision Hub</Link>
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
                   </div>
@@ -1004,6 +1453,38 @@ export default function FundamentalsTrainingPortal() {
                       </form>
                     </CardContent>
                   </Card>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Recent Instructor Activity</CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Snapshots of the latest attendance logs, grades, and supervision drafts you have recorded.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm text-gray-700">
+                  {instructorActivityLog.length === 0 && (
+                    <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
+                      When you record attendance, post grades, or draft a supervision session, the timeline will appear here.
+                    </div>
+                  )}
+                  {instructorActivityLog.map((activity, index) => {
+                    const ActivityIcon = ACTIVITY_ICON_MAP[activity.type]
+                    return (
+                      <div
+                        key={`${activity.timestamp}-${index}`}
+                        className="flex items-start gap-3 rounded-md border border-gray-200 bg-white p-3 shadow-sm"
+                      >
+                        <ActivityIcon className="mt-1 h-5 w-5 text-purple-600" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
+                          <p className="text-xs text-gray-600 whitespace-pre-line">{activity.summary}</p>
+                          <p className="text-xs text-gray-500">Logged {activity.timestamp}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </CardContent>
               </Card>
 
