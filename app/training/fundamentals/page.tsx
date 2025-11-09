@@ -42,7 +42,8 @@ import {
   PenSquare,
   Download,
   Eye,
-  Search
+  Search,
+  Trash2
 } from 'lucide-react'
 import workerMeta from '@/generated/pdfjs-worker-version.json'
 
@@ -71,6 +72,7 @@ interface Assignment {
   estimatedHours?: number
   weekId?: string
   dueDateISO?: string | null
+  isPersisted?: boolean
 }
 
 interface LectureVideo {
@@ -301,6 +303,22 @@ const COURSE_WEEKS: CourseWeek[] = [
 
 const COURSE_TOTAL_HOURS = COURSE_WEEKS.reduce((sum, week) => sum + week.targetHours, 0)
 
+const BASE_WEEKS_TEMPLATE: CourseWeek[] = COURSE_WEEKS.map(week => ({
+  ...week,
+  assignments: week.assignments.map(assignment => ({
+    ...assignment,
+    weekId: assignment.weekId || week.id,
+    isPersisted: assignment.isPersisted ?? false,
+    dueDateISO: assignment.dueDateISO ?? null
+  }))
+}))
+
+const buildBaseWeeks = (): CourseWeek[] =>
+  BASE_WEEKS_TEMPLATE.map(week => ({
+    ...week,
+    assignments: week.assignments.map(assignment => ({ ...assignment }))
+  }))
+
 const LECTURE_VIDEOS: LectureVideo[] = []
 
 const STUDENT_PROGRESS = {
@@ -313,12 +331,15 @@ export default function FundamentalsTrainingPortal() {
   const { currentUser } = useDemoAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
-  const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(COURSE_WEEKS)
-  const [selectedWeekId, setSelectedWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
+  const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(() => buildBaseWeeks())
+  const [selectedWeekId, setSelectedWeekId] = useState<string>(() => buildBaseWeeks()[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
   const [openRubricId, setOpenRubricId] = useState<string | null>(null)
   const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null)
   const [assignmentError, setAssignmentError] = useState<string | null>(null)
+  const [assignmentLoadError, setAssignmentLoadError] = useState<string | null>(null)
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState<boolean>(false)
+  const [isSavingAssignment, setIsSavingAssignment] = useState<boolean>(false)
   const [newAssignmentTitle, setNewAssignmentTitle] = useState('')
   const [newAssignmentDescription, setNewAssignmentDescription] = useState('')
   const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('')
@@ -384,13 +405,126 @@ export default function FundamentalsTrainingPortal() {
   const VIDEO_UPLOAD_PREFIX = 'training-video'
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
-  const canManageAssignments = canManageVideos
+  const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
+  const canEditAssignments = canManageAssignments && activeTab === 'instructor'
+  const [isDeleteAssignmentDialogOpen, setIsDeleteAssignmentDialogOpen] = useState(false)
+  const [assignmentPendingDelete, setAssignmentPendingDelete] = useState<{ assignment: Assignment; weekId: string } | null>(null)
+  const [deleteAssignmentConfirmText, setDeleteAssignmentConfirmText] = useState('')
+  const [deleteAssignmentError, setDeleteAssignmentError] = useState<string | null>(null)
+  const [isDeletingAssignment, setIsDeletingAssignment] = useState(false)
   const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
   const ACTIVITY_ICON_MAP = {
     attendance: ClipboardList,
     grade: PenSquare,
     schedule: CalendarCheck
   } as const
+
+  const toAssignmentStatus = (value?: string): Assignment['status'] => {
+    if (!value) return 'pending'
+    const normalized = value.toLowerCase()
+    return normalized === 'submitted' || normalized === 'graded' ? normalized : 'pending'
+  }
+
+  const fetchAssignments = useCallback(
+    async (showSpinner = true) => {
+      if (showSpinner) {
+        setIsLoadingAssignments(true)
+      }
+      setAssignmentLoadError(null)
+      try {
+        const response = await fetch('/api/training/assignments', {
+          headers: currentUser?.email
+            ? {
+                'x-user-email': currentUser.email
+              }
+            : undefined
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.error || 'Unable to load assignments.')
+        }
+
+        const persistedAssignments: Assignment[] = (data.assignments || []).map((assignment: any) => ({
+          id: assignment.id,
+          weekId: assignment.weekId,
+          title: assignment.title,
+          description: assignment.description || '',
+          dueDate: assignment.dueDateLabel || 'Due date shared in class',
+          dueDateISO: assignment.dueDateISO || null,
+          status: toAssignmentStatus(assignment.status),
+          estimatedHours: assignment.estimatedHours ?? undefined,
+          rubric: assignment.rubric ?? undefined,
+          isPersisted: true
+        }))
+
+        const weekMap = new Map<string, CourseWeek>()
+        buildBaseWeeks().forEach(week => {
+          weekMap.set(week.id, {
+            ...week,
+            assignments: week.assignments.map(assignment => ({
+              ...assignment,
+              isPersisted: assignment.isPersisted ?? false,
+              dueDateISO: assignment.dueDateISO ?? null
+            }))
+          })
+        })
+
+        persistedAssignments.forEach(assignment => {
+          const existingWeek = weekMap.get(assignment.weekId || '')
+          if (existingWeek) {
+            const existingIndex = existingWeek.assignments.findIndex(item => item.id === assignment.id)
+            if (existingIndex >= 0) {
+              existingWeek.assignments[existingIndex] = {
+                ...existingWeek.assignments[existingIndex],
+                ...assignment
+              }
+            } else {
+              existingWeek.assignments = [assignment, ...existingWeek.assignments]
+            }
+            weekMap.set(existingWeek.id, existingWeek)
+          } else {
+            weekMap.set(assignment.weekId || `custom-${assignment.id}`, {
+              id: assignment.weekId || `custom-${assignment.id}`,
+              order: Number.MAX_SAFE_INTEGER,
+              title: assignment.weekId ? `Week ${assignment.weekId}` : 'Custom Week',
+              summary: '',
+              targetHours: assignment.estimatedHours ?? 0,
+              assignments: [assignment]
+            })
+          }
+        })
+
+        const updatedWeeks = Array.from(weekMap.values()).sort((a, b) => a.order - b.order)
+        setCourseWeeks(updatedWeeks)
+        setSelectedWeekId(prev =>
+          updatedWeeks.some(week => week.id === prev) ? prev : updatedWeeks[0]?.id ?? prev
+        )
+        setNewAssignmentWeekId(prev =>
+          updatedWeeks.some(week => week.id === prev) ? prev : updatedWeeks[0]?.id ?? prev
+        )
+      } catch (error) {
+        console.error('Failed to fetch training assignments:', error)
+        setAssignmentLoadError(error instanceof Error ? error.message : 'Unable to load assignments.')
+        const fallbackWeeks = buildBaseWeeks()
+        setCourseWeeks(fallbackWeeks)
+        setSelectedWeekId(prev =>
+          fallbackWeeks.some(week => week.id === prev) ? prev : fallbackWeeks[0]?.id ?? prev
+        )
+        setNewAssignmentWeekId(prev =>
+          fallbackWeeks.some(week => week.id === prev) ? prev : fallbackWeeks[0]?.id ?? prev
+        )
+      } finally {
+        if (showSpinner) {
+          setIsLoadingAssignments(false)
+        }
+      }
+    },
+    [currentUser?.email]
+  )
+
+  useEffect(() => {
+    fetchAssignments()
+  }, [fetchAssignments])
 
   const fetchTrainingVideos = useCallback(
     async (showSpinner = true) => {
@@ -663,6 +797,9 @@ export default function FundamentalsTrainingPortal() {
   }
 
   const openEditAssignmentDialog = (assignment: Assignment, weekId: string) => {
+    if (!canEditAssignments) return
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
     setAssignmentBeingEdited({ assignmentId: assignment.id, weekId })
     setEditAssignmentTitle(assignment.title)
     setEditAssignmentDescription(assignment.description)
@@ -694,6 +831,7 @@ export default function FundamentalsTrainingPortal() {
     setEditAssignmentStatus('pending')
     setEditAssignmentDueDateISO('')
     setEditAssignmentCustomDueLabel('')
+    setIsSavingAssignment(false)
   }
 
   const openDeleteDialog = (video: LectureVideo) => {
@@ -834,10 +972,15 @@ export default function FundamentalsTrainingPortal() {
     setPdfSourceType('upload')
   }
 
-  const handleAssignmentCreate = (event: FormEvent<HTMLFormElement>) => {
+  const handleAssignmentCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setAssignmentError(null)
     setAssignmentSuccess(null)
+
+    if (!currentUser?.email) {
+      setAssignmentError('You must be signed in to create assignments.')
+      return
+    }
 
     if (!newAssignmentTitle.trim()) {
       setAssignmentError('Add a title before publishing the assignment.')
@@ -871,49 +1014,60 @@ export default function FundamentalsTrainingPortal() {
       }
     }
 
-    const newAssignment: Assignment = {
-      id: `assignment-${Date.now()}`,
-      title: newAssignmentTitle.trim(),
-      description,
-      dueDate: dueDateLabel,
-      status: 'pending',
-      rubric: rubric || undefined,
-      estimatedHours: parsedHours,
-      weekId: targetWeekId,
-      dueDateISO
+    setIsSavingAssignment(true)
+    try {
+      const response = await fetch('/api/training/assignments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          weekId: targetWeekId,
+          title: newAssignmentTitle.trim(),
+          description,
+          dueDateLabel,
+          dueDateISO,
+          status: 'pending',
+          estimatedHours: parsedHours ?? null,
+          rubric
+        })
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create assignment.')
+      }
+
+      setAssignmentSuccess('Assignment posted for students. It now appears under Weekly Assignments.')
+      setSelectedWeekId(targetWeekId)
+      setNewAssignmentWeekId(targetWeekId)
+      setNewAssignmentHours('')
+      setNewAssignmentTitle('')
+      setNewAssignmentDescription('')
+      setNewAssignmentDueDate('')
+      setNewAssignmentRubric('')
+      await fetchAssignments(false)
+    } catch (error) {
+      console.error('Failed to create training assignment:', error)
+      setAssignmentError(error instanceof Error ? error.message : 'Failed to create assignment.')
+    } finally {
+      setIsSavingAssignment(false)
     }
-
-    const targetWeek = courseWeeks.find(week => week.id === targetWeekId)
-
-    setCourseWeeks(prev =>
-      prev.map(week =>
-        week.id === targetWeekId
-          ? { ...week, assignments: [newAssignment, ...week.assignments] }
-          : week
-      )
-    )
-    setAssignmentSuccess(
-      targetWeek
-        ? `Assignment posted for students in ${targetWeek.title}. It now appears under Weekly Assignments.`
-        : 'Assignment posted for students. It now appears in their portal.'
-    )
-    setSelectedWeekId(targetWeekId)
-    setNewAssignmentWeekId(targetWeekId)
-    setNewAssignmentHours('')
-    setNewAssignmentTitle('')
-    setNewAssignmentDescription('')
-    setNewAssignmentDueDate('')
-    setNewAssignmentRubric('')
-    setOpenRubricId(newAssignment.id)
   }
 
-  const handleAssignmentUpdate = (event: FormEvent<HTMLFormElement>) => {
+  const handleAssignmentUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setAssignmentError(null)
     setAssignmentSuccess(null)
 
     if (!assignmentBeingEdited) {
       setAssignmentError('No assignment selected for editing.')
+      return
+    }
+
+    if (!currentUser?.email) {
+      setAssignmentError('You must be signed in to update assignments.')
       return
     }
 
@@ -955,53 +1109,88 @@ export default function FundamentalsTrainingPortal() {
       dueDateISO = null
     }
 
-    const updatedAssignment: Assignment = {
-      ...originalAssignment,
-      title: editAssignmentTitle.trim(),
-      description: editAssignmentDescription.trim() || originalAssignment.description,
-      dueDate: dueDateLabel,
-      dueDateISO: dueDateISO ?? null,
-      status: editAssignmentStatus,
-      rubric: editAssignmentRubric.trim() || undefined,
-      estimatedHours: parsedHours,
-      weekId: targetWeekId
-    }
-
-    setCourseWeeks(prev =>
-      prev.map(week => {
-        if (week.id === assignmentBeingEdited.weekId && week.id === targetWeekId) {
-          return {
-            ...week,
-            assignments: week.assignments.map(assignment =>
-              assignment.id === updatedAssignment.id ? updatedAssignment : assignment
-            )
-          }
-        }
-
-        if (week.id === assignmentBeingEdited.weekId) {
-          return {
-            ...week,
-            assignments: week.assignments.filter(assignment => assignment.id !== updatedAssignment.id)
-          }
-        }
-
-        if (week.id === targetWeekId) {
-          const filteredAssignments = week.assignments.filter(
-            assignment => assignment.id !== updatedAssignment.id
-          )
-          return {
-            ...week,
-            assignments: [updatedAssignment, ...filteredAssignments]
-          }
-        }
-
-        return week
+    setIsSavingAssignment(true)
+    try {
+      const response = await fetch(`/api/training/assignments/${assignmentBeingEdited.assignmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          weekId: targetWeekId,
+          title: editAssignmentTitle.trim(),
+          description: editAssignmentDescription.trim() || originalAssignment.description,
+          dueDateLabel,
+          dueDateISO,
+          status: editAssignmentStatus,
+          estimatedHours: parsedHours ?? null,
+          rubric: editAssignmentRubric.trim()
+        })
       })
-    )
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to update assignment.')
+      }
 
-    setAssignmentSuccess(`Assignment "${updatedAssignment.title}" has been updated.`)
-    setSelectedWeekId(targetWeekId)
-    closeEditAssignmentDialog()
+      setAssignmentSuccess(`Assignment "${editAssignmentTitle.trim()}" has been updated.`)
+      setSelectedWeekId(targetWeekId)
+      closeEditAssignmentDialog()
+      await fetchAssignments(false)
+    } catch (error) {
+      console.error('Failed to update training assignment:', error)
+      setAssignmentError(error instanceof Error ? error.message : 'Failed to update assignment.')
+    } finally {
+      setIsSavingAssignment(false)
+    }
+  }
+
+  const openDeleteAssignmentDialog = (assignment: Assignment, weekId: string) => {
+    if (!canEditAssignments) return
+    if (!assignment.isPersisted) {
+      setAssignmentError('Default curriculum assignments cannot be deleted.')
+      return
+    }
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+    setAssignmentPendingDelete({ assignment, weekId })
+    setDeleteAssignmentConfirmText('')
+    setDeleteAssignmentError(null)
+    setIsDeleteAssignmentDialogOpen(true)
+  }
+
+  const handleDeleteAssignment = async () => {
+    if (!assignmentPendingDelete) return
+    if (!currentUser?.email) {
+      setDeleteAssignmentError('You must be signed in to delete assignments.')
+      return
+    }
+    setDeleteAssignmentError(null)
+    setIsDeletingAssignment(true)
+    try {
+      const response = await fetch(`/api/training/assignments/${assignmentPendingDelete.assignment.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to delete assignment.')
+      }
+
+      setAssignmentSuccess(`Assignment "${assignmentPendingDelete.assignment.title}" has been deleted.`)
+      setIsDeleteAssignmentDialogOpen(false)
+      setAssignmentPendingDelete(null)
+      setDeleteAssignmentConfirmText('')
+      await fetchAssignments(false)
+    } catch (error) {
+      console.error('Failed to delete training assignment:', error)
+      setDeleteAssignmentError(error instanceof Error ? error.message : 'Failed to delete assignment.')
+    } finally {
+      setIsDeletingAssignment(false)
+    }
   }
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -1180,6 +1369,16 @@ export default function FundamentalsTrainingPortal() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {assignmentLoadError && (
+                      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        {assignmentLoadError}
+                      </div>
+                    )}
+                    {isLoadingAssignments && (
+                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                        Loading assignments…
+                      </div>
+                    )}
                     <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900">
                       <span className="font-semibold">Course Pace:</span>{' '}
                       Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
@@ -1255,16 +1454,27 @@ export default function FundamentalsTrainingPortal() {
                                           </Badge>
                                         )}
                                       </div>
-                                      <div className="flex gap-2">
-                                          {canManageAssignments && (
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => openEditAssignmentDialog(assignment, week.id)}
-                                            >
-                                              <PenSquare className="h-4 w-4 mr-1" />
-                                              Edit
-                                            </Button>
+                <div className="flex gap-2">
+                                          {canEditAssignments && (
+                                            <>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => openEditAssignmentDialog(assignment, week.id)}
+                                              >
+                                                <PenSquare className="h-4 w-4 mr-1" />
+                                                Edit
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => openDeleteAssignmentDialog(assignment, week.id)}
+                                                disabled={!assignment.isPersisted}
+                                              >
+                                                <Trash2 className="h-4 w-4 mr-1" />
+                                                Delete
+                                              </Button>
+                                            </>
                                           )}
                                         <Button size="sm" variant="outline">
                                           <Upload className="h-4 w-4 mr-1" /> Upload Work
@@ -2087,8 +2297,12 @@ export default function FundamentalsTrainingPortal() {
                           <p className="text-xs text-gray-500">
                             Tip: include rubric language students will recognise. The button above the assignment now reveals the rubric in their portal.
                           </p>
-                          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
-                            Publish Assignment
+                          <Button
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-70"
+                            disabled={isSavingAssignment}
+                          >
+                            {isSavingAssignment ? 'Saving…' : 'Publish Assignment'}
                           </Button>
                         </div>
                       </form>
@@ -2273,12 +2487,84 @@ export default function FundamentalsTrainingPortal() {
                 <Button type="button" variant="outline" onClick={closeEditAssignmentDialog}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
-                  Save Changes
+                <Button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-70"
+                  disabled={isSavingAssignment}
+                >
+                  {isSavingAssignment ? 'Saving…' : 'Save Changes'}
                 </Button>
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteAssignmentDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDeleteAssignmentDialogOpen(false)
+            setAssignmentPendingDelete(null)
+            setDeleteAssignmentConfirmText('')
+            setDeleteAssignmentError(null)
+            setIsDeletingAssignment(false)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Assignment</DialogTitle>
+            <DialogDescription>
+              {assignmentPendingDelete
+                ? `This will permanently remove "${assignmentPendingDelete.assignment.title}" from Week ${assignmentPendingDelete.weekId}.`
+                : 'This will permanently remove the selected assignment.'}
+            </DialogDescription>
+          </DialogHeader>
+          {assignmentPendingDelete && (
+            <div className="space-y-3 text-sm text-gray-700">
+              <p>
+                Type <span className="font-semibold text-gray-900">"{assignmentPendingDelete.assignment.title}"</span> to confirm deletion.
+              </p>
+              <Input
+                value={deleteAssignmentConfirmText}
+                onChange={(event) => setDeleteAssignmentConfirmText(event.target.value)}
+                placeholder={assignmentPendingDelete.assignment.title}
+              />
+              {deleteAssignmentError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {deleteAssignmentError}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsDeleteAssignmentDialogOpen(false)
+                setAssignmentPendingDelete(null)
+                setDeleteAssignmentConfirmText('')
+                setDeleteAssignmentError(null)
+                setIsDeletingAssignment(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !assignmentPendingDelete ||
+                deleteAssignmentConfirmText.trim() !== assignmentPendingDelete.assignment.title ||
+                isDeletingAssignment
+              }
+              onClick={handleDeleteAssignment}
+            >
+              {isDeletingAssignment ? 'Deleting…' : 'Delete'}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

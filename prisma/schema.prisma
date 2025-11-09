@@ -77,6 +77,7 @@ model User {
   sentMessages           TeamMessage[]         @relation("SentMessages")
   timeBlocks             TimeBlock[]
   timeTrackingSessions   TimeTrackingSession[]
+  trainingAssignments    TrainingAssignment[]
 
   @@map("users")
 }
@@ -754,6 +755,26 @@ model FileUpload {
   @@index([fileType])
   @@index([isTemporary])
   @@map("file_uploads")
+}
+
+model TrainingAssignment {
+  id             String   @id @default(cuid())
+  weekId         String
+  title          String
+  description    String
+  dueDateLabel   String
+  dueDateISO     String?
+  status         String   @default("pending")
+  estimatedHours Float?
+  rubric         String?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  user           User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([weekId])
+  @@map("training_assignments")
 }
 
 model Invoice {
