@@ -70,6 +70,7 @@ interface Assignment {
   rubric?: string
   estimatedHours?: number
   weekId?: string
+  dueDateISO?: string | null
 }
 
 interface LectureVideo {
@@ -365,6 +366,16 @@ export default function FundamentalsTrainingPortal() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeletingVideo, setIsDeletingVideo] = useState(false)
+  const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
+  const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
+  const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
+  const [editAssignmentDescription, setEditAssignmentDescription] = useState('')
+  const [editAssignmentWeekId, setEditAssignmentWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
+  const [editAssignmentHours, setEditAssignmentHours] = useState<string>('')
+  const [editAssignmentRubric, setEditAssignmentRubric] = useState('')
+  const [editAssignmentStatus, setEditAssignmentStatus] = useState<'pending' | 'submitted' | 'graded'>('pending')
+  const [editAssignmentDueDateISO, setEditAssignmentDueDateISO] = useState<string>('')
+  const [editAssignmentCustomDueLabel, setEditAssignmentCustomDueLabel] = useState<string>('')
   const totalCourseHours = useMemo(
     () => courseWeeks.reduce((sum, week) => sum + week.targetHours, 0),
     [courseWeeks]
@@ -373,6 +384,7 @@ export default function FundamentalsTrainingPortal() {
   const VIDEO_UPLOAD_PREFIX = 'training-video'
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
+  const canManageAssignments = canManageVideos
   const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
   const ACTIVITY_ICON_MAP = {
     attendance: ClipboardList,
@@ -650,6 +662,40 @@ export default function FundamentalsTrainingPortal() {
     }
   }
 
+  const openEditAssignmentDialog = (assignment: Assignment, weekId: string) => {
+    setAssignmentBeingEdited({ assignmentId: assignment.id, weekId })
+    setEditAssignmentTitle(assignment.title)
+    setEditAssignmentDescription(assignment.description)
+    setEditAssignmentWeekId(assignment.weekId || weekId)
+    setEditAssignmentHours(
+      assignment.estimatedHours !== undefined && assignment.estimatedHours !== null
+        ? String(assignment.estimatedHours)
+        : ''
+    )
+    setEditAssignmentRubric(assignment.rubric || '')
+    setEditAssignmentStatus(assignment.status)
+    setEditAssignmentDueDateISO(assignment.dueDateISO || '')
+    setEditAssignmentCustomDueLabel(
+      assignment.dueDateISO ? '' : assignment.dueDate || 'Due date shared in class'
+    )
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+    setIsEditAssignmentDialogOpen(true)
+  }
+
+  const closeEditAssignmentDialog = () => {
+    setIsEditAssignmentDialogOpen(false)
+    setAssignmentBeingEdited(null)
+    setEditAssignmentTitle('')
+    setEditAssignmentDescription('')
+    setEditAssignmentWeekId(COURSE_WEEKS[0]?.id ?? '')
+    setEditAssignmentHours('')
+    setEditAssignmentRubric('')
+    setEditAssignmentStatus('pending')
+    setEditAssignmentDueDateISO('')
+    setEditAssignmentCustomDueLabel('')
+  }
+
   const openDeleteDialog = (video: LectureVideo) => {
     setVideoPendingDelete(video)
     setDeleteConfirmText('')
@@ -816,10 +862,12 @@ export default function FundamentalsTrainingPortal() {
     const rubric = newAssignmentRubric.trim()
 
     let dueDateLabel = 'Due date shared in class'
+    let dueDateISO: string | null = null
     if (newAssignmentDueDate) {
       const dueDate = new Date(newAssignmentDueDate)
       if (!Number.isNaN(dueDate.getTime())) {
         dueDateLabel = `Due ${dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+        dueDateISO = newAssignmentDueDate
       }
     }
 
@@ -831,7 +879,8 @@ export default function FundamentalsTrainingPortal() {
       status: 'pending',
       rubric: rubric || undefined,
       estimatedHours: parsedHours,
-      weekId: targetWeekId
+      weekId: targetWeekId,
+      dueDateISO
     }
 
     const targetWeek = courseWeeks.find(week => week.id === targetWeekId)
@@ -856,6 +905,103 @@ export default function FundamentalsTrainingPortal() {
     setNewAssignmentDueDate('')
     setNewAssignmentRubric('')
     setOpenRubricId(newAssignment.id)
+  }
+
+  const handleAssignmentUpdate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+
+    if (!assignmentBeingEdited) {
+      setAssignmentError('No assignment selected for editing.')
+      return
+    }
+
+    const originalWeek = courseWeeks.find(week => week.id === assignmentBeingEdited.weekId)
+    const originalAssignment = originalWeek?.assignments.find(
+      assignment => assignment.id === assignmentBeingEdited.assignmentId
+    )
+
+    if (!originalWeek || !originalAssignment) {
+      setAssignmentError('Assignment not found. Please refresh and try again.')
+      return
+    }
+
+    if (!editAssignmentTitle.trim()) {
+      setAssignmentError('Add a title before saving the assignment.')
+      return
+    }
+
+    const targetWeekId = editAssignmentWeekId || assignmentBeingEdited.weekId
+    const parsedHours = editAssignmentHours.trim()
+      ? parseFloat(editAssignmentHours.trim())
+      : undefined
+    if (parsedHours !== undefined && (Number.isNaN(parsedHours) || parsedHours < 0)) {
+      setAssignmentError('Enter a valid number of estimated hours (e.g., 6 or 6.5).')
+      return
+    }
+
+    let dueDateLabel = originalAssignment.dueDate
+    let dueDateISO: string | null | undefined = originalAssignment.dueDateISO ?? null
+
+    if (editAssignmentDueDateISO) {
+      const dueDate = new Date(editAssignmentDueDateISO)
+      if (!Number.isNaN(dueDate.getTime())) {
+        dueDateLabel = `Due ${dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+        dueDateISO = editAssignmentDueDateISO
+      }
+    } else if (editAssignmentCustomDueLabel.trim()) {
+      dueDateLabel = editAssignmentCustomDueLabel.trim()
+      dueDateISO = null
+    }
+
+    const updatedAssignment: Assignment = {
+      ...originalAssignment,
+      title: editAssignmentTitle.trim(),
+      description: editAssignmentDescription.trim() || originalAssignment.description,
+      dueDate: dueDateLabel,
+      dueDateISO: dueDateISO ?? null,
+      status: editAssignmentStatus,
+      rubric: editAssignmentRubric.trim() || undefined,
+      estimatedHours: parsedHours,
+      weekId: targetWeekId
+    }
+
+    setCourseWeeks(prev =>
+      prev.map(week => {
+        if (week.id === assignmentBeingEdited.weekId && week.id === targetWeekId) {
+          return {
+            ...week,
+            assignments: week.assignments.map(assignment =>
+              assignment.id === updatedAssignment.id ? updatedAssignment : assignment
+            )
+          }
+        }
+
+        if (week.id === assignmentBeingEdited.weekId) {
+          return {
+            ...week,
+            assignments: week.assignments.filter(assignment => assignment.id !== updatedAssignment.id)
+          }
+        }
+
+        if (week.id === targetWeekId) {
+          const filteredAssignments = week.assignments.filter(
+            assignment => assignment.id !== updatedAssignment.id
+          )
+          return {
+            ...week,
+            assignments: [updatedAssignment, ...filteredAssignments]
+          }
+        }
+
+        return week
+      })
+    )
+
+    setAssignmentSuccess(`Assignment "${updatedAssignment.title}" has been updated.`)
+    setSelectedWeekId(targetWeekId)
+    closeEditAssignmentDialog()
   }
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -1110,6 +1256,16 @@ export default function FundamentalsTrainingPortal() {
                                         )}
                                       </div>
                                       <div className="flex gap-2">
+                                          {canManageAssignments && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => openEditAssignmentDialog(assignment, week.id)}
+                                            >
+                                              <PenSquare className="h-4 w-4 mr-1" />
+                                              Edit
+                                            </Button>
+                                          )}
                                         <Button size="sm" variant="outline">
                                           <Upload className="h-4 w-4 mr-1" /> Upload Work
                                         </Button>
@@ -1991,6 +2147,140 @@ export default function FundamentalsTrainingPortal() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <Dialog
+        open={isEditAssignmentDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeEditAssignmentDialog()
+          } else if (!assignmentBeingEdited) {
+            setIsEditAssignmentDialogOpen(false)
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Assignment</DialogTitle>
+            <DialogDescription>
+              Update assignment details, move it to another week, or adjust estimated workload.
+            </DialogDescription>
+          </DialogHeader>
+          {assignmentBeingEdited && (
+            <form onSubmit={handleAssignmentUpdate} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="md:col-span-2 space-y-1">
+                  <Label htmlFor="edit-assignment-title">Assignment title</Label>
+                  <Input
+                    id="edit-assignment-title"
+                    value={editAssignmentTitle}
+                    onChange={(event) => setEditAssignmentTitle(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-week">Course week</Label>
+                  <Select value={editAssignmentWeekId} onValueChange={setEditAssignmentWeekId}>
+                    <SelectTrigger id="edit-assignment-week">
+                      <SelectValue placeholder="Select week" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courseWeeks.map(week => (
+                        <SelectItem key={week.id} value={week.id}>
+                          Week {week.order}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-due-date">Due date (optional)</Label>
+                  <Input
+                    id="edit-assignment-due-date"
+                    type="date"
+                    value={editAssignmentDueDateISO}
+                    onChange={(event) => setEditAssignmentDueDateISO(event.target.value)}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Choose a calendar date to auto-format the due label, or leave blank to use a custom label.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-custom-label">Custom due label</Label>
+                  <Input
+                    id="edit-assignment-custom-label"
+                    placeholder="e.g., Due Week 3 Friday"
+                    value={editAssignmentCustomDueLabel}
+                    onChange={(event) => setEditAssignmentCustomDueLabel(event.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-status">Status</Label>
+                  <Select value={editAssignmentStatus} onValueChange={(value) => setEditAssignmentStatus(value as typeof editAssignmentStatus)}>
+                    <SelectTrigger id="edit-assignment-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="submitted">Submitted</SelectItem>
+                      <SelectItem value="graded">Graded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-hours">Estimated hours (optional)</Label>
+                  <Input
+                    id="edit-assignment-hours"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.5"
+                    placeholder="e.g., 6"
+                    value={editAssignmentHours}
+                    onChange={(event) => setEditAssignmentHours(event.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="edit-assignment-description">Assignment overview</Label>
+                <Textarea
+                  id="edit-assignment-description"
+                  rows={3}
+                  placeholder="Clarify deliverables, reference materials, and what students should upload."
+                  value={editAssignmentDescription}
+                  onChange={(event) => setEditAssignmentDescription(event.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="edit-assignment-rubric">Rubric / evaluation criteria</Label>
+                <Textarea
+                  id="edit-assignment-rubric"
+                  rows={4}
+                  placeholder="Break down grading categories, points, and minimum passing thresholds."
+                  value={editAssignmentRubric}
+                  onChange={(event) => setEditAssignmentRubric(event.target.value)}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={closeEditAssignmentDialog}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={isDeleteDialogOpen}
