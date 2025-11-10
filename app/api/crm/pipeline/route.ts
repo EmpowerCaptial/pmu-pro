@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { requireCrmUser } from '@/lib/server/crm-auth'
 
 const STAGE_ORDER = [
@@ -118,6 +119,18 @@ export async function POST(request: NextRequest) {
     if (error instanceof Response) {
       return error
     }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        const target = Array.isArray(error.meta?.target) ? error.meta?.target.join(', ') : error.meta?.target
+        const targetString = typeof target === 'string' ? target : ''
+        const message = targetString.includes('email')
+          ? 'A contact with this email already exists. Add a different email or update the existing record.'
+          : 'This contact already exists.'
+        return NextResponse.json({ error: message, code: 'duplicate_contact' }, { status: 409 })
+      }
+    }
+
     console.error('CRM pipeline POST error:', error)
     return NextResponse.json({ error: 'Failed to create contact' }, { status: 500 })
   }
