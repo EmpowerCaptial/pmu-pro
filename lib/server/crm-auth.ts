@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 const DEFAULT_ALLOWED_ROLES = ['owner', 'staff', 'manager', 'director'] as const
 
@@ -28,20 +29,28 @@ export async function requireCrmUser(
     throw new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 })
   }
 
-  const staffRecord = await prisma.staff.upsert({
-    where: { email: portalUser.email },
-    update: {
-      name: portalUser.name ?? portalUser.email,
-      role: normalizedRole,
-      phone: portalUser.phone ?? undefined
-    },
-    create: {
-      email: portalUser.email,
-      name: portalUser.name ?? portalUser.email,
-      role: normalizedRole,
-      phone: portalUser.phone ?? undefined
-    }
-  })
+  try {
+    const staffRecord = await prisma.staff.upsert({
+      where: { email: portalUser.email },
+      update: {
+        name: portalUser.name ?? portalUser.email,
+        role: normalizedRole,
+        phone: portalUser.phone ?? undefined
+      },
+      create: {
+        email: portalUser.email,
+        name: portalUser.name ?? portalUser.email,
+        role: normalizedRole,
+        phone: portalUser.phone ?? undefined
+      }
+    })
 
-  return { portalUser, staffRecord }
+    return { portalUser, staffRecord }
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      console.error('CRM tables missing. Run the CRM migrations to create staff/contact tables.', error)
+      throw new Response(JSON.stringify({ error: 'CRM database tables not found. Please run the CRM migrations.' }), { status: 500 })
+    }
+    throw error
+  }
 }

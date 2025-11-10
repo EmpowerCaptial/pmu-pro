@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { Prisma, Stage } from '@prisma/client'
 import { requireCrmUser } from '@/lib/server/crm-auth'
+
+const STAGE_VALUES = [
+  Stage.LEAD,
+  Stage.TOUR_SCHEDULED,
+  Stage.TOURED,
+  Stage.APP_STARTED,
+  Stage.APP_SUBMITTED,
+  Stage.ENROLLED,
+  Stage.NO_SHOW,
+  Stage.NURTURE
+]
+
+const CRM_MISSING_TABLE_MESSAGE = 'CRM database tables not found. Please run the CRM migrations.'
+
+const isMissingCrmTable = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021'
 
 const STAGE_ORDER = [
   'LEAD',
@@ -87,6 +103,10 @@ export async function GET(request: NextRequest) {
     if (error instanceof Response) {
       return error
     }
+    if (isMissingCrmTable(error)) {
+      console.error('CRM pipeline GET missing tables:', error)
+      return NextResponse.json({ error: CRM_MISSING_TABLE_MESSAGE }, { status: 500 })
+    }
     console.error('CRM pipeline GET error:', error)
     return NextResponse.json({ error: 'Failed to load pipeline' }, { status: 500 })
   }
@@ -128,6 +148,10 @@ export async function POST(request: NextRequest) {
           ? 'A contact with this email already exists. Add a different email or update the existing record.'
           : 'This contact already exists.'
         return NextResponse.json({ error: message, code: 'duplicate_contact' }, { status: 409 })
+      }
+      if (isMissingCrmTable(error)) {
+        console.error('CRM pipeline POST missing tables:', error)
+        return NextResponse.json({ error: CRM_MISSING_TABLE_MESSAGE }, { status: 500 })
       }
     }
 

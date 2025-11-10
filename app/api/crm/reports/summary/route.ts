@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { requireCrmUser } from '@/lib/server/crm-auth'
+
+const CRM_MISSING_TABLE_MESSAGE = 'CRM database tables not found. Please run the CRM migrations.'
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,6 +56,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     if (error instanceof Response) {
       return error
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      console.error('CRM reports summary missing tables:', error)
+      return NextResponse.json({ error: CRM_MISSING_TABLE_MESSAGE }, { status: 500 })
     }
     console.error('CRM reports summary GET error:', error)
     return NextResponse.json({ error: 'Failed to load report summary' }, { status: 500 })
