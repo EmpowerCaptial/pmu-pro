@@ -1,0 +1,124 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { requireCrmUser } from '@/lib/server/crm-auth'
+
+const STAGE_ORDER = [
+  'LEAD',
+  'TOUR_SCHEDULED',
+  'TOURED',
+  'APP_STARTED',
+  'APP_SUBMITTED',
+  'ENROLLED',
+  'NO_SHOW',
+  'NURTURE'
+] as const
+
+export async function GET(request: NextRequest) {
+  try {
+    await requireCrmUser(request)
+
+    const contacts = await prisma.contact.findMany({
+      include: {
+        owner: true,
+        tasks: {
+          where: { status: { not: 'DONE' } },
+          select: { id: true, title: true, dueAt: true, status: true }
+        },
+        tours: {
+          orderBy: { start: 'asc' },
+          take: 1,
+          select: { id: true, start: true, status: true, location: true }
+        },
+        interactions: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            type: true,
+            direction: true,
+            subject: true,
+            createdAt: true
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    })
+
+    const columns = STAGE_ORDER.map(stage => ({
+      stage,
+      contacts: contacts
+        .filter(contact => contact.stage === stage)
+        .map(contact => ({
+          id: contact.id,
+          name: `${contact.firstName} ${contact.lastName}`.trim(),
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          email: contact.email,
+          phone: contact.phone,
+          source: contact.source,
+          tags: contact.tags,
+          owner: contact.owner ? {
+            id: contact.owner.id,
+            name: contact.owner.name,
+            email: contact.owner.email
+          } : null,
+          stage: contact.stage,
+          score: contact.score,
+          lastInteraction: contact.interactions[0] || null,
+          nextTour: contact.tours[0] || null,
+          openTasks: contact.tasks
+        }))
+    }))
+
+    const stageCounts = columns.reduce<Record<string, number>>((acc, column) => {
+      acc[column.stage] = column.contacts.length
+      return acc
+    }, {})
+
+    return NextResponse.json({
+      totals: {
+        totalContacts: contacts.length,
+        stageCounts
+      },
+      columns
+    })
+  } catch (error) {
+    if (error instanceof Response) {
+      return error
+    }
+    console.error('CRM pipeline GET error:', error)
+    return NextResponse.json({ error: 'Failed to load pipeline' }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { staffRecord } = await requireCrmUser(request)
+    const body = await request.json()
+    const { firstName, lastName, email, phone, source, tags } = body
+
+    if (!firstName || !lastName) {
+      return NextResponse.json({ error: 'First and last name are required.' }, { status: 400 })
+    }
+
+    const contact = await prisma.contact.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        phone,
+        source,
+        tags: Array.isArray(tags) ? tags : [],
+        ownerId: staffRecord.id
+      }
+    })
+
+    return NextResponse.json({ success: true, contact })
+  } catch (error) {
+    if (error instanceof Response) {
+      return error
+    }
+    console.error('CRM pipeline POST error:', error)
+    return NextResponse.json({ error: 'Failed to create contact' }, { status: 500 })
+  }
+}

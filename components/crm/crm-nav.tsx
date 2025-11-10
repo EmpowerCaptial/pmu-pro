@@ -8,11 +8,17 @@ import {
   CheckSquare,
   Inbox,
   KanbanSquare,
-  Users
+  Users,
+  GaugeCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
+  {
+    label: 'Overview',
+    href: '/crm',
+    icon: GaugeCircle
+  },
   {
     label: 'Pipeline',
     href: '/crm/pipeline',
