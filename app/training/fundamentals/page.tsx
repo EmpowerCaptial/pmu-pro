@@ -262,7 +262,7 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week6-healing-analysis',
         weekId: 'week-6',
         title: 'Healing Timeline Analysis',
-        description: 'Analyze a past model’s healing photos and produce a touch-up plan with pigment adjustments.',
+        description: 'Analyze a past model\'s healing photos and produce a touch-up plan with pigment adjustments.',
         dueDate: 'Due Week 6 Sunday',
         status: 'pending',
         rubric: 'Observation detail (10 pts), corrective plan (10 pts), client communication (10 pts).',
@@ -2340,6 +2340,161 @@ export default function FundamentalsTrainingPortal() {
                       </div>
                     )
                   })}
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Training Materials Preview</CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Review the uploaded workbook, test keyword search, and spot-check pagination before students view it.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm text-gray-700">
+                  {isLoadingResourcePdf && (
+                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                      Loading the training PDF from the resource library…
+                    </div>
+                  )}
+
+                  {isIndexingPdf && (
+                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                      Indexing PDF text so students can search every page.
+                    </div>
+                  )}
+
+                  {resourcePdfError && (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                      {resourcePdfError}
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                      {uploadError}
+                    </div>
+                  )}
+
+                  {!hasUploadedPdf && !isLoadingResourcePdf && !isIndexingPdf && (
+                    <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
+                      Upload a PDF in the console above to enable the student search experience.
+                    </div>
+                  )}
+
+                  {hasUploadedPdf && (
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-2 sm:flex-row">
+                          <Input
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            placeholder="Search keywords (e.g., sanitation, pigment, contraindication)"
+                            disabled={isIndexingPdf}
+                          />
+                          <div className="flex gap-2">
+                            <Button type="submit" disabled={isIndexingPdf} className="flex-1 sm:flex-none">
+                              <Search className="h-4 w-4 mr-1" /> Search
+                            </Button>
+                            <Input
+                              value={pageInput}
+                              onChange={(event) => setPageInput(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                  event.preventDefault()
+                                  handlePageJump()
+                                }
+                              }}
+                              disabled={!pdfNumPages}
+                              className="w-24"
+                              placeholder="Page #"
+                            />
+                            <Button type="button" variant="outline" onClick={handlePageJump} disabled={!pdfNumPages}>
+                              Go
+                            </Button>
+                          </div>
+                        </form>
+
+                        {searchPerformed && searchResults.length === 0 && !isIndexingPdf && (
+                          <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                            No matches found. Try another keyword or confirm the PDF contains selectable text.
+                          </div>
+                        )}
+
+                        {searchResults.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                            <span className="font-medium text-gray-800">Matches:</span>
+                            {searchResults.map(page => (
+                              <Button
+                                key={page}
+                                size="sm"
+                                variant={currentPdfPage === page ? 'default' : 'outline'}
+                                onClick={() => {
+                                  setCurrentPdfPage(page)
+                                  setPageInput(String(page))
+                                }}
+                              >
+                                Page {page}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-lg border border-gray-200 bg-gray-50">
+                        <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 text-xs text-gray-600">
+                          <span className="truncate" title={pdfFileName || undefined}>{pdfFileName}</span>
+                          <span>Page {currentPdfPage} of {pdfNumPages || '—'}</span>
+                        </div>
+                        <div className="max-h-[420px] overflow-auto bg-white">
+                          <TrainingPdfViewer
+                            fileUrl={pdfObjectUrl}
+                            pageNumber={currentPdfPage}
+                            onDocumentLoadSuccess={(numPages) => {
+                              setPdfNumPages(numPages)
+                              if (currentPdfPage > numPages) {
+                                setCurrentPdfPage(numPages)
+                                setPageInput(String(numPages))
+                              }
+                            }}
+                            onDocumentLoadError={(error) => {
+                              console.error('PDF load error:', error)
+                              setUploadError('Could not display the PDF. Please re-upload the file.')
+                              resetPdfState()
+                            }}
+                          />
+                        </div>
+                        {pdfNumPages > 1 && (
+                          <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 text-xs text-gray-600">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const previous = Math.max(1, currentPdfPage - 1)
+                                setCurrentPdfPage(previous)
+                                setPageInput(String(previous))
+                              }}
+                              disabled={currentPdfPage <= 1}
+                            >
+                              Previous
+                            </Button>
+                            <span className="flex-1 text-center">Page {currentPdfPage} / {pdfNumPages}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const next = Math.min(pdfNumPages, currentPdfPage + 1)
+                                setCurrentPdfPage(next)
+                                setPageInput(String(next))
+                              }}
+                              disabled={currentPdfPage >= pdfNumPages}
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
