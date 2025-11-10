@@ -7,7 +7,7 @@ type AllowedRole = typeof DEFAULT_ALLOWED_ROLES[number]
 
 export async function requireCrmUser(
   req: NextRequest,
-  allowedRoles: AllowedRole[] = DEFAULT_ALLOWED_ROLES
+  allowedRoles: ReadonlyArray<AllowedRole> = DEFAULT_ALLOWED_ROLES
 ) {
   const email = req.headers.get('x-user-email')
 

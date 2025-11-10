@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireCrmUser } from '@/lib/server/crm-auth'
+import { Stage } from '@prisma/client'
 
 const STAGE_VALUES = [
-  'LEAD',
-  'TOUR_SCHEDULED',
-  'TOURED',
-  'APP_STARTED',
-  'APP_SUBMITTED',
-  'ENROLLED',
-  'NO_SHOW',
-  'NURTURE'
+  Stage.LEAD,
+  Stage.TOUR_SCHEDULED,
+  Stage.TOURED,
+  Stage.APP_STARTED,
+  Stage.APP_SUBMITTED,
+  Stage.ENROLLED,
+  Stage.NO_SHOW,
+  Stage.NURTURE
 ]
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -20,14 +21,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const body = await request.json()
     const stage = body?.stage
 
-    if (!contactId || typeof stage !== 'string' || !STAGE_VALUES.includes(stage)) {
+    if (!contactId || typeof stage !== 'string' || !STAGE_VALUES.includes(stage as Stage)) {
       return NextResponse.json({ error: 'Invalid stage update' }, { status: 400 })
     }
 
     const contact = await prisma.contact.update({
       where: { id: contactId },
       data: {
-        stage,
+        stage: stage as Stage,
         updatedAt: new Date()
       }
     })
