@@ -57,6 +57,9 @@ export default function LibraryPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [resourceError, setResourceError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
+  const [deletingResourceId, setDeletingResourceId] = useState<string | null>(null)
   
   const staticPdfResources = useMemo(() => getAllPDFResources(), [])
   const staticResources: LibraryResource[] = useMemo(() => (
@@ -210,6 +213,48 @@ export default function LibraryPage() {
     } catch (error) {
       console.error('Download failed:', error)
       alert('Download failed. Please try again.')
+    }
+  }
+
+  const handleDeleteResource = async (resource: LibraryResource) => {
+    if (!canManageResources) return
+    if (resource.source !== 'uploaded') return
+
+    if (!currentUser?.email) {
+      setDeleteError('You must be signed in to delete resources.')
+      return
+    }
+
+    const confirmation = window.prompt(`Type DELETE to remove "${resource.title}" from the library.`)
+    if ((confirmation || '').toUpperCase() !== 'DELETE') {
+      return
+    }
+
+    setDeleteError(null)
+    setDeleteSuccess(null)
+    setDeletingResourceId(resource.id)
+
+    try {
+      const response = await fetch(`/api/resource-library/${resource.id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to delete resource')
+      }
+
+      setDeleteSuccess(`Removed "${resource.title}" from the library.`)
+      await fetchUploadedResources()
+    } catch (error) {
+      console.error('Failed to delete resource:', error)
+      const message = error instanceof Error ? error.message : 'Failed to delete resource'
+      setDeleteError(message)
+    } finally {
+      setDeletingResourceId(null)
     }
   }
 
@@ -492,7 +537,21 @@ export default function LibraryPage() {
           Showing {filteredResources.length} of {combinedResources.length} documents
         </div>
 
-        {/* Documents Grid */}
+        {/* Document Grid */}
+        {deleteSuccess && (
+          <Alert className="mb-4 border-green-200 bg-green-50 text-green-700">
+            <AlertTitle>Resource removed</AlertTitle>
+            <AlertDescription>{deleteSuccess}</AlertDescription>
+          </Alert>
+        )}
+
+        {deleteError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Unable to delete resource</AlertTitle>
+            <AlertDescription>{deleteError}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredResources.map((resource) => (
             <Card key={resource.id} className="hover:shadow-lg transition-shadow">
@@ -542,6 +601,16 @@ export default function LibraryPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
+                    {resource.source === 'uploaded' && canManageResources && (
+                      <Button
+                        onClick={() => handleDeleteResource(resource)}
+                        size="sm"
+                        variant="destructive"
+                        disabled={deletingResourceId === resource.id}
+                      >
+                        {deletingResourceId === resource.id ? 'Deleting…' : 'Delete'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
