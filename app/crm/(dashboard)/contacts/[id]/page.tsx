@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TimelineIcon, UserSquare2 } from 'lucide-react'
+import { History, UserSquare2 } from 'lucide-react'
 
 interface ContactDetailPageProps {
   params: {
@@ -47,7 +47,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
         <Card className="border-dashed border-slate-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
-              <TimelineIcon className="h-5 w-5 text-slate-500" />
+              <History className="h-5 w-5 text-slate-500" />
               Timeline Feed (coming soon)
             </CardTitle>
             <CardDescription>
