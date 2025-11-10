@@ -189,6 +189,16 @@ const businessFeatures = [
     hasModal: true // Flag to indicate this opens a modal
   },
   {
+    id: 'crm',
+    title: 'Studio CRM',
+    description: 'Pipeline, tours & enrollment tracking',
+    icon: Workflow,
+    href: '/crm',
+    color: 'bg-gradient-to-br from-slate-600 to-slate-800',
+    status: 'active',
+    category: 'business'
+  },
+  {
     id: 'reports',
     title: 'Reports',
     description: 'Business analytics',
@@ -383,14 +393,20 @@ const allFeatures = [...coreFeatures, ...businessFeatures, ...marketingFeatures,
 
 // Filter features based on user's plan and role
 const getFilteredFeatures = (userPlan: string, userRole?: string) => {
+  const normalizedRole = userRole?.toLowerCase?.() || ''
+
   return allFeatures.filter(feature => {
     // Management features - only available to owners, managers, directors
     const managementFeatures = ['team', 'time-clock', 'reports', 'payouts', 'expenses', 'inventory']
     if (managementFeatures.includes(feature.id)) {
       // Must have Studio plan AND management role
       const hasStudioPlan = userPlan === 'studio' || userPlan === 'enterprise'
-      const hasManagementRole = userRole === 'owner' || userRole === 'manager' || userRole === 'director'
+      const hasManagementRole = normalizedRole === 'owner' || normalizedRole === 'manager' || normalizedRole === 'director'
       return hasStudioPlan && hasManagementRole
+    }
+
+    if (feature.id === 'crm') {
+      return normalizedRole === 'owner' || normalizedRole === 'staff'
     }
     
     // Team feature is only available for Studio plans

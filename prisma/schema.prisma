@@ -1033,3 +1033,122 @@ enum OrderStatus {
   delivered
   cancelled
 }
+
+enum Stage {
+  LEAD
+  TOUR_SCHEDULED
+  TOURED
+  APP_STARTED
+  APP_SUBMITTED
+  ENROLLED
+  NO_SHOW
+  NURTURE
+}
+
+model Staff {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  role      String
+  contacts  Contact[]     @relation("StaffContacts")
+  tasks     Task[]
+  interactions Interaction[]
+  tours     Tour[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Contact {
+  id           String         @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String?        @unique
+  phone        String?
+  source       String?
+  tags         String[]
+  stage        Stage          @default(LEAD)
+  ownerId      String?
+  owner        Staff?         @relation("StaffContacts", fields: [ownerId], references: [id])
+  interactions Interaction[]
+  tours        Tour[]
+  applications Application[]
+  enrollments  Enrollment[]
+  consents     Consent[]
+  tasks        Task[]
+  score        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Interaction {
+  id        String    @id @default(cuid())
+  type      String
+  direction String
+  subject   String?
+  body      String?
+  meta      Json?
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  staffId   String?
+  staff     Staff?   @relation(fields: [staffId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  title     String
+  dueAt     DateTime?
+  status    String    @default("OPEN")
+  contactId String?
+  contact   Contact?  @relation(fields: [contactId], references: [id])
+  ownerId   String
+  owner     Staff     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Tour {
+  id        String    @id @default(cuid())
+  start     DateTime
+  end       DateTime
+  location  String
+  status    String    @default("SCHEDULED")
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  staffId   String?
+  staff     Staff?   @relation(fields: [staffId], references: [id])
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Application {
+  id          String    @id @default(cuid())
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id])
+  status      String    @default("STARTED")
+  missingDocs String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id])
+  cohort      String
+  depositPaid Boolean   @default(false)
+  tuitionPlan String?
+  createdAt   DateTime  @default(now())
+}
+
+model Consent {
+  id        String    @id @default(cuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  channel   String
+  status    String
+  timestamp DateTime @default(now())
+  ip        String?
+  source    String?
+}

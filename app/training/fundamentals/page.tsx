@@ -1075,7 +1075,7 @@ export default function FundamentalsTrainingPortal() {
     <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100">
       <NavBar currentPath="/training/fundamentals" user={user} />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-20">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-20 overflow-x-hidden">
         <input
           ref={fileInputRef}
           type="file"
@@ -1090,8 +1090,8 @@ export default function FundamentalsTrainingPortal() {
           className="hidden"
           onChange={handleVideoFileChange}
         />
-        <Card className="border-purple-200 bg-white shadow-lg mb-8">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="border-purple-200 bg-white shadow-lg mb-8 break-words">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between break-words">
             <div>
               <Badge className="bg-purple-600 text-white mb-2">
                 <GraduationCap className="h-4 w-4 mr-1" /> Level 1 Training Portal
@@ -1109,8 +1109,8 @@ export default function FundamentalsTrainingPortal() {
           </CardHeader>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'student' | 'instructor')} className="space-y-6">
-          <TabsList className="bg-purple-100/70 p-1 rounded-lg flex flex-wrap gap-2">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'student' | 'instructor')} className="space-y-6 break-words">
+          <TabsList className="bg-purple-100/70 p-1 rounded-lg flex flex-wrap gap-2 w-full">
             <TabsTrigger value="student" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" /> Student Portal
             </TabsTrigger>
@@ -1119,17 +1119,17 @@ export default function FundamentalsTrainingPortal() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="student" className="space-y-6">
+          <TabsContent value="student" className="space-y-6 break-words">
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
               <div className="space-y-6">
-                <Card className="border-gray-200">
-                  <CardHeader>
+                <Card className="border-gray-200 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-xl font-semibold text-gray-900">Assignments</CardTitle>
                     <CardDescription className="text-gray-600">
                       Submit required coursework and track your weekly progress. This is a 6.5-week, {totalCourseHours}-hour certification.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 break-words">
                     {assignmentLoadError && (
                       <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                         {assignmentLoadError}
@@ -1140,7 +1140,7 @@ export default function FundamentalsTrainingPortal() {
                         Loading assignments…
                       </div>
                     )}
-                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900">
+                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 break-words">
                       <span className="font-semibold">Course Pace:</span>{' '}
                       Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
                     </div>
@@ -1182,8 +1182,8 @@ export default function FundamentalsTrainingPortal() {
                               </div>
                             ) : (
                               week.assignments.map(assignment => (
-                                <Card key={assignment.id} className="border border-gray-200 shadow-sm">
-                                  <CardContent className="p-4 space-y-3">
+                                <Card key={assignment.id} className="border border-gray-200 shadow-sm break-words">
+                                  <CardContent className="p-4 space-y-3 break-words">
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                       <div>
                                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -1270,12 +1270,12 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-gray-200">
-                  <CardHeader>
+                <Card className="border-gray-200 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-xl font-semibold text-gray-900">Lecture Library</CardTitle>
                     <CardDescription className="text-gray-600">Watch recorded modules before attending hands-on sessions.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 break-words">
                     {isLoadingVideos && (
                       <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
                         Loading lecture videos…
@@ -1293,8 +1293,8 @@ export default function FundamentalsTrainingPortal() {
                         </div>
                       )}
                       {lectureVideos.map(video => (
-                        <Card key={video.id} className="border border-gray-200 shadow-sm">
-                          <CardContent className="p-4 space-y-3">
+                        <Card key={video.id} className="border border-gray-200 shadow-sm break-words">
+                          <CardContent className="p-4 space-y-3 break-words">
                             <div className="flex items-center gap-2">
                               <Video className="h-5 w-5 text-purple-600" />
                               <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
@@ -1334,12 +1334,12 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-purple-200 bg-purple-50">
-                  <CardHeader>
+                <Card className="border-purple-200 bg-purple-50 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-purple-900">Progress Overview</CardTitle>
                     <CardDescription className="text-purple-700">Track your completion toward studio certification.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 break-words">
                     <div>
                       <div className="flex items-center justify-between text-sm text-purple-900">
                         <span>Course Completion</span>
@@ -1356,11 +1356,11 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-gray-200">
-                  <CardHeader>
+                <Card className="border-gray-200 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-gray-900">Program Resources</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-gray-700">
+                  <CardContent className="space-y-3 text-sm text-gray-700 break-words">
                     <Button asChild variant="outline" className="w-full">
                       <Link href="/library?category=training">
                         <Download className="h-4 w-4 mr-2" /> Download Training E-Book
@@ -1381,14 +1381,14 @@ export default function FundamentalsTrainingPortal() {
               </div>
 
               <div className="space-y-6">
-                <Card className="border-purple-200 bg-purple-50">
-                  <CardHeader>
+                <Card className="border-purple-200 bg-purple-50 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-purple-900">Recent Instructor Activity</CardTitle>
                     <CardDescription className="text-purple-700">
                       Snapshots of the latest attendance logs, grades, and supervision drafts you have recorded.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-purple-900">
+                  <CardContent className="space-y-3 text-sm text-purple-900 break-words">
                     {instructorActivityLog.length === 0 && (
                       <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
                         When you record attendance, post grades, or draft a supervision session, the timeline will appear here.
@@ -1413,12 +1413,12 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-purple-200 bg-purple-50">
-                  <CardHeader>
+                <Card className="border-purple-200 bg-purple-50 break-words">
+                  <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-purple-900">Instructor Notes</CardTitle>
                     <CardDescription className="text-purple-700">Centralize communication with Directors and HR.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-purple-900">
+                  <CardContent className="space-y-3 text-sm text-purple-900 break-words">
                     <p>• Sync with Directors to confirm booth rent agreements before granting machine access.</p>
                     <p>• Log ProCell-only bookings for students via the room booking tool.</p>
                     <p>• Use permissions modal in Studio Team to adjust staff and HR access for training tools.</p>
@@ -1431,14 +1431,14 @@ export default function FundamentalsTrainingPortal() {
             </div>
           </TabsContent>
 
-          <TabsContent value="instructor" className="space-y-6">
+          <TabsContent value="instructor" className="space-y-6 break-words">
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-              <Card className="border-gray-200">
-                <CardHeader>
+              <Card className="border-gray-200 break-words">
+                <CardHeader className="break-words">
                   <CardTitle className="text-xl font-semibold text-gray-900">Attendance & Grading Console</CardTitle>
                   <CardDescription className="text-gray-600">Track class participation, grade submissions, and upload lecture updates.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 break-words">
                   {instructorActivityBanner && (
                     <div
                       className={`rounded-md border px-3 py-2 text-sm ${
@@ -1451,8 +1451,8 @@ export default function FundamentalsTrainingPortal() {
                     </div>
                   )}
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <Card className="border border-gray-200 shadow-sm">
-                      <CardContent className="p-4 space-y-3">
+                    <Card className="border border-gray-200 shadow-sm break-words">
+                      <CardContent className="p-4 space-y-3 break-words">
                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                           <ClipboardList className="h-5 w-5 text-purple-600" /> Attendance Logs
                         </div>
@@ -1522,8 +1522,8 @@ export default function FundamentalsTrainingPortal() {
                         </Dialog>
                       </CardContent>
                     </Card>
-                    <Card className="border border-gray-200 shadow-sm">
-                      <CardContent className="p-4 space-y-3">
+                    <Card className="border border-gray-200 shadow-sm break-words">
+                      <CardContent className="p-4 space-y-3 break-words">
                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                           <PenSquare className="h-5 w-5 text-purple-600" /> Grade Submissions
                         </div>
@@ -1606,8 +1606,8 @@ export default function FundamentalsTrainingPortal() {
                         </Dialog>
                       </CardContent>
                     </Card>
-                    <Card className="border border-gray-200 shadow-sm">
-                      <CardContent className="p-4 space-y-3">
+                    <Card className="border border-gray-200 shadow-sm break-words">
+                      <CardContent className="p-4 space-y-3 break-words">
                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                           <CalendarCheck className="h-5 w-5 text-purple-600" /> Supervision Scheduler
                         </div>
@@ -1703,16 +1703,16 @@ export default function FundamentalsTrainingPortal() {
                     </Card>
                   </div>
 
-                  <Card className="border-dashed border-purple-300 bg-purple-50">
-                    <CardHeader className="text-center space-y-2">
+                  <Card className="border border-dashed border-purple-300 bg-purple-50 break-words">
+                    <CardHeader className="text-center space-y-2 break-words">
                       <CardTitle className="text-lg font-semibold text-purple-900">Lecture Library Uploads</CardTitle>
                       <CardDescription className="text-purple-800">
                         Publish on-demand video lessons and downloadable handouts for apprentices to review.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-6 break-words">
                       <div className="grid gap-6 lg:grid-cols-2">
-                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left">
+                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left break-words">
                           <div className="flex items-center gap-2 text-purple-900 font-semibold">
                             <Video className="h-5 w-5 text-purple-600" />
                             Upload Lecture Video
@@ -1797,7 +1797,7 @@ export default function FundamentalsTrainingPortal() {
                             </div>
                           )}
                         </div>
-                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left">
+                        <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3 text-left break-words">
                           <div className="flex items-center gap-2 text-purple-900 font-semibold">
                             <FileText className="h-5 w-5 text-purple-600" />
                             Upload Handouts & Rubrics
@@ -1833,15 +1833,15 @@ export default function FundamentalsTrainingPortal() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-gray-200">
-                    <CardHeader>
+                  <Card className="border-gray-200 break-words">
+                    <CardHeader className="break-words">
                       <CardTitle className="text-xl font-semibold text-gray-900">Create Assignment & Rubric</CardTitle>
                       <CardDescription className="text-gray-600">
                         Publish coursework, deadlines, and scoring criteria. Students see new assignments instantly.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <form onSubmit={handleAssignmentCreate} className="space-y-4 text-left">
+                    <CardContent className="break-words">
+                      <form onSubmit={handleAssignmentCreate} className="space-y-4 text-left break-words">
                         <div className="grid gap-4 md:grid-cols-3">
                           <div className="space-y-1 md:col-span-2">
                             <Label htmlFor="assignment-title">Assignment title</Label>
