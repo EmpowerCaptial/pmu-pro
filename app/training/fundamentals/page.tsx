@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, ChangeEvent, FormEvent, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,25 +41,8 @@ import {
   PenSquare,
   Download,
   Eye,
-  Search,
   Trash2
 } from 'lucide-react'
-import workerMeta from '@/generated/pdfjs-worker-version.json'
-
-const workerExtension = workerMeta.extension ?? 'js'
-const workerSrc = `/pdf.worker.${workerMeta.version}.min.${workerExtension}`
-
-const TrainingPdfViewer = dynamic(
-  () => import('@/components/training/pdf-viewer').then(mod => mod.TrainingPdfViewer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center rounded-md border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600">
-        Loading PDF viewer…
-      </div>
-    )
-  }
-)
 
 interface Assignment {
   id: string
@@ -356,20 +338,8 @@ export default function FundamentalsTrainingPortal() {
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [videoUploadProgress, setVideoUploadProgress] = useState<number | null>(null)
-  const [pdfObjectUrl, setPdfObjectUrl] = useState<string | null>(null)
   const [pdfFileName, setPdfFileName] = useState<string | null>(null)
-  const [pdfNumPages, setPdfNumPages] = useState<number>(0)
-  const [currentPdfPage, setCurrentPdfPage] = useState<number>(1)
-  const [pageInput, setPageInput] = useState<string>('1')
-  const [pageTexts, setPageTexts] = useState<Record<number, string>>({})
-  const [isIndexingPdf, setIsIndexingPdf] = useState<boolean>(false)
-  const [searchTerm, setSearchTerm] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<number[]>([])
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [isLoadingResourcePdf, setIsLoadingResourcePdf] = useState<boolean>(false)
-  const [resourcePdfError, setResourcePdfError] = useState<string | null>(null)
-  const [pdfSourceType, setPdfSourceType] = useState<'remote' | 'upload' | null>(null)
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false)
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
@@ -608,93 +578,10 @@ export default function FundamentalsTrainingPortal() {
     email: 'student@pmupro.com',
     initials: 'PA'
   }
-  const hasUploadedPdf = Boolean(pdfObjectUrl)
-
-  useEffect(() => {
-    return () => {
-      if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(pdfObjectUrl)
-      }
-    }
-  }, [pdfObjectUrl, pdfSourceType])
 
   useEffect(() => {
     fetchTrainingVideos()
   }, [fetchTrainingVideos])
-
-  useEffect(() => {
-    let isMounted = true
-    const controller = new AbortController()
-
-    async function fetchTrainingTextbook() {
-      setIsLoadingResourcePdf(true)
-      setResourcePdfError(null)
-      try {
-        const response = await fetch('/api/resource-library', {
-          signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        if (!response.ok) {
-          throw new Error('Failed to load resource library.')
-        }
-        const data = await response.json()
-        const resources: any[] = data.resources || []
-        const trainingPdf = resources.find(resource => resource.category === 'training')
-        if (trainingPdf && isMounted) {
-          setPdfSourceType('remote')
-          setPdfObjectUrl(trainingPdf.url)
-          setPdfFileName(trainingPdf.title || 'Training Textbook')
-          setCurrentPdfPage(1)
-          setPageInput('1')
-          setSearchTerm('')
-          setSearchResults([])
-          setSearchPerformed(false)
-          try {
-            await indexPdfFromRemote(trainingPdf.url)
-          } catch {
-            /* error handled within index function */
-          }
-        } else if (isMounted && !trainingPdf) {
-          setResourcePdfError('No official training textbook has been uploaded yet.')
-        }
-      } catch (error) {
-        if (controller.signal.aborted) return
-        console.error('Failed to load training resource PDF:', error)
-        if (isMounted) {
-          setResourcePdfError('Unable to load the official training textbook. Instructors can re-upload the PDF from the console.')
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingResourcePdf(false)
-        }
-      }
-    }
-
-    fetchTrainingTextbook()
-
-    return () => {
-      isMounted = false
-      controller.abort()
-    }
-  }, [])
-
-  const resetPdfState = () => {
-    if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(pdfObjectUrl)
-    }
-    setPdfObjectUrl(null)
-    setPdfFileName(null)
-    setPdfNumPages(0)
-    setCurrentPdfPage(1)
-    setPageInput('1')
-    setPageTexts({})
-    setSearchTerm('')
-    setSearchResults([])
-    setSearchPerformed(false)
-    setPdfSourceType(null)
-  }
 
   const handleUploadButtonClick = () => {
     fileInputRef.current?.click()
@@ -869,79 +756,7 @@ export default function FundamentalsTrainingPortal() {
     }
   }
 
-  const indexPdfFromArrayBuffer = async (arrayBuffer: ArrayBuffer, origin: 'upload' | 'remote') => {
-    setIsIndexingPdf(true)
-    let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf') | null = null
-    let loadingTask: any = null
-    try {
-      try {
-        // @ts-expect-error - bundle pdf.js from react-pdf's dependency tree when available
-        pdfjsLib = await import('react-pdf/node_modules/pdfjs-dist/legacy/build/pdf')
-      } catch (error) {
-        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
-      }
-      if (!pdfjsLib) {
-        throw new Error('Failed to load pdfjs library for indexing')
-      }
-
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc
-
-      loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
-      const pdf = await loadingTask.promise
-
-      setPdfNumPages(pdf.numPages)
-
-      const textIndex: Record<number, string> = {}
-      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        const page = await pdf.getPage(pageNumber)
-        const textContent = await page.getTextContent()
-        const pageText = textContent.items
-          .map((item: any) => ('str' in item ? item.str : ''))
-          .join(' ')
-        textIndex[pageNumber] = pageText.toLowerCase()
-      }
-
-      setPageTexts(textIndex)
-      if (origin === 'upload') {
-        setUploadError(null)
-      } else {
-        setResourcePdfError(null)
-      }
-    } catch (error) {
-      console.error('Error indexing PDF:', error)
-      if (origin === 'upload') {
-        setUploadError('Failed to process PDF text. Please try another file or re-upload.')
-        resetPdfState()
-      } else {
-        setResourcePdfError('Unable to index the training textbook for search. You can still read the PDF, but keyword search is inactive.')
-      }
-    } finally {
-      if (loadingTask) {
-        await loadingTask.destroy().catch(() => {})
-      }
-      setIsIndexingPdf(false)
-    }
-  }
-
-  const indexPdfText = async (file: File) => {
-    await indexPdfFromArrayBuffer(await file.arrayBuffer(), 'upload')
-  }
-
-  const indexPdfFromRemote = async (url: string) => {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error('Failed to download remote PDF')
-      }
-      const arrayBuffer = await response.arrayBuffer()
-      await indexPdfFromArrayBuffer(arrayBuffer, 'remote')
-    } catch (error) {
-      console.error('Error fetching remote PDF for indexing:', error)
-      setResourcePdfError('Unable to index the training textbook for search. You can still read the PDF, but keyword search is inactive.')
-    }
-  }
-
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
 
@@ -955,21 +770,7 @@ export default function FundamentalsTrainingPortal() {
     }
 
     setUploadError(null)
-    if (pdfSourceType === 'upload' && pdfObjectUrl && pdfObjectUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(pdfObjectUrl)
-    }
-
-    const objectUrl = URL.createObjectURL(file)
-    setPdfObjectUrl(objectUrl)
     setPdfFileName(file.name)
-    setCurrentPdfPage(1)
-    setPageInput('1')
-    setSearchTerm('')
-    setSearchResults([])
-    setSearchPerformed(false)
-
-    await indexPdfText(file)
-    setPdfSourceType('upload')
   }
 
   const handleAssignmentCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -1191,46 +992,6 @@ export default function FundamentalsTrainingPortal() {
     } finally {
       setIsDeletingAssignment(false)
     }
-  }
-
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!searchTerm.trim()) {
-      setSearchResults([])
-      setSearchPerformed(true)
-      return
-    }
-
-    if (!pageTexts || Object.keys(pageTexts).length === 0) {
-      setSearchResults([])
-      setSearchPerformed(true)
-      return
-    }
-
-    const term = searchTerm.toLowerCase()
-    const matches = Object.entries(pageTexts)
-      .filter(([, text]) => text.includes(term))
-      .map(([page]) => Number(page))
-
-    setSearchResults(matches)
-    setSearchPerformed(true)
-
-    if (matches.length > 0) {
-      const firstMatch = matches[0]
-      setCurrentPdfPage(firstMatch)
-      setPageInput(String(firstMatch))
-    }
-  }
-
-  const handlePageJump = () => {
-    if (!pdfNumPages) return
-    const parsed = parseInt(pageInput, 10)
-    if (Number.isNaN(parsed)) {
-      return
-    }
-    const targetPage = Math.min(Math.max(parsed, 1), pdfNumPages)
-    setCurrentPdfPage(targetPage)
-    setPageInput(String(targetPage))
   }
 
   const recordInstructorActivity = (
@@ -1573,161 +1334,6 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-gray-900">Training Materials Viewer</CardTitle>
-                    <CardDescription className="text-gray-600">Search the uploaded e-book and jump directly to the pages your instructor assigns.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isIndexingPdf && (
-                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                        Indexing PDF text… Students will be able to search every page in a moment.
-                      </div>
-                    )}
-
-                    {isLoadingResourcePdf && (
-                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                        Loading the official training textbook from the resource library…
-                      </div>
-                    )}
-
-                    {resourcePdfError && (
-                      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-                        {resourcePdfError}
-                      </div>
-                    )}
-
-                    {uploadError && (
-                      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                        {uploadError}
-                      </div>
-                    )}
-
-                    {!hasUploadedPdf && !isIndexingPdf && !isLoadingResourcePdf && (
-                      <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
-                        Instructors can upload the course PDF from the Instructor Console. Once added, it will appear here with full keyword search.
-                      </div>
-                    )}
-
-                    {hasUploadedPdf && (
-                      <>
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                          <form onSubmit={handleSearchSubmit} className="flex flex-1 gap-2">
-                            <Input
-                              value={searchTerm}
-                              onChange={(event) => setSearchTerm(event.target.value)}
-                              placeholder="Search keywords (e.g., sanitation, pigment, contraindication)"
-                              disabled={isIndexingPdf}
-                            />
-                            <Button type="submit" disabled={isIndexingPdf}>
-                              <Search className="h-4 w-4 mr-1" /> Search
-                            </Button>
-                          </form>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              value={pageInput}
-                              onChange={(event) => setPageInput(event.target.value)}
-                              onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                  event.preventDefault()
-                                  handlePageJump()
-                                }
-                              }}
-                              disabled={!pdfNumPages}
-                              className="w-24"
-                              placeholder="Page #"
-                            />
-                            <Button type="button" variant="outline" onClick={handlePageJump} disabled={!pdfNumPages}>
-                              Go
-                            </Button>
-                          </div>
-                        </div>
-
-                        {searchPerformed && searchResults.length === 0 && !isIndexingPdf && (
-                          <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
-                            No matches found. Try another keyword or check that the PDF includes selectable text.
-                          </div>
-                        )}
-
-                        {searchResults.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                            <span className="font-medium text-gray-800">Matches:</span>
-                            {searchResults.map((page) => (
-                              <Button
-                                key={page}
-                                size="sm"
-                                variant={currentPdfPage === page ? 'default' : 'outline'}
-                                onClick={() => {
-                                  setCurrentPdfPage(page)
-                                  setPageInput(String(page))
-                                }}
-                              >
-                                Page {page}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="rounded-lg border border-gray-200 bg-gray-50">
-                          <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 text-xs text-gray-600">
-                            <span>{pdfFileName}</span>
-                            <span>Page {currentPdfPage} of {pdfNumPages || '—'}</span>
-                          </div>
-                          <div className="max-h-[600px] overflow-auto bg-white">
-                            <TrainingPdfViewer
-                              fileUrl={pdfObjectUrl}
-                              pageNumber={currentPdfPage}
-                              onDocumentLoadSuccess={(numPages) => {
-                                setPdfNumPages(numPages)
-                                if (currentPdfPage > numPages) {
-                                  setCurrentPdfPage(numPages)
-                                  setPageInput(String(numPages))
-                                }
-                              }}
-                              onDocumentLoadError={(error) => {
-                                console.error('PDF load error:', error)
-                                setUploadError('Could not display the PDF. Please re-upload the file.')
-                                resetPdfState()
-                              }}
-                            />
-                          </div>
-                          {pdfNumPages > 1 && (
-                            <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 text-xs text-gray-600">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const previous = Math.max(1, currentPdfPage - 1)
-                                  setCurrentPdfPage(previous)
-                                  setPageInput(String(previous))
-                                }}
-                                disabled={currentPdfPage <= 1}
-                              >
-                                Previous
-                              </Button>
-                              <span className="flex-1 text-center">Page {currentPdfPage} / {pdfNumPages}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const next = Math.min(pdfNumPages, currentPdfPage + 1)
-                                  setCurrentPdfPage(next)
-                                  setPageInput(String(next))
-                                }}
-                                disabled={currentPdfPage >= pdfNumPages}
-                              >
-                                Next
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="space-y-6">
                 <Card className="border-purple-200 bg-purple-50">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold text-purple-900">Progress Overview</CardTitle>
@@ -1769,6 +1375,55 @@ export default function FundamentalsTrainingPortal() {
                       <Link href="/studio/supervision">
                         <CalendarCheck className="h-4 w-4 mr-2" /> View Instructor Availability
                       </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-6">
+                <Card className="border-purple-200 bg-purple-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-purple-900">Recent Instructor Activity</CardTitle>
+                    <CardDescription className="text-purple-700">
+                      Snapshots of the latest attendance logs, grades, and supervision drafts you have recorded.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-purple-900">
+                    {instructorActivityLog.length === 0 && (
+                      <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
+                        When you record attendance, post grades, or draft a supervision session, the timeline will appear here.
+                      </div>
+                    )}
+                    {instructorActivityLog.map((activity, index) => {
+                      const ActivityIcon = ACTIVITY_ICON_MAP[activity.type]
+                      return (
+                        <div
+                          key={`${activity.timestamp}-${index}`}
+                          className="flex items-start gap-3 rounded-md border border-gray-200 bg-white p-3 shadow-sm"
+                        >
+                          <ActivityIcon className="mt-1 h-5 w-5 text-purple-600" />
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
+                            <p className="text-xs text-gray-600 whitespace-pre-line">{activity.summary}</p>
+                            <p className="text-xs text-gray-500">Logged {activity.timestamp}</p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-purple-200 bg-purple-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-purple-900">Instructor Notes</CardTitle>
+                    <CardDescription className="text-purple-700">Centralize communication with Directors and HR.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-purple-900">
+                    <p>• Sync with Directors to confirm booth rent agreements before granting machine access.</p>
+                    <p>• Log ProCell-only bookings for students via the room booking tool.</p>
+                    <p>• Use permissions modal in Studio Team to adjust staff and HR access for training tools.</p>
+                    <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 w-full">
+                      <Link href="/studio/team">Open Permissions</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -2048,7 +1703,7 @@ export default function FundamentalsTrainingPortal() {
                     </Card>
                   </div>
 
-                  <Card className="border border-dashed border-purple-300 bg-purple-50">
+                  <Card className="border-dashed border-purple-300 bg-purple-50">
                     <CardHeader className="text-center space-y-2">
                       <CardTitle className="text-lg font-semibold text-purple-900">Lecture Library Uploads</CardTitle>
                       <CardDescription className="text-purple-800">
@@ -2148,7 +1803,7 @@ export default function FundamentalsTrainingPortal() {
                             Upload Handouts & Rubrics
                           </div>
                           <p className="text-sm text-purple-700">
-                            Upload a PDF workbook, slide deck, or rubric. Students can instantly keyword search the content in their portal.
+                            Upload a PDF workbook, slide deck, or rubric. Students will download these resources from the library.
                           </p>
                           <div className="space-y-2">
                             <Button
@@ -2156,10 +1811,9 @@ export default function FundamentalsTrainingPortal() {
                               variant="outline"
                               className="bg-white"
                               onClick={handleUploadButtonClick}
-                              disabled={isIndexingPdf}
-                            >
-                              {isIndexingPdf ? 'Processing PDF…' : 'Upload PDF'}
-                            </Button>
+                             >
+                              Upload PDF
+                             </Button>
                             {pdfFileName ? (
                               <span className="text-xs font-medium text-purple-800">
                                 Current PDF: {pdfFileName}
@@ -2168,15 +1822,10 @@ export default function FundamentalsTrainingPortal() {
                               <span className="text-xs text-purple-700">No PDF uploaded yet.</span>
                             )}
                             <p className="text-xs text-purple-700">
-                              Max file size 150&nbsp;MB. Allow a few moments for indexing so students can search by keyword.
+                              Max file size 150&nbsp;MB. Uploaded PDFs become available in the resource library for students.
                             </p>
                             {uploadError && (
                               <span className="text-xs text-red-600">{uploadError}</span>
-                            )}
-                            {isIndexingPdf && (
-                              <span className="text-xs text-purple-700">
-                                Indexing document text for student search…
-                              </span>
                             )}
                           </div>
                         </div>
@@ -2308,208 +1957,6 @@ export default function FundamentalsTrainingPortal() {
                       </form>
                     </CardContent>
                   </Card>
-                </CardContent>
-              </Card>
-
-              <Card className="border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Recent Instructor Activity</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Snapshots of the latest attendance logs, grades, and supervision drafts you have recorded.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-gray-700">
-                  {instructorActivityLog.length === 0 && (
-                    <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
-                      When you record attendance, post grades, or draft a supervision session, the timeline will appear here.
-                    </div>
-                  )}
-                  {instructorActivityLog.map((activity, index) => {
-                    const ActivityIcon = ACTIVITY_ICON_MAP[activity.type]
-                    return (
-                      <div
-                        key={`${activity.timestamp}-${index}`}
-                        className="flex items-start gap-3 rounded-md border border-gray-200 bg-white p-3 shadow-sm"
-                      >
-                        <ActivityIcon className="mt-1 h-5 w-5 text-purple-600" />
-                        <div className="space-y-1">
-                          <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
-                          <p className="text-xs text-gray-600 whitespace-pre-line">{activity.summary}</p>
-                          <p className="text-xs text-gray-500">Logged {activity.timestamp}</p>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </CardContent>
-              </Card>
-
-              <Card className="border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Training Materials Preview</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Review the uploaded workbook, test keyword search, and spot-check pagination before students view it.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm text-gray-700">
-                  {isLoadingResourcePdf && (
-                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                      Loading the training PDF from the resource library…
-                    </div>
-                  )}
-
-                  {isIndexingPdf && (
-                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                      Indexing PDF text so students can search every page.
-                    </div>
-                  )}
-
-                  {resourcePdfError && (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-                      {resourcePdfError}
-                    </div>
-                  )}
-
-                  {uploadError && (
-                    <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                      {uploadError}
-                    </div>
-                  )}
-
-                  {!hasUploadedPdf && !isLoadingResourcePdf && !isIndexingPdf && (
-                    <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
-                      Upload a PDF in the console above to enable the student search experience.
-                    </div>
-                  )}
-
-                  {hasUploadedPdf && (
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-2">
-                        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-2 sm:flex-row">
-                          <Input
-                            value={searchTerm}
-                            onChange={(event) => setSearchTerm(event.target.value)}
-                            placeholder="Search keywords (e.g., sanitation, pigment, contraindication)"
-                            disabled={isIndexingPdf}
-                          />
-                          <div className="flex gap-2">
-                            <Button type="submit" disabled={isIndexingPdf} className="flex-1 sm:flex-none">
-                              <Search className="h-4 w-4 mr-1" /> Search
-                            </Button>
-                            <Input
-                              value={pageInput}
-                              onChange={(event) => setPageInput(event.target.value)}
-                              onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                  event.preventDefault()
-                                  handlePageJump()
-                                }
-                              }}
-                              disabled={!pdfNumPages}
-                              className="w-24"
-                              placeholder="Page #"
-                            />
-                            <Button type="button" variant="outline" onClick={handlePageJump} disabled={!pdfNumPages}>
-                              Go
-                            </Button>
-                          </div>
-                        </form>
-
-                        {searchPerformed && searchResults.length === 0 && !isIndexingPdf && (
-                          <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
-                            No matches found. Try another keyword or confirm the PDF contains selectable text.
-                          </div>
-                        )}
-
-                        {searchResults.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                            <span className="font-medium text-gray-800">Matches:</span>
-                            {searchResults.map(page => (
-                              <Button
-                                key={page}
-                                size="sm"
-                                variant={currentPdfPage === page ? 'default' : 'outline'}
-                                onClick={() => {
-                                  setCurrentPdfPage(page)
-                                  setPageInput(String(page))
-                                }}
-                              >
-                                Page {page}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="rounded-lg border border-gray-200 bg-gray-50">
-                        <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 text-xs text-gray-600">
-                          <span className="truncate" title={pdfFileName || undefined}>{pdfFileName}</span>
-                          <span>Page {currentPdfPage} of {pdfNumPages || '—'}</span>
-                        </div>
-                        <div className="max-h-[420px] overflow-auto bg-white">
-                          <TrainingPdfViewer
-                            fileUrl={pdfObjectUrl}
-                            pageNumber={currentPdfPage}
-                            onDocumentLoadSuccess={(numPages) => {
-                              setPdfNumPages(numPages)
-                              if (currentPdfPage > numPages) {
-                                setCurrentPdfPage(numPages)
-                                setPageInput(String(numPages))
-                              }
-                            }}
-                            onDocumentLoadError={(error) => {
-                              console.error('PDF load error:', error)
-                              setUploadError('Could not display the PDF. Please re-upload the file.')
-                              resetPdfState()
-                            }}
-                          />
-                        </div>
-                        {pdfNumPages > 1 && (
-                          <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 text-xs text-gray-600">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const previous = Math.max(1, currentPdfPage - 1)
-                                setCurrentPdfPage(previous)
-                                setPageInput(String(previous))
-                              }}
-                              disabled={currentPdfPage <= 1}
-                            >
-                              Previous
-                            </Button>
-                            <span className="flex-1 text-center">Page {currentPdfPage} / {pdfNumPages}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const next = Math.min(pdfNumPages, currentPdfPage + 1)
-                                setCurrentPdfPage(next)
-                                setPageInput(String(next))
-                              }}
-                              disabled={currentPdfPage >= pdfNumPages}
-                            >
-                              Next
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="border-purple-200 bg-purple-50">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-purple-900">Instructor Notes</CardTitle>
-                  <CardDescription className="text-purple-700">Centralize communication with Directors and HR.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-purple-900">
-                  <p>• Sync with Directors to confirm booth rent agreements before granting machine access.</p>
-                  <p>• Log ProCell-only bookings for students via the room booking tool.</p>
-                  <p>• Use permissions modal in Studio Team to adjust staff and HR access for training tools.</p>
-                  <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 w-full">
-                    <Link href="/studio/team">Open Permissions</Link>
-                  </Button>
                 </CardContent>
               </Card>
             </div>
