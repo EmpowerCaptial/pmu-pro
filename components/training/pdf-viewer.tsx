@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import workerMeta from '@/generated/pdfjs-worker-version.json'
 
@@ -21,6 +21,35 @@ export const TrainingPdfViewer = memo(function TrainingPdfViewer({
   onDocumentLoadSuccess,
   onDocumentLoadError
 }: TrainingPdfViewerProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [renderWidth, setRenderWidth] = useState<number>(760)
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (!containerRef.current) return
+      const containerWidth = containerRef.current.offsetWidth
+      if (!containerWidth) return
+
+      const nextWidth = Math.min(760, Math.max(320, containerWidth - 16))
+      setRenderWidth(nextWidth)
+    }
+
+    updateWidth()
+
+    if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
+      const observer = new ResizeObserver(() => updateWidth())
+      observer.observe(containerRef.current)
+      return () => observer.disconnect()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateWidth)
+      return () => window.removeEventListener('resize', updateWidth)
+    }
+
+    return
+  }, [])
+
   const file = useMemo(() => {
     if (!fileUrl) {
       return null
@@ -33,32 +62,34 @@ export const TrainingPdfViewer = memo(function TrainingPdfViewer({
   }
 
   return (
-    <Document
-      file={file}
-      onLoadSuccess={({ numPages }) => {
-        onDocumentLoadSuccess?.(numPages)
-      }}
-      onLoadError={(error) => {
-        onDocumentLoadError?.(error as Error)
-      }}
-      className="flex justify-center"
-      loading={
-        <div className="flex items-center justify-center p-6 text-sm text-gray-600">
-          Loading PDF…
-        </div>
-      }
-    >
-      <Page
-        pageNumber={pageNumber}
-        width={760}
-        renderAnnotationLayer={false}
-        renderTextLayer
+    <div ref={containerRef} className="w-full overflow-x-auto">
+      <Document
+        file={file}
+        onLoadSuccess={({ numPages }) => {
+          onDocumentLoadSuccess?.(numPages)
+        }}
+        onLoadError={(error) => {
+          onDocumentLoadError?.(error as Error)
+        }}
+        className="flex justify-center"
         loading={
           <div className="flex items-center justify-center p-6 text-sm text-gray-600">
-            Rendering page…
+            Loading PDF…
           </div>
         }
-      />
-    </Document>
+      >
+        <Page
+          pageNumber={pageNumber}
+          width={renderWidth}
+          renderAnnotationLayer={false}
+          renderTextLayer
+          loading={
+            <div className="flex items-center justify-center p-6 text-sm text-gray-600">
+              Rendering page…
+            </div>
+          }
+        />
+      </Document>
+    </div>
   )
 })
