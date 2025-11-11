@@ -421,6 +421,22 @@ export default function FundamentalsTrainingPortal() {
     [selectedLessonWeek, selectedLessonDayId]
   )
 
+  const lessonHomeworkByWeek = useMemo(() => {
+    const map: Record<string, { dayTitle: string; items: string[] }[]> = {}
+    TRAINING_LESSON_PLANS.forEach(week => {
+      const dayEntries = week.days
+        .map(day => ({
+          dayTitle: day.title,
+          items: (day.homework || []).filter((item) => item && item.trim().length > 0)
+        }))
+        .filter(entry => entry.items.length > 0)
+      if (dayEntries.length > 0) {
+        map[week.id] = dayEntries
+      }
+    })
+    return map
+  }, [])
+
   const toAssignmentStatus = (value?: string): Assignment['status'] => {
     if (!value) return 'pending'
     const normalized = value.toLowerCase()
@@ -1295,6 +1311,26 @@ export default function FundamentalsTrainingPortal() {
                                 </Card>
                               ))
                             )}
+
+                          {lessonHomeworkByWeek[week.id]?.length ? (
+                            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 space-y-3">
+                              <p className="text-sm font-semibold text-amber-900">Homework & Follow-Up</p>
+                              <div className="space-y-3">
+                                {lessonHomeworkByWeek[week.id]?.map(homework => (
+                                  <div key={homework.dayTitle} className="space-y-1">
+                                    <p className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                                      {homework.dayTitle}
+                                    </p>
+                                    <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
+                                      {homework.items.map(item => (
+                                        <li key={item}>{item}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
                           </TabsContent>
                         )
                       })}
