@@ -1703,7 +1703,7 @@ export default function FundamentalsTrainingPortal() {
                     </Card>
                   </div>
 
-                  <Card className="border border-dashed border-purple-300 bg-purple-50 break-words">
+                  <Card className="border-dashed border-purple-300 bg-purple-50 break-words">
                     <CardHeader className="text-center space-y-2 break-words">
                       <CardTitle className="text-lg font-semibold text-purple-900">Lecture Library Uploads</CardTitle>
                       <CardDescription className="text-purple-800">
@@ -1955,6 +1955,99 @@ export default function FundamentalsTrainingPortal() {
                           </Button>
                         </div>
                       </form>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-gray-200 break-words">
+                    <CardHeader className="break-words">
+                      <CardTitle className="text-xl font-semibold text-gray-900">Coursework Timeline</CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Review every week's assignments, update details, or retire coursework without leaving the console.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-5 break-words">
+                      {courseWeeks.map(week => (
+                        <div key={`${week.id}-instructor`} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                          <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <h3 className="text-base font-semibold text-gray-900">{week.title}</h3>
+                              <p className="text-sm text-gray-600">{week.summary}</p>
+                            </div>
+                            <Badge className="self-start sm:self-center bg-purple-100 text-purple-700 border border-purple-200">
+                              Target {week.targetHours} hrs
+                            </Badge>
+                          </div>
+                          <div className="space-y-4 p-4">
+                            {week.assignments.length === 0 ? (
+                              <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                                No assignments scheduled for this week yet.
+                              </div>
+                            ) : (
+                              week.assignments.map(assignment => (
+                                <Card key={`${assignment.id}-instructor`} className="border border-gray-200 shadow-sm">
+                                  <CardContent className="p-4 space-y-3">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                      <div>
+                                        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                          <FileText className="h-5 w-5 text-purple-600" />
+                                          {assignment.title}
+                                        </h4>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Badge className="bg-slate-100 text-slate-700 border border-slate-200">{assignment.dueDate}</Badge>
+                                        {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
+                                          <Badge className="bg-purple-100 text-purple-700 border border-purple-200">~{assignment.estimatedHours} hrs</Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {canEditAssignments && (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => openEditAssignmentDialog(assignment, week.id)}
+                                          >
+                                            <PenSquare className="h-4 w-4 mr-1" /> Edit
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => openDeleteAssignmentDialog(assignment, week.id)}
+                                            disabled={!assignment.isPersisted}
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                                          </Button>
+                                        </>
+                                      )}
+                                      <Button size="sm" variant="outline">
+                                        <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() =>
+                                          assignment.rubric && setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                        }
+                                        disabled={!assignment.rubric}
+                                      >
+                                        <Eye className="h-4 w-4 mr-1" />
+                                        {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                      </Button>
+                                    </div>
+                                    {assignment.rubric && openRubricId === assignment.id && (
+                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                        {assignment.rubric}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 </CardContent>
