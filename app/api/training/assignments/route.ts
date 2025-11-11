@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         status: (status || 'pending').toLowerCase(),
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
-        order: Date.now(),
+        order: Math.floor(Date.now() / 1000),
         createdBy: user.id
       }
     })
@@ -113,9 +113,15 @@ export async function POST(request: NextRequest) {
       assignment: newAssignment
     })
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
-      console.error('Training assignments POST missing table:', error)
-      return NextResponse.json({ success: false, error: 'Training assignments table not found. Please run the latest Prisma migrations.' }, { status: 500 })
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2021') {
+        console.error('Training assignments POST missing table:', error)
+        return NextResponse.json({ success: false, error: 'Training assignments table not found. Please run the latest Prisma migrations.' }, { status: 500 })
+      }
+      if (error.code === 'P2003') {
+        console.error('Training assignments POST foreign key error:', error)
+        return NextResponse.json({ success: false, error: 'Assignment could not reference its creator. Ensure the user exists in the database.' }, { status: 400 })
+      }
     }
     console.error('Training assignments POST error:', error)
     return NextResponse.json(
