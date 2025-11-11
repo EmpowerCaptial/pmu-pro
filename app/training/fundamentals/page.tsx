@@ -43,6 +43,7 @@ import {
   Eye,
   Trash2
 } from 'lucide-react'
+import { TRAINING_LESSON_PLANS } from '@/data/training-lesson-plan'
 
 interface Assignment {
   id: string
@@ -382,12 +383,43 @@ export default function FundamentalsTrainingPortal() {
   const [deleteAssignmentConfirmText, setDeleteAssignmentConfirmText] = useState('')
   const [deleteAssignmentError, setDeleteAssignmentError] = useState<string | null>(null)
   const [isDeletingAssignment, setIsDeletingAssignment] = useState(false)
+  const [selectedLessonWeekId, setSelectedLessonWeekId] = useState(
+    TRAINING_LESSON_PLANS[0]?.id ?? ''
+  )
+  const [selectedLessonDayId, setSelectedLessonDayId] = useState(
+    TRAINING_LESSON_PLANS[0]?.days[0]?.id ?? ''
+  )
   const attendancePercent = Math.round((STUDENT_PROGRESS.attendedSessions / STUDENT_PROGRESS.requiredSessions) * 100)
   const ACTIVITY_ICON_MAP = {
     attendance: ClipboardList,
     grade: PenSquare,
     schedule: CalendarCheck
   } as const
+
+  useEffect(() => {
+    const week = TRAINING_LESSON_PLANS.find(plan => plan.id === selectedLessonWeekId)
+    if (!week) {
+      const fallbackWeek = TRAINING_LESSON_PLANS[0]
+      if (fallbackWeek) {
+        setSelectedLessonWeekId(fallbackWeek.id)
+        setSelectedLessonDayId(fallbackWeek.days[0]?.id ?? '')
+      }
+      return
+    }
+    if (!week.days.some(day => day.id === selectedLessonDayId)) {
+      setSelectedLessonDayId(week.days[0]?.id ?? '')
+    }
+  }, [selectedLessonWeekId, selectedLessonDayId])
+
+  const selectedLessonWeek = useMemo(
+    () => TRAINING_LESSON_PLANS.find(plan => plan.id === selectedLessonWeekId),
+    [selectedLessonWeekId]
+  )
+
+  const selectedLessonDay = useMemo(
+    () => selectedLessonWeek?.days.find(day => day.id === selectedLessonDayId),
+    [selectedLessonWeek, selectedLessonDayId]
+  )
 
   const toAssignmentStatus = (value?: string): Assignment['status'] => {
     if (!value) return 'pending'
@@ -1960,94 +1992,159 @@ export default function FundamentalsTrainingPortal() {
 
                   <Card className="border-gray-200 break-words">
                     <CardHeader className="break-words">
-                      <CardTitle className="text-xl font-semibold text-gray-900">Coursework Timeline</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Review every week's assignments, update details, or retire coursework without leaving the console.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-5 break-words">
-                      {courseWeeks.map(week => (
-                        <div key={`${week.id}-instructor`} className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                          <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                              <h3 className="text-base font-semibold text-gray-900">{week.title}</h3>
-                              <p className="text-sm text-gray-600">{week.summary}</p>
-                            </div>
-                            <Badge className="self-start sm:self-center bg-purple-100 text-purple-700 border border-purple-200">
-                              Target {week.targetHours} hrs
-                            </Badge>
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <CardTitle className="text-xl font-semibold text-gray-900">Lesson Planner</CardTitle>
+                          <CardDescription className="text-gray-600">
+                            Access the word-for-word instructor script, cues, and homework for each day.
+                          </CardDescription>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                          <div className="w-full sm:w-48">
+                            <Label htmlFor="lesson-week">Week</Label>
+                            <Select
+                              value={selectedLessonWeekId}
+                              onValueChange={value => setSelectedLessonWeekId(value)}
+                            >
+                              <SelectTrigger id="lesson-week">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {TRAINING_LESSON_PLANS.map(week => (
+                                  <SelectItem key={week.id} value={week.id}>
+                                    {week.title}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <div className="space-y-4 p-4">
-                            {week.assignments.length === 0 ? (
-                              <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
-                                No assignments scheduled for this week yet.
-                              </div>
-                            ) : (
-                              week.assignments.map(assignment => (
-                                <Card key={`${assignment.id}-instructor`} className="border border-gray-200 shadow-sm">
-                                  <CardContent className="p-4 space-y-3">
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                      <div>
-                                        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                          <FileText className="h-5 w-5 text-purple-600" />
-                                          {assignment.title}
-                                        </h4>
-                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Badge className="bg-slate-100 text-slate-700 border border-slate-200">{assignment.dueDate}</Badge>
-                                        {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
-                                          <Badge className="bg-purple-100 text-purple-700 border border-purple-200">~{assignment.estimatedHours} hrs</Badge>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      {canEditAssignments && (
-                                        <>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => openEditAssignmentDialog(assignment, week.id)}
-                                          >
-                                            <PenSquare className="h-4 w-4 mr-1" /> Edit
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() => openDeleteAssignmentDialog(assignment, week.id)}
-                                            disabled={!assignment.isPersisted}
-                                          >
-                                            <Trash2 className="h-4 w-4 mr-1" /> Delete
-                                          </Button>
-                                        </>
-                                      )}
-                                      <Button size="sm" variant="outline">
-                                        <Upload className="h-4 w-4 mr-1" /> Upload Work
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={() =>
-                                          assignment.rubric && setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
-                                        }
-                                        disabled={!assignment.rubric}
-                                      >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
-                                      </Button>
-                                    </div>
-                                    {assignment.rubric && openRubricId === assignment.id && (
-                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
-                                        {assignment.rubric}
-                                      </div>
-                                    )}
-                                  </CardContent>
-                                </Card>
-                              ))
-                            )}
+                          <div className="w-full sm:w-48">
+                            <Label htmlFor="lesson-day">Day</Label>
+                            <Select
+                              value={selectedLessonDayId}
+                              onValueChange={value => setSelectedLessonDayId(value)}
+                            >
+                              <SelectTrigger id="lesson-day">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {selectedLessonWeek?.days.map(day => (
+                                  <SelectItem key={day.id} value={day.id}>
+                                    {day.title}
+                                  </SelectItem>
+                                )) ?? null}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-5 break-words">
+                      {selectedLessonWeek && (
+                        <div className="rounded-md border border-purple-200 bg-purple-50 p-4 text-sm text-purple-900">
+                          <p className="font-semibold">{selectedLessonWeek.title}</p>
+                          {selectedLessonWeek.summary && (
+                            <p className="mt-1 text-purple-800">{selectedLessonWeek.summary}</p>
+                          )}
+                        </div>
+                      )}
+                      {!selectedLessonDay && (
+                        <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                          Select a week and day to view the detailed lesson plan.
+                        </div>
+                      )}
+                      {selectedLessonDay && (
+                        <div className="space-y-6">
+                          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                            <h3 className="text-lg font-semibold text-gray-900">{selectedLessonDay.title}</h3>
+                            <div className="mt-3 space-y-1 text-sm text-gray-600">
+                              <p className="font-medium text-gray-700">Focus for the day:</p>
+                              <ul className="list-disc space-y-1 pl-5">
+                                {selectedLessonDay.focus.map(item => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                              {selectedLessonDay.tone && (
+                                <p className="mt-2 text-gray-600">
+                                  <span className="font-medium text-gray-700">Instructor tone:</span> {selectedLessonDay.tone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            {selectedLessonDay.segments.map(segment => (
+                              <Card key={segment.time + segment.title} className="border border-gray-200 shadow-sm">
+                                <CardContent className="space-y-3 p-4">
+                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                      <p className="text-xs uppercase tracking-wide text-gray-500">{segment.time}</p>
+                                      <h4 className="text-base font-semibold text-gray-900">{segment.title}</h4>
+                                    </div>
+                                    <Badge className="bg-slate-100 text-slate-700 border border-slate-200 self-start">
+                                      {segment.time}
+                                    </Badge>
+                                  </div>
+                                  {segment.instructorScript && (
+                                    <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                      {segment.instructorScript}
+                                    </div>
+                                  )}
+                                  {segment.prompts && segment.prompts.length > 0 && (
+                                    <div className="space-y-1 text-sm text-gray-700">
+                                      <p className="font-medium text-gray-800">Prompts / Commands:</p>
+                                      <ul className="list-disc space-y-1 pl-5">
+                                        {segment.prompts.map(prompt => (
+                                          <li key={prompt}>{prompt}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {segment.activities && segment.activities.length > 0 && (
+                                    <div className="space-y-1 text-sm text-gray-700">
+                                      <p className="font-medium text-gray-800">Activities:</p>
+                                      <ul className="list-disc space-y-1 pl-5">
+                                        {segment.activities.map(activity => (
+                                          <li key={activity}>{activity}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {segment.cues && segment.cues.length > 0 && (
+                                    <div className="space-y-1 text-sm text-gray-700">
+                                      <p className="font-medium text-gray-800">Instructor cues:</p>
+                                      <ul className="list-disc space-y-1 pl-5">
+                                        {segment.cues.map(cue => (
+                                          <li key={cue}>{cue}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {segment.notes && segment.notes.length > 0 && (
+                                    <div className="space-y-1 text-sm text-gray-700">
+                                      <p className="font-medium text-gray-800">Notes:</p>
+                                      <ul className="list-disc space-y-1 pl-5">
+                                        {segment.notes.map(note => (
+                                          <li key={note}>{note}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                          {selectedLessonDay.homework.length > 0 && (
+                            <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+                              <p className="text-sm font-semibold text-amber-800">Homework / Follow-up</p>
+                              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-900">
+                                {selectedLessonDay.homework.map(item => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </CardContent>
