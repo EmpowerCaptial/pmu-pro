@@ -515,7 +515,532 @@ Artists who understand color corrections earn more and retain clients longer. To
         ]
       }
     ]
+  },
+  {
+    id: 'week-4',
+    title: 'Week 4 • Hybrid Technique & Live Model Prep',
+    summary:
+      'Reinforce mapping, shading precision, and build confidence transitioning from synthetic practice to live model workflow with strong consult structure.',
+    days: [
+      {
+        id: 'day-1',
+        title: 'Day 1 • Machine Technique Refinement & Hybrid Prep',
+        focus: [
+          'Tune mapping accuracy and soft outlining',
+          'Strengthen machine fades and gradient control',
+          'Simulate hybrid workflow prior to live models'
+        ],
+        tone: 'Calm, corrective coaching focused on build-up to live clients',
+        segments: [
+          {
+            time: '9:30 – 9:50',
+            title: 'Instructor Demonstration – Brow Shape + Soft Edge Outline',
+            instructorScript:
+              'The outline guides, it does not box in. Brows should grow from the face, not sit on the face.',
+            activities: [
+              'Draw breathable outline emphasizing soft bulb and balanced arches.'
+            ]
+          },
+          {
+            time: '9:50 – 10:40',
+            title: 'Student Mapping Practice',
+            activities: [
+              'Partners or mannequins: reinforce soft front, balanced arches, clean tails.',
+              'Instructor circulates giving precise corrections.'
+            ]
+          },
+          {
+            time: '10:40 – 11:25',
+            title: 'Synthetic Skin Machine Warm-Up',
+            activities: [
+              'Whip shading fade exercise, tail saturation focus, bulb gradient control.',
+              'Reinforce needle hang consistency and floating wrist anchor.'
+            ]
+          },
+          {
+            time: '11:25 – 12:00',
+            title: 'Technique Check & Feedback Focus',
+            instructorScript:
+              'Each student receives one core correction to prioritize for live model day.',
+            activities: ['Document personal correction in notebook.']
+          },
+          { time: '12:00 – 1:00', title: 'Lunch' },
+          {
+            time: '1:00 – 1:20',
+            title: 'Live Model Prep Protocol Training',
+            activities: [
+              'Demonstrate tray setup, PPE sequence, sanitation flows.',
+              'Emphasize professionalism and calm client presence.'
+            ]
+          },
+          {
+            time: '1:20 – 2:00',
+            title: 'Mock Consult & Map on Partner',
+            instructorScript:
+              '“Before we begin, I want to make sure this shape supports your natural bone structure. Do you have any concerns before I show you the mirror?”',
+            activities: ['Role-play greeting, consultation wording, mapping approval scripting.']
+          },
+          {
+            time: '2:00 – 3:10',
+            title: 'Hybrid Simulation',
+            activities: [
+              'Complete one full brow shading pass on synthetic skin then transition to mapping/outlining partner brow.',
+              'Build flow memory for live work.'
+            ]
+          },
+          {
+            time: '3:10 – 3:30',
+            title: 'Group Discussion & Confidence Reinforcement',
+            prompts: [
+              'What part of your workflow feels most natural now?',
+              'What will you focus on tomorrow?'
+            ]
+          }
+        ],
+        homework: ['Prepare tools and sanitation checklist for live model day.', 'Review mapping notes recorded during feedback.']
+      },
+      {
+        id: 'day-2',
+        title: 'Day 2 • Live Model Intro Day',
+        focus: [
+          'Regulate nerves prior to client arrival',
+          'Execute consultation, mapping, and guided shading on live model',
+          'Coach aftercare delivery with luxury tone'
+        ],
+        tone: 'Steady, reassuring leadership that keeps students calm and confident',
+        segments: [
+          {
+            time: '9:30 – 10:00',
+            title: 'Emotion Regulation & Client Presence',
+            instructorScript:
+              'Your calm is your client’s calm. Breathe, speak slowly, and move with purpose.',
+            activities: ['Guided breathing, posture reset, tone rehearsal.']
+          },
+          {
+            time: '10:00 – 11:30',
+            title: 'Synthetic Skin Practice (Morning Warm-Up)',
+            activities: [
+              'Silent studio environment, shading repetition to steady hands.',
+              'Instructor adjusts wrist angle, rhythm, pressure.'
+            ]
+          },
+          { time: '11:30 – 12:00', title: 'Room Reset & Station Preparation' },
+          {
+            time: '12:00 – 12:30',
+            title: 'Instructor Briefing + Model Orientation',
+            activities: [
+              'Walkthrough of welcoming script, intake questions, reassurance cues.'
+            ]
+          },
+          {
+            time: '12:30 – 3:00',
+            title: 'Live Model Hybrid Work',
+            activities: [
+              'Sequence: consultation, mapping approval, brow #1 shading, instructor mini-review, brow #2 shading.',
+              'Instructor re-guides technique without taking over.'
+            ]
+          },
+          {
+            time: '3:00 – 3:30',
+            title: 'Debrief + Aftercare Teaching',
+            instructorScript:
+              '“Your brows will soften 30–40% as they heal. Flaking and lightness in week two are expected—this is part of the process.”'
+          }
+        ],
+        homework: [
+          'Submit before/after images with three-sentence reflection: success, improvement area, focus for next week.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'week-5',
+    title: 'Week 5 • Hybrid Mastery & Live Execution',
+    summary:
+      'Blend hair strokes with powder shading, refine fades, and execute hybrid brows on live models while sustaining luxury communication.',
+    days: [
+      {
+        id: 'day-1',
+        title: 'Day 1 • Hybrid Brow Technique & Pattern Balance',
+        focus: [
+          'Reinforce clean front-stroke patterns',
+          'Blend stroke-to-shade transitions for natural dimension',
+          'Develop personal brow aesthetic and mapping confidence'
+        ],
+        tone: 'Direct coaching with emphasis on balance and finesse',
+        segments: [
+          {
+            time: '9:30 – 9:50',
+            title: 'Demo + Pattern Theory',
+            instructorScript:
+              'Hair strokes create texture. Powder adds density. Hybrids are about balance, not symmetry perfection.',
+            activities: [
+              'Demonstrate stroke spine alignment, rhythm, transition zone rules.'
+            ]
+          },
+          {
+            time: '9:50 – 10:40',
+            title: 'Paper Stroke Drills (Front 1/3)',
+            activities: [
+              'Anchor point strokes, upper/lower spine control, airy spacing up front.',
+              'Instructor corrects angle consistency and taper.'
+            ]
+          },
+          {
+            time: '10:40 – 11:25',
+            title: 'Synthetic Skin Stroke Work (Front Only)',
+            activities: [
+              'Microblade front third focusing on pressure control and blade depth.',
+              'Relax finger positioning and wrist.'
+            ]
+          },
+          {
+            time: '11:25 – 12:00',
+            title: 'Transition to Shading Theory',
+            instructorScript: 'Your fade is your signature. Pressure down in the tail, release into the front.',
+            activities: [
+              'Discuss pendulum vs whip shading, fade starting point.'
+            ]
+          },
+          { time: '12:00 – 1:00', title: 'Lunch' },
+          {
+            time: '1:00 – 1:20',
+            title: 'Live Instructor Demo (Full Hybrid Brow)',
+            activities: [
+              'Map, soft outline, microblade front + spine, machine shade tail with airy transition.'
+            ]
+          },
+          {
+            time: '1:20 – 2:20',
+            title: 'Student Practice on Synthetic Skin',
+            activities: [
+              'Complete stroke front quadrant, shaded tail, smooth fade.',
+              'Instructor reminders: lighten into bulb, maintain tail saturation.'
+            ]
+          },
+          { time: '2:20 – 2:35', title: 'Break + Hand Reset' },
+          {
+            time: '2:35 – 3:20',
+            title: 'Partner Hybrid Mapping & Design Practice',
+            instructorScript:
+              'Brows should support the face, not compete with it.',
+            activities: ['Map one hybrid brow on partner; avoid over-arching; respect bone structure.']
+          },
+          {
+            time: '3:20 – 3:30',
+            title: 'Reflection & Tomorrow Prep',
+            prompts: [
+              'What felt easier today?',
+              'What are you focusing on tomorrow?'
+            ]
+          }
+        ],
+        homework: ['Create three hybrid brows on synthetic skin and upload photos to group chat.']
+      },
+      {
+        id: 'day-2',
+        title: 'Day 2 • Hybrid Brow on Live Model',
+        focus: [
+          'Maintain calm confidence with live client communication',
+          'Execute full hybrid brow with instructor support',
+          'Document results and evaluate technique choices'
+        ],
+        tone: 'Supportive yet performance-oriented coaching',
+        segments: [
+          {
+            time: '9:30 – 10:00',
+            title: 'Morning Nerve Reset + Stroke Warm-Up',
+            activities: ['Silent stroke + shading warm-up on paper and synthetic skin.']
+          },
+          {
+            time: '10:00 – 11:30',
+            title: 'Synthetic Skin Practice',
+            activities: [
+              'Reinforce clean stroke fronts, smooth fade transitions, tail density.',
+              'Instructor offers individual corrections.'
+            ]
+          },
+          {
+            time: '11:30 – 12:00',
+            title: 'Room & Tray Setup Demonstration',
+            activities: ['Barrier film, wrapped cord, pigment setup, sharps layout; students replicate their trays.']
+          },
+          {
+            time: '12:00 – 12:30',
+            title: 'Model Arrival + Intake + Consultation',
+            activities: ['Practice warm greeting, skin review, mapping approval script.']
+          },
+          {
+            time: '12:30 – 3:00',
+            title: 'Live Model Hybrid Brow Execution',
+            activities: [
+              'Map, confirm, stroke front softly, machine shade tail → fade front.',
+              'Instructor ensures breathing, wrist motion remain controlled.'
+            ]
+          },
+          {
+            time: '3:00 – 3:30',
+            title: 'Debrief + Healing Expectation Coaching',
+            activities: ['Students verbally teach aftercare timeline with calm authority.']
+          }
+        ],
+        homework: [
+          'Submit live model photos with noted machine speed, hand motion, and planned adjustment for next session.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'week-6',
+    title: 'Week 6 • Luxury Artist Identity & Client Experience',
+    summary:
+      'Shift from solely technique to luxury brand delivery—tone, pricing, consultation language, and content creation that communicates calm authority.',
+    days: [
+      {
+        id: 'day-1',
+        title: 'Day 1 • Become the Luxury Artist',
+        focus: [
+          'Define personal luxury artist identity and tone',
+          'Understand client psychology and pricing strategy',
+          'Create brand-aligned content and consultation scripts'
+        ],
+        tone: 'Inspirational yet practical; push students toward confident positioning',
+        segments: [
+          {
+            time: '9:30 – 9:55',
+            title: 'Identity Activation',
+            instructorScript:
+              'Who is the version of you your clients expect? How does she move and speak?',
+            activities: [
+              'Students write Luxury Artist Identity Statement and share highlights.'
+            ]
+          },
+          {
+            time: '9:55 – 10:45',
+            title: 'Luxury Client Psychology',
+            activities: [
+              'Teach calm authority phrases.',
+              'Practice language swaps (basic vs luxury).'
+            ]
+          },
+          {
+            time: '10:45 – 11:25',
+            title: 'Pricing Strategy Workshop',
+            instructorScript:
+              'Your price reflects the experience you deliver. Build a ladder, don’t guess.',
+            activities: [
+              'Create 1-year growth ladder using training → luxury tiers.'
+            ]
+          },
+          {
+            time: '11:25 – 12:00',
+            title: 'Portfolio Curation',
+            activities: [
+              'Audit Instagram: remove off-brand work, plan healed result posts, educational posts, emotional reassurance posts.'
+            ]
+          },
+          { time: '12:00 – 1:00', title: 'Lunch' },
+          {
+            time: '1:00 – 2:10',
+            title: 'Content Creation + Photo Technique',
+            activities: [
+              'Ring light placement, camera angle drills, slow reveal videos.',
+              'Students photograph each other’s mapping.'
+            ]
+          },
+          {
+            time: '2:10 – 3:00',
+            title: '"Luxury Consultation Script" Practice',
+            activities: [
+              'Partner role-play greeting, tone pacing, mirror reveal, confidence anchoring.',
+              'Instructor removes fillers or uncertain language.'
+            ]
+          },
+          {
+            time: '3:00 – 3:30',
+            title: 'Brand Identity Lock-In',
+            activities: [
+              'Students finalize brand keywords, color palette direction, first 3 IG posts.',
+              'Instructor checks clarity and authenticity.'
+            ]
+          }
+        ],
+        homework: [
+          'Publish or schedule 1 brand-aligned social post.',
+          'Refine consultation script and rehearse aloud.'
+        ]
+      },
+      {
+        id: 'day-2',
+        title: 'Day 2 • Luxury Studio Flow & Client Experience',
+        focus: [
+          'Design a premium appointment experience',
+          'Refine tone, posture, and aftercare delivery',
+          'Continue hybrid practice with calm precision'
+        ],
+        tone: 'Warm leadership maintaining high standards',
+        segments: [
+          {
+            time: '9:30 – 10:15',
+            title: 'Luxury Appointment Experience Framework',
+            instructorScript:
+              'Luxury is quiet confidence. Know how you want clients to feel at each stage.',
+            activities: ['Map early/mid/end appointment emotions and touchpoints.']
+          },
+          {
+            time: '10:15 – 11:00',
+            title: 'Tone, Posture & Conversation Coaching',
+            activities: ['Practice shoulders down, soft eye contact, controlled movements.']
+          },
+          {
+            time: '11:00 – 11:45',
+            title: 'Aftercare as Education Moment',
+            activities: ['Rehearse aftercare explanation in soothing cadence, refine wording.']
+          },
+          { time: '11:45 – 12:45', title: 'Lunch' },
+          {
+            time: '12:45 – 3:10',
+            title: 'Applied Hybrid Brow Practice',
+            activities: [
+              '20 min stroke warm-up, 35 min hybrid shading repetition, 1 hour partner mapping & outline practice.',
+              'Instructor cycles through correction rounds.'
+            ]
+          },
+          {
+            time: '3:10 – 3:30',
+            title: 'Reflection + Goal Language Rehearsal',
+            prompts: [
+              '“This is the type of client I serve.”',
+              '“This is how I position my work.”',
+              '“This is the level of experience I deliver.”'
+            ]
+          }
+        ],
+        homework: [
+          'Document one full mock appointment flow including language, touchpoints, and timing.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'week-7',
+    title: 'Week 7 • Final Evaluation & Graduation',
+    summary:
+      'Validate written knowledge and practical execution through final exams, reinforce decision-making, and celebrate graduation into professional artistry.',
+    days: [
+      {
+        id: 'day-1',
+        title: 'Day 1 • Final Written Exam & Clinical Prep',
+        focus: [
+          'Demonstrate theory mastery across anatomy, color, contraindications, and technique',
+          'Prepare tray setup, mapping, and sanitation for practical exam',
+          'Assess individual readiness with targeted feedback'
+        ],
+        tone: 'Professional, calm testing environment with focused coaching',
+        segments: [
+          {
+            time: '9:30 – 9:45',
+            title: 'Welcome & Exam Orientation',
+            instructorScript:
+              'Written exam covers the full curriculum. Passing requires calm focus and clarity.',
+            activities: ['Review format, passing score, retake policy, mindset cue.']
+          },
+          {
+            time: '9:45 – 11:15',
+            title: 'Final Written Exam',
+            activities: ['70–90 minute proctored exam. No coaching, quiet environment.']
+          },
+          {
+            time: '11:15 – 11:45',
+            title: 'Scoring + Private Feedback Review',
+            activities: [
+              'Students complete reflection worksheet while instructor scores.',
+              'One action item provided to each student.'
+            ]
+          },
+          { time: '11:45 – 12:45', title: 'Lunch' },
+          {
+            time: '12:45 – 2:30',
+            title: 'Practical Prep Workshop',
+            activities: [
+              'Map brows on mannequin/peer, prepare trays, verbalize sanitation sequence.',
+              'Instructor assesses mapping symmetry, posture, stroke direction.'
+            ]
+          },
+          {
+            time: '2:30 – 3:30',
+            title: 'Individual Readiness Check',
+            activities: [
+              'Students verbally demonstrate needle hang, depth description, Fitzpatrick pigment logic, reassurance script.',
+              'Instructor logs pass or reinforcement needed.'
+            ]
+          }
+        ],
+        homework: [
+          'Review feedback from readiness check and adjust plan for practical exam.',
+          'Ensure all tools and consent forms prepared for live model day.'
+        ]
+      },
+      {
+        id: 'day-2',
+        title: 'Day 2 • Practical Final Exam & Graduation',
+        focus: [
+          'Perform complete PMU brow service confidently and safely',
+          'Deliver luxury aftercare education and client communication',
+          'Reflect on growth and finalize professional plan'
+        ],
+        tone: 'Supportive exam environment with high standards',
+        segments: [
+          {
+            time: '9:30 – 9:45',
+            title: 'Model Check-In & Consent Verification',
+            activities: ['Students confirm candidacy, complete health and consent forms, conduct consultation.']
+          },
+          {
+            time: '9:45 – 10:20',
+            title: 'Mapping & Design Evaluation',
+            activities: [
+              'Students map based on bone structure and justify design before proceeding.',
+              'Corrections required before continuing.'
+            ]
+          },
+          {
+            time: '10:20 – 12:45',
+            title: 'Procedure Execution',
+            activities: [
+              'Outline/stroke pattern establishment (20–35 min)',
+              'Stroke or shading build (45–75 min)',
+              'Final pass/detail (10–20 min)',
+              'Reveal (5 min) with calm delivery'
+            ]
+          },
+          { time: '12:45 – 1:45', title: 'Lunch + Instructor Scoring' },
+          {
+            time: '1:45 – 2:15',
+            title: 'Aftercare Education Demonstration',
+            activities: [
+              'Students walk model through healing timeline, touch-up scheduling, do’s/don’ts using luxury tone.'
+            ]
+          },
+          {
+            time: '2:15 – 3:00',
+            title: 'Final Reflection + Growth Plan',
+            activities: [
+              'Students complete reflection: executed well, improvement focus, 3-month pricing plan, brand promise.',
+              'Instructor signs off on final scores.'
+            ]
+          },
+          {
+            time: '3:00 – 3:30',
+            title: 'Graduation Moment',
+            instructorScript:
+              '“Today, you are not just finishing training — you are beginning your role as a trusted artist. You earned this.”',
+            activities: ['Photos, certificates, acknowledgment.']
+          }
+        ],
+        homework: ['Celebrate, share graduation milestone, and outline first month action plan.']
+      }
+    ]
   }
-  // Additional weeks can be appended here following the same structure.
 ]
 
