@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,6 +113,10 @@ export async function POST(request: NextRequest) {
       assignment: newAssignment
     })
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      console.error('Training assignments POST missing table:', error)
+      return NextResponse.json({ success: false, error: 'Training assignments table not found. Please run the latest Prisma migrations.' }, { status: 500 })
+    }
     console.error('Training assignments POST error:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create assignment' },
