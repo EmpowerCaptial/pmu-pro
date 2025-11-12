@@ -2238,11 +2238,7 @@ export default function FundamentalsTrainingPortal() {
                 Prepare your files (PDF, images, or video link). Include any reflection notes requested in the assignment.
               </li>
               <li>
-                Upload the files to the{' '}
-                <Link href="/library?category=training" className="font-medium text-purple-700 underline">
-                  Training Resource Library
-                </Link>{' '}
-                or share them directly with your instructor via email.
+                Email your work to your instructor for review. Attach files or share a cloud link.
               </li>
               <li>
                 Notify your instructor (group chat or email) that the work is ready so it can be marked as submitted.
@@ -2257,9 +2253,9 @@ export default function FundamentalsTrainingPortal() {
               Close
             </Button>
             <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Link href="/library?category=training">
+              <Link href="mailto:instructor@pmupro.com?subject=Training%20Assignment%20Submission">
                 <Upload className="h-4 w-4 mr-2" />
-                Open Resource Library
+                Email Instructor
               </Link>
             </Button>
           </div>
