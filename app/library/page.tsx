@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Label } from '@/components/ui/label'
 import { Search, Download, FileText, BookOpen, Shield, FileCheck, Clipboard, AlertTriangle, Mail, UploadCloud, UserCircle } from 'lucide-react'
-import { getAllPDFResources, PDFResource } from '@/lib/pdf-generator'
 import Link from 'next/link'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
@@ -34,8 +33,6 @@ interface LibraryResource {
   title: string
   category: string
   description?: string
-  source: 'static' | 'uploaded'
-  staticResource?: PDFResource
   url?: string
   fileType?: string
   fileSize?: number
@@ -61,18 +58,6 @@ export default function LibraryPage() {
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
   const [deletingResourceId, setDeletingResourceId] = useState<string | null>(null)
   
-  const staticPdfResources = useMemo(() => getAllPDFResources(), [])
-  const staticResources: LibraryResource[] = useMemo(() => (
-    staticPdfResources.map((resource) => ({
-      id: `static-${resource.id}`,
-      title: resource.title,
-      category: resource.category,
-      description: resource.content[0],
-      source: 'static',
-      staticResource: resource
-    }))
-  ), [staticPdfResources])
-
   const fetchUploadedResources = async () => {
     try {
       setResourceError(null)
@@ -104,22 +89,21 @@ export default function LibraryPage() {
     initials: "PA",
   }
 
-  const combinedResources: LibraryResource[] = useMemo(() => {
-    const uploadedLibrary = uploadedResources.map<LibraryResource>((resource) => ({
-      id: resource.id,
-      title: resource.title,
-      category: resource.category || 'general',
-      description: `${resource.fileType?.replace('application/', '').toUpperCase()} • Uploaded by ${resource.uploadedBy}`,
-      source: 'uploaded',
-      url: resource.url,
-      fileType: resource.fileType,
-      fileSize: resource.fileSize,
-      uploadedAt: resource.uploadedAt,
-      uploadedBy: resource.uploadedBy
-    }))
-
-    return [...staticResources, ...uploadedLibrary]
-  }, [staticResources, uploadedResources])
+  const combinedResources: LibraryResource[] = useMemo(
+    () =>
+      uploadedResources.map(resource => ({
+        id: resource.id,
+        title: resource.title,
+        category: resource.category?.toLowerCase() || 'general',
+        description: `${resource.fileType?.replace('application/', '').toUpperCase()} • Uploaded by ${resource.uploadedBy}`,
+        url: resource.url,
+        fileType: resource.fileType,
+        fileSize: resource.fileSize,
+        uploadedAt: resource.uploadedAt,
+        uploadedBy: resource.uploadedBy
+      })),
+    [uploadedResources]
+  )
 
   const dynamicCategorySet = useMemo(() => {
     const baseCategories = ['licensing', 'establishment', 'regulations', 'renewal', 'inspection', 'consent', 'general']
@@ -191,25 +175,11 @@ export default function LibraryPage() {
 
   const handleDownload = async (resource: LibraryResource) => {
     try {
-      if (resource.source === 'uploaded' && resource.url) {
+      if (resource.url) {
         window.open(resource.url, '_blank', 'noopener,noreferrer')
         return
       }
-
-      if (resource.source === 'static' && resource.staticResource) {
-        const pdfResource = resource.staticResource
-        // Placeholder export until PDF generation is wired in
-        const content = generatePDFPreview(pdfResource)
-        const blob = new Blob([content], { type: 'text/plain' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${pdfResource.title.replace(/\s+/g, '_')}.txt`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-      }
+      alert('Download link not available for this resource.')
     } catch (error) {
       console.error('Download failed:', error)
       alert('Download failed. Please try again.')
@@ -218,7 +188,6 @@ export default function LibraryPage() {
 
   const handleDeleteResource = async (resource: LibraryResource) => {
     if (!canManageResources) return
-    if (resource.source !== 'uploaded') return
 
     if (!currentUser?.email) {
       setDeleteError('You must be signed in to delete resources.')
@@ -256,26 +225,6 @@ export default function LibraryPage() {
     } finally {
       setDeletingResourceId(null)
     }
-  }
-
-  const generatePDFPreview = (resource: PDFResource): string => {
-    let content = `${resource.title}\n`
-    content += `${'='.repeat(resource.title.length)}\n\n`
-    content += `Category: ${resource.category}\n\n`
-    
-    resource.sections.forEach((section, index) => {
-      content += `${index + 1}. ${section.title}\n`
-      content += `${'-'.repeat(section.title.length + 3)}\n`
-      
-      if (section.subsections) {
-        section.subsections.forEach((subsection, subIndex) => {
-          content += `  ${index + 1}.${subIndex + 1} ${subsection.title}\n`
-          content += `     ${Array.isArray(subsection.content) ? subsection.content.join(', ') : subsection.content}\n\n`
-        })
-      }
-    })
-    
-    return content
   }
 
   const canManageResources = (() => {
@@ -563,11 +512,6 @@ export default function LibraryPage() {
                       {getCategoryName(resource.category)}
                     </Badge>
                   </div>
-                  {resource.source === 'uploaded' && (
-                    <Badge variant="outline" className="text-xs border-lavender/50 text-lavender">
-                      Uploaded
-                    </Badge>
-                  )}
                 </div>
                 <CardTitle className="text-lg">{resource.title}</CardTitle>
                 <CardDescription className="text-sm">
@@ -576,20 +520,14 @@ export default function LibraryPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {resource.source === 'static' && resource.staticResource && (
-                    <div className="text-xs text-gray-500">
-                      <p><strong>Category:</strong> {resource.category}</p>
-                      <p><strong>Sections:</strong> {resource.staticResource.sections.length}</p>
-                    </div>
-                  )}
-
-                  {resource.source === 'uploaded' && (
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p className="flex items-center gap-1"><UserCircle className="h-3 w-3" /><span><strong>Uploaded by:</strong> {resource.uploadedBy}</span></p>
-                      <p><strong>Uploaded:</strong> {formatDate(resource.uploadedAt)}</p>
-                      <p><strong>File size:</strong> {formatFileSize(resource.fileSize)}</p>
-                    </div>
-                  )}
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p className="flex items-center gap-1">
+                      <UserCircle className="h-3 w-3" />
+                      <span><strong>Uploaded by:</strong> {resource.uploadedBy}</span>
+                    </p>
+                    <p><strong>Uploaded:</strong> {formatDate(resource.uploadedAt)}</p>
+                    <p><strong>File size:</strong> {formatFileSize(resource.fileSize)}</p>
+                  </div>
                   
                   <div className="flex gap-2">
                     <Button 
@@ -601,7 +539,7 @@ export default function LibraryPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
-                    {resource.source === 'uploaded' && canManageResources && (
+                    {canManageResources && (
                       <Button
                         onClick={() => handleDeleteResource(resource)}
                         size="sm"
