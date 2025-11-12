@@ -383,6 +383,8 @@ export default function FundamentalsTrainingPortal() {
   const [deleteAssignmentConfirmText, setDeleteAssignmentConfirmText] = useState('')
   const [deleteAssignmentError, setDeleteAssignmentError] = useState<string | null>(null)
   const [isDeletingAssignment, setIsDeletingAssignment] = useState(false)
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [assignmentPendingUpload, setAssignmentPendingUpload] = useState<Assignment | null>(null)
   const [selectedLessonWeekId, setSelectedLessonWeekId] = useState(
     TRAINING_LESSON_PLANS[0]?.id ?? ''
   )
@@ -1149,11 +1151,18 @@ export default function FundamentalsTrainingPortal() {
                 Access curriculum, assignments, and lecture videos. Directors and instructors can manage attendance, grades, and training resources.
               </CardDescription>
             </div>
-            <Button asChild className="bg-purple-600 hover:bg-purple-700">
-              <Link href="/library?category=training">
-                <BookOpen className="h-4 w-4 mr-2" /> Download E-Book
-              </Link>
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button asChild variant="outline">
+                <Link href="/training">
+                  <Users className="h-4 w-4 mr-2" /> Back to Training Hub
+                </Link>
+              </Button>
+              <Button asChild className="bg-purple-600 hover:bg-purple-700">
+                <Link href="/library?category=training">
+                  <BookOpen className="h-4 w-4 mr-2" /> Download E-Book
+                </Link>
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 
@@ -1285,7 +1294,14 @@ export default function FundamentalsTrainingPortal() {
                                               </Button>
                                             </>
                                           )}
-                                        <Button size="sm" variant="outline">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setAssignmentPendingUpload(assignment)
+                                            setUploadDialogOpen(true)
+                                          }}
+                                        >
                                           <Upload className="h-4 w-4 mr-1" /> Upload Work
                                         </Button>
                                         <Button
@@ -2189,6 +2205,66 @@ export default function FundamentalsTrainingPortal() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <Dialog
+        open={uploadDialogOpen}
+        onOpenChange={(open) => {
+          setUploadDialogOpen(open)
+          if (!open) {
+            setAssignmentPendingUpload(null)
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Submit Your Work</DialogTitle>
+            <DialogDescription>
+              Share your completed coursework so instructors can review it promptly.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div className="rounded-md border border-purple-200 bg-purple-50 p-3">
+              <p className="font-medium text-purple-900">
+                {assignmentPendingUpload?.title ?? 'Assignment'}
+              </p>
+              {assignmentPendingUpload?.description && (
+                <p className="mt-1 text-purple-800">
+                  {assignmentPendingUpload.description}
+                </p>
+              )}
+            </div>
+            <ol className="list-decimal space-y-2 pl-5">
+              <li>
+                Prepare your files (PDF, images, or video link). Include any reflection notes requested in the assignment.
+              </li>
+              <li>
+                Upload the files to the{' '}
+                <Link href="/library?category=training" className="font-medium text-purple-700 underline">
+                  Training Resource Library
+                </Link>{' '}
+                or share them directly with your instructor via email.
+              </li>
+              <li>
+                Notify your instructor (group chat or email) that the work is ready so it can be marked as submitted.
+              </li>
+            </ol>
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800">
+              Tip: include the assignment title and due date in your message so instructors can log your submission quickly.
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
+              Close
+            </Button>
+            <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Link href="/library?category=training">
+                <Upload className="h-4 w-4 mr-2" />
+                Open Resource Library
+              </Link>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={isEditAssignmentDialogOpen}

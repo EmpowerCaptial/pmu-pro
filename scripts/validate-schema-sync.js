@@ -17,8 +17,15 @@ async function validateSchemaSync() {
     
     // Step 1: Test basic connection
     console.log('📊 Step 1: Testing database connection')
-    await prisma.$connect()
-    console.log('✅ Database connection successful')
+    try {
+      await prisma.$connect()
+      console.log('✅ Database connection successful')
+    } catch (connectionError) {
+      console.error('❌ Database connection failed:', connectionError.message || connectionError)
+      console.log('⚠️ Skipping schema validation (non-blocking when DB unavailable)')
+      console.log('')
+      return
+    }
     
     // Step 2: Test critical User model fields
     console.log('')
