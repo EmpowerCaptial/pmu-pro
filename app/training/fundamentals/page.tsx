@@ -2044,6 +2044,157 @@ export default function FundamentalsTrainingPortal() {
 
                   <Card className="border-gray-200 break-words">
                     <CardHeader className="break-words">
+                      <CardTitle className="text-xl font-semibold text-gray-900">Student View: Assignments</CardTitle>
+                      <CardDescription className="text-gray-600">
+                        View assignments exactly as students see them. Use Edit and Delete to manage coursework.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 break-words">
+                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 break-words">
+                        <span className="font-semibold">Course Pace:</span>{' '}
+                        Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
+                      </div>
+                      <Tabs
+                        value={selectedWeekId}
+                        onValueChange={(value) => setSelectedWeekId(value as string)}
+                        className="space-y-4"
+                      >
+                        <TabsList className="flex w-full max-w-full overflow-x-auto rounded-lg bg-purple-100/70 p-1">
+                          {courseWeeks.map(week => (
+                            <TabsTrigger
+                              key={week.id}
+                              value={week.id}
+                              className="whitespace-nowrap"
+                            >
+                              Week {week.order}
+                            </TabsTrigger>
+                          ))}
+                        </TabsList>
+                        {courseWeeks.map(week => {
+                          const actualHours = week.assignments.reduce(
+                            (hours, assignment) => hours + (assignment.estimatedHours ?? 0),
+                            0
+                          )
+                          const displayHours = actualHours || week.targetHours
+                          return (
+                            <TabsContent key={week.id} value={week.id} className="space-y-4">
+                              <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
+                                <p className="text-sm font-semibold text-purple-900">{week.title}</p>
+                                <p className="text-sm text-purple-800">{week.summary}</p>
+                                <p className="text-xs text-purple-700">
+                                  Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
+                                </p>
+                              </div>
+
+                              {week.assignments.length === 0 ? (
+                                <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                                  No assignments published for this week yet.
+                                </div>
+                              ) : (
+                                week.assignments.map(assignment => (
+                                  <Card key={assignment.id} className="border border-gray-200 shadow-sm break-words">
+                                    <CardContent className="p-4 space-y-3 break-words">
+                                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                            <FileText className="h-5 w-5 text-purple-600" />
+                                            {assignment.title}
+                                          </h3>
+                                          <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                        </div>
+                                        <Badge
+                                          className={
+                                            assignment.status === 'graded'
+                                              ? 'bg-green-100 text-green-700 border border-green-200'
+                                              : assignment.status === 'submitted'
+                                              ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                              : 'bg-amber-100 text-amber-700 border border-amber-200'
+                                          }
+                                        >
+                                          {assignment.status === 'graded' && 'Graded'}
+                                          {assignment.status === 'submitted' && 'Submitted'}
+                                          {assignment.status === 'pending' && 'Pending'}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span>{assignment.dueDate}</span>
+                                          {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
+                                            <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
+                                              ~{assignment.estimatedHours} hrs
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => openEditAssignmentDialog(assignment, week.id)}
+                                          >
+                                            <PenSquare className="h-4 w-4 mr-1" />
+                                            Edit
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => openDeleteAssignmentDialog(assignment, week.id)}
+                                            disabled={!assignment.isPersisted}
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                            Delete
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() =>
+                                              assignment.rubric &&
+                                              setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                            }
+                                            disabled={!assignment.rubric}
+                                          >
+                                            <Eye className="h-4 w-4 mr-1" />
+                                            {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      {assignment.rubric && openRubricId === assignment.id && (
+                                        <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                          {assignment.rubric}
+                                        </div>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                ))
+                              )}
+
+                              {lessonHomeworkByWeek[week.id]?.length ? (
+                                <div className="rounded-md border border-amber-200 bg-amber-50 p-4 space-y-3">
+                                  <p className="text-sm font-semibold text-amber-900">Homework & Follow-Up</p>
+                                  <div className="space-y-3">
+                                    {lessonHomeworkByWeek[week.id]?.map(homework => (
+                                      <div key={homework.dayTitle} className="space-y-1">
+                                        <p className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                                          {homework.dayTitle}
+                                        </p>
+                                        <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
+                                          {homework.items.map(item => (
+                                            <li key={item}>{item}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </TabsContent>
+                          )
+                        })}
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-gray-200 break-words">
+                    <CardHeader className="break-words">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                           <CardTitle className="text-xl font-semibold text-gray-900">Lesson Planner</CardTitle>
