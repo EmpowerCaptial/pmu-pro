@@ -171,52 +171,107 @@ export default function StudioTeamPage() {
     }
   ]
 
-  // Load team members from DATABASE (not localStorage)
-  useEffect(() => {
-    const loadTeamMembersFromDatabase = async () => {
-      if (!currentUser?.email) return
-      
-      try {
-        // PRODUCTION FIX: Fetch from database first
-        const response = await fetch('/api/studio/team-members', {
-          headers: {
-            'x-user-email': currentUser.email
-          }
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          const dbTeamMembers = data.teamMembers || []
-          
-          console.log('📋 Loaded team members from DATABASE:', dbTeamMembers.length)
-          setTeamMembers(dbTeamMembers)
-          
-          // Cache in localStorage for offline support
-          localStorage.setItem('studio-team-members', JSON.stringify(dbTeamMembers))
-          
-          // Sync instructors
-          syncExistingInstructors(dbTeamMembers)
-        } else {
-          // Fallback to localStorage if API fails
-          const savedTeamMembers = localStorage.getItem('studio-team-members')
-          if (savedTeamMembers) {
-            const teamMembers = JSON.parse(savedTeamMembers)
-            setTeamMembers(teamMembers)
-            syncExistingInstructors(teamMembers)
-          }
+  // Migrate localStorage data to database (one-time migration)
+  const migrateLocalStorageToDatabase = async () => {
+    if (!currentUser?.email) return
+
+    try {
+      const savedTeamMembers = localStorage.getItem('studio-team-members')
+      if (!savedTeamMembers) return
+
+      const teamMembers = JSON.parse(savedTeamMembers)
+      if (!Array.isArray(teamMembers) || teamMembers.length === 0) return
+
+      // Filter out members that are already in the database (check by email)
+      const response = await fetch('/api/studio/team-members', {
+        headers: {
+          'x-user-email': currentUser.email
         }
-      } catch (error) {
-        console.error('Error loading team members:', error)
-        
-        // Fallback to localStorage
-        const savedTeamMembers = localStorage.getItem('studio-team-members')
-        if (savedTeamMembers) {
-          setTeamMembers(JSON.parse(savedTeamMembers))
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const dbTeamMembers = data.teamMembers || []
+        const dbEmails = new Set(dbTeamMembers.map((m: any) => m.email?.toLowerCase()))
+
+        // Only migrate members not already in database
+        const membersToMigrate = teamMembers.filter((m: any) => 
+          m.email && !dbEmails.has(m.email.toLowerCase())
+        )
+
+        if (membersToMigrate.length > 0) {
+          console.log(`🔄 Migrating ${membersToMigrate.length} team members from localStorage to database...`)
+
+          const migrateResponse = await fetch('/api/migrate/localstorage-to-db', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-email': currentUser.email
+            },
+            body: JSON.stringify({
+              teamMembers: membersToMigrate,
+              staffMembers: [],
+              artistProfiles: []
+            })
+          })
+
+          if (migrateResponse.ok) {
+            const result = await migrateResponse.json()
+            console.log('✅ Migration completed:', result.results)
+            
+            // Clear localStorage after successful migration
+            localStorage.removeItem('studio-team-members')
+            
+            // Reload team members from database
+            loadTeamMembersFromDatabase()
+          }
         }
       }
+    } catch (error) {
+      console.error('Error migrating localStorage data:', error)
     }
+  }
+
+  // Load team members from DATABASE (not localStorage)
+  const loadTeamMembersFromDatabase = async () => {
+    if (!currentUser?.email) return
     
-    loadTeamMembersFromDatabase()
+    try {
+      // PRODUCTION: Always fetch from database
+      const response = await fetch('/api/studio/team-members', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const dbTeamMembers = data.teamMembers || []
+        
+        console.log('📋 Loaded team members from DATABASE:', dbTeamMembers.length)
+        setTeamMembers(dbTeamMembers)
+        
+        // Cache in localStorage for offline support (read-only)
+        localStorage.setItem('studio-team-members', JSON.stringify(dbTeamMembers))
+        
+        // Sync instructors
+        syncExistingInstructors(dbTeamMembers)
+      } else {
+        console.error('Failed to load team members from database')
+        setTeamMembers([])
+      }
+    } catch (error) {
+      console.error('Error loading team members:', error)
+      setTeamMembers([])
+    }
+  }
+
+  useEffect(() => {
+    // First, try to migrate any localStorage data
+    migrateLocalStorageToDatabase().then(() => {
+      // Then load from database
+      loadTeamMembersFromDatabase()
+    })
   }, [currentUser])
 
   // Sync existing team members who are instructors to supervision list
@@ -274,10 +329,14 @@ export default function StudioTeamPage() {
     }
   }
 
-  // Save team members to localStorage
-  const saveTeamMembers = (newTeamMembers: TeamMember[]) => {
-    setTeamMembers(newTeamMembers)
-    localStorage.setItem('studio-team-members', JSON.stringify(newTeamMembers))
+  // Save team members - always reload from database instead of saving to localStorage
+  const saveTeamMembers = async (newTeamMembers?: TeamMember[]) => {
+    // If newTeamMembers provided, update state immediately for UI responsiveness
+    if (newTeamMembers) {
+      setTeamMembers(newTeamMembers)
+    }
+    // Always reload from database to ensure consistency
+    await loadTeamMembersFromDatabase()
   }
 
   // Sync team members from database
@@ -386,8 +445,8 @@ export default function StudioTeamPage() {
         role: inviteRole
       }
 
-      const updatedTeamMembers = [...teamMembers, newTeamMember]
-      saveTeamMembers(updatedTeamMembers)
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
       
       console.log(`✅ Added team member with ID: ${newTeamMember.id} (from database)`)
       console.log(`   This ID will match when ${inviteName} logs in`)
@@ -456,8 +515,8 @@ export default function StudioTeamPage() {
         licenseNumber: `LIC-${Date.now().toString().slice(-6)}`
       }
 
-      const updatedTeamMembers = [...teamMembers, newMember]
-      saveTeamMembers(updatedTeamMembers)
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
 
       // Also add to studio instructors if they're an instructor
       if (inviteRole === 'instructor' || inviteRole === 'licensed') {
@@ -556,19 +615,8 @@ export default function StudioTeamPage() {
       const result = await response.json()
 
       // Update local state
-      const updatedMembers = teamMembers.map(m =>
-        m.id === selectedMember.id
-          ? {
-              ...m,
-              employmentType: result.member.employmentType,
-              commissionRate: result.member.commissionRate,
-              boothRentAmount: result.member.boothRentAmount
-            }
-          : m
-      )
-      
-      setTeamMembers(updatedMembers)
-      localStorage.setItem('studio-team-members', JSON.stringify(updatedMembers))
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
 
       alert(`✅ Employment settings updated for ${selectedMember.name}`)
       setShowEmploymentModal(false)
@@ -650,19 +698,26 @@ export default function StudioTeamPage() {
         })
       })
 
-      // For now, save to localStorage
-      // TODO: Create API endpoint to save to database
-      const updatedMembers = teamMembers.map(m =>
-        m.id === selectedMember.id
-          ? {
-              ...m,
-              permissions: permissionsArray
-            }
-          : m
-      )
-      
-      setTeamMembers(updatedMembers)
-      localStorage.setItem('studio-team-members', JSON.stringify(updatedMembers))
+      // Save permissions to database via API
+      const response = await fetch('/api/studio/update-team-member', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId: selectedMember.id,
+          permissions: permissionsArray
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update permissions')
+      }
+
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
 
       alert(`✅ Permissions updated for ${selectedMember.name}`)
       setShowPermissionsModal(false)
@@ -700,9 +755,8 @@ export default function StudioTeamPage() {
         throw new Error(errorData.error || 'Failed to delete team member')
       }
       
-      // Remove from localStorage team members
-      const updatedTeamMembers = teamMembers.filter(m => m.id !== memberId)
-      saveTeamMembers(updatedTeamMembers)
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
       
       // Remove from studio-instructors localStorage if they were an instructor
       const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
@@ -720,32 +774,44 @@ export default function StudioTeamPage() {
       localStorage.setItem('service-assignments', JSON.stringify(filteredAssignments))
       
       alert(`✅ ${member.name} has been successfully removed from your team and deleted from the system.`)
-      
-      // Refresh the page to ensure all data is in sync
-      window.location.reload()
     } catch (error) {
       console.error('Error removing team member:', error)
       alert(`❌ Failed to remove team member: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  const handleChangeTeamMemberRole = (memberId: string, newRole: 'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager') => {
+  const handleChangeTeamMemberRole = async (memberId: string, newRole: 'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager') => {
     const member = teamMembers.find(m => m.id === memberId)
     if (!member) return
     
-    const updatedTeamMembers = teamMembers.map(member => 
-      member.id === memberId 
-        ? { ...member, role: newRole }
-        : member
-    )
-    saveTeamMembers(updatedTeamMembers)
-    
-    // Sync with studio-instructors localStorage for supervision booking
-    const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
-    console.log('🔄 Syncing role change for:', member.name, 'to role:', newRole)
-    console.log('📋 Current existing instructors:', existingInstructors)
-    
-    if (newRole === 'instructor' || newRole === 'licensed') {
+    try {
+      // Update role in database via API
+      const response = await fetch('/api/studio/update-team-member', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId: memberId,
+          role: newRole
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update role')
+      }
+
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
+      
+      // Sync with studio-instructors localStorage for supervision booking
+      const existingInstructors = JSON.parse(localStorage.getItem('studio-instructors') || '[]')
+      console.log('🔄 Syncing role change for:', member.name, 'to role:', newRole)
+      console.log('📋 Current existing instructors:', existingInstructors)
+      
+      if (newRole === 'instructor' || newRole === 'licensed') {
       // Add or update instructor in the instructors list
       const instructorData = {
         id: member.id,
@@ -795,24 +861,66 @@ export default function StudioTeamPage() {
                     newRole === 'hr' ? 'HR' :
                     newRole === 'manager' ? 'Manager' : 'Team Member'
     alert(`${member.name} has been changed to ${roleText} status!`)
+    } catch (error) {
+      console.error('Error changing team member role:', error)
+      alert(error instanceof Error ? error.message : 'Failed to change role')
+    }
   }
 
-  const handleApproveTeamMember = (memberId: string) => {
-    const updatedTeamMembers = teamMembers.map(member => 
-      member.id === memberId 
-        ? { ...member, status: 'active' as const, joinedAt: new Date().toISOString() }
-        : member
-    )
-    saveTeamMembers(updatedTeamMembers)
+  const handleApproveTeamMember = async (memberId: string) => {
+    try {
+      // Update status in database via API
+      const response = await fetch('/api/studio/update-team-member', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId: memberId,
+          status: 'active'
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to approve team member')
+      }
+
+      // Reload from database
+      await saveTeamMembers()
+    } catch (error) {
+      console.error('Error approving team member:', error)
+      alert(error instanceof Error ? error.message : 'Failed to approve team member')
+    }
   }
 
-  const handleSuspendTeamMember = (memberId: string) => {
-    const updatedTeamMembers = teamMembers.map(member => 
-      member.id === memberId 
-        ? { ...member, status: 'suspended' as const }
-        : member
-    )
-    saveTeamMembers(updatedTeamMembers)
+  const handleSuspendTeamMember = async (memberId: string) => {
+    try {
+      // Update status in database via API
+      const response = await fetch('/api/studio/update-team-member', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId: memberId,
+          status: 'suspended'
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to suspend team member')
+      }
+
+      // Reload from database
+      await saveTeamMembers()
+    } catch (error) {
+      console.error('Error suspending team member:', error)
+      alert(error instanceof Error ? error.message : 'Failed to suspend team member')
+    }
   }
 
   const handleSeparateTeamMember = async (memberId: string) => {
@@ -846,9 +954,8 @@ export default function StudioTeamPage() {
 
       const result = await response.json()
       
-      // Remove member from team list
-      const updatedTeamMembers = teamMembers.filter(m => m.id !== memberId)
-      saveTeamMembers(updatedTeamMembers)
+      // Reload from database instead of using localStorage
+      await saveTeamMembers()
 
       alert(`✅ ${member.name} has been successfully separated from the studio!\n\nThey now have their own ${newPlan} account:\nEmail: ${result.newAccount.email}\nTemporary Password: ${result.newAccount.temporaryPassword}\n\nPlease share these credentials with them securely.`)
 
