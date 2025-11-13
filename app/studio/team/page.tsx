@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -1167,7 +1169,32 @@ export default function StudioTeamPage() {
           </Card>
         </div>
 
-        {/* Invite New Team Member */}
+          {/* Migration Alert */}
+          {(() => {
+            const localStorageData = typeof window !== 'undefined' ? localStorage.getItem('studio-team-members') : null
+            const localStorageCount = localStorageData ? JSON.parse(localStorageData).length : 0
+            const dbCount = teamMembers.length
+            
+            if (localStorageCount > dbCount && dbCount > 0) {
+              return (
+                <Alert className="mb-6 border-orange-200 bg-orange-50">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <AlertTitle className="text-orange-800">Team Members Not Migrated</AlertTitle>
+                  <AlertDescription className="text-orange-700">
+                    Found {localStorageCount} team members in localStorage but only {dbCount} in the database. 
+                    {' '}
+                    <Link href="/studio/team/migrate" className="font-semibold underline">
+                      Click here to migrate all team members to the database
+                    </Link>
+                    {' '}so they persist after refresh.
+                  </AlertDescription>
+                </Alert>
+              )
+            }
+            return null
+          })()}
+
+          {/* Invite New Team Member */}
         <Card className="mb-6 md:mb-8">
           <CardHeader className="pb-4">
             <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
