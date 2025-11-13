@@ -179,10 +179,18 @@ export default function StudioTeamPage() {
 
     try {
       const savedTeamMembers = localStorage.getItem('studio-team-members')
-      if (!savedTeamMembers) return
+      if (!savedTeamMembers) {
+        console.log('📭 No localStorage data found to migrate')
+        return
+      }
 
       const teamMembers = JSON.parse(savedTeamMembers)
-      if (!Array.isArray(teamMembers) || teamMembers.length === 0) return
+      if (!Array.isArray(teamMembers) || teamMembers.length === 0) {
+        console.log('📭 Empty localStorage data')
+        return
+      }
+
+      console.log(`🔍 Found ${teamMembers.length} team members in localStorage`)
 
       // Filter out members that are already in the database (check by email)
       const response = await fetch('/api/studio/team-members', {
@@ -196,41 +204,87 @@ export default function StudioTeamPage() {
         const dbTeamMembers = data.teamMembers || []
         const dbEmails = new Set(dbTeamMembers.map((m: any) => m.email?.toLowerCase()))
 
+        console.log(`📊 Found ${dbTeamMembers.length} team members already in database`)
+
         // Only migrate members not already in database
-        const membersToMigrate = teamMembers.filter((m: any) => 
-          m.email && !dbEmails.has(m.email.toLowerCase())
-        )
+        const membersToMigrate = teamMembers.filter((m: any) => {
+          const email = m.email?.toLowerCase()
+          return email && !dbEmails.has(email)
+        })
+
+        console.log(`🔄 Found ${membersToMigrate.length} team members to migrate`)
 
         if (membersToMigrate.length > 0) {
-          console.log(`🔄 Migrating ${membersToMigrate.length} team members from localStorage to database...`)
+          console.log(`🚀 Starting migration of ${membersToMigrate.length} team members...`)
 
-          const migrateResponse = await fetch('/api/migrate/localstorage-to-db', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-user-email': currentUser.email
-            },
-            body: JSON.stringify({
-              teamMembers: membersToMigrate,
-              staffMembers: [],
-              artistProfiles: []
+          // Show alert to user about migration
+          alert(`Found ${membersToMigrate.length} team members in localStorage that need to be migrated to the database.\n\nMigrating now...`)
+
+          // Migrate in batches if needed (API might have limits)
+          const BATCH_SIZE = 50
+          let created = 0
+          let skipped = 0
+          let errors: string[] = []
+
+          for (let i = 0; i < membersToMigrate.length; i += BATCH_SIZE) {
+            const batch = membersToMigrate.slice(i, i + BATCH_SIZE)
+            console.log(`📦 Migrating batch ${Math.floor(i / BATCH_SIZE) + 1} (${batch.length} members)...`)
+
+            const migrateResponse = await fetch('/api/migrate/localstorage-to-db', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-user-email': currentUser.email
+              },
+              body: JSON.stringify({
+                teamMembers: batch,
+                staffMembers: [],
+                artistProfiles: []
+              })
             })
-          })
 
-          if (migrateResponse.ok) {
-            const result = await migrateResponse.json()
-            console.log('✅ Migration completed:', result.results)
-            
-            // Clear localStorage after successful migration
-            localStorage.removeItem('studio-team-members')
-            
-            // Reload team members from database
-            loadTeamMembersFromDatabase()
+            if (migrateResponse.ok) {
+              const result = await migrateResponse.json()
+              created += result.results.teamMembers.created || 0
+              skipped += result.results.teamMembers.skipped || 0
+              if (result.results.teamMembers.errors) {
+                errors.push(...result.results.teamMembers.errors)
+              }
+              console.log(`✅ Batch completed: Created ${result.results.teamMembers.created}, Skipped ${result.results.teamMembers.skipped}`)
+            } else {
+              const errorData = await migrateResponse.json().catch(() => ({}))
+              console.error('❌ Batch migration failed:', errorData)
+              errors.push(`Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${errorData.error || 'Unknown error'}`)
+            }
           }
+
+          console.log(`✅ Migration completed: Created ${created}, Skipped ${skipped}`)
+          
+          if (errors.length > 0) {
+            console.warn('⚠️ Some errors during migration:', errors)
+          }
+
+          // Clear localStorage after successful migration (only if we created something)
+          if (created > 0) {
+            localStorage.removeItem('studio-team-members')
+            console.log('🗑️ Cleared localStorage after successful migration')
+          }
+          
+          // Show success message
+          alert(`✅ Migration completed!\n\nCreated: ${created} new team members\nSkipped: ${skipped} (already existed)\n\nRefreshing page...`)
+          
+          // Reload team members from database
+          await loadTeamMembersFromDatabase()
+          
+          // Refresh the page to show updated counts
+          window.location.reload()
+        } else {
+          console.log('✅ All team members already in database - no migration needed')
         }
       }
     } catch (error) {
-      console.error('Error migrating localStorage data:', error)
+      console.error('❌ Error migrating localStorage data:', error)
+      alert(`Migration error: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try the manual migration page at /studio/team/migrate`)
     }
   }
 
