@@ -93,20 +93,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const newAssignment = await prisma.trainingAssignment.create({
-      data: {
-        weekId,
-        title: title.trim(),
-        description: (description || '').trim(),
-        dueDateLabel: (dueDateLabel || 'Due date shared in class').trim(),
-        dueDateISO: dueDateISO || null,
-        status: (status || 'pending').toLowerCase(),
-        estimatedHours: parseFloatOrNull(estimatedHours),
-        rubric: rubric ? String(rubric) : null,
-        order: Math.floor(Date.now() / 1000),
-        createdBy: user.id
-      }
-    })
+          // Calculate order based on max order in the week + 1
+          const maxOrderResult = await prisma.trainingAssignment.aggregate({
+            where: { weekId },
+            _max: { order: true }
+          })
+          const maxOrder = maxOrderResult._max.order ?? 0
+          const newOrder = maxOrder + 1
+
+          const newAssignment = await prisma.trainingAssignment.create({
+            data: {
+              weekId,
+              title: title.trim(),
+              description: (description || '').trim(),
+              dueDateLabel: (dueDateLabel || 'Due date shared in class').trim(),
+              dueDateISO: dueDateISO || null,
+              status: (status || 'pending').toLowerCase(),
+              estimatedHours: parseFloatOrNull(estimatedHours),
+              rubric: rubric ? String(rubric) : null,
+              order: newOrder,
+              createdBy: user.id
+            }
+          })
 
     return NextResponse.json({
       success: true,

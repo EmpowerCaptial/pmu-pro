@@ -60,6 +60,28 @@ export async function PATCH(
       )
     }
 
+    // Check if assignment exists to preserve order
+    const existing = await prisma.trainingAssignment.findUnique({
+      where: { id: params.id },
+      select: { order: true }
+    })
+
+    // For new assignments, calculate order based on max order in the week + 1
+    // For existing assignments, preserve the existing order
+    let orderValue: number
+    if (existing) {
+      // Preserve existing order when updating
+      orderValue = existing.order
+    } else {
+      // For new assignments, find max order in the week and add 1
+      const maxOrderResult = await prisma.trainingAssignment.aggregate({
+        where: { weekId },
+        _max: { order: true }
+      })
+      const maxOrder = maxOrderResult._max.order ?? 0
+      orderValue = maxOrder + 1
+    }
+
     const updatedAssignment = await prisma.trainingAssignment.upsert({
       where: { id: params.id },
       update: {
@@ -71,7 +93,8 @@ export async function PATCH(
         status: (status || 'pending').toLowerCase(),
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
-        order: Date.now()
+        // Don't update order - preserve existing order
+        order: orderValue
       },
       create: {
         id: params.id,
@@ -83,7 +106,7 @@ export async function PATCH(
         status: (status || 'pending').toLowerCase(),
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
-        order: Date.now(),
+        order: orderValue,
         createdBy: user.id
       }
     })
