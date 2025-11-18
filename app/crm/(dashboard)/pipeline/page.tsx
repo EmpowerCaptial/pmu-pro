@@ -128,8 +128,19 @@ export default function CrmPipelinePage() {
     event.preventDefault()
     if (!currentUser?.email) return
 
+    // Client-side validation: require at least email or phone
+    const email = newContact.email?.trim() || ''
+    const phone = newContact.phone?.trim() || ''
+    
+    if (!email && !phone) {
+      setError('Either email or phone number is required to create a contact.')
+      return
+    }
+
     try {
       setIsLoading(true)
+      setError(null)
+      
       const response = await fetch('/api/crm/pipeline', {
         method: 'POST',
         headers: {
@@ -137,7 +148,11 @@ export default function CrmPipelinePage() {
           'x-user-email': currentUser.email
         },
         body: JSON.stringify({
-          ...newContact,
+          firstName: newContact.firstName.trim(),
+          lastName: newContact.lastName.trim(),
+          email: email || null, // Send null instead of empty string
+          phone: phone || null, // Send null instead of empty string
+          source: newContact.source?.trim() || null,
           tags: []
         })
       })
@@ -149,6 +164,7 @@ export default function CrmPipelinePage() {
 
       setNewContact({ firstName: '', lastName: '', email: '', phone: '', source: '' })
       await fetchPipeline()
+      setIsLoading(false)
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : 'Unable to create contact')
@@ -367,21 +383,29 @@ export default function CrmPipelinePage() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email (Optional)</Label>
               <Input
                 id="email"
                 type="email"
                 value={newContact.email}
                 onChange={event => setNewContact(prev => ({ ...prev, email: event.target.value }))}
+                placeholder="Enter email if available"
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Phone (Optional)</Label>
               <Input
                 id="phone"
+                type="tel"
                 value={newContact.phone}
                 onChange={event => setNewContact(prev => ({ ...prev, phone: event.target.value }))}
+                placeholder="Enter phone if available"
               />
+            </div>
+            <div className="md:col-span-2">
+              <p className="text-xs text-slate-500">
+                <strong>Note:</strong> At least one contact method (email or phone) is required to save.
+              </p>
             </div>
             <div className="space-y-1 md:col-span-2">
               <Label htmlFor="source">Source</Label>

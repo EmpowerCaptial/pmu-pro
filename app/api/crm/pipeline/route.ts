@@ -116,19 +116,67 @@ export async function POST(request: NextRequest) {
   try {
     const { staffRecord } = await requireCrmUser(request)
     const body = await request.json()
-    const { firstName, lastName, email, phone, source, tags } = body
+    let { firstName, lastName, email, phone, source, tags } = body
 
     if (!firstName || !lastName) {
       return NextResponse.json({ error: 'First and last name are required.' }, { status: 400 })
     }
 
+    // Normalize email: convert empty string to null
+    const normalizedEmail = email && email.trim() !== '' ? email.trim() : null
+    
+    // Normalize phone: convert empty string to null
+    const normalizedPhone = phone && phone.trim() !== '' ? phone.trim() : null
+
+    // Require at least one contact method (email OR phone)
+    if (!normalizedEmail && !normalizedPhone) {
+      return NextResponse.json({ 
+        error: 'Either email or phone number is required to create a contact.' 
+      }, { status: 400 })
+    }
+
+    // Check for duplicate email only if email is provided
+    if (normalizedEmail) {
+      const existingContact = await prisma.contact.findUnique({
+        where: { email: normalizedEmail },
+        select: { id: true, firstName: true, lastName: true }
+      })
+
+      if (existingContact) {
+        return NextResponse.json({ 
+          error: `A contact with this email already exists: ${existingContact.firstName} ${existingContact.lastName}. Add a different email or update the existing record.`,
+          code: 'duplicate_contact',
+          existingContactId: existingContact.id
+        }, { status: 409 })
+      }
+    }
+
+    // Check for duplicate phone if phone is provided and no email
+    if (normalizedPhone && !normalizedEmail) {
+      const existingContact = await prisma.contact.findFirst({
+        where: { 
+          phone: normalizedPhone,
+          email: null // Only check if no email exists
+        },
+        select: { id: true, firstName: true, lastName: true }
+      })
+
+      if (existingContact) {
+        return NextResponse.json({ 
+          error: `A contact with this phone number already exists: ${existingContact.firstName} ${existingContact.lastName}. Add a different phone number or update the existing record.`,
+          code: 'duplicate_contact',
+          existingContactId: existingContact.id
+        }, { status: 409 })
+      }
+    }
+
     const contact = await prisma.contact.create({
       data: {
-        firstName,
-        lastName,
-        email,
-        phone,
-        source,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        source: source?.trim() || null,
         tags: Array.isArray(tags) ? tags : [],
         ownerId: staffRecord.id
       }
