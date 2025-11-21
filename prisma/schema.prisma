@@ -1054,7 +1054,7 @@ model Staff {
   contacts  Contact[]     @relation("StaffContacts")
   tasks     Task[]
   interactions Interaction[]
-  tours     Tour[]
+  tours     Tour[]        @relation("StaffTours")
   bookings  ClientBooking[] @relation("StaffBookings")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
