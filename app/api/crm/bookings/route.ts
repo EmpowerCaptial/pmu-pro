@@ -64,7 +64,16 @@ export async function GET(request: NextRequest) {
       return error
     }
     console.error('CRM bookings GET error:', error)
-    return NextResponse.json({ error: 'Failed to load bookings' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error details:', { errorMessage, errorStack, error })
+    return NextResponse.json(
+      { 
+        error: 'Failed to load bookings',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -125,6 +134,26 @@ export async function POST(request: NextRequest) {
       return error
     }
     console.error('CRM bookings POST error:', error)
-    return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error details:', { errorMessage, errorStack, error })
+    
+    // Check if it's a Prisma error
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2021') {
+        return NextResponse.json(
+          { error: 'Client Booking table not found. Please run database migrations.' },
+          { status: 500 }
+        )
+      }
+    }
+    
+    return NextResponse.json(
+      { 
+        error: 'Failed to create booking',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
+      { status: 500 }
+    )
   }
 }
