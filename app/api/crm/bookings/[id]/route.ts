@@ -1,0 +1,110 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { requireCrmUser } from '@/lib/server/crm-auth'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await requireCrmUser(request)
+
+    const booking = await prisma.clientBooking.findUnique({
+      where: { id: params.id },
+      include: {
+        contact: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        staff: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, booking })
+  } catch (error) {
+    if (error instanceof Response) {
+      return error
+    }
+    console.error('CRM booking GET error:', error)
+    return NextResponse.json({ error: 'Failed to load booking' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await requireCrmUser(request)
+    const body = await request.json()
+    const { clientName, bookingType, bookingDate, procedureDate, status, notes, contactId } = body
+
+    const booking = await prisma.clientBooking.update({
+      where: { id: params.id },
+      data: {
+        ...(clientName !== undefined && { clientName: clientName.trim() }),
+        ...(bookingType !== undefined && { bookingType }),
+        ...(bookingDate !== undefined && { bookingDate: new Date(bookingDate) }),
+        ...(procedureDate !== undefined && { procedureDate: new Date(procedureDate) }),
+        ...(status !== undefined && { status }),
+        ...(notes !== undefined && { notes: notes?.trim() || null }),
+        ...(contactId !== undefined && { contactId: contactId || null })
+      },
+      include: {
+        contact: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        staff: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({ success: true, booking })
+  } catch (error) {
+    if (error instanceof Response) {
+      return error
+    }
+    console.error('CRM booking PATCH error:', error)
+    return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await requireCrmUser(request)
+
+    await prisma.clientBooking.delete({
+      where: { id: params.id }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    if (error instanceof Response) {
+      return error
+    }
+    console.error('CRM booking DELETE error:', error)
+    return NextResponse.json({ error: 'Failed to delete booking' }, { status: 500 })
+  }
+}

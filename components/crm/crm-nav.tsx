@@ -9,7 +9,8 @@ import {
   Inbox,
   KanbanSquare,
   Users,
-  GaugeCircle
+  GaugeCircle,
+  Calendar
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -48,6 +49,11 @@ const navItems = [
     label: 'Reports',
     href: '/crm/reports',
     icon: BarChart3
+  },
+  {
+    label: 'Client Bookings',
+    href: '/crm/bookings',
+    icon: Calendar
   }
 ] as const
 

@@ -1,0 +1,584 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Calendar, Loader2, Plus, RefreshCcw, Edit, Trash2, User, Clock } from 'lucide-react'
+import { useDemoAuth } from '@/hooks/use-demo-auth'
+
+const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
+
+interface ClientBooking {
+  id: string
+  clientName: string
+  bookingType: 'licensed_artist' | 'student'
+  bookingDate: string
+  procedureDate: string
+  status: 'scheduled' | 'showed' | 'no_show' | 'cancelled'
+  notes?: string | null
+  contact?: {
+    id: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    phone?: string | null
+  } | null
+  staff?: {
+    id: string
+    name: string
+    email: string
+  } | null
+  createdAt: string
+  updatedAt: string
+}
+
+export default function ClientBookingsPage() {
+  const { currentUser } = useDemoAuth()
+  const role = currentUser?.role?.toLowerCase() ?? ''
+  const canAccess = AUTHORIZED_ROLES.includes(role)
+
+  const [bookings, setBookings] = useState<ClientBooking[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<ClientBooking | null>(null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState({
+    clientName: '',
+    bookingType: 'licensed_artist' as 'licensed_artist' | 'student',
+    bookingDate: '',
+    procedureDate: '',
+    status: 'scheduled' as 'scheduled' | 'showed' | 'no_show' | 'cancelled',
+    notes: '',
+    contactId: ''
+  })
+
+  useEffect(() => {
+    if (!currentUser?.email || !canAccess) return
+    fetchBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.email, canAccess])
+
+  const fetchBookings = async () => {
+    if (!currentUser?.email) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/crm/bookings', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      if (!response.ok) {
+        throw new Error('Failed to load bookings')
+      }
+      const data = await response.json()
+      setBookings(data.bookings || [])
+    } catch (err) {
+      console.error(err)
+      setError('Unable to load bookings. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCreateBooking = async () => {
+    if (!currentUser?.email) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/crm/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          ...formData,
+          contactId: formData.contactId || null
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to create booking')
+      }
+
+      setIsCreateDialogOpen(false)
+      setFormData({
+        clientName: '',
+        bookingType: 'licensed_artist',
+        bookingDate: '',
+        procedureDate: '',
+        status: 'scheduled',
+        notes: '',
+        contactId: ''
+      })
+      await fetchBookings()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to create booking')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEditBooking = async () => {
+    if (!currentUser?.email || !selectedBooking) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/crm/bookings/${selectedBooking.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          ...formData,
+          contactId: formData.contactId || null
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to update booking')
+      }
+
+      setIsEditDialogOpen(false)
+      setSelectedBooking(null)
+      await fetchBookings()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to update booking')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteBooking = async () => {
+    if (!currentUser?.email || !bookingToDelete) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/crm/bookings/${bookingToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete booking')
+      }
+
+      setDeleteConfirmOpen(false)
+      setBookingToDelete(null)
+      await fetchBookings()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to delete booking')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const openEditDialog = (booking: ClientBooking) => {
+    setSelectedBooking(booking)
+    setFormData({
+      clientName: booking.clientName,
+      bookingType: booking.bookingType,
+      bookingDate: booking.bookingDate.split('T')[0],
+      procedureDate: booking.procedureDate.split('T')[0],
+      status: booking.status,
+      notes: booking.notes || '',
+      contactId: booking.contact?.id || ''
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, string> = {
+      scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
+      showed: 'bg-green-100 text-green-700 border-green-200',
+      no_show: 'bg-red-100 text-red-700 border-red-200',
+      cancelled: 'bg-gray-100 text-gray-700 border-gray-200'
+    }
+    return variants[status] || 'bg-gray-100 text-gray-700 border-gray-200'
+  }
+
+  const getBookingTypeBadge = (type: string) => {
+    return type === 'licensed_artist'
+      ? 'bg-purple-100 text-purple-700 border-purple-200'
+      : 'bg-orange-100 text-orange-700 border-orange-200'
+  }
+
+  if (!canAccess) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>CRM Access Required</CardTitle>
+          <CardDescription>
+            Only staff, directors, managers, or owners can view Client Bookings. Contact your administrator for access.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <header className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold text-slate-900">Client Bookings</h1>
+          <p className="text-sm text-slate-600">
+            Track client bookings for commission payments. Monitor shows, no-shows, and booking details.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchBookings} className="gap-2">
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+            Refresh
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Booking
+          </Button>
+        </div>
+      </header>
+
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+            <Calendar className="h-5 w-5 text-slate-500" />
+            Booking History
+          </CardTitle>
+          <CardDescription>
+            All client bookings for commission tracking. Filter by status or booking type using the filters above.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading && !bookings.length ? (
+            <div className="flex h-40 items-center justify-center text-slate-600">
+              <Loader2 className="h-5 w-5 animate-spin" /> Loading bookings...
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Calendar className="h-12 w-12 text-slate-300 mb-4" />
+              <p className="text-sm font-medium text-slate-900">No bookings yet</p>
+              <p className="text-sm text-slate-500 mt-1">Create your first booking to start tracking commissions.</p>
+              <Button onClick={() => setIsCreateDialogOpen(true)} className="mt-4 gap-2">
+                <Plus className="h-4 w-4" />
+                Create Booking
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bookings.map(booking => (
+                <div
+                  key={booking.id}
+                  className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-slate-900">{booking.clientName}</h3>
+                        <Badge className={getBookingTypeBadge(booking.bookingType)}>
+                          {booking.bookingType === 'licensed_artist' ? 'Licensed Artist' : 'Student'}
+                        </Badge>
+                        <Badge className={getStatusBadge(booking.status)}>
+                          {booking.status.replace('_', ' ').toUpperCase()}
+                        </Badge>
+                      </div>
+                      <div className="grid gap-2 md:grid-cols-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-slate-400" />
+                          <span>
+                            <strong>Booking:</strong> {new Date(booking.bookingDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-slate-400" />
+                          <span>
+                            <strong>Procedure:</strong> {new Date(booking.procedureDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {booking.contact && (
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-slate-400" />
+                            <span>
+                              <strong>Contact:</strong> {booking.contact.firstName} {booking.contact.lastName}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {booking.notes && (
+                        <p className="mt-2 text-sm text-slate-600">
+                          <strong>Notes:</strong> {booking.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(booking)}
+                        className="gap-2"
+                      >
+                        <Edit className="h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setBookingToDelete(booking.id)
+                          setDeleteConfirmOpen(true)
+                        }}
+                        className="gap-2"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Create Booking Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Booking</DialogTitle>
+            <DialogDescription>Add a new client booking for commission tracking.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="clientName">Client Name *</Label>
+              <Input
+                id="clientName"
+                value={formData.clientName}
+                onChange={e => setFormData({ ...formData, clientName: e.target.value })}
+                placeholder="Enter client name"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="bookingType">Booking Type *</Label>
+              <Select
+                value={formData.bookingType}
+                onValueChange={value => setFormData({ ...formData, bookingType: value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="bookingDate">Booking Date *</Label>
+                <Input
+                  id="bookingDate"
+                  type="date"
+                  value={formData.bookingDate}
+                  onChange={e => setFormData({ ...formData, bookingDate: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="procedureDate">Procedure Date *</Label>
+                <Input
+                  id="procedureDate"
+                  type="date"
+                  value={formData.procedureDate}
+                  onChange={e => setFormData({ ...formData, procedureDate: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="status">Status *</Label>
+              <Select
+                value={formData.status}
+                onValueChange={value => setFormData({ ...formData, status: value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="showed">Showed</SelectItem>
+                  <SelectItem value="no_show">No-Show</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Add any additional notes..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateBooking} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Create Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Booking Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Booking</DialogTitle>
+            <DialogDescription>Update booking details.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-clientName">Client Name *</Label>
+              <Input
+                id="edit-clientName"
+                value={formData.clientName}
+                onChange={e => setFormData({ ...formData, clientName: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-bookingType">Booking Type *</Label>
+              <Select
+                value={formData.bookingType}
+                onValueChange={value => setFormData({ ...formData, bookingType: value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-bookingDate">Booking Date *</Label>
+                <Input
+                  id="edit-bookingDate"
+                  type="date"
+                  value={formData.bookingDate}
+                  onChange={e => setFormData({ ...formData, bookingDate: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-procedureDate">Procedure Date *</Label>
+                <Input
+                  id="edit-procedureDate"
+                  type="date"
+                  value={formData.procedureDate}
+                  onChange={e => setFormData({ ...formData, procedureDate: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">Status *</Label>
+              <Select
+                value={formData.status}
+                onValueChange={value => setFormData({ ...formData, status: value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="showed">Showed</SelectItem>
+                  <SelectItem value="no_show">No-Show</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-notes">Notes (Optional)</Label>
+              <Textarea
+                id="edit-notes"
+                value={formData.notes}
+                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditBooking} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Booking</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this booking? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteBooking} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

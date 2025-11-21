@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, BarChart3 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Loader2, BarChart3, Calendar } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import Link from 'next/link'
 
 const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 
@@ -150,6 +152,36 @@ export default function CrmReportsPage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-dashed border-slate-300">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+            <Calendar className="h-5 w-5 text-slate-500" />
+            Client Bookings
+          </CardTitle>
+          <CardDescription>
+            Track client bookings for commission payments. Monitor shows, no-shows, and booking details for licensed artists and students.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">
+                Manage all client bookings including booking dates, procedure dates, and show/no-show status.
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                Track commissions for both licensed artists and students.
+              </p>
+            </div>
+            <Button asChild className="gap-2">
+              <Link href="/crm/bookings">
+                <Calendar className="h-4 w-4" />
+                View Client Bookings
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

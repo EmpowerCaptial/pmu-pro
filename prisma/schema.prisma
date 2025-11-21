@@ -1055,6 +1055,7 @@ model Staff {
   tasks     Task[]
   interactions Interaction[]
   tours     Tour[]
+  bookings  ClientBooking[] @relation("StaffBookings")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -1076,6 +1077,7 @@ model Contact {
   enrollments  Enrollment[]
   consents     Consent[]
   tasks        Task[]
+  bookings     ClientBooking[] @relation("ContactBookings")
   score        Int            @default(0)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -1117,9 +1119,31 @@ model Tour {
   contactId String
   contact   Contact  @relation(fields: [contactId], references: [id])
   staffId   String?
-  staff     Staff?   @relation(fields: [staffId], references: [id])
+  staff     Staff?   @relation("StaffTours", fields: [staffId], references: [id])
   notes     String?
   createdAt DateTime @default(now())
+}
+
+model ClientBooking {
+  id            String    @id @default(cuid())
+  clientName    String
+  bookingType   String    // "licensed_artist" | "student"
+  bookingDate   DateTime
+  procedureDate DateTime
+  status        String    @default("scheduled") // "scheduled" | "showed" | "no_show" | "cancelled"
+  notes         String?
+  contactId     String?
+  contact       Contact?  @relation("ContactBookings", fields: [contactId], references: [id], onDelete: SetNull)
+  staffId       String?
+  staff         Staff?    @relation("StaffBookings", fields: [staffId], references: [id], onDelete: SetNull)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([bookingDate])
+  @@index([procedureDate])
+  @@index([status])
+  @@index([contactId])
+  @@map("client_bookings")
 }
 
 model Application {
