@@ -55,6 +55,7 @@ export default function ClientBookingsPage() {
   const [bookings, setBookings] = useState<ClientBooking[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasFetched, setHasFetched] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<ClientBooking | null>(null)
@@ -93,27 +94,23 @@ export default function ClientBookingsPage() {
       const data = await response.json()
       setBookings(data.bookings || [])
       setError(null)
+      setHasFetched(true)
     } catch (err) {
       console.error('Fetch bookings error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unable to load bookings. Please try again.'
       setError(errorMessage)
       setBookings([])
+      setHasFetched(true) // Mark as fetched even on error to prevent retry loops
     } finally {
       setIsLoading(false)
     }
-  }, [currentUser?.email, isLoading])
+  }, [currentUser?.email])
 
   useEffect(() => {
-    if (!currentUser?.email || !canAccess) return
+    if (!currentUser?.email || !canAccess || hasFetched || isLoading) return
     
-    // Only fetch once on mount, don't refetch on state changes
-    const loadBookings = async () => {
-      if (!isLoading) {
-        await fetchBookings()
-      }
-    }
-    
-    loadBookings()
+    // Only fetch once on mount
+    fetchBookings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.email, canAccess])
 
@@ -149,6 +146,7 @@ export default function ClientBookingsPage() {
         notes: '',
         contactId: ''
       })
+      setHasFetched(false) // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -182,6 +180,7 @@ export default function ClientBookingsPage() {
 
       setIsEditDialogOpen(false)
       setSelectedBooking(null)
+      setHasFetched(false) // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -210,6 +209,7 @@ export default function ClientBookingsPage() {
 
       setDeleteConfirmOpen(false)
       setBookingToDelete(null)
+      setHasFetched(false) // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -276,6 +276,7 @@ export default function ClientBookingsPage() {
             variant="outline" 
             onClick={() => {
               if (!isLoading) {
+                setHasFetched(false)
                 fetchBookings()
               }
             }} 
