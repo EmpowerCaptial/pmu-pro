@@ -6,6 +6,18 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if ClientBooking model is available
+    if (!prisma.clientBooking) {
+      console.error('❌ Prisma clientBooking model not found. Prisma client may need regeneration.')
+      return NextResponse.json(
+        { 
+          error: 'Client Booking model not available. Server needs to regenerate Prisma client.',
+          code: 'MODEL_NOT_FOUND'
+        },
+        { status: 500 }
+      )
+    }
+    
     await requireCrmUser(request)
 
     const statusParam = request.nextUrl.searchParams.get('status')

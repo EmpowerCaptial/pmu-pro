@@ -2,7 +2,7 @@
 // Updated: 2024-11-21 - Client Bookings page
 // Re-deploy: 2024-11-21 - Force rebuild
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -71,16 +71,12 @@ export default function ClientBookingsPage() {
     contactId: ''
   })
 
-  useEffect(() => {
-    if (!currentUser?.email || !canAccess) return
-    fetchBookings()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.email, canAccess])
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     if (!currentUser?.email) return
+    
     setIsLoading(true)
     setError(null)
+    
     try {
       const response = await fetch('/api/crm/bookings', {
         headers: {
@@ -88,18 +84,27 @@ export default function ClientBookingsPage() {
           'x-user-email': currentUser.email
         }
       })
+      
       if (!response.ok) {
-        throw new Error('Failed to load bookings')
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.error || 'Failed to load bookings')
       }
+      
       const data = await response.json()
       setBookings(data.bookings || [])
     } catch (err) {
-      console.error(err)
-      setError('Unable to load bookings. Please try again.')
+      console.error('Fetch bookings error:', err)
+      setError(err instanceof Error ? err.message : 'Unable to load bookings. Please try again.')
+      setBookings([]) // Set empty array on error to prevent undefined issues
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentUser?.email])
+
+  useEffect(() => {
+    if (!currentUser?.email || !canAccess) return
+    fetchBookings()
+  }, [currentUser?.email, canAccess, fetchBookings])
 
   const handleCreateBooking = async () => {
     if (!currentUser?.email) return
@@ -133,7 +138,7 @@ export default function ClientBookingsPage() {
         notes: '',
         contactId: ''
       })
-      await fetchBookings()
+      await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : 'Unable to create booking')
@@ -166,7 +171,7 @@ export default function ClientBookingsPage() {
 
       setIsEditDialogOpen(false)
       setSelectedBooking(null)
-      await fetchBookings()
+      await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : 'Unable to update booking')
@@ -194,7 +199,7 @@ export default function ClientBookingsPage() {
 
       setDeleteConfirmOpen(false)
       setBookingToDelete(null)
-      await fetchBookings()
+      await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : 'Unable to delete booking')
