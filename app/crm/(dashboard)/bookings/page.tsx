@@ -72,7 +72,7 @@ export default function ClientBookingsPage() {
   })
 
   const fetchBookings = useCallback(async () => {
-    if (!currentUser?.email) return
+    if (!currentUser?.email || isLoading) return
     
     setIsLoading(true)
     setError(null)
@@ -92,19 +92,30 @@ export default function ClientBookingsPage() {
       
       const data = await response.json()
       setBookings(data.bookings || [])
+      setError(null)
     } catch (err) {
       console.error('Fetch bookings error:', err)
-      setError(err instanceof Error ? err.message : 'Unable to load bookings. Please try again.')
-      setBookings([]) // Set empty array on error to prevent undefined issues
+      const errorMessage = err instanceof Error ? err.message : 'Unable to load bookings. Please try again.'
+      setError(errorMessage)
+      setBookings([])
     } finally {
       setIsLoading(false)
     }
-  }, [currentUser?.email])
+  }, [currentUser?.email, isLoading])
 
   useEffect(() => {
     if (!currentUser?.email || !canAccess) return
-    fetchBookings()
-  }, [currentUser?.email, canAccess, fetchBookings])
+    
+    // Only fetch once on mount, don't refetch on state changes
+    const loadBookings = async () => {
+      if (!isLoading) {
+        await fetchBookings()
+      }
+    }
+    
+    loadBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.email, canAccess])
 
   const handleCreateBooking = async () => {
     if (!currentUser?.email) return
@@ -261,7 +272,16 @@ export default function ClientBookingsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchBookings} className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              if (!isLoading) {
+                fetchBookings()
+              }
+            }} 
+            disabled={isLoading}
+            className="gap-2"
+          >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
             Refresh
           </Button>

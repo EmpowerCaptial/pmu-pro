@@ -6,18 +6,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if ClientBooking model is available
-    if (!prisma.clientBooking) {
-      console.error('❌ Prisma clientBooking model not found. Prisma client may need regeneration.')
-      return NextResponse.json(
-        { 
-          error: 'Client Booking model not available. Server needs to regenerate Prisma client.',
-          code: 'MODEL_NOT_FOUND'
-        },
-        { status: 500 }
-      )
-    }
-    
     await requireCrmUser(request)
 
     const statusParam = request.nextUrl.searchParams.get('status')
@@ -45,9 +33,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Check if table exists before querying
-    try {
-      const bookings = await prisma.clientBooking.findMany({
+    // Try to query the table
+    const bookings = await prisma.clientBooking.findMany({
       where: whereClause,
       include: {
         contact: {
@@ -72,30 +59,31 @@ export async function GET(request: NextRequest) {
       }
     })
 
-      return NextResponse.json({ success: true, bookings })
-    } catch (prismaError: any) {
-      // Check if it's a table doesn't exist error
-      if (prismaError?.code === 'P2021' || prismaError?.message?.includes('does not exist') || prismaError?.message?.includes('relation "client_bookings"')) {
-        console.error('Client Booking table not found. Run migration script:', prismaError)
-        return NextResponse.json(
-          { 
-            error: 'Client Booking table not found. Please run database migrations.',
-            code: 'P2021'
-          },
-          { status: 500 }
-        )
-      }
-      throw prismaError
-    }
+    return NextResponse.json({ success: true, bookings })
   } catch (error) {
     if (error instanceof Response) {
       return error
     }
     console.error('CRM bookings GET error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    // Check if it's a table doesn't exist error
     const errorCode = (error as any)?.code
-    const errorStack = error instanceof Error ? error.stack : undefined
-    console.error('Error details:', { errorMessage, errorCode, errorStack, error })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    if (errorCode === 'P2021' || 
+        errorMessage?.includes('does not exist') || 
+        errorMessage?.includes('relation "client_bookings"') ||
+        errorMessage?.includes('client_bookings')) {
+      console.error('Client Booking table not found:', errorMessage)
+      return NextResponse.json(
+        { 
+          error: 'Client Booking table not found. Please run database migrations.',
+          code: 'P2021',
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        },
+        { status: 500 }
+      )
+    }
     
     // Return error details in development, generic message in production
     return NextResponse.json(
