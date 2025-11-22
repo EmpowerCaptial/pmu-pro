@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const bookings = await prisma.clientBooking.findMany({
+    // Check if table exists before querying
+    try {
+      const bookings = await prisma.clientBooking.findMany({
       where: whereClause,
       include: {
         contact: {
@@ -58,19 +60,37 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ success: true, bookings })
+      return NextResponse.json({ success: true, bookings })
+    } catch (prismaError: any) {
+      // Check if it's a table doesn't exist error
+      if (prismaError?.code === 'P2021' || prismaError?.message?.includes('does not exist') || prismaError?.message?.includes('relation "client_bookings"')) {
+        console.error('Client Booking table not found. Run migration script:', prismaError)
+        return NextResponse.json(
+          { 
+            error: 'Client Booking table not found. Please run database migrations.',
+            code: 'P2021'
+          },
+          { status: 500 }
+        )
+      }
+      throw prismaError
+    }
   } catch (error) {
     if (error instanceof Response) {
       return error
     }
     console.error('CRM bookings GET error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorCode = (error as any)?.code
     const errorStack = error instanceof Error ? error.stack : undefined
-    console.error('Error details:', { errorMessage, errorStack, error })
+    console.error('Error details:', { errorMessage, errorCode, errorStack, error })
+    
+    // Return error details in development, generic message in production
     return NextResponse.json(
       { 
         error: 'Failed to load bookings',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        code: errorCode
       },
       { status: 500 }
     )
