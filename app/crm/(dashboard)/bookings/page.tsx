@@ -2,7 +2,7 @@
 // Updated: 2024-11-21 - Client Bookings page
 // Re-deploy: 2024-11-21 - Force rebuild
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -55,12 +55,12 @@ export default function ClientBookingsPage() {
   const [bookings, setBookings] = useState<ClientBooking[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hasFetched, setHasFetched] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<ClientBooking | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
+  const fetchRef = useRef(false) // Use ref to track if we've fetched
 
   const [formData, setFormData] = useState({
     clientName: '',
@@ -73,8 +73,9 @@ export default function ClientBookingsPage() {
   })
 
   const fetchBookings = useCallback(async () => {
-    if (!currentUser?.email || isLoading) return
+    if (!currentUser?.email || isLoading || fetchRef.current) return
     
+    fetchRef.current = true
     setIsLoading(true)
     setError(null)
     
@@ -94,20 +95,22 @@ export default function ClientBookingsPage() {
       const data = await response.json()
       setBookings(data.bookings || [])
       setError(null)
-      setHasFetched(true)
     } catch (err) {
       console.error('Fetch bookings error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unable to load bookings. Please try again.'
       setError(errorMessage)
       setBookings([])
-      setHasFetched(true) // Mark as fetched even on error to prevent retry loops
     } finally {
       setIsLoading(false)
+      // Reset fetchRef after a delay to allow manual refresh
+      setTimeout(() => {
+        fetchRef.current = false
+      }, 1000)
     }
-  }, [currentUser?.email])
+  }, [currentUser?.email, isLoading])
 
   useEffect(() => {
-    if (!currentUser?.email || !canAccess || hasFetched || isLoading) return
+    if (!currentUser?.email || !canAccess || fetchRef.current) return
     
     // Only fetch once on mount
     fetchBookings()
@@ -146,7 +149,7 @@ export default function ClientBookingsPage() {
         notes: '',
         contactId: ''
       })
-      setHasFetched(false) // Reset to allow refetch
+      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -180,7 +183,7 @@ export default function ClientBookingsPage() {
 
       setIsEditDialogOpen(false)
       setSelectedBooking(null)
-      setHasFetched(false) // Reset to allow refetch
+      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -209,7 +212,7 @@ export default function ClientBookingsPage() {
 
       setDeleteConfirmOpen(false)
       setBookingToDelete(null)
-      setHasFetched(false) // Reset to allow refetch
+      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -276,7 +279,7 @@ export default function ClientBookingsPage() {
             variant="outline" 
             onClick={() => {
               if (!isLoading) {
-                setHasFetched(false)
+                fetchRef.current = false
                 fetchBookings()
               }
             }} 
