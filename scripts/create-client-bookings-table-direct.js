@@ -1,23 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+const { PrismaClient } = require('@prisma/client')
 
-export const dynamic = 'force-dynamic'
+const prisma = new PrismaClient()
 
-// This endpoint creates the client_bookings table if it doesn't exist
-// It's safe to run multiple times (uses IF NOT EXISTS)
-export async function POST(request: NextRequest) {
+async function createTable() {
   try {
-    // Allow in production or with auth token
-    const authHeader = request.headers.get('authorization')
-    const adminSecret = process.env.ADMIN_SECRET || 'admin-secret'
-    const isAuthorized = authHeader === `Bearer ${adminSecret}` || process.env.NODE_ENV === 'production'
+    console.log('🚀 Creating client_bookings table directly...')
     
-    if (!isAuthorized) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    console.log('🚀 Creating client_bookings table...')
-
     // Step 1: Create the table
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "client_bookings" (
@@ -36,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     `)
     console.log('✅ Table created!')
-
+    
     // Step 2: Create indexes
     const indexes = [
       `CREATE INDEX IF NOT EXISTS "client_bookings_bookingDate_idx" ON "client_bookings"("bookingDate");`,
@@ -44,25 +32,26 @@ export async function POST(request: NextRequest) {
       `CREATE INDEX IF NOT EXISTS "client_bookings_status_idx" ON "client_bookings"("status");`,
       `CREATE INDEX IF NOT EXISTS "client_bookings_contactId_idx" ON "client_bookings"("contactId");`
     ]
-
+    
     for (const idx of indexes) {
       try {
         await prisma.$executeRawUnsafe(idx)
         console.log('✅ Index created')
-      } catch (error: any) {
-        if (!error?.message?.includes('already exists')) {
-          console.log('⚠️  Index creation:', error?.message?.substring(0, 60))
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          console.log('⚠️  Index creation:', error.message.substring(0, 60))
         }
       }
     }
-
-    // Step 3: Add foreign keys
+    
+    // Step 3: Add foreign keys (simplified approach - check first, then add)
     try {
+      // Check if constraint exists
       const fkCheck1 = await prisma.$queryRaw`
         SELECT 1 FROM information_schema.table_constraints 
         WHERE constraint_name = 'client_bookings_contactId_fkey';
-      ` as any[]
-
+      `
+      
       if (!fkCheck1 || fkCheck1.length === 0) {
         await prisma.$executeRawUnsafe(`
           ALTER TABLE "client_bookings" 
@@ -73,17 +62,19 @@ export async function POST(request: NextRequest) {
           ON UPDATE CASCADE;
         `)
         console.log('✅ Foreign key (contactId) added')
+      } else {
+        console.log('⏭️  Foreign key (contactId) already exists')
       }
-    } catch (error: any) {
-      console.log('⚠️  Foreign key (contactId):', error?.message?.substring(0, 60))
+    } catch (error) {
+      console.log('⚠️  Foreign key (contactId) error:', error.message.substring(0, 60))
     }
-
+    
     try {
       const fkCheck2 = await prisma.$queryRaw`
         SELECT 1 FROM information_schema.table_constraints 
         WHERE constraint_name = 'client_bookings_staffId_fkey';
-      ` as any[]
-
+      `
+      
       if (!fkCheck2 || fkCheck2.length === 0) {
         await prisma.$executeRawUnsafe(`
           ALTER TABLE "client_bookings" 
@@ -94,41 +85,44 @@ export async function POST(request: NextRequest) {
           ON UPDATE CASCADE;
         `)
         console.log('✅ Foreign key (staffId) added')
+      } else {
+        console.log('⏭️  Foreign key (staffId) already exists')
       }
-    } catch (error: any) {
-      console.log('⚠️  Foreign key (staffId):', error?.message?.substring(0, 60))
+    } catch (error) {
+      console.log('⚠️  Foreign key (staffId) error:', error.message.substring(0, 60))
     }
-
-    // Step 4: Verify table exists
+    
+    // Step 4: Verify table exists and is accessible
     const tableCheck = await prisma.$queryRaw`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
         AND table_name = 'client_bookings'
       ) as exists;
-    ` as any[]
-
-    if (tableCheck[0]?.exists) {
-      const count = await prisma.clientBooking.count().catch(() => 0)
-      return NextResponse.json({
-        success: true,
-        message: 'client_bookings table created successfully!',
-        recordCount: count
-      })
+    `
+    
+    if (tableCheck[0].exists) {
+      console.log('\n✅ SUCCESS! client_bookings table exists and is ready!')
+      
+      // Try to access via Prisma
+      try {
+        const count = await prisma.clientBooking.count()
+        console.log(`✅ Prisma can access the table! Record count: ${count}`)
+      } catch (error) {
+        console.log('⚠️  Table exists but Prisma error:', error.message)
+        console.log('💡 You may need to regenerate Prisma client: npx prisma generate')
+      }
     } else {
-      return NextResponse.json({
-        success: false,
-        error: 'Table was not created successfully'
-      }, { status: 500 })
+      console.log('❌ Table was not created successfully')
     }
-
-  } catch (error: any) {
-    console.error('❌ Error creating table:', error)
-    return NextResponse.json({
-      success: false,
-      error: error?.message || 'Unknown error',
-      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
-    }, { status: 500 })
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message)
+    console.error('Full error:', error)
+  } finally {
+    await prisma.$disconnect()
   }
 }
+
+createTable()
 
