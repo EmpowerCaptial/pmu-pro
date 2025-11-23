@@ -1510,12 +1510,16 @@ export default function StudioTeamPage() {
                           {member.role !== 'owner' && member.status === 'active' ? (
                             <select
                               value={member.role}
-                              onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor')}
+                              onChange={(e) => handleChangeTeamMemberRole(member.id, e.target.value as 'student' | 'licensed' | 'instructor' | 'staff' | 'director' | 'hr' | 'manager')}
                               className="text-xs border border-gray-300 rounded px-2 py-1 h-7 bg-white"
                             >
                               <option value="student">🎓 Student</option>
                               <option value="licensed">🎨 Licensed Artist</option>
                               <option value="instructor">🏆 Instructor</option>
+                              <option value="staff">👤 Staff</option>
+                              <option value="hr">👥 HR</option>
+                              <option value="director">👑 Director</option>
+                              <option value="manager">⚙️ Manager</option>
                             </select>
                           ) : (
                             <div className="text-xs text-gray-600 px-2 py-1">
@@ -1604,6 +1608,46 @@ export default function StudioTeamPage() {
                                     >
                                       <Crown className="h-4 w-4 mr-2 text-yellow-600" />
                                       Make Instructor
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'staff' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'staff')}
+                                      className="hover:bg-gray-50 focus:bg-gray-50 text-gray-700"
+                                    >
+                                      <User className="h-4 w-4 mr-2 text-gray-600" />
+                                      Make Staff
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'hr' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'hr')}
+                                      className="hover:bg-pink-50 focus:bg-pink-50 text-gray-700"
+                                    >
+                                      <Users className="h-4 w-4 mr-2 text-pink-600" />
+                                      Make HR
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'director' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'director')}
+                                      className="hover:bg-indigo-50 focus:bg-indigo-50 text-gray-700"
+                                    >
+                                      <Crown className="h-4 w-4 mr-2 text-indigo-600" />
+                                      Make Director
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {member.role !== 'manager' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => handleChangeTeamMemberRole(member.id, 'manager')}
+                                      className="hover:bg-cyan-50 focus:bg-cyan-50 text-gray-700"
+                                    >
+                                      <Settings className="h-4 w-4 mr-2 text-cyan-600" />
+                                      Make Manager
                                     </DropdownMenuItem>
                                   )}
                                 </>
