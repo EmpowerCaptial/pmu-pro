@@ -13,9 +13,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { email }
+    // Normalize email for case-insensitive search
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user exists (case-insensitive)
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive'
+        }
+      }
     });
 
     // Always return success to prevent email enumeration

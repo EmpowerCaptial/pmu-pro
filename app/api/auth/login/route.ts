@@ -15,9 +15,17 @@ export async function POST(req: Request) {
     // Security: All authentication now goes through database verification
     // No hardcoded credentials for production security
 
-    // Find user by email
-        const user = await prisma.user.findUnique({
-          where: { email },
+    // Normalize email (trim and lowercase) to handle input variations
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Find user by email (case-insensitive search to handle input variations)
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive'
+        }
+      },
           select: {
             id: true,
             name: true,
