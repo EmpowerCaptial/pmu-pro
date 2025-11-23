@@ -60,7 +60,8 @@ export default function ClientBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<ClientBooking | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
-  const fetchRef = useRef(false) // Use ref to track if we've fetched
+  const hasFetchedRef = useRef(false) // Track if we've fetched on mount
+  const isMountedRef = useRef(true) // Track if component is mounted
 
   const [formData, setFormData] = useState({
     clientName: '',
@@ -73,9 +74,8 @@ export default function ClientBookingsPage() {
   })
 
   const fetchBookings = useCallback(async () => {
-    if (!currentUser?.email || isLoading || fetchRef.current) return
+    if (!currentUser?.email || !isMountedRef.current) return
     
-    fetchRef.current = true
     setIsLoading(true)
     setError(null)
     
@@ -93,27 +93,34 @@ export default function ClientBookingsPage() {
       }
       
       const data = await response.json()
-      setBookings(data.bookings || [])
-      setError(null)
+      if (isMountedRef.current) {
+        setBookings(data.bookings || [])
+        setError(null)
+      }
     } catch (err) {
-      console.error('Fetch bookings error:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Unable to load bookings. Please try again.'
-      setError(errorMessage)
-      setBookings([])
+      if (isMountedRef.current) {
+        console.error('Fetch bookings error:', err)
+        const errorMessage = err instanceof Error ? err.message : 'Unable to load bookings. Please try again.'
+        setError(errorMessage)
+        setBookings([])
+      }
     } finally {
-      setIsLoading(false)
-      // Reset fetchRef after a delay to allow manual refresh
-      setTimeout(() => {
-        fetchRef.current = false
-      }, 1000)
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
     }
-  }, [currentUser?.email, isLoading])
+  }, [currentUser?.email])
 
   useEffect(() => {
-    if (!currentUser?.email || !canAccess || fetchRef.current) return
+    if (!currentUser?.email || !canAccess || hasFetchedRef.current) return
     
     // Only fetch once on mount
+    hasFetchedRef.current = true
     fetchBookings()
+    
+    return () => {
+      isMountedRef.current = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.email, canAccess])
 
@@ -149,7 +156,6 @@ export default function ClientBookingsPage() {
         notes: '',
         contactId: ''
       })
-      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -183,7 +189,6 @@ export default function ClientBookingsPage() {
 
       setIsEditDialogOpen(false)
       setSelectedBooking(null)
-      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -212,7 +217,6 @@ export default function ClientBookingsPage() {
 
       setDeleteConfirmOpen(false)
       setBookingToDelete(null)
-      fetchRef.current = false // Reset to allow refetch
       await fetchBookings().catch(() => {})
     } catch (err) {
       console.error(err)
@@ -279,7 +283,6 @@ export default function ClientBookingsPage() {
             variant="outline" 
             onClick={() => {
               if (!isLoading) {
-                fetchRef.current = false
                 fetchBookings()
               }
             }} 
