@@ -1127,10 +1127,11 @@ model Tour {
 model ClientBooking {
   id            String    @id @default(cuid())
   clientName    String
-  bookingType   String    // "licensed_artist" | "student"
+  bookingType   String    // "licensed_artist" | "student" | "intro_session"
   bookingDate   DateTime
   procedureDate DateTime
   status        String    @default("scheduled") // "scheduled" | "showed" | "no_show" | "cancelled"
+  isPromo       Boolean   @default(false)
   notes         String?
   contactId     String?
   contact       Contact?  @relation("ContactBookings", fields: [contactId], references: [id], onDelete: SetNull)

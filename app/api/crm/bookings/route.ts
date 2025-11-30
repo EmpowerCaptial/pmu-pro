@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   try {
     const { staffRecord } = await requireCrmUser(request)
     const body = await request.json()
-    const { clientName, bookingType, bookingDate, procedureDate, status, notes, contactId } = body
+    const { clientName, bookingType, bookingDate, procedureDate, status, isPromo, notes, contactId } = body
 
     if (!clientName || !bookingType || !bookingDate || !procedureDate) {
       return NextResponse.json(
@@ -110,24 +110,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['licensed_artist', 'student'].includes(bookingType)) {
+    if (!['licensed_artist', 'student', 'intro_session'].includes(bookingType)) {
       return NextResponse.json(
-        { error: 'Booking type must be either "licensed_artist" or "student".' },
+        { error: 'Booking type must be "licensed_artist", "student", or "intro_session".' },
         { status: 400 }
       )
     }
 
+    const bookingData: any = {
+      clientName: clientName.trim(),
+      bookingType,
+      bookingDate: new Date(bookingDate),
+      procedureDate: new Date(procedureDate),
+      status: status || 'scheduled',
+      isPromo: isPromo || false,
+      notes: notes?.trim() || null,
+      contactId: contactId || null,
+      staffId: staffRecord.id
+    }
+    
     const booking = await prisma.clientBooking.create({
-      data: {
-        clientName: clientName.trim(),
-        bookingType,
-        bookingDate: new Date(bookingDate),
-        procedureDate: new Date(procedureDate),
-        status: status || 'scheduled',
-        notes: notes?.trim() || null,
-        contactId: contactId || null,
-        staffId: staffRecord.id
-      },
+      data: bookingData,
       include: {
         contact: {
           select: {

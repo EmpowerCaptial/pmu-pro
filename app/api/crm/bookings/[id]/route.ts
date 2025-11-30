@@ -46,9 +46,32 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireCrmUser(request)
+    const { portalUser, staffRecord } = await requireCrmUser(request)
     const body = await request.json()
-    const { clientName, bookingType, bookingDate, procedureDate, status, notes, contactId } = body
+    const { clientName, bookingType, bookingDate, procedureDate, status, isPromo, notes, contactId } = body
+
+    // Check if trying to change status from 'showed' to something else
+    const existingBooking = await prisma.clientBooking.findUnique({
+      where: { id: params.id }
+    })
+
+    if (existingBooking?.status === 'showed' && status && status !== 'showed') {
+      const userRole = portalUser.role?.toLowerCase() ?? ''
+      if (userRole !== 'owner' && userRole !== 'hr') {
+        return NextResponse.json(
+          { error: 'Only owners and HR can change status from "Showed"' },
+          { status: 403 }
+        )
+      }
+    }
+
+    // Validate booking type if provided
+    if (bookingType && !['licensed_artist', 'student', 'intro_session'].includes(bookingType)) {
+      return NextResponse.json(
+        { error: 'Booking type must be "licensed_artist", "student", or "intro_session".' },
+        { status: 400 }
+      )
+    }
 
     const booking = await prisma.clientBooking.update({
       where: { id: params.id },
@@ -58,6 +81,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         ...(bookingDate !== undefined && { bookingDate: new Date(bookingDate) }),
         ...(procedureDate !== undefined && { procedureDate: new Date(procedureDate) }),
         ...(status !== undefined && { status }),
+        ...(isPromo !== undefined && { isPromo }),
         ...(notes !== undefined && { notes: notes?.trim() || null }),
         ...(contactId !== undefined && { contactId: contactId || null })
       },

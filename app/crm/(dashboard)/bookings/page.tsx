@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { Calendar, Loader2, Plus, RefreshCcw, Edit, Trash2, User, Clock } from 'lucide-react'
+import { Calendar, Loader2, Plus, RefreshCcw, Edit, Trash2, User, Clock, FileText } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
 const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
@@ -26,10 +26,11 @@ const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 interface ClientBooking {
   id: string
   clientName: string
-  bookingType: 'licensed_artist' | 'student'
+  bookingType: 'licensed_artist' | 'student' | 'intro_session'
   bookingDate: string
   procedureDate: string
   status: 'scheduled' | 'showed' | 'no_show' | 'cancelled'
+  isPromo?: boolean
   notes?: string | null
   contact?: {
     id: string
@@ -60,15 +61,19 @@ export default function ClientBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<ClientBooking | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const [reportData, setReportData] = useState<any>(null)
+  const [reportLoading, setReportLoading] = useState(false)
   const hasFetchedRef = useRef(false) // Track if we've fetched on mount
   const isMountedRef = useRef(true) // Track if component is mounted
 
   const [formData, setFormData] = useState({
     clientName: '',
-    bookingType: 'licensed_artist' as 'licensed_artist' | 'student',
+    bookingType: 'licensed_artist' as 'licensed_artist' | 'student' | 'intro_session',
     bookingDate: '',
     procedureDate: '',
     status: 'scheduled' as 'scheduled' | 'showed' | 'no_show' | 'cancelled',
+    isPromo: false,
     notes: '',
     contactId: ''
   })
@@ -153,6 +158,7 @@ export default function ClientBookingsPage() {
         bookingDate: '',
         procedureDate: '',
         status: 'scheduled',
+        isPromo: false,
         notes: '',
         contactId: ''
       })
@@ -234,6 +240,7 @@ export default function ClientBookingsPage() {
       bookingDate: booking.bookingDate.split('T')[0],
       procedureDate: booking.procedureDate.split('T')[0],
       status: booking.status,
+      isPromo: booking.isPromo || false,
       notes: booking.notes || '',
       contactId: booking.contact?.id || ''
     })
@@ -251,9 +258,25 @@ export default function ClientBookingsPage() {
   }
 
   const getBookingTypeBadge = (type: string) => {
-    return type === 'licensed_artist'
-      ? 'bg-purple-100 text-purple-700 border-purple-200'
-      : 'bg-orange-100 text-orange-700 border-orange-200'
+    if (type === 'licensed_artist') {
+      return 'bg-purple-100 text-purple-700 border-purple-200'
+    } else if (type === 'student') {
+      return 'bg-orange-100 text-orange-700 border-orange-200'
+    } else {
+      return 'bg-blue-100 text-blue-700 border-blue-200'
+    }
+  }
+
+  const getBookingTypeLabel = (type: string) => {
+    if (type === 'licensed_artist') return 'Licensed Artist'
+    if (type === 'student') return 'Student'
+    if (type === 'intro_session') return 'Intro Session'
+    return type
+  }
+
+  const canEditShowedStatus = () => {
+    const userRole = currentUser?.role?.toLowerCase() ?? ''
+    return userRole === 'owner' || userRole === 'hr'
   }
 
   if (!canAccess) {
@@ -291,6 +314,36 @@ export default function ClientBookingsPage() {
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
             Refresh
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={async () => {
+              setReportLoading(true)
+              try {
+                const response = await fetch('/api/crm/bookings/report', {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-user-email': currentUser?.email || ''
+                  }
+                })
+                if (response.ok) {
+                  const data = await response.json()
+                  setReportData(data)
+                  setReportDialogOpen(true)
+                } else {
+                  setError('Failed to generate report')
+                }
+              } catch (err) {
+                setError('Failed to generate report')
+              } finally {
+                setReportLoading(false)
+              }
+            }}
+            disabled={reportLoading}
+            className="gap-2"
+          >
+            {reportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+            Generate Report
           </Button>
           <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -333,18 +386,27 @@ export default function ClientBookingsPage() {
               {bookings.map(booking => (
                 <div
                   key={booking.id}
-                  className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className={`rounded-lg border border-slate-200 p-4 shadow-sm transition-shadow ${
+                    booking.status === 'showed' 
+                      ? 'bg-gray-100 opacity-75' 
+                      : 'bg-white hover:shadow-md'
+                  }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-slate-900">{booking.clientName}</h3>
                         <Badge className={getBookingTypeBadge(booking.bookingType)}>
-                          {booking.bookingType === 'licensed_artist' ? 'Licensed Artist' : 'Student'}
+                          {getBookingTypeLabel(booking.bookingType)}
                         </Badge>
                         <Badge className={getStatusBadge(booking.status)}>
                           {booking.status.replace('_', ' ').toUpperCase()}
                         </Badge>
+                        {booking.isPromo && (
+                          <Badge className="bg-pink-100 text-pink-700 border-pink-200">
+                            Promo
+                          </Badge>
+                        )}
                       </div>
                       <div className="grid gap-2 md:grid-cols-2 text-sm text-slate-600">
                         <div className="flex items-center gap-2">
@@ -435,6 +497,7 @@ export default function ClientBookingsPage() {
                 <SelectContent>
                   <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="intro_session">Intro Session</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -476,6 +539,18 @@ export default function ClientBookingsPage() {
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPromo"
+                checked={formData.isPromo}
+                onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="isPromo" className="cursor-pointer">
+                Promotional Booking
+              </Label>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
@@ -529,6 +604,7 @@ export default function ClientBookingsPage() {
                 <SelectContent>
                   <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="intro_session">Intro Session</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -558,7 +634,15 @@ export default function ClientBookingsPage() {
               <Label htmlFor="edit-status">Status *</Label>
               <Select
                 value={formData.status}
-                onValueChange={value => setFormData({ ...formData, status: value as any })}
+                onValueChange={value => {
+                  // Check if trying to change from 'showed' to another status
+                  if (selectedBooking?.status === 'showed' && value !== 'showed' && !canEditShowedStatus()) {
+                    setError('Only owners and HR can change status from "Showed"')
+                    return
+                  }
+                  setFormData({ ...formData, status: value as any })
+                }}
+                disabled={selectedBooking?.status === 'showed' && !canEditShowedStatus()}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -570,6 +654,23 @@ export default function ClientBookingsPage() {
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+              {selectedBooking?.status === 'showed' && !canEditShowedStatus() && (
+                <p className="text-xs text-amber-600">
+                  Only owners and HR can change status from "Showed"
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="edit-isPromo"
+                checked={formData.isPromo}
+                onChange={e => setFormData({ ...formData, isPromo: e.target.checked })}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="edit-isPromo" className="cursor-pointer">
+                Promotional Booking
+              </Label>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-notes">Notes (Optional)</Label>
@@ -609,6 +710,97 @@ export default function ClientBookingsPage() {
             <Button variant="destructive" onClick={handleDeleteBooking} disabled={isLoading}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Completed Bookings Report</DialogTitle>
+            <DialogDescription>
+              Report showing all completed bookings (status: Showed) for {reportData?.period?.month || 'current month'} with client names, booking types, and promo status.
+            </DialogDescription>
+          </DialogHeader>
+          {reportData && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
+                <div>
+                  <p className="text-sm text-slate-600">Total Completed</p>
+                  <p className="text-2xl font-bold text-slate-900">{reportData.totals?.totalCompleted || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Licensed Artist</p>
+                  <p className="text-2xl font-bold text-purple-700">{reportData.totals?.licensedCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Student</p>
+                  <p className="text-2xl font-bold text-orange-700">{reportData.totals?.studentCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Intro Session</p>
+                  <p className="text-2xl font-bold text-blue-700">{reportData.totals?.introSessionCount || 0}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
+                <div>
+                  <p className="text-sm text-slate-600">Promo</p>
+                  <p className="text-2xl font-bold text-pink-700">{reportData.totals?.promoCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">No Promo</p>
+                  <p className="text-2xl font-bold text-slate-700">{reportData.totals?.noPromoCount || 0}</p>
+                </div>
+              </div>
+              <div className="border rounded-lg">
+                <table className="w-full">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-700">Client Name</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-700">Booking Type</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-700">Procedure Date</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-700">Promo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.bookings && reportData.bookings.length > 0 ? (
+                      reportData.bookings.map((booking: any) => (
+                        <tr key={booking.id} className="border-t">
+                          <td className="px-4 py-2 text-sm">{booking.clientName}</td>
+                          <td className="px-4 py-2 text-sm">
+                            <Badge className={getBookingTypeBadge(booking.bookingType)}>
+                              {getBookingTypeLabel(booking.bookingType)}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-2 text-sm">
+                            {new Date(booking.procedureDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2 text-sm">
+                            {booking.isPromo ? (
+                              <Badge className="bg-pink-100 text-pink-700 border-pink-200">Promo</Badge>
+                            ) : (
+                              <span className="text-slate-500">No Promo</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                          No completed bookings found for this month
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
