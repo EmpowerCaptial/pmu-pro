@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
         "bookingDate" TIMESTAMP(3) NOT NULL,
         "procedureDate" TIMESTAMP(3) NOT NULL,
         "status" TEXT NOT NULL DEFAULT 'scheduled',
+        "isPromo" BOOLEAN NOT NULL DEFAULT false,
         "notes" TEXT,
         "contactId" TEXT,
         "staffId" TEXT,
@@ -36,6 +37,26 @@ export async function POST(request: NextRequest) {
       );
     `)
     console.log('✅ Table created!')
+    
+    // Step 1.5: Add isPromo column if table exists but column doesn't
+    try {
+      const columnCheck = await prisma.$queryRaw`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'client_bookings' 
+        AND column_name = 'isPromo'
+      ` as any[]
+      
+      if (!columnCheck || columnCheck.length === 0) {
+        await prisma.$executeRawUnsafe(`
+          ALTER TABLE "client_bookings" 
+          ADD COLUMN IF NOT EXISTS "isPromo" BOOLEAN NOT NULL DEFAULT false;
+        `)
+        console.log('✅ isPromo column added!')
+      }
+    } catch (error: any) {
+      console.log('⚠️  isPromo column check:', error?.message?.substring(0, 60))
+    }
 
     // Step 2: Create indexes
     const indexes = [
