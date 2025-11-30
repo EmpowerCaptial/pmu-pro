@@ -7,8 +7,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { KanbanSquare, Loader2, Plus, RefreshCcw } from 'lucide-react'
+import { KanbanSquare, Loader2, Plus, RefreshCcw, Mail } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 
 const STAGES = [
   { value: 'LEAD', label: 'Leads' },
@@ -78,6 +87,9 @@ export default function CrmPipelinePage() {
   const [error, setError] = useState<string | null>(null)
   const [pipeline, setPipeline] = useState<PipelineResponse | null>(null)
   const [draggingContactId, setDraggingContactId] = useState<string | null>(null)
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<PipelineContact | null>(null)
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   const [newContact, setNewContact] = useState({
     firstName: '',
@@ -85,6 +97,12 @@ export default function CrmPipelinePage() {
     email: '',
     phone: '',
     source: ''
+  })
+
+  const [emailForm, setEmailForm] = useState({
+    from: '',
+    subject: '',
+    message: ''
   })
 
   const stageLookup = useMemo(() => {
@@ -225,6 +243,64 @@ export default function CrmPipelinePage() {
     await handleStageChange(contactId, stage)
   }
 
+  const handleOpenEmailDialog = (contact: PipelineContact) => {
+    if (!contact.email) {
+      setError('This contact does not have an email address.')
+      return
+    }
+    setSelectedContact(contact)
+    setEmailForm({
+      from: currentUser?.email || '',
+      subject: '',
+      message: ''
+    })
+    setEmailDialogOpen(true)
+  }
+
+  const handleSendEmail = async () => {
+    if (!selectedContact?.email || !currentUser?.email) return
+    
+    if (!emailForm.from || !emailForm.subject || !emailForm.message) {
+      setError('Please fill in all required fields.')
+      return
+    }
+
+    setSendingEmail(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/crm/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          contactId: selectedContact.id,
+          to: selectedContact.email,
+          from: emailForm.from,
+          subject: emailForm.subject,
+          message: emailForm.message
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to send email')
+      }
+
+      setEmailDialogOpen(false)
+      setSelectedContact(null)
+      setEmailForm({ from: '', subject: '', message: '' })
+      await fetchPipeline() // Refresh to show new interaction
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to send email')
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
   if (!canAccess) {
     return (
       <Card>
@@ -307,22 +383,35 @@ export default function CrmPipelinePage() {
                           onDragEnd={() => setDraggingContactId(null)}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <div>
+                            <div className="flex-1">
                               <p className="font-medium text-slate-900">{contact.name || 'Unnamed Contact'}</p>
                               <p className="text-xs text-slate-500">{contact.email || 'No email'} • {contact.phone || 'No phone'}</p>
                             </div>
-                            <Select value={contact.stage} onValueChange={value => handleStageChange(contact.id, value as StageValue)}>
-                              <SelectTrigger className="h-8 w-[140px] text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {STAGES.map(stage => (
-                                  <SelectItem key={stage.value} value={stage.value}>
-                                    {stage.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="flex gap-1">
+                              {contact.email && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleOpenEmailDialog(contact)}
+                                  className="h-7 px-2 text-xs"
+                                  title="Send Email"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Select value={contact.stage} onValueChange={value => handleStageChange(contact.id, value as StageValue)}>
+                                <SelectTrigger className="h-8 w-[140px] text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {STAGES.map(stage => (
+                                    <SelectItem key={stage.value} value={stage.value}>
+                                      {stage.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="mt-2 space-y-1 text-xs text-slate-600">
                             {contact.source && <p>Source: {contact.source}</p>}
@@ -425,6 +514,73 @@ export default function CrmPipelinePage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Send Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Send Email to {selectedContact?.name || 'Contact'}</DialogTitle>
+            <DialogDescription>
+              Send an email to {selectedContact?.email || 'this contact'}. You can customize the "from" email address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email-to">To</Label>
+              <Input
+                id="email-to"
+                value={selectedContact?.email || ''}
+                disabled
+                className="bg-slate-50"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-from">From Email Address *</Label>
+              <Input
+                id="email-from"
+                type="email"
+                value={emailForm.from}
+                onChange={e => setEmailForm({ ...emailForm, from: e.target.value })}
+                placeholder="your-email@example.com"
+                required
+              />
+              <p className="text-xs text-slate-500">
+                Enter the email address you want to send from. This can be any valid email address.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-subject">Subject *</Label>
+              <Input
+                id="email-subject"
+                value={emailForm.subject}
+                onChange={e => setEmailForm({ ...emailForm, subject: e.target.value })}
+                placeholder="Email subject line"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-message">Message *</Label>
+              <Textarea
+                id="email-message"
+                value={emailForm.message}
+                onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
+                placeholder="Enter your email message here..."
+                rows={8}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmail} disabled={sendingEmail} className="gap-2">
+              {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              Send Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

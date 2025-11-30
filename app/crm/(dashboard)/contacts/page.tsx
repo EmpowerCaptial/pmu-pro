@@ -7,8 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Loader2, Users } from 'lucide-react'
+import { Loader2, Users, Mail } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 const STAGES = [
   { value: 'ALL', label: 'All stages' },
@@ -59,6 +69,14 @@ export default function CrmContactsPage() {
   const [stageFilter, setStageFilter] = useState<StageFilter>('ALL')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<ContactRow | null>(null)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailForm, setEmailForm] = useState({
+    from: '',
+    subject: '',
+    message: ''
+  })
 
   useEffect(() => {
     if (!currentUser?.email || !canAccess) return
@@ -107,6 +125,64 @@ export default function CrmContactsPage() {
       setError('Unable to load contacts. Please retry.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleOpenEmailDialog = (contact: ContactRow) => {
+    if (!contact.email) {
+      setError('This contact does not have an email address.')
+      return
+    }
+    setSelectedContact(contact)
+    setEmailForm({
+      from: currentUser?.email || '',
+      subject: '',
+      message: ''
+    })
+    setEmailDialogOpen(true)
+  }
+
+  const handleSendEmail = async () => {
+    if (!selectedContact?.email || !currentUser?.email) return
+    
+    if (!emailForm.from || !emailForm.subject || !emailForm.message) {
+      setError('Please fill in all required fields.')
+      return
+    }
+
+    setSendingEmail(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/crm/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          contactId: selectedContact.id,
+          to: selectedContact.email,
+          from: emailForm.from,
+          subject: emailForm.subject,
+          message: emailForm.message
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to send email')
+      }
+
+      setEmailDialogOpen(false)
+      setSelectedContact(null)
+      setEmailForm({ from: '', subject: '', message: '' })
+      await fetchContacts() // Refresh to show new interaction
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to send email')
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -205,9 +281,22 @@ export default function CrmContactsPage() {
                   </td>
                   <td className="px-3 py-2 text-slate-600">{contact.tasks.length}</td>
                   <td className="px-3 py-2 text-right">
-                    <Button asChild variant="link" className="text-blue-600">
-                      <Link href={`/crm/contacts/${contact.id}`}>Open</Link>
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      {contact.email && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEmailDialog(contact)}
+                          className="h-7 px-2 text-xs"
+                          title="Send Email"
+                        >
+                          <Mail className="h-3 w-3" />
+                        </Button>
+                      )}
+                      <Button asChild variant="link" className="text-blue-600">
+                        <Link href={`/crm/contacts/${contact.id}`}>Open</Link>
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -218,6 +307,73 @@ export default function CrmContactsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Send Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Send Email to {selectedContact ? `${selectedContact.firstName} ${selectedContact.lastName}` : 'Contact'}</DialogTitle>
+            <DialogDescription>
+              Send an email to {selectedContact?.email || 'this contact'}. You can customize the "from" email address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email-to">To</Label>
+              <Input
+                id="email-to"
+                value={selectedContact?.email || ''}
+                disabled
+                className="bg-slate-50"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-from">From Email Address *</Label>
+              <Input
+                id="email-from"
+                type="email"
+                value={emailForm.from}
+                onChange={e => setEmailForm({ ...emailForm, from: e.target.value })}
+                placeholder="your-email@example.com"
+                required
+              />
+              <p className="text-xs text-slate-500">
+                Enter the email address you want to send from. This can be any valid email address.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-subject">Subject *</Label>
+              <Input
+                id="email-subject"
+                value={emailForm.subject}
+                onChange={e => setEmailForm({ ...emailForm, subject: e.target.value })}
+                placeholder="Email subject line"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-message">Message *</Label>
+              <Textarea
+                id="email-message"
+                value={emailForm.message}
+                onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
+                placeholder="Enter your email message here..."
+                rows={8}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmail} disabled={sendingEmail} className="gap-2">
+              {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              Send Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
