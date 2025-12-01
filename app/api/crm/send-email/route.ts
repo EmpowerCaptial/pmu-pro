@@ -67,15 +67,52 @@ export async function POST(request: NextRequest) {
     `
 
     // Send email using custom from address
-    await EmailService.sendEmail({
-      to,
-      from,
-      subject,
-      html,
-      text: message
-    })
+    // Note: In production with SendGrid, the "from" address must be verified
+    // If the custom address fails, we'll try with the default from address
+    let emailSent = false
+    let actualFrom = from
+    let emailError: Error | null = null
 
-    // Create interaction record
+    try {
+      await EmailService.sendEmail({
+        to,
+        from,
+        subject,
+        html,
+        text: message
+      })
+      emailSent = true
+    } catch (err) {
+      emailError = err instanceof Error ? err : new Error(String(err))
+      console.error('Failed to send with custom from address:', emailError.message)
+      
+      // In production, if custom from fails, try with default from address
+      if (process.env.NODE_ENV === 'production') {
+        const defaultFrom = process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com'
+        try {
+          console.log(`Retrying with default from address: ${defaultFrom}`)
+          await EmailService.sendEmail({
+            to,
+            from: defaultFrom,
+            subject,
+            html,
+            text: message
+          })
+          emailSent = true
+          actualFrom = defaultFrom
+          console.log('Email sent successfully with default from address')
+        } catch (retryErr) {
+          console.error('Failed to send with default from address:', retryErr)
+          emailError = retryErr instanceof Error ? retryErr : new Error(String(retryErr))
+        }
+      } else {
+        // In development, just log the error but continue
+        console.warn('Email sending failed in development mode:', emailError.message)
+        emailSent = true // In dev mode, we consider it "sent" since it's just logged
+      }
+    }
+
+    // Create interaction record regardless of email send status
     await prisma.interaction.create({
       data: {
         contactId,
@@ -85,15 +122,35 @@ export async function POST(request: NextRequest) {
         subject,
         body: message,
         meta: {
-          from,
-          to
+          from: actualFrom,
+          to,
+          requestedFrom: from,
+          emailSent,
+          error: emailError?.message
         }
       }
     })
 
+    if (!emailSent && process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        {
+          error: 'Failed to send email',
+          details: emailError?.message || 'Email service error. Please check that the SendGrid API key is configured and the from address is verified.',
+          suggestion: 'The custom "from" address may need to be verified in SendGrid. The email was logged as an interaction but not sent.'
+        },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'Email sent successfully'
+      message: emailSent 
+        ? 'Email sent successfully' 
+        : 'Email logged (development mode - not actually sent)',
+      from: actualFrom,
+      note: actualFrom !== from 
+        ? `Email sent from ${actualFrom} instead of requested ${from} (SendGrid requires verified sender addresses)`
+        : undefined
     })
   } catch (error) {
     if (error instanceof Response) {
@@ -104,7 +161,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to send email',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An error occurred while processing the email request'
       },
       { status: 500 }
     )

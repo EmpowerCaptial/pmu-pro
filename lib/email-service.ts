@@ -17,8 +17,9 @@ export class EmailService {
    */
   static async sendEmail(options: EmailOptions): Promise<void> {
     const fromEmail = options.from || process.env.SENDGRID_FROM_EMAIL || 'noreply@thepmuguide.com'
+    const isDev = process.env.NODE_ENV === 'development'
     
-    if (process.env.NODE_ENV === 'development') {
+    if (isDev) {
       console.log('📧 EmailService.sendEmail called');
       console.log('📧 Environment:', process.env.NODE_ENV);
       console.log('📧 To:', options.to);
@@ -26,7 +27,7 @@ export class EmailService {
       console.log('📧 Subject:', options.subject);
     }
     
-    if (this.isDevelopment) {
+    if (isDev) {
       // In development, log the email to console
       console.log('📧 EMAIL SENT (Development Mode)')
       console.log('To:', options.to)
@@ -44,9 +45,6 @@ export class EmailService {
       }
     } else {
       // In production, send real email
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📧 Sending production email via SendGrid...');
-      }
       await this.sendProductionEmail({ ...options, from: fromEmail })
     }
   }
