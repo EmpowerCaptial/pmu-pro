@@ -7,8 +7,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CalendarDays, Loader2 } from 'lucide-react'
+import { CalendarDays, Loader2, Edit, Trash2 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 
 const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 
@@ -18,6 +27,7 @@ interface TourRow {
   end: string
   status: string
   location: string | null
+  notes?: string | null
   contact: {
     id: string
     firstName: string
@@ -35,8 +45,12 @@ export default function CrmCalendarPage() {
   const [range, setRange] = useState<'upcoming' | 'past' | 'all'>('upcoming')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedTour, setSelectedTour] = useState<TourRow | null>(null)
 
   const [form, setForm] = useState({ contactId: '', start: '', end: '', location: '', notes: '' })
+  const [editForm, setEditForm] = useState({ start: '', end: '', location: '', status: 'SCHEDULED', notes: '' })
 
   useEffect(() => {
     if (!currentUser?.email || !canAccess) return
@@ -96,6 +110,76 @@ export default function CrmCalendarPage() {
     return [...tours].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
   }, [tours])
 
+  const openEditDialog = (tour: TourRow) => {
+    setSelectedTour(tour)
+    setEditForm({
+      start: new Date(tour.start).toISOString().slice(0, 16),
+      end: new Date(tour.end).toISOString().slice(0, 16),
+      location: tour.location || '',
+      status: tour.status,
+      notes: tour.notes || ''
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditTour = async () => {
+    if (!selectedTour || !currentUser?.email) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/crm/tours/${selectedTour.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(editForm)
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to update tour')
+      }
+
+      setIsEditDialogOpen(false)
+      setSelectedTour(null)
+      await fetchTours()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to update tour')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteTour = async () => {
+    if (!selectedTour || !currentUser?.email) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/crm/tours/${selectedTour.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete tour')
+      }
+
+      setIsDeleteDialogOpen(false)
+      setSelectedTour(null)
+      await fetchTours()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to delete tour')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!canAccess) {
     return (
       <Card>
@@ -150,18 +234,49 @@ export default function CrmCalendarPage() {
             <div className="space-y-3">
               {sortedTours.map(tour => (
                 <div key={tour.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                    <div>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="flex-1">
                       <p className="text-base font-semibold text-slate-900">
                         {tour.contact.firstName} {tour.contact.lastName}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {new Date(tour.start).toLocaleString()} • {tour.location || 'No location'}
+                        {new Date(tour.start).toLocaleString()} - {new Date(tour.end).toLocaleString()}
                       </p>
+                      <p className="text-xs text-slate-500">
+                        {tour.location || 'No location'}
+                      </p>
+                      {tour.notes && (
+                        <p className="text-xs text-slate-600 mt-1">
+                          Notes: {tour.notes}
+                        </p>
+                      )}
                     </div>
-                    <Badge variant="outline" className="text-xs uppercase tracking-wide">
-                      {tour.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs uppercase tracking-wide">
+                        {tour.status}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(tour)}
+                        className="gap-2"
+                      >
+                        <Edit className="h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTour(tour)
+                          setIsDeleteDialogOpen(true)
+                        }}
+                        className="gap-2"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -233,6 +348,109 @@ export default function CrmCalendarPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Edit Tour Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Tour / Event</DialogTitle>
+            <DialogDescription>
+              Update tour details for {selectedTour?.contact.firstName} {selectedTour?.contact.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-start">Start *</Label>
+                <Input
+                  id="edit-start"
+                  type="datetime-local"
+                  value={editForm.start}
+                  onChange={e => setEditForm({ ...editForm, start: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-end">End *</Label>
+                <Input
+                  id="edit-end"
+                  type="datetime-local"
+                  value={editForm.end}
+                  onChange={e => setEditForm({ ...editForm, end: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-location">Location / Room *</Label>
+              <Input
+                id="edit-location"
+                value={editForm.location}
+                onChange={e => setEditForm({ ...editForm, location: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">Status *</Label>
+              <Select
+                value={editForm.status}
+                onValueChange={value => setEditForm({ ...editForm, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  <SelectItem value="NO_SHOW">No Show</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-notes">Notes (Optional)</Label>
+              <Textarea
+                id="edit-notes"
+                value={editForm.notes}
+                onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="Add any additional notes..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditTour} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Tour / Event</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this tour for {selectedTour?.contact.firstName} {selectedTour?.contact.lastName}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteTour} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
