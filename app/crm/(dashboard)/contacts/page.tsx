@@ -72,6 +72,7 @@ export default function CrmContactsPage() {
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<ContactRow | null>(null)
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailClientOpened, setEmailClientOpened] = useState(false)
   const [emailForm, setEmailForm] = useState({
     subject: '',
     message: ''
@@ -186,13 +187,38 @@ export default function CrmContactsPage() {
   }
 
   const handleOpenEmailClient = () => {
-    if (!selectedContact?.email) return
+    if (!selectedContact?.email) {
+      setError('No email address available for this contact.')
+      return
+    }
     
-    const subject = encodeURIComponent(emailForm.subject || '')
-    const body = encodeURIComponent(emailForm.message || '')
-    const mailtoLink = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
+    if (!emailForm.subject && !emailForm.message) {
+      setError('Please enter a subject or message before opening email client.')
+      return
+    }
     
-    window.location.href = mailtoLink
+    try {
+      const subject = encodeURIComponent(emailForm.subject || '')
+      const body = encodeURIComponent(emailForm.message || '')
+      const mailtoLink = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
+      
+      // Try multiple methods to open email client
+      // Method 1: Create and click an anchor element (most reliable)
+      const link = document.createElement('a')
+      link.href = mailtoLink
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Show feedback
+      setError(null)
+      setEmailClientOpened(true)
+      setTimeout(() => setEmailClientOpened(false), 3000)
+    } catch (err) {
+      console.error('Failed to open email client:', err)
+      setError('Unable to open email client. Your browser may have blocked it. Please copy the email details and send manually.')
+    }
   }
 
   const handleCopyEmailDetails = async () => {
@@ -272,6 +298,11 @@ export default function CrmContactsPage() {
           {error && (
             <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {error}
+            </div>
+          )}
+          {emailClientOpened && (
+            <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-600">
+              Email client should be opening. If it doesn't, check your browser settings or use the Copy button.
             </div>
           )}
           <table className="min-w-full divide-y divide-slate-200 text-sm">

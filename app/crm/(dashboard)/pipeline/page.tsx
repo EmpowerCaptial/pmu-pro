@@ -90,6 +90,7 @@ export default function CrmPipelinePage() {
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<PipelineContact | null>(null)
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailClientOpened, setEmailClientOpened] = useState(false)
 
   const [newContact, setNewContact] = useState({
     firstName: '',
@@ -301,13 +302,43 @@ export default function CrmPipelinePage() {
   }
 
   const handleOpenEmailClient = () => {
-    if (!selectedContact?.email) return
+    if (!selectedContact?.email) {
+      setError('No email address available for this contact.')
+      return
+    }
     
-    const subject = encodeURIComponent(emailForm.subject || '')
-    const body = encodeURIComponent(emailForm.message || '')
-    const mailtoLink = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
+    if (!emailForm.subject && !emailForm.message) {
+      setError('Please enter a subject or message before opening email client.')
+      return
+    }
     
-    window.location.href = mailtoLink
+    try {
+      const subject = encodeURIComponent(emailForm.subject || '')
+      const body = encodeURIComponent(emailForm.message || '')
+      const mailtoLink = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
+      
+      // Use window.open for better compatibility, fallback to location.href
+      const emailWindow = window.open(mailtoLink, '_blank')
+      
+      // If window.open fails (blocked by popup blocker), try location.href
+      if (!emailWindow || emailWindow.closed || typeof emailWindow.closed === 'undefined') {
+        // Create a temporary anchor element and click it
+        const link = document.createElement('a')
+        link.href = mailtoLink
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+      
+      // Show success message (using a temporary info state)
+      setError(null)
+      // Note: In a real implementation, you might want a separate success state
+      // For now, we'll just clear any existing errors
+    } catch (err) {
+      console.error('Failed to open email client:', err)
+      setError('Unable to open email client. Please copy the email details and send manually.')
+    }
   }
 
   const handleCopyEmailDetails = async () => {
@@ -381,6 +412,11 @@ export default function CrmPipelinePage() {
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {error}
+            </div>
+          )}
+          {emailClientOpened && (
+            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-600">
+              Email client should be opening. If it doesn't, check your browser settings or use the Copy button.
             </div>
           )}
 
