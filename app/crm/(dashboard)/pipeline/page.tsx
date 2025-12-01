@@ -100,7 +100,6 @@ export default function CrmPipelinePage() {
   })
 
   const [emailForm, setEmailForm] = useState({
-    from: '',
     subject: '',
     message: ''
   })
@@ -250,7 +249,6 @@ export default function CrmPipelinePage() {
     }
     setSelectedContact(contact)
     setEmailForm({
-      from: currentUser?.email || '',
       subject: '',
       message: ''
     })
@@ -260,7 +258,7 @@ export default function CrmPipelinePage() {
   const handleSendEmail = async () => {
     if (!selectedContact?.email || !currentUser?.email) return
     
-    if (!emailForm.from || !emailForm.subject || !emailForm.message) {
+    if (!emailForm.subject || !emailForm.message) {
       setError('Please fill in all required fields.')
       return
     }
@@ -278,7 +276,6 @@ export default function CrmPipelinePage() {
         body: JSON.stringify({
           contactId: selectedContact.id,
           to: selectedContact.email,
-          from: emailForm.from,
           subject: emailForm.subject,
           message: emailForm.message
         })
@@ -291,7 +288,7 @@ export default function CrmPipelinePage() {
 
       setEmailDialogOpen(false)
       setSelectedContact(null)
-      setEmailForm({ from: '', subject: '', message: '' })
+      setEmailForm({ subject: '', message: '' })
       await fetchPipeline() // Refresh to show new interaction
     } catch (err) {
       console.error(err)
@@ -521,7 +518,7 @@ export default function CrmPipelinePage() {
           <DialogHeader>
             <DialogTitle>Send Email to {selectedContact?.name || 'Contact'}</DialogTitle>
             <DialogDescription>
-              Send an email to {selectedContact?.email || 'this contact'}. You can customize the "from" email address.
+              Send an email to {selectedContact?.email || 'this contact'} using the verified SendGrid sender address.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -533,20 +530,6 @@ export default function CrmPipelinePage() {
                 disabled
                 className="bg-slate-50"
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email-from">From Email Address *</Label>
-              <Input
-                id="email-from"
-                type="email"
-                value={emailForm.from}
-                onChange={e => setEmailForm({ ...emailForm, from: e.target.value })}
-                placeholder="your-email@example.com"
-                required
-              />
-              <p className="text-xs text-slate-500">
-                Enter the email address you want to send from. This can be any valid email address.
-              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email-subject">Subject *</Label>
