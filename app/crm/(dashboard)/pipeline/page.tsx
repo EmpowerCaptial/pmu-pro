@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { KanbanSquare, Loader2, Plus, RefreshCcw, Mail } from 'lucide-react'
+import { KanbanSquare, Loader2, Plus, RefreshCcw, Mail, Copy, ExternalLink } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import {
   Dialog,
@@ -292,9 +292,38 @@ export default function CrmPipelinePage() {
       await fetchPipeline() // Refresh to show new interaction
     } catch (err) {
       console.error(err)
-      setError(err instanceof Error ? err.message : 'Unable to send email')
+      const errorMessage = err instanceof Error ? err.message : 'Unable to send email'
+      setError(errorMessage)
+      // Don't close dialog on error so user can try alternative method
     } finally {
       setSendingEmail(false)
+    }
+  }
+
+  const handleOpenEmailClient = () => {
+    if (!selectedContact?.email) return
+    
+    const subject = encodeURIComponent(emailForm.subject || '')
+    const body = encodeURIComponent(emailForm.message || '')
+    const mailtoLink = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
+    
+    window.location.href = mailtoLink
+  }
+
+  const handleCopyEmailDetails = async () => {
+    if (!selectedContact?.email) return
+    
+    const emailText = `To: ${selectedContact.email}\nSubject: ${emailForm.subject}\n\n${emailForm.message}`
+    
+    try {
+      await navigator.clipboard.writeText(emailText)
+      setError(null)
+      // Show success message briefly
+      const originalError = error
+      setError('Email details copied to clipboard!')
+      setTimeout(() => setError(originalError), 2000)
+    } catch (err) {
+      setError('Failed to copy to clipboard')
     }
   }
 
@@ -553,14 +582,36 @@ export default function CrmPipelinePage() {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSendEmail} disabled={sendingEmail} className="gap-2">
-              {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-              Send Email
-            </Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <div className="flex gap-2 flex-1">
+              <Button 
+                variant="outline" 
+                onClick={handleOpenEmailClient}
+                className="gap-2 flex-1"
+                title="Open in your email client"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open in Email Client
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleCopyEmailDetails}
+                className="gap-2"
+                title="Copy email details to clipboard"
+              >
+                <Copy className="h-4 w-4" />
+                Copy
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSendEmail} disabled={sendingEmail} className="gap-2">
+                {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                Send via System
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

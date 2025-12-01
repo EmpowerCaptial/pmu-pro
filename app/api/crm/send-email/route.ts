@@ -98,10 +98,22 @@ export async function POST(request: NextRequest) {
     }
     console.error('CRM send email error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    // Check for specific SendGrid errors
+    let userFriendlyMessage = 'Failed to send email'
+    if (errorMessage.includes('SendGrid API key')) {
+      userFriendlyMessage = 'SendGrid API key is not configured. Please contact your administrator.'
+    } else if (errorMessage.includes('unauthorized') || errorMessage.includes('401')) {
+      userFriendlyMessage = 'SendGrid authentication failed. Please check API key configuration.'
+    } else if (errorMessage.includes('forbidden') || errorMessage.includes('403')) {
+      userFriendlyMessage = 'SendGrid access denied. The sender address may not be verified.'
+    }
+    
     return NextResponse.json(
       {
-        error: 'Failed to send email',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An error occurred while processing the email request'
+        error: userFriendlyMessage,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        suggestion: 'You can copy the email details and send manually using your email client, or contact support to configure email sending.'
       },
       { status: 500 }
     )
