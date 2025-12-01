@@ -64,15 +64,30 @@ export async function POST(request: NextRequest) {
     `
 
     // Send email using verified SendGrid sender address
-    await EmailService.sendEmail({
-      to,
-      from: fromEmail,
-      subject,
-      html,
-      text: message
-    })
+    let emailSent = false
+    let emailError: Error | null = null
 
-    // Create interaction record
+    try {
+      await EmailService.sendEmail({
+        to,
+        from: fromEmail,
+        subject,
+        html,
+        text: message
+      })
+      emailSent = true
+    } catch (err) {
+      emailError = err instanceof Error ? err : new Error(String(err))
+      console.error('Email sending failed:', emailError)
+      // Log full error details for debugging
+      if (err && typeof err === 'object' && 'response' in err) {
+        const sgError = err as any
+        console.error('SendGrid error response:', sgError.response?.body)
+        console.error('SendGrid error code:', sgError.code)
+      }
+    }
+
+    // Create interaction record regardless of email send status
     await prisma.interaction.create({
       data: {
         contactId,
@@ -83,10 +98,47 @@ export async function POST(request: NextRequest) {
         body: message,
         meta: {
           from: fromEmail,
-          to
+          to,
+          emailSent,
+          error: emailError?.message
         }
       }
     })
+
+    if (!emailSent) {
+      // Extract SendGrid error details if available
+      let errorDetails = emailError?.message || 'Unknown error'
+      let userFriendlyMessage = 'Failed to send email'
+      
+      if (emailError && typeof emailError === 'object' && 'response' in emailError) {
+        const sgError = emailError as any
+        const responseBody = sgError.response?.body
+        if (responseBody) {
+          errorDetails = JSON.stringify(responseBody)
+          if (Array.isArray(responseBody.errors)) {
+            const firstError = responseBody.errors[0]
+            if (firstError?.message) {
+              userFriendlyMessage = firstError.message
+            }
+          }
+        }
+      } else if (errorDetails.includes('SendGrid API key')) {
+        userFriendlyMessage = 'SendGrid API key is not configured. Please contact your administrator.'
+      } else if (errorDetails.includes('unauthorized') || errorDetails.includes('401')) {
+        userFriendlyMessage = 'SendGrid authentication failed. Please check API key configuration.'
+      } else if (errorDetails.includes('forbidden') || errorDetails.includes('403')) {
+        userFriendlyMessage = 'SendGrid access denied. The sender address may not be verified.'
+      }
+
+      return NextResponse.json(
+        {
+          error: userFriendlyMessage,
+          details: process.env.NODE_ENV === 'development' ? errorDetails : 'Email service is not properly configured.',
+          suggestion: 'You can use the "Open in Email Client" button to send the email manually, or contact support to configure email sending.'
+        },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -99,21 +151,11 @@ export async function POST(request: NextRequest) {
     console.error('CRM send email error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     
-    // Check for specific SendGrid errors
-    let userFriendlyMessage = 'Failed to send email'
-    if (errorMessage.includes('SendGrid API key')) {
-      userFriendlyMessage = 'SendGrid API key is not configured. Please contact your administrator.'
-    } else if (errorMessage.includes('unauthorized') || errorMessage.includes('401')) {
-      userFriendlyMessage = 'SendGrid authentication failed. Please check API key configuration.'
-    } else if (errorMessage.includes('forbidden') || errorMessage.includes('403')) {
-      userFriendlyMessage = 'SendGrid access denied. The sender address may not be verified.'
-    }
-    
     return NextResponse.json(
       {
-        error: userFriendlyMessage,
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
-        suggestion: 'You can copy the email details and send manually using your email client, or contact support to configure email sending.'
+        error: 'Failed to process email request',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : 'An unexpected error occurred.',
+        suggestion: 'You can use the "Open in Email Client" button to send the email manually.'
       },
       { status: 500 }
     )

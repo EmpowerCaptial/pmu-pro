@@ -267,10 +267,21 @@ This is an automated email, please do not reply.
       if (process.env.NODE_ENV === 'development') {
         console.log(`✅ Email sent successfully via SendGrid to: ${options.to}`)
       }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ SendGrid email failed:', error)
+    } catch (error: any) {
+      // Log detailed error information
+      console.error('❌ SendGrid email failed:', {
+        message: error?.message,
+        code: error?.code,
+        response: error?.response?.body,
+        statusCode: error?.response?.statusCode
+      })
+      
+      // Preserve the original error for better debugging
+      if (error?.response?.body) {
+        const errorMessage = error.response.body.errors?.[0]?.message || error.message || 'Unknown SendGrid error'
+        throw new Error(`SendGrid email failed: ${errorMessage}`)
       }
+      
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       throw new Error(`SendGrid email failed: ${errorMessage}`)
     }
