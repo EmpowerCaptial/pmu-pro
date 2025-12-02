@@ -8,8 +8,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, History, UserSquare2, Plus } from 'lucide-react'
+import { Loader2, History, UserSquare2, Plus, Edit } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 
@@ -84,10 +93,20 @@ export default function ContactDetailPage() {
   const [contact, setContact] = useState<ContactDetail | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const [note, setNote] = useState({ subject: '', body: '' })
   const [task, setTask] = useState({ title: '', dueAt: '' })
   const [tour, setTour] = useState({ start: '', end: '', location: '', notes: '' })
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    source: '',
+    stage: ''
+  })
 
   useEffect(() => {
     if (!contactId || !currentUser?.email || !canAccess) return
@@ -201,6 +220,64 @@ export default function ContactDetailPage() {
 
   const stageLabel = useMemo(() => contact?.stage.replace('_', ' ') ?? '', [contact?.stage])
 
+  const openEditDialog = () => {
+    if (contact) {
+      setEditForm({
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        email: contact.email || '',
+        phone: contact.phone || '',
+        source: contact.source || '',
+        stage: contact.stage
+      })
+      setIsEditDialogOpen(true)
+    }
+  }
+
+  const handleUpdateContact = async () => {
+    if (!contactId || !currentUser?.email) return
+
+    if (!editForm.firstName.trim() || !editForm.lastName.trim()) {
+      setError('First name and last name are required')
+      return
+    }
+
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/crm/contacts/${contactId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          firstName: editForm.firstName.trim(),
+          lastName: editForm.lastName.trim(),
+          email: editForm.email.trim() || null,
+          phone: editForm.phone.trim() || null,
+          source: editForm.source.trim() || null,
+          stage: editForm.stage
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to update contact')
+      }
+
+      const data = await response.json()
+      setContact(data.contact)
+      setIsEditDialogOpen(false)
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Unable to update contact')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   if (!canAccess) {
     return (
       <Card>
@@ -231,14 +308,31 @@ export default function ContactDetailPage() {
     )
   }
 
+  const STAGES = [
+    { value: 'LEAD', label: 'Leads' },
+    { value: 'TOUR_SCHEDULED', label: 'Tour Scheduled' },
+    { value: 'TOURED', label: 'Toured' },
+    { value: 'APP_STARTED', label: 'Application Started' },
+    { value: 'APP_SUBMITTED', label: 'Application Submitted' },
+    { value: 'ENROLLED', label: 'Enrolled' },
+    { value: 'NO_SHOW', label: 'No-Show' },
+    { value: 'NURTURE', label: 'Nurture' }
+  ] as const
+
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <Badge variant="outline" className="border-slate-300 text-slate-600">Contact</Badge>
-        <h1 className="text-3xl font-semibold text-slate-900">{contact.firstName} {contact.lastName}</h1>
-        <p className="text-sm text-slate-600">
-          Stage: {stageLabel} • Owner: {contact.owner?.name || 'Unassigned'}
-        </p>
+      <header className="flex items-start justify-between">
+        <div className="space-y-1">
+          <Badge variant="outline" className="border-slate-300 text-slate-600">Contact</Badge>
+          <h1 className="text-3xl font-semibold text-slate-900">{contact.firstName} {contact.lastName}</h1>
+          <p className="text-sm text-slate-600">
+            Stage: {stageLabel} • Owner: {contact.owner?.name || 'Unassigned'}
+          </p>
+        </div>
+        <Button onClick={openEditDialog} variant="outline" className="gap-2">
+          <Edit className="h-4 w-4" />
+          Edit Contact
+        </Button>
       </header>
 
       {error && (
@@ -437,6 +531,95 @@ export default function ContactDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Contact Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Contact</DialogTitle>
+            <DialogDescription>
+              Update contact information. Changes will be saved immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-firstName">First Name *</Label>
+                <Input
+                  id="edit-firstName"
+                  value={editForm.firstName}
+                  onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-lastName">Last Name *</Label>
+                <Input
+                  id="edit-lastName"
+                  value={editForm.lastName}
+                  onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="Enter email address"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Phone</Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-source">Source</Label>
+              <Input
+                id="edit-source"
+                value={editForm.source}
+                onChange={(e) => setEditForm({ ...editForm, source: e.target.value })}
+                placeholder="e.g., Website, Referral, Event"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-stage">Stage</Label>
+              <Select value={editForm.stage} onValueChange={(value) => setEditForm({ ...editForm, stage: value })}>
+                <SelectTrigger id="edit-stage">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STAGES.map((stage) => (
+                    <SelectItem key={stage.value} value={stage.value}>
+                      {stage.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateContact} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
