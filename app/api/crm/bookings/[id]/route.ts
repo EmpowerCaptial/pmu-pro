@@ -66,9 +66,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     // Validate booking type if provided
-    if (bookingType && !['licensed_artist', 'student', 'intro_session'].includes(bookingType)) {
+    if (bookingType && !['licensed_artist', 'student', 'intro_session', 'tour'].includes(bookingType)) {
       return NextResponse.json(
-        { error: 'Booking type must be "licensed_artist", "student", or "intro_session".' },
+        { error: 'Booking type must be "licensed_artist", "student", "intro_session", or "tour".' },
         { status: 400 }
       )
     }

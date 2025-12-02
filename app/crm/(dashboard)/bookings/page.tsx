@@ -27,7 +27,7 @@ const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 interface ClientBooking {
   id: string
   clientName: string
-  bookingType: 'licensed_artist' | 'student' | 'intro_session'
+  bookingType: 'licensed_artist' | 'student' | 'intro_session' | 'tour'
   bookingDate: string
   procedureDate: string
   status: 'scheduled' | 'showed' | 'no_show' | 'cancelled'
@@ -70,7 +70,7 @@ export default function ClientBookingsPage() {
 
   const [formData, setFormData] = useState({
     clientName: '',
-    bookingType: 'licensed_artist' as 'licensed_artist' | 'student' | 'intro_session',
+    bookingType: 'licensed_artist' as 'licensed_artist' | 'student' | 'intro_session' | 'tour',
     bookingDate: '',
     procedureDate: '',
     status: 'scheduled' as 'scheduled' | 'showed' | 'no_show' | 'cancelled',
@@ -263,6 +263,8 @@ export default function ClientBookingsPage() {
       return 'bg-purple-100 text-purple-700 border-purple-200'
     } else if (type === 'student') {
       return 'bg-orange-100 text-orange-700 border-orange-200'
+    } else if (type === 'tour') {
+      return 'bg-teal-100 text-teal-700 border-teal-200'
     } else {
       return 'bg-blue-100 text-blue-700 border-blue-200'
     }
@@ -272,6 +274,7 @@ export default function ClientBookingsPage() {
     if (type === 'licensed_artist') return 'Licensed Artist'
     if (type === 'student') return 'Student'
     if (type === 'intro_session') return 'Intro Session'
+    if (type === 'tour') return 'Tour'
     return type
   }
 
@@ -507,6 +510,7 @@ export default function ClientBookingsPage() {
                   <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="intro_session">Intro Session</SelectItem>
+                  <SelectItem value="tour">Tour</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -614,6 +618,7 @@ export default function ClientBookingsPage() {
                   <SelectItem value="licensed_artist">Licensed Artist</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="intro_session">Intro Session</SelectItem>
+                  <SelectItem value="tour">Tour</SelectItem>
                 </SelectContent>
               </Select>
             </div>

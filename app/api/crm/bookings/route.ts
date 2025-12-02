@@ -110,9 +110,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['licensed_artist', 'student', 'intro_session'].includes(bookingType)) {
+    if (!['licensed_artist', 'student', 'intro_session', 'tour'].includes(bookingType)) {
       return NextResponse.json(
-        { error: 'Booking type must be "licensed_artist", "student", or "intro_session".' },
+        { error: 'Booking type must be "licensed_artist", "student", "intro_session", or "tour".' },
         { status: 400 }
       )
     }
