@@ -160,6 +160,10 @@ export default function CrmContactsPage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    if (templateId === 'none') {
+      setSelectedTemplateId('')
+      return
+    }
     setSelectedTemplateId(templateId)
     const template = emailTemplates.find(t => t.id === templateId)
     if (template && selectedContact) {
@@ -430,12 +434,12 @@ export default function CrmContactsPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email-template">Email Template (Optional)</Label>
-              <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+              <Select value={selectedTemplateId || 'none'} onValueChange={handleTemplateSelect}>
                 <SelectTrigger id="email-template">
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {emailTemplates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
