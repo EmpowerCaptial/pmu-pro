@@ -8,12 +8,27 @@ export async function GET(request: NextRequest) {
   try {
     await requireCrmUser(request)
 
-    // Get current month's date range (first day to last day)
+    // Get month offset from query parameter (0 = current month, 1 = previous month, etc.)
+    const monthOffsetParam = request.nextUrl.searchParams.get('monthOffset')
+    const monthOffset = monthOffsetParam ? parseInt(monthOffsetParam, 10) : 0
+    
+    // Validate month offset (0 to 3, meaning current month and up to 3 months back)
+    if (isNaN(monthOffset) || monthOffset < 0 || monthOffset > 3) {
+      return NextResponse.json(
+        { error: 'Month offset must be between 0 and 3' },
+        { status: 400 }
+      )
+    }
+
+    // Calculate the target month based on offset
     const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1)
+    
+    // Get target month's date range (first day to last day)
+    const startOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1)
     startOfMonth.setHours(0, 0, 0, 0)
     
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const endOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0)
     endOfMonth.setHours(23, 59, 59, 999)
 
     // Get all completed bookings (status: 'showed') for the current month
@@ -46,6 +61,7 @@ export async function GET(request: NextRequest) {
     const licensedCount = completedBookings.filter(b => b.bookingType === 'licensed_artist').length
     const studentCount = completedBookings.filter(b => b.bookingType === 'student').length
     const introSessionCount = completedBookings.filter(b => b.bookingType === 'intro_session').length
+    const tourCount = completedBookings.filter(b => b.bookingType === 'tour').length
     const promoCount = completedBookings.filter(b => b.isPromo).length
     const noPromoCount = completedBookings.filter(b => !b.isPromo).length
 
@@ -54,13 +70,15 @@ export async function GET(request: NextRequest) {
       period: {
         start: startOfMonth.toISOString(),
         end: endOfMonth.toISOString(),
-        month: now.toLocaleString('default', { month: 'long', year: 'numeric' })
+        month: targetDate.toLocaleString('default', { month: 'long', year: 'numeric' }),
+        monthOffset
       },
       totals: {
         totalCompleted,
         licensedCount,
         studentCount,
         introSessionCount,
+        tourCount,
         promoCount,
         noPromoCount
       },

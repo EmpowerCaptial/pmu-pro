@@ -65,6 +65,7 @@ export default function ClientBookingsPage() {
   const [reportDialogOpen, setReportDialogOpen] = useState(false)
   const [reportData, setReportData] = useState<any>(null)
   const [reportLoading, setReportLoading] = useState(false)
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0) // 0 = current month, 1 = previous, etc.
   const hasFetchedRef = useRef(false) // Track if we've fetched on mount
   const isMountedRef = useRef(true) // Track if component is mounted
 
@@ -283,6 +284,45 @@ export default function ClientBookingsPage() {
     return userRole === 'owner' || userRole === 'hr'
   }
 
+  const fetchReport = async (monthOffset: number) => {
+    if (!currentUser?.email) return
+    
+    setReportLoading(true)
+    try {
+      const response = await fetch(`/api/crm/bookings/report?monthOffset=${monthOffset}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setReportData(data)
+        setSelectedMonthOffset(monthOffset)
+        if (!reportDialogOpen) {
+          setReportDialogOpen(true)
+        }
+      } else {
+        setError('Failed to generate report')
+      }
+    } catch (err) {
+      setError('Failed to generate report')
+    } finally {
+      setReportLoading(false)
+    }
+  }
+
+  const getMonthOptions = () => {
+    const options = []
+    const now = new Date()
+    for (let i = 0; i <= 3; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const label = date.toLocaleString('default', { month: 'long', year: 'numeric' })
+      options.push({ value: i, label: i === 0 ? `${label} (Current)` : label })
+    }
+    return options
+  }
+
   if (!canAccess) {
     return (
       <Card>
@@ -330,26 +370,8 @@ export default function ClientBookingsPage() {
           <Button 
             variant="outline" 
             onClick={async () => {
-              setReportLoading(true)
-              try {
-                const response = await fetch('/api/crm/bookings/report', {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'x-user-email': currentUser?.email || ''
-                  }
-                })
-                if (response.ok) {
-                  const data = await response.json()
-                  setReportData(data)
-                  setReportDialogOpen(true)
-                } else {
-                  setError('Failed to generate report')
-                }
-              } catch (err) {
-                setError('Failed to generate report')
-              } finally {
-                setReportLoading(false)
-              }
+              setSelectedMonthOffset(0) // Reset to current month when opening
+              await fetchReport(0)
             }}
             disabled={reportLoading}
             className="gap-2"
@@ -738,9 +760,36 @@ export default function ClientBookingsPage() {
               Report showing all completed bookings (status: Showed) for {reportData?.period?.month || 'current month'} with client names, booking types, and promo status.
             </DialogDescription>
           </DialogHeader>
+          <div className="flex items-center gap-3 py-2 border-b">
+            <Label htmlFor="month-select" className="text-sm font-medium text-slate-700">
+              View Report For:
+            </Label>
+            <Select
+              value={selectedMonthOffset.toString()}
+              onValueChange={(value) => {
+                const offset = parseInt(value, 10)
+                fetchReport(offset)
+              }}
+              disabled={reportLoading}
+            >
+              <SelectTrigger id="month-select" className="w-[250px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {getMonthOptions().map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {reportLoading && (
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            )}
+          </div>
           {reportData && (
             <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-slate-50 rounded-lg">
                 <div>
                   <p className="text-sm text-slate-600">Total Completed</p>
                   <p className="text-2xl font-bold text-slate-900">{reportData.totals?.totalCompleted || 0}</p>
@@ -756,6 +805,10 @@ export default function ClientBookingsPage() {
                 <div>
                   <p className="text-sm text-slate-600">Intro Session</p>
                   <p className="text-2xl font-bold text-blue-700">{reportData.totals?.introSessionCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Tour</p>
+                  <p className="text-2xl font-bold text-teal-700">{reportData.totals?.tourCount || 0}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
