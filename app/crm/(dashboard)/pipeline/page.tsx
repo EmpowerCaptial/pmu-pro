@@ -426,6 +426,74 @@ export default function CrmPipelinePage() {
       </header>
 
       <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-slate-900">
+            <Plus className="h-4 w-4" /> Create Contact
+          </CardTitle>
+          <CardDescription>
+            Quick entry for leads captured by phone, events, or referrals. Add more details later from the contact profile.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="grid gap-4 md:grid-cols-2" onSubmit={handleCreateContact}>
+            <div className="space-y-1">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={newContact.firstName}
+                onChange={event => setNewContact(prev => ({ ...prev, firstName: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={newContact.lastName}
+                onChange={event => setNewContact(prev => ({ ...prev, lastName: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="email">Email (Optional)</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newContact.email}
+                onChange={event => setNewContact(prev => ({ ...prev, email: event.target.value }))}
+                placeholder="Enter email if available"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={newContact.phone}
+                onChange={event => setNewContact(prev => ({ ...prev, phone: event.target.value }))}
+                placeholder="Enter phone if available"
+              />
+            </div>
+            <div className="space-y-1 md:col-span-2">
+              <Label htmlFor="source">Source (Optional)</Label>
+              <Input
+                id="source"
+                value={newContact.source}
+                onChange={event => setNewContact(prev => ({ ...prev, source: event.target.value }))}
+                placeholder="e.g., Website, Referral, Event"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Button type="submit" disabled={isLoading} className="gap-2">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Create Contact
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
@@ -545,79 +613,6 @@ export default function CrmPipelinePage() {
                 <div className="text-center text-sm text-slate-500">No pipeline data yet. Add a contact to get started.</div>
               )}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-slate-900">
-            <Plus className="h-4 w-4" /> Create Contact
-          </CardTitle>
-          <CardDescription>
-            Quick entry for leads captured by phone, events, or referrals. Add more details later from the contact profile.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={handleCreateContact}>
-            <div className="space-y-1">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                value={newContact.firstName}
-                onChange={event => setNewContact(prev => ({ ...prev, firstName: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                value={newContact.lastName}
-                onChange={event => setNewContact(prev => ({ ...prev, lastName: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="email">Email (Optional)</Label>
-              <Input
-                id="email"
-                type="email"
-                value={newContact.email}
-                onChange={event => setNewContact(prev => ({ ...prev, email: event.target.value }))}
-                placeholder="Enter email if available"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="phone">Phone (Optional)</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={newContact.phone}
-                onChange={event => setNewContact(prev => ({ ...prev, phone: event.target.value }))}
-                placeholder="Enter phone if available"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xs text-slate-500">
-                <strong>Note:</strong> At least one contact method (email or phone) is required to save.
-              </p>
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <Label htmlFor="source">Source</Label>
-              <Input
-                id="source"
-                placeholder="Instagram, Website, Referral, Event..."
-                value={newContact.source}
-                onChange={event => setNewContact(prev => ({ ...prev, source: event.target.value }))}
-              />
-            </div>
-            <div className="md:col-span-2 flex justify-end">
-              <Button type="submit" disabled={isLoading} className="gap-2">
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                Add Contact
-              </Button>
-            </div>
-          </form>
         </CardContent>
       </Card>
 
