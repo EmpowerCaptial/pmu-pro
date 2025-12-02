@@ -77,6 +77,8 @@ export default function CrmContactsPage() {
     subject: '',
     message: ''
   })
+  const [emailTemplates, setEmailTemplates] = useState<Array<{ id: string; name: string; subject: string; body: string }>>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
 
   useEffect(() => {
     if (!currentUser?.email || !canAccess) return
@@ -128,7 +130,47 @@ export default function CrmContactsPage() {
     }
   }
 
-  const handleOpenEmailDialog = (contact: ContactRow) => {
+  const fetchEmailTemplates = async () => {
+    if (!currentUser?.email) return
+    try {
+      const response = await fetch('/api/crm/email-templates', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setEmailTemplates(data.templates || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch email templates:', err)
+    }
+  }
+
+  const replaceTemplateVariables = (text: string, contact: ContactRow) => {
+    const firstName = contact.firstName || ''
+    const lastName = contact.lastName || ''
+    const fullName = `${firstName} ${lastName}`.trim() || ''
+    
+    return text
+      .replace(/{name}/g, fullName)
+      .replace(/{firstName}/g, firstName)
+      .replace(/{lastName}/g, lastName)
+  }
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = emailTemplates.find(t => t.id === templateId)
+    if (template && selectedContact) {
+      setEmailForm({
+        subject: replaceTemplateVariables(template.subject, selectedContact),
+        message: replaceTemplateVariables(template.body, selectedContact)
+      })
+    }
+  }
+
+  const handleOpenEmailDialog = async (contact: ContactRow) => {
     if (!contact.email) {
       setError('This contact does not have an email address.')
       return
@@ -138,6 +180,8 @@ export default function CrmContactsPage() {
       subject: '',
       message: ''
     })
+    setSelectedTemplateId('')
+    await fetchEmailTemplates()
     setEmailDialogOpen(true)
   }
 
@@ -383,6 +427,22 @@ export default function CrmContactsPage() {
                 disabled
                 className="bg-slate-50"
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-template">Email Template (Optional)</Label>
+              <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+                <SelectTrigger id="email-template">
+                  <SelectValue placeholder="Select a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {emailTemplates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email-subject">Subject *</Label>

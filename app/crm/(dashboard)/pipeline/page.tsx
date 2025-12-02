@@ -104,6 +104,8 @@ export default function CrmPipelinePage() {
     subject: '',
     message: ''
   })
+  const [emailTemplates, setEmailTemplates] = useState<Array<{ id: string; name: string; subject: string; body: string }>>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
 
   const stageLookup = useMemo(() => {
     return STAGES.reduce<Record<string, string>>((acc, stage) => {
@@ -243,7 +245,47 @@ export default function CrmPipelinePage() {
     await handleStageChange(contactId, stage)
   }
 
-  const handleOpenEmailDialog = (contact: PipelineContact) => {
+  const fetchEmailTemplates = async () => {
+    if (!currentUser?.email) return
+    try {
+      const response = await fetch('/api/crm/email-templates', {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setEmailTemplates(data.templates || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch email templates:', err)
+    }
+  }
+
+  const replaceTemplateVariables = (text: string, contact: PipelineContact) => {
+    const firstName = contact.name.split(' ')[0] || ''
+    const lastName = contact.name.split(' ').slice(1).join(' ') || ''
+    const fullName = contact.name || ''
+    
+    return text
+      .replace(/{name}/g, fullName)
+      .replace(/{firstName}/g, firstName)
+      .replace(/{lastName}/g, lastName)
+  }
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = emailTemplates.find(t => t.id === templateId)
+    if (template && selectedContact) {
+      setEmailForm({
+        subject: replaceTemplateVariables(template.subject, selectedContact),
+        message: replaceTemplateVariables(template.body, selectedContact)
+      })
+    }
+  }
+
+  const handleOpenEmailDialog = async (contact: PipelineContact) => {
     if (!contact.email) {
       setError('This contact does not have an email address.')
       return
@@ -253,6 +295,8 @@ export default function CrmPipelinePage() {
       subject: '',
       message: ''
     })
+    setSelectedTemplateId('')
+    await fetchEmailTemplates()
     setEmailDialogOpen(true)
   }
 
@@ -595,6 +639,22 @@ export default function CrmPipelinePage() {
                 disabled
                 className="bg-slate-50"
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-template">Email Template (Optional)</Label>
+              <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+                <SelectTrigger id="email-template">
+                  <SelectValue placeholder="Select a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {emailTemplates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email-subject">Subject *</Label>

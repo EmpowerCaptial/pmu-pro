@@ -18,8 +18,9 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { Calendar, Loader2, Plus, RefreshCcw, Edit, Trash2, User, Clock, FileText } from 'lucide-react'
+import { Calendar, Loader2, Plus, RefreshCcw, Edit, Trash2, User, Clock, FileText, Settings } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import Link from 'next/link'
 
 const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
 
@@ -296,7 +297,15 @@ export default function ClientBookingsPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-semibold text-slate-900">Client Bookings</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-semibold text-slate-900">Client Bookings</h1>
+            <Link href="/crm/bookings/settings">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
+          </div>
           <p className="text-sm text-slate-600">
             Track client bookings for commission payments. Monitor shows, no-shows, and booking details.
           </p>

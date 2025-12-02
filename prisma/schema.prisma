@@ -1046,31 +1046,32 @@ enum Stage {
 }
 
 model Staff {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  phone     String?
-  role      String
-  contacts  Contact[]     @relation("StaffContacts")
-  tasks     Task[]
-  interactions Interaction[]
-  tours     Tour[]        @relation("StaffTours")
-  bookings  ClientBooking[] @relation("StaffBookings")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  phone          String?
+  role           String
+  contacts       Contact[]       @relation("StaffContacts")
+  tasks          Task[]
+  interactions   Interaction[]
+  tours          Tour[]          @relation("StaffTours")
+  bookings       ClientBooking[] @relation("StaffBookings")
+  emailTemplates EmailTemplate[] @relation("StaffEmailTemplates")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Contact {
-  id           String         @id @default(cuid())
+  id           String          @id @default(cuid())
   firstName    String
   lastName     String
-  email        String?        @unique
+  email        String?         @unique
   phone        String?
   source       String?
   tags         String[]
-  stage        Stage          @default(LEAD)
+  stage        Stage           @default(LEAD)
   ownerId      String?
-  owner        Staff?         @relation("StaffContacts", fields: [ownerId], references: [id])
+  owner        Staff?          @relation("StaffContacts", fields: [ownerId], references: [id])
   interactions Interaction[]
   tours        Tour[]
   applications Application[]
@@ -1078,13 +1079,13 @@ model Contact {
   consents     Consent[]
   tasks        Task[]
   bookings     ClientBooking[] @relation("ContactBookings")
-  score        Int            @default(0)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  score        Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
 model Interaction {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   type      String
   direction String
   subject   String?
@@ -1111,11 +1112,11 @@ model Task {
 }
 
 model Tour {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   start     DateTime
   end       DateTime
   location  String
-  status    String    @default("SCHEDULED")
+  status    String   @default("SCHEDULED")
   contactId String
   contact   Contact  @relation(fields: [contactId], references: [id])
   staffId   String?
@@ -1125,20 +1126,20 @@ model Tour {
 }
 
 model ClientBooking {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   clientName    String
-  bookingType   String    // "licensed_artist" | "student" | "intro_session"
+  bookingType   String // "licensed_artist" | "student" | "intro_session"
   bookingDate   DateTime
   procedureDate DateTime
-  status        String    @default("scheduled") // "scheduled" | "showed" | "no_show" | "cancelled"
-  isPromo       Boolean   @default(false)
+  status        String   @default("scheduled") // "scheduled" | "showed" | "no_show" | "cancelled"
+  isPromo       Boolean  @default(false)
   notes         String?
   contactId     String?
-  contact       Contact?  @relation("ContactBookings", fields: [contactId], references: [id], onDelete: SetNull)
+  contact       Contact? @relation("ContactBookings", fields: [contactId], references: [id], onDelete: SetNull)
   staffId       String?
-  staff         Staff?    @relation("StaffBookings", fields: [staffId], references: [id], onDelete: SetNull)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  staff         Staff?   @relation("StaffBookings", fields: [staffId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([bookingDate])
   @@index([procedureDate])
@@ -1148,27 +1149,27 @@ model ClientBooking {
 }
 
 model Application {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   contactId   String
-  contact     Contact   @relation(fields: [contactId], references: [id])
-  status      String    @default("STARTED")
+  contact     Contact  @relation(fields: [contactId], references: [id])
+  status      String   @default("STARTED")
   missingDocs String[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Enrollment {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   contactId   String
-  contact     Contact   @relation(fields: [contactId], references: [id])
+  contact     Contact  @relation(fields: [contactId], references: [id])
   cohort      String
-  depositPaid Boolean   @default(false)
+  depositPaid Boolean  @default(false)
   tuitionPlan String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model Consent {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   contactId String
   contact   Contact  @relation(fields: [contactId], references: [id])
   channel   String
@@ -1176,4 +1177,18 @@ model Consent {
   timestamp DateTime @default(now())
   ip        String?
   source    String?
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  subject   String
+  body      String
+  staffId   String
+  staff     Staff    @relation("StaffEmailTemplates", fields: [staffId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([staffId])
+  @@map("email_templates")
 }
