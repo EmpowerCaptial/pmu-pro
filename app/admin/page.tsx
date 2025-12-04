@@ -46,8 +46,19 @@ import {
   MapPin,
   Award,
   Calendar,
-  RefreshCw
+  RefreshCw,
+  KeyRound,
+  Loader2
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 
 interface User {
   id: string
@@ -122,6 +133,12 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false)
+  const [userToReset, setUserToReset] = useState<User | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [passwordResetError, setPasswordResetError] = useState<string | null>(null)
 
   useEffect(() => {
     // Check authentication
@@ -180,6 +197,73 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Error updating user:', error)
       alert('Failed to update user')
+    }
+  }
+
+  const openPasswordResetDialog = (user: User) => {
+    // Check if current user is owner
+    if (currentUser?.role?.toLowerCase() !== 'owner') {
+      alert('Only owners can reset passwords')
+      return
+    }
+    setUserToReset(user)
+    setNewPassword('')
+    setConfirmPassword('')
+    setPasswordResetError(null)
+    setPasswordResetDialogOpen(true)
+  }
+
+  const handleResetPassword = async () => {
+    if (!userToReset || !currentUser) return
+
+    if (!newPassword || !confirmPassword) {
+      setPasswordResetError('Both password fields are required')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordResetError('Password must be at least 8 characters long')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordResetError('Passwords do not match')
+      return
+    }
+
+    setIsResettingPassword(true)
+    setPasswordResetError(null)
+
+    try {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email || ''
+        },
+        body: JSON.stringify({
+          email: userToReset.email,
+          newPassword,
+          adminEmail: currentUser.email
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(`Password reset successfully for ${userToReset.name}`)
+        setPasswordResetDialogOpen(false)
+        setUserToReset(null)
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        setPasswordResetError(data.error || 'Failed to reset password')
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      setPasswordResetError('Failed to reset password. Please try again.')
+    } finally {
+      setIsResettingPassword(false)
     }
   }
 
@@ -587,6 +671,17 @@ export default function AdminDashboardPage() {
                               Restore
                             </Button>
                           )}
+                          {currentUser?.role?.toLowerCase() === 'owner' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openPasswordResetDialog(user)}
+                              className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                            >
+                              <KeyRound className="h-4 w-4 mr-1" />
+                              Reset Password
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
@@ -704,6 +799,65 @@ export default function AdminDashboardPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={passwordResetDialogOpen} onOpenChange={setPasswordResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Reset password for {userToReset?.name} ({userToReset?.email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {passwordResetError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                {passwordResetError}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 8 characters)"
+                minLength={8}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                minLength={8}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordResetDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleResetPassword} disabled={isResettingPassword}>
+              {isResettingPassword ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Reset Password
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

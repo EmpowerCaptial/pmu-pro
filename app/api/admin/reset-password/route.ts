@@ -8,20 +8,32 @@ export async function POST(request: NextRequest) {
   try {
     const { email, newPassword, adminEmail } = await request.json()
     
-    if (!email || !newPassword || !adminEmail) {
+    // Support both header-based auth (for CRM) and body-based auth (for admin page)
+    const adminEmailFromHeader = request.headers.get('x-user-email')
+    const adminEmailToUse = adminEmailFromHeader || adminEmail
+    
+    if (!email || !newPassword) {
       return NextResponse.json({ 
-        error: 'Email, new password, and admin email required' 
+        error: 'Email and new password are required' 
       }, { status: 400 })
+    }
+    
+    if (!adminEmailToUse) {
+      return NextResponse.json({ 
+        error: 'Admin authentication required' 
+      }, { status: 401 })
     }
     
     // Verify admin permissions
     const admin = await prisma.user.findUnique({
-      where: { email: adminEmail },
+      where: { email: adminEmailToUse },
       select: { role: true }
     })
     
-    if (!admin || !['owner', 'admin', 'manager'].includes(admin.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    if (!admin || admin.role.toLowerCase() !== 'owner') {
+      return NextResponse.json({ 
+        error: 'Unauthorized. Only owners can reset passwords.' 
+      }, { status: 403 })
     }
     
     // Find user
@@ -40,9 +52,7 @@ export async function POST(request: NextRequest) {
     await prisma.user.update({
       where: { email },
       data: { 
-        password: hashedPassword,
-        studioName: 'Universal Beauty Studio Academy',
-        businessName: 'Universal Beauty Studio - Tyrone Jackson'
+        password: hashedPassword
       }
     })
     
