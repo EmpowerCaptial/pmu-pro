@@ -143,17 +143,64 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     // Check authentication
     const staffAuth = localStorage.getItem('staffAuth')
+    const demoUser = localStorage.getItem('demoUser')
+    
+    // Try staffAuth first (for staff-admin login)
     if (staffAuth) {
       try {
         const authData = JSON.parse(staffAuth)
         setCurrentUser(authData)
         setIsAuthenticated(true)
         loadData()
+        // Also fetch fresh role from database
+        fetchUserRole(authData.email)
       } catch (error) {
         console.error('Invalid auth data:', error)
       }
+    } 
+    // Fallback to demoUser (for regular login)
+    else if (demoUser) {
+      try {
+        const userData = JSON.parse(demoUser)
+        if (userData.isRealAccount) {
+          setCurrentUser(userData)
+          setIsAuthenticated(true)
+          loadData()
+          // Fetch fresh role from database
+          fetchUserRole(userData.email)
+        }
+      } catch (error) {
+        console.error('Invalid user data:', error)
+      }
     }
   }, [])
+
+  const fetchUserRole = async (email: string) => {
+    if (!email) return
+    try {
+      const response = await fetch('/api/auth/user-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const user = data.user || data
+        if (user && user.role) {
+          // Update currentUser with fresh role from database
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            role: user.role,
+            email: user.email
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user role:', error)
+    }
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -239,7 +286,7 @@ export default function AdminDashboardPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-user-email': currentUser.email || ''
+          'x-user-email': currentUser?.email || ''
         },
         body: JSON.stringify({
           email: userToReset.email,
