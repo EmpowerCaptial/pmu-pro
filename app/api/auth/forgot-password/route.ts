@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
 
     // Send password reset email
     try {
+      console.log(`📧 Attempting to send password reset email to: ${user.email}`)
       await EmailService.sendEmail({
         to: user.email,
         subject: 'Reset Your PMU Pro Password',
@@ -110,15 +111,17 @@ export async function POST(req: NextRequest) {
         `
       });
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Password reset email sent to: ${user.email}`);
-        console.log(`Reset URL: ${resetUrl}`);
-      }
-    } catch (emailError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to send password reset email:', emailError);
-      }
-      // Don't fail the request if email fails
+      console.log(`✅ Password reset email sent successfully to: ${user.email}`);
+      console.log(`Reset URL: ${resetUrl}`);
+    } catch (emailError: any) {
+      console.error('❌ Failed to send password reset email:', {
+        error: emailError?.message || emailError,
+        userEmail: user.email,
+        resetUrl: resetUrl,
+        stack: emailError?.stack
+      });
+      // Don't fail the request if email fails - user can still use the reset link if they have it
+      // But log the error for debugging
     }
 
     return NextResponse.json({ 

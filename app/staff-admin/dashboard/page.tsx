@@ -37,8 +37,20 @@ import {
   User,
   History,
   Download,
-  PenTool
+  PenTool,
+  KeyRound,
+  Loader2
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { CONSENT_FORM_TEMPLATES } from '@/lib/data/consent-form-templates'
 import { ConsentFormTemplateEditor } from '@/components/staff/consent-form-template-editor'
 import { 
@@ -58,7 +70,6 @@ import { setArtistViewMode } from '@/lib/artist-view-mode'
 import { ClientPortalManagement } from '@/components/admin/client-portal-management'
 import ApplicationReview from '@/components/staff/application-review'
 import TicketManagement from '@/components/staff/ticket-management'
-import { Input } from '@/components/ui/input'
 
 interface ActivityLog {
   id: string;
@@ -132,6 +143,12 @@ export default function StaffAdminDashboardPage() {
   const [newStaffSuccess, setNewStaffSuccess] = useState<{show: boolean, data: any}>({show: false, data: null})
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false)
+  const [userToReset, setUserToReset] = useState<UserAccount | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [passwordResetError, setPasswordResetError] = useState<string | null>(null)
   const router = useRouter()
 
   // Mock data for demonstration
@@ -352,7 +369,12 @@ export default function StaffAdminDashboardPage() {
 
       if (usersRes.ok) {
         const usersData = await usersRes.json()
-        setUserAccounts(usersData.data || [])
+        // Map subscriptionStatus to status for frontend compatibility
+        const mappedUsers = (usersData.data || []).map((user: any) => ({
+          ...user,
+          status: user.subscriptionStatus || user.status || 'pending'
+        }))
+        setUserAccounts(mappedUsers)
       }
 
       if (ticketsRes.ok) {
@@ -391,6 +413,10 @@ export default function StaffAdminDashboardPage() {
         setCurrentUser(authData)
         setIsAuthenticated(true)
         loadData()
+        // Fetch fresh role from database if email is available
+        if (authData.email) {
+          fetchUserRole(authData.email)
+        }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.error('Invalid auth data:', error)
@@ -402,9 +428,103 @@ export default function StaffAdminDashboardPage() {
     }
   }, [router])
 
+  const fetchUserRole = async (email: string) => {
+    if (!email) return
+    try {
+      const response = await fetch('/api/auth/user-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const user = data.user || data
+        if (user && user.role) {
+          // Update currentUser with fresh role from database
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            role: user.role,
+            email: user.email
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user role:', error)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('staffAuth')
     router.push('/staff-admin/login')
+  }
+
+  const openPasswordResetDialog = (user: UserAccount) => {
+    // Check if current user is owner
+    if (currentUser?.role?.toLowerCase() !== 'owner') {
+      alert('Only owners can reset passwords')
+      return
+    }
+    setUserToReset(user)
+    setNewPassword('')
+    setConfirmPassword('')
+    setPasswordResetError(null)
+    setPasswordResetDialogOpen(true)
+  }
+
+  const handleUserPasswordReset = async () => {
+    if (!userToReset || !currentUser) return
+
+    if (!newPassword || !confirmPassword) {
+      setPasswordResetError('Both password fields are required')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordResetError('Password must be at least 8 characters long')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordResetError('Passwords do not match')
+      return
+    }
+
+    setIsResettingPassword(true)
+    setPasswordResetError(null)
+
+    try {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email || ''
+        },
+        body: JSON.stringify({
+          email: userToReset.email,
+          newPassword,
+          adminEmail: currentUser.email
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(`Password reset successfully for ${userToReset.name}`)
+        setPasswordResetDialogOpen(false)
+        setUserToReset(null)
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        setPasswordResetError(data.error || 'Failed to reset password')
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      setPasswordResetError('Failed to reset password. Please try again.')
+    } finally {
+      setIsResettingPassword(false)
+    }
   }
 
   const handleUserStatusUpdate = async (userId: string, newStatus: string) => {
@@ -455,10 +575,8 @@ export default function StaffAdminDashboardPage() {
         // Show success message
         alert(`User status updated to ${newStatus} successfully!`)
         
-        // Reload data to ensure we have the latest from database
-        setTimeout(() => {
-          loadData()
-        }, 1000)
+        // Reload data immediately to ensure we have the latest from database
+        await loadData()
       } else {
         const errorData = await response.json()
         console.error('❌ Failed to update user status:', errorData)
@@ -1239,6 +1357,17 @@ export default function StaffAdminDashboardPage() {
                                 </SelectContent>
                               </Select>
                             </div>
+                            {currentUser?.role?.toLowerCase() === 'owner' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openPasswordResetDialog(user)}
+                                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                              >
+                                <KeyRound className="h-4 w-4 mr-1" />
+                                Reset Password
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1827,6 +1956,65 @@ export default function StaffAdminDashboardPage() {
           <div>editingTemplateId: {editingTemplateId || 'null'}</div>
         </div>
       )}
+
+      {/* Password Reset Dialog */}
+      <Dialog open={passwordResetDialogOpen} onOpenChange={setPasswordResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Reset password for {userToReset?.name} ({userToReset?.email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {passwordResetError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                {passwordResetError}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 8 characters)"
+                minLength={8}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                minLength={8}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordResetDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUserPasswordReset} disabled={isResettingPassword}>
+              {isResettingPassword ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Reset Password
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
