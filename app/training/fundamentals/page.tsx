@@ -340,7 +340,11 @@ export default function FundamentalsTrainingPortal() {
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [videoUploadProgress, setVideoUploadProgress] = useState<number | null>(null)
   const [pdfFileName, setPdfFileName] = useState<string | null>(null)
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false)
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false)
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
@@ -811,16 +815,85 @@ export default function FundamentalsTrainingPortal() {
     event.target.value = ''
 
     if (!file) {
+      setPdfFile(null)
+      setPdfFileName(null)
       return
     }
 
     if (file.type !== 'application/pdf') {
       setUploadError('Please upload a PDF document.')
+      setPdfFile(null)
+      setPdfFileName(null)
+      return
+    }
+
+    if (file.size > 150 * 1024 * 1024) {
+      setUploadError('PDF file size must be less than 150 MB.')
+      setPdfFile(null)
+      setPdfFileName(null)
       return
     }
 
     setUploadError(null)
+    setUploadSuccess(null)
+    setPdfFile(file)
     setPdfFileName(file.name)
+  }
+
+  const handlePdfUpload = async () => {
+    if (!pdfFile || !currentUser?.email) {
+      setUploadError('Please select a PDF file and ensure you are logged in.')
+      return
+    }
+
+    setIsUploadingPdf(true)
+    setUploadError(null)
+    setUploadSuccess(null)
+    setUploadProgress(0)
+
+    try {
+      const normalizedTitle = pdfFileName?.replace(/\.pdf$/i, '').trim() || 'Training Resource'
+      const safeSegment = normalizedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+      const fileName = `${safeSegment || 'resource'}-${Date.now()}.pdf`
+      const userIdentifier = currentUser.id || currentUser.email.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'user'
+      const pathname = `resource-library/${userIdentifier}/${fileName}`
+
+      const clientPayload = JSON.stringify({
+        title: normalizedTitle,
+        category: 'training',
+        fileSize: pdfFile.size,
+        originalFilename: pdfFile.name
+      })
+
+      await upload(pathname, pdfFile, {
+        access: 'public',
+        contentType: 'application/pdf',
+        handleUploadUrl: '/api/resource-library',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        clientPayload,
+        multipart: pdfFile.size > 15 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => setUploadProgress(Math.round(percentage))
+      })
+
+      setUploadSuccess('PDF uploaded successfully! It is now available in the resource library for students.')
+      setPdfFile(null)
+      setPdfFileName(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('PDF upload failed:', error)
+      const message = error instanceof Error ? error.message : 'Failed to upload PDF'
+      setUploadError(message)
+    } finally {
+      setIsUploadingPdf(false)
+      setUploadProgress(null)
+    }
   }
 
   const handleAssignmentCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -1895,21 +1968,52 @@ export default function FundamentalsTrainingPortal() {
                               variant="outline"
                               className="bg-white"
                               onClick={handleUploadButtonClick}
-                             >
-                              Upload PDF
-                             </Button>
+                              disabled={isUploadingPdf}
+                            >
+                              {isUploadingPdf ? (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Select PDF
+                                </>
+                              )}
+                            </Button>
+                            {pdfFile && !isUploadingPdf && (
+                              <Button
+                                type="button"
+                                onClick={handlePdfUpload}
+                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                disabled={isUploadingPdf}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload to Library
+                              </Button>
+                            )}
+                            {uploadProgress !== null && (
+                              <div className="space-y-1">
+                                <Progress value={uploadProgress} className="h-2" />
+                                <span className="text-xs text-purple-700">{uploadProgress}% uploaded</span>
+                              </div>
+                            )}
                             {pdfFileName ? (
                               <span className="text-xs font-medium text-purple-800">
-                                Current PDF: {pdfFileName}
+                                Selected: {pdfFileName}
                               </span>
                             ) : (
-                              <span className="text-xs text-purple-700">No PDF uploaded yet.</span>
+                              <span className="text-xs text-purple-700">No PDF selected yet.</span>
                             )}
                             <p className="text-xs text-purple-700">
                               Max file size 150&nbsp;MB. Uploaded PDFs become available in the resource library for students.
                             </p>
                             {uploadError && (
                               <span className="text-xs text-red-600">{uploadError}</span>
+                            )}
+                            {uploadSuccess && (
+                              <span className="text-xs text-green-600">{uploadSuccess}</span>
                             )}
                           </div>
                         </div>
