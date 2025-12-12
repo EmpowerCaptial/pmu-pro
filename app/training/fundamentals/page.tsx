@@ -67,6 +67,7 @@ interface LectureVideo {
   fileSize?: number
   uploadedAt?: string
   uploadedBy?: string
+  videoType?: 'file' | 'url' // 'file' for uploaded videos, 'url' for external links
 }
 
 interface CourseWeek {
@@ -336,6 +337,8 @@ export default function FundamentalsTrainingPortal() {
   const [newVideoDescription, setNewVideoDescription] = useState('')
   const [newVideoDuration, setNewVideoDuration] = useState('')
   const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoUrl, setVideoUrl] = useState<string>('')
+  const [videoUploadType, setVideoUploadType] = useState<'file' | 'url'>('file')
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [videoUploadProgress, setVideoUploadProgress] = useState<number | null>(null)
@@ -362,6 +365,8 @@ export default function FundamentalsTrainingPortal() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeletingVideo, setIsDeletingVideo] = useState(false)
+  const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState<LectureVideo | null>(null)
   const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
   const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
   const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
@@ -578,7 +583,8 @@ export default function FundamentalsTrainingPortal() {
           url: video.url,
           fileSize: video.fileSize,
           uploadedAt: video.uploadedAt,
-          uploadedBy: video.uploadedBy
+          uploadedBy: video.uploadedBy,
+          videoType: video.videoType || 'file'
         }))
         setLectureVideos(videos)
       } catch (error) {
@@ -686,14 +692,66 @@ export default function FundamentalsTrainingPortal() {
       return
     }
 
+    const trimmedTitle = newVideoTitle.trim() || 'Lecture Video'
+    const description = newVideoDescription.trim()
+    const durationLabel = newVideoDuration.trim()
+
+    // Handle URL-based video submission
+    if (videoUploadType === 'url') {
+      const trimmedUrl = videoUrl.trim()
+      if (!trimmedUrl) {
+        setVideoUploadError('Please enter a video URL.')
+        return
+      }
+
+      // Basic URL validation
+      try {
+        new URL(trimmedUrl)
+      } catch {
+        setVideoUploadError('Please enter a valid URL (e.g., https://youtube.com/watch?v=...).')
+        return
+      }
+
+      try {
+        const response = await fetch('/api/training/videos/url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser.email
+          },
+          body: JSON.stringify({
+            title: trimmedTitle,
+            description,
+            durationLabel,
+            url: trimmedUrl
+          })
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to save video URL.')
+        }
+
+        setVideoUploadSuccess('Video URL saved successfully.')
+        setVideoUrl('')
+        setNewVideoTitle('')
+        setNewVideoDescription('')
+        setNewVideoDuration('')
+        setVideoUploadType('file') // Reset to file upload for next time
+        await fetchTrainingVideos(false)
+      } catch (error) {
+        console.error('Failed to save video URL:', error)
+        setVideoUploadError(error instanceof Error ? error.message : 'Failed to save the video URL.')
+      }
+      return
+    }
+
+    // Handle file upload
     if (!videoFile) {
       setVideoUploadError('Select a video file before uploading.')
       return
     }
 
-    const trimmedTitle = (newVideoTitle || videoFile.name.replace(/\.[^/.]+$/, '')).trim() || 'Lecture Video'
-    const description = newVideoDescription.trim()
-    const durationLabel = newVideoDuration.trim()
     const extension = videoFile.name.split('.').pop()?.toLowerCase() || 'mp4'
     const safeSegment = trimmedTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     const userIdentifier =
@@ -780,6 +838,46 @@ export default function FundamentalsTrainingPortal() {
     setDeleteConfirmText('')
     setDeleteError(null)
     setIsDeleteDialogOpen(true)
+  }
+
+  // Convert video URL to embeddable format
+  const getEmbedUrl = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url)
+      
+      // YouTube
+      if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+        let videoId = ''
+        if (urlObj.hostname.includes('youtu.be')) {
+          videoId = urlObj.pathname.slice(1)
+        } else {
+          videoId = urlObj.searchParams.get('v') || ''
+        }
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}`
+        }
+      }
+      
+      // Vimeo
+      if (urlObj.hostname.includes('vimeo.com')) {
+        const videoId = urlObj.pathname.split('/').filter(Boolean).pop()
+        if (videoId) {
+          return `https://player.vimeo.com/video/${videoId}`
+        }
+      }
+      
+      // For other URLs or direct video files, return the original URL
+      // This will work for direct video file URLs
+      return url
+    } catch {
+      // If URL parsing fails, return original URL
+      return url
+    }
+  }
+
+  const openVideoPlayer = (video: LectureVideo) => {
+    setSelectedVideo(video)
+    setVideoPlayerOpen(true)
   }
 
   const handleDeleteVideo = async () => {
@@ -1455,12 +1553,15 @@ export default function FundamentalsTrainingPortal() {
                             <div className="flex items-center gap-2">
                               <Video className="h-5 w-5 text-purple-600" />
                               <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
+                              {video.videoType === 'url' && (
+                                <Badge variant="outline" className="text-xs">External Video</Badge>
+                              )}
                             </div>
                             <p className="text-sm text-gray-600 leading-relaxed">{video.description || 'Instructor uploaded lesson recording.'}</p>
                             <div className="text-xs text-gray-500 space-y-1">
                               <div className="flex flex-wrap gap-2">
                                 <span><strong>Duration:</strong> {video.duration || 'Self-paced'}</span>
-                                {video.fileSize ? <span><strong>Size:</strong> {formatFileSize(video.fileSize)}</span> : null}
+                                {video.fileSize && video.videoType !== 'url' ? <span><strong>Size:</strong> {formatFileSize(video.fileSize)}</span> : null}
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {video.uploadedBy && <span><strong>Instructor:</strong> {video.uploadedBy}</span>}
@@ -1468,10 +1569,8 @@ export default function FundamentalsTrainingPortal() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Button size="sm" asChild className="flex-1">
-                                <a href={video.url} target="_blank" rel="noopener noreferrer">
-                                  Watch
-                                </a>
+                              <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
+                                Watch
                               </Button>
                               {canManageVideos && (
                                 <Button
@@ -1875,9 +1974,41 @@ export default function FundamentalsTrainingPortal() {
                             Upload Lecture Video
                           </div>
                           <p className="text-sm text-purple-700">
-                            Accepts MP4, MOV, and most browser-ready formats. Videos are added to the Lecture Library immediately for students. Maximum file size {MAX_VIDEO_MB} MB.
+                            Upload a video file or add a shared link (YouTube, Vimeo, etc.). Videos are added to the Lecture Library immediately for students.
                           </p>
                           <form onSubmit={handleVideoUploadSubmit} className="space-y-3">
+                            <div className="flex gap-4 border-b border-purple-200 pb-3">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="video-upload-type"
+                                  value="file"
+                                  checked={videoUploadType === 'file'}
+                                  onChange={(e) => {
+                                    setVideoUploadType('file')
+                                    setVideoUploadError(null)
+                                    setVideoUploadSuccess(null)
+                                  }}
+                                  className="text-purple-600"
+                                />
+                                <span className="text-sm text-purple-900">Upload File</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="video-upload-type"
+                                  value="url"
+                                  checked={videoUploadType === 'url'}
+                                  onChange={(e) => {
+                                    setVideoUploadType('url')
+                                    setVideoUploadError(null)
+                                    setVideoUploadSuccess(null)
+                                  }}
+                                  className="text-purple-600"
+                                />
+                                <span className="text-sm text-purple-900">Add URL Link</span>
+                              </label>
+                            </div>
                             <div>
                               <Label htmlFor="video-title">Video title</Label>
                               <Input
@@ -1918,26 +2049,51 @@ export default function FundamentalsTrainingPortal() {
                                 }}
                               />
                             </div>
-                            <div className="flex flex-col gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleVideoButtonClick}
-                                className="bg-white"
-                              >
-                                {videoFile ? 'Replace Video' : 'Select Video'}
-                              </Button>
-                              {videoFile && (
-                                <span className="text-xs text-purple-700">Selected file: {videoFile.name}</span>
-                              )}
-                            </div>
+                            {videoUploadType === 'file' ? (
+                              <>
+                                <div className="flex flex-col gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleVideoButtonClick}
+                                    className="bg-white"
+                                  >
+                                    {videoFile ? 'Replace Video' : 'Select Video'}
+                                  </Button>
+                                  {videoFile && (
+                                    <span className="text-xs text-purple-700">Selected file: {videoFile.name}</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-purple-600">
+                                  Accepts MP4, MOV, and most browser-ready formats. Maximum file size {MAX_VIDEO_MB} MB.
+                                </p>
+                              </>
+                            ) : (
+                              <div>
+                                <Label htmlFor="video-url">Video URL</Label>
+                                <Input
+                                  id="video-url"
+                                  type="url"
+                                  placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                                  value={videoUrl}
+                                  onChange={(event) => {
+                                    setVideoUrl(event.target.value)
+                                    setVideoUploadError(null)
+                                    setVideoUploadSuccess(null)
+                                  }}
+                                />
+                                <p className="text-xs text-purple-600 mt-1">
+                                  Paste a shared link from YouTube, Vimeo, or other video platforms.
+                                </p>
+                              </div>
+                            )}
                             <Button
                               type="submit"
                               className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                             >
-                              Publish Video
+                              {videoUploadType === 'file' ? 'Publish Video' : 'Save Video Link'}
                             </Button>
-                            {videoUploadProgress !== null && (
+                            {videoUploadProgress !== null && videoUploadType === 'file' && (
                               <span className="text-xs text-purple-700">
                                 Uploading… {videoUploadProgress}%
                               </span>
@@ -2786,6 +2942,65 @@ export default function FundamentalsTrainingPortal() {
               {isDeletingVideo ? 'Deleting…' : 'Delete'}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={videoPlayerOpen} onOpenChange={setVideoPlayerOpen}>
+        <DialogContent className="max-w-4xl w-full">
+          <DialogHeader>
+            <DialogTitle>{selectedVideo?.title || 'Lecture Video'}</DialogTitle>
+            {selectedVideo?.description && (
+              <DialogDescription>{selectedVideo.description}</DialogDescription>
+            )}
+          </DialogHeader>
+          {selectedVideo && (
+            <div className="space-y-4">
+              {selectedVideo.videoType === 'url' ? (
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    src={getEmbedUrl(selectedVideo.url) || selectedVideo.url}
+                    className="absolute top-0 left-0 w-full h-full rounded-lg"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={selectedVideo.title}
+                  />
+                </div>
+              ) : (
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <video
+                    src={selectedVideo.url}
+                    controls
+                    className="absolute top-0 left-0 w-full h-full rounded-lg"
+                    style={{ objectFit: 'contain' }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )}
+              <div className="flex items-center justify-between text-sm text-gray-600">
+                <div className="flex flex-wrap gap-4">
+                  {selectedVideo.duration && (
+                    <span><strong>Duration:</strong> {selectedVideo.duration}</span>
+                  )}
+                  {selectedVideo.uploadedBy && (
+                    <span><strong>Instructor:</strong> {selectedVideo.uploadedBy}</span>
+                  )}
+                </div>
+                {selectedVideo.videoType === 'url' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                  >
+                    <a href={selectedVideo.url} target="_blank" rel="noopener noreferrer">
+                      Open in New Tab
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

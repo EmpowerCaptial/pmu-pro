@@ -50,19 +50,32 @@ function formatFileType(metadata: EncodedMetadata) {
 }
 
 function parseFileType(fileType: string) {
-  if (!fileType.startsWith(VIDEO_PREFIX)) {
-    return {}
+  if (fileType.startsWith(VIDEO_PREFIX)) {
+    return decodeMetadata(fileType)
   }
-  return decodeMetadata(fileType)
+  // Also handle URL-based videos
+  if (fileType.startsWith('training-video-url')) {
+    return decodeMetadata(fileType)
+  }
+  return {}
 }
 
 export async function GET() {
   try {
     const uploads = await prisma.fileUpload.findMany({
       where: {
-        fileType: {
-          startsWith: VIDEO_PREFIX
-        }
+        OR: [
+          {
+            fileType: {
+              startsWith: VIDEO_PREFIX
+            }
+          },
+          {
+            fileType: {
+              startsWith: 'training-video-url'
+            }
+          }
+        ]
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -73,18 +86,25 @@ export async function GET() {
     })
 
     const videos = uploads.map(upload => {
+      const isUrlVideo = upload.fileType.startsWith('training-video-url')
       const metadata = parseFileType(upload.fileType)
+      
+      // For URL videos, the URL is stored in fileUrl
+      // For file uploads, the URL is also in fileUrl (blob URL)
+      const videoUrl = upload.fileUrl
+
       return {
         id: upload.id,
         title: upload.fileName,
         description: metadata.description || '',
         duration: metadata.durationLabel || '',
-        url: upload.fileUrl,
+        url: videoUrl,
         blobPathname: metadata.blobPathname || '',
         fileSize: upload.fileSize,
         mimeType: upload.mimeType,
         uploadedAt: upload.createdAt,
-        uploadedBy: metadata.uploaderName || upload.user?.name || upload.user?.email || 'Unknown'
+        uploadedBy: metadata.uploaderName || upload.user?.name || upload.user?.email || 'Unknown',
+        videoType: isUrlVideo ? 'url' : 'file'
       }
     })
 
