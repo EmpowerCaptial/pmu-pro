@@ -7,6 +7,18 @@ export const dynamic = "force-dynamic"
 export async function GET(request: NextRequest) {
   try {
     // Check if database is available
+    const DATABASE_URL = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+    if (!DATABASE_URL) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Database not configured. Please set DATABASE_URL or NEON_DATABASE_URL in your environment variables.',
+          data: null
+        },
+        { status: 503 }
+      )
+    }
+    
     await prisma.$connect()
     
     const { searchParams } = new URL(request.url)

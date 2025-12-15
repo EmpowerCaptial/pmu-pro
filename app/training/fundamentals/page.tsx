@@ -1572,7 +1572,7 @@ export default function FundamentalsTrainingPortal() {
                               <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
                                 Watch
                               </Button>
-                              {canManageVideos && (
+                              {canManageVideos && activeTab === 'instructor' && (
                                 <Button
                                   size="sm"
                                   variant="outline"
