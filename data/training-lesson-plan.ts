@@ -201,7 +201,6 @@ If you depend on stencils, you will never be a professional. Professionals see s
           }
         ],
         homework: [
-          'Workbook: Healing Process & Aftercare sections.',
           'Practice skin: 2 sheets of stroke drills with photos submitted to class group chat.'
         ]
       }
@@ -442,6 +441,7 @@ Artists who understand color corrections earn more and retain clients longer. To
           }
         ],
         homework: [
+          'Workbook: Healing Process & Aftercare sections.',
           'Complete 1 practice brow with photos (outline + final shading).',
           'Upload to group chat with machine speed, hand motion, and difficulty notes.'
         ]
