@@ -351,10 +351,13 @@ Understanding this distinction helps you choose the right pigment for each clien
           },
           {
             time: '1:15 – 2:10',
-            title: 'Brow Map → Shade Exercise',
+            title: 'Brow Mapping',
             instructorScript:
               'A real brow breathes. If the head is too strong, the brow loses softness. If the tail is weak, the brow loses finish. Control both.',
-            activities: ['Students map brow outline, fill gradient zones (head soft, body medium, tail saturated).']
+            activities: [
+              'Brow mapping steps on paper: students practice measuring and marking brow landmarks.',
+              'Transition to mannequin head: apply mapping techniques on 3D surface with proper measurements and symmetry checks.'
+            ]
           },
           { time: '2:10 – 2:25', title: 'Break' },
           {
