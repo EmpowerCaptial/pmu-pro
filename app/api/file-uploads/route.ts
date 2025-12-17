@@ -17,13 +17,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email required' }, { status: 401 })
     }
 
+    console.log('Parsing form data...')
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+    const fileType = formData.get('fileType') as string || 'document'
+
     console.log('Looking up user in database...')
     let user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: { id: true, email: true, name: true, role: true }
     })
 
-    // If user not found in database, create a demo user entry
+    // Check if user has permission to upload (for instructor folder, need instructor role)
+    if (fileType.startsWith('instructor-folder:')) {
+      const ALLOWED_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor']
+      const userRole = user?.role?.toLowerCase() || ''
+      if (!user || !ALLOWED_ROLES.includes(userRole)) {
+        console.log('User does not have permission to upload to instructor folder')
+        return NextResponse.json({ error: 'Forbidden: Only instructors and administrators can upload to instructor folder' }, { status: 403 })
+      }
+    }
+
+    // If user not found in database, create a demo user entry (but not for instructor folder)
     if (!user) {
+      if (fileType.startsWith('instructor-folder:')) {
+        return NextResponse.json({ error: 'User not found. Please log in to upload files.' }, { status: 401 })
+      }
       console.log('User not found in database, creating demo user...')
       user = await prisma.user.create({
         data: {
@@ -46,11 +65,6 @@ export async function POST(request: NextRequest) {
     } else {
       console.log('User found:', user.id)
     }
-
-    console.log('Parsing form data...')
-    const formData = await request.formData()
-    const file = formData.get('file') as File
-    const fileType = formData.get('fileType') as string || 'document'
     const clientId = formData.get('clientId') as string || null
     const isTemporary = formData.get('isTemporary') === 'true'
 
@@ -162,7 +176,8 @@ export async function GET(request: NextRequest) {
     const includeTemporary = searchParams.get('includeTemporary') === 'true'
 
     const user = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: { id: true, role: true }
     })
 
     if (!user) {
@@ -173,8 +188,16 @@ export async function GET(request: NextRequest) {
       userId: user.id
     }
 
+    // Support multiple fileType filters (comma-separated or multiple params)
     if (fileType) {
-      whereClause.fileType = fileType
+      // Check if it's a prefix match (for instructor-folder:)
+      if (fileType.includes('instructor-folder:')) {
+        whereClause.fileType = {
+          startsWith: 'instructor-folder:'
+        }
+      } else {
+        whereClause.fileType = fileType
+      }
     }
 
     if (clientId) {

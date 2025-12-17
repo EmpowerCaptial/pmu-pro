@@ -378,6 +378,8 @@ export default function FundamentalsTrainingPortal() {
   const [instructorFolderError, setInstructorFolderError] = useState<string | null>(null)
   const [instructorFolderSuccess, setInstructorFolderSuccess] = useState<string | null>(null)
   const [isUploadingInstructorFolder, setIsUploadingInstructorFolder] = useState(false)
+  const [instructorFolderFiles, setInstructorFolderFiles] = useState<any[]>([])
+  const [isLoadingInstructorFolderFiles, setIsLoadingInstructorFolderFiles] = useState(false)
   const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
   const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
   const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
@@ -565,6 +567,34 @@ export default function FundamentalsTrainingPortal() {
   useEffect(() => {
     fetchAssignments()
   }, [fetchAssignments])
+
+  const fetchInstructorFolderFiles = useCallback(async () => {
+    if (!currentUser?.email || !canManageVideos) return
+    
+    setIsLoadingInstructorFolderFiles(true)
+    try {
+      const response = await fetch('/api/file-uploads?fileType=instructor-folder:', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setInstructorFolderFiles(data.files || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch instructor folder files:', error)
+    } finally {
+      setIsLoadingInstructorFolderFiles(false)
+    }
+  }, [currentUser?.email, canManageVideos])
+
+  useEffect(() => {
+    if (activeTab === 'instructor' && canManageVideos) {
+      fetchInstructorFolderFiles()
+    }
+  }, [activeTab, canManageVideos, fetchInstructorFolderFiles])
 
   const fetchTrainingVideos = useCallback(
     async (showSpinner = true) => {
@@ -996,6 +1026,7 @@ export default function FundamentalsTrainingPortal() {
         setInstructorFolderSuccess('URL saved successfully.')
         setInstructorFolderUrl('')
         setInstructorFolderUrlTitle('')
+        await fetchInstructorFolderFiles()
       } catch (error) {
         console.error('Failed to save instructor folder URL:', error)
         setInstructorFolderError(error instanceof Error ? error.message : 'Failed to save the URL.')
@@ -1054,6 +1085,7 @@ export default function FundamentalsTrainingPortal() {
       if (instructorFolderAssignmentRef.current) {
         instructorFolderAssignmentRef.current.value = ''
       }
+      await fetchInstructorFolderFiles()
     } catch (error) {
       console.error('Failed to upload instructor folder file:', error)
       setInstructorFolderError(error instanceof Error ? error.message : 'Failed to upload the file.')
@@ -2536,6 +2568,68 @@ export default function FundamentalsTrainingPortal() {
                       {instructorFolderSuccess && (
                         <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
                           {instructorFolderSuccess}
+                        </div>
+                      )}
+
+                      {isLoadingInstructorFolderFiles && (
+                        <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                          Loading files...
+                        </div>
+                      )}
+
+                      {instructorFolderFiles.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          <p className="text-sm font-semibold text-blue-900">Uploaded Files:</p>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {instructorFolderFiles.map((file: any) => {
+                              const isUrl = file.mimeType === 'text/url' || file.fileUrl?.startsWith('http')
+                              const fileExtension = file.fileName?.split('.').pop()?.toLowerCase() || ''
+                              const isVideo = ['mp4', 'mov', 'webm', 'avi'].includes(fileExtension) || 
+                                             file.fileUrl?.includes('youtube') || 
+                                             file.fileUrl?.includes('vimeo')
+                              const isPdf = fileExtension === 'pdf' || file.mimeType === 'application/pdf'
+                              
+                              return (
+                                <div key={file.id} className="flex items-center justify-between p-2 bg-white border border-blue-200 rounded">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-blue-900 truncate">{file.fileName}</p>
+                                    {file.fileSize > 0 && (
+                                      <p className="text-xs text-blue-600">{formatFileSize(file.fileSize)}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2 ml-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        if (isUrl || isVideo) {
+                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
+                                        } else if (isPdf) {
+                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
+                                        } else {
+                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
+                                        }
+                                      }}
+                                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      {isVideo ? 'Play' : 'View'}
+                                    </Button>
+                                    {!isVideo && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => window.open(file.fileUrl, '_blank', 'noopener,noreferrer')}
+                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
                       )}
                     </CardContent>
