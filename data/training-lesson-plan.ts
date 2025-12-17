@@ -232,19 +232,29 @@ Artists who understand color corrections earn more and retain clients longer. To
           },
           {
             time: '9:45 – 10:35',
-            title: 'Color Theory Fundamentals',
-            instructorScript: `Brows do not heal the same color they apply. This is why PMU cannot be “color matching by eye.” We match undertones, not what we see in the moment.`,
+            title: 'Color Theory Fundamentals & Color Wheel Paint Exercise',
+            instructorScript: `Brows do not heal the same color they apply. This is why PMU cannot be "color matching by eye." We match undertones, not what we see in the moment.
+
+The color wheel is your foundation. Understanding primary, secondary, and tertiary colors, along with complementary and analogous relationships, helps you predict how pigments will interact and heal.`,
             activities: [
               'Lecture hue/value/temperature with visuals.',
+              'Color wheel paint exercise: students create primary, secondary, and tertiary color wheels.',
+              'Demonstrate complementary color relationships and how they affect pigment mixing.',
               'Checkpoint questions on gray/orange heals and Fitzpatrick tendencies.'
             ]
           },
           {
             time: '10:35 – 11:05',
-            title: 'Pigment Brand Comparison & Undertone Swatch Lab',
-            instructorScript:
-              'Look at how your pigment spreads. That tells you viscosity and saturation. If you learn to read pigment on paper, you can predict healed results on skin.',
-            activities: ['Students swatch warm, neutral, cool pigments; instructor circulates with feedback.']
+            title: 'Organic & Inorganic Pigments Lecture + Pigment Brand Comparison & Undertone Swatch Lab',
+            instructorScript: `Organic and inorganic pigments behave differently in the skin. Organic pigments are carbon-based, fade faster, and create softer, more natural results. Inorganic pigments are metal-based, last longer, but can shift to cooler tones over time.
+
+Understanding this distinction helps you choose the right pigment for each client's skin type and desired outcome. Look at how your pigment spreads. That tells you viscosity and saturation. If you learn to read pigment on paper, you can predict healed results on skin.`,
+            activities: [
+              'Lecture: Organic vs inorganic pigment chemistry, healing behavior, and retention differences.',
+              'Visual comparison: Show examples of organic and inorganic healed results.',
+              'Students swatch warm, neutral, cool pigments; instructor circulates with feedback.',
+              'Discussion: When to choose organic vs inorganic based on client goals and skin type.'
+            ]
           },
           {
             time: '11:05 – 11:50',
