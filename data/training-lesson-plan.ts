@@ -134,11 +134,15 @@ If you want to be great in PMU, you must learn to slow your hands and speed your
           },
           {
             time: '9:45 – 10:25',
-            title: 'Skin Anatomy (Lecture + Instructor Draw)',
-            instructorScript: `The epidermis sheds. The dermis holds pigment. We implant pigment into the upper dermis — not the epidermis, not the lower dermis. This requires control, not pressure.`,
+            title: 'Skin Anatomy & Muscles in the Face (Lecture + Instructor Draw)',
+            instructorScript: `The epidermis sheds. The dermis holds pigment. We implant pigment into the upper dermis — not the epidermis, not the lower dermis. This requires control, not pressure.
+
+Understanding facial muscles is critical — the frontalis, orbicularis oculi, and corrugator supercilii all affect how pigment settles and how brows move. When you understand muscle structure, you understand why certain brow shapes work better with certain face shapes.`,
             activities: [
               'Draw skin layers on whiteboard; students mirror the drawing.',
-              'Checkpoint questions on shallow vs deep placement outcomes.'
+              'Draw facial muscle map focusing on forehead and brow area muscles.',
+              'Checkpoint questions on shallow vs deep placement outcomes.',
+              'Discussion: How muscle movement affects brow design and healing.'
             ]
           },
           {
@@ -157,18 +161,22 @@ If you want to be great in PMU, you must learn to slow your hands and speed your
           },
           { time: '11:50 – 12:50', title: 'Lunch' },
           {
-            time: '12:50 – 1:20',
-            title: 'Brow Shape Structure (Whiteboard Breakdown)',
-            instructorScript: `The eyebrow is not decoration — it is architecture. Our job is to create structure that aligns with the client’s bone, muscle movement, and natural asymmetry.
+            time: '12:50 – 1:50',
+            title: 'Face Shape to Brow Anatomy (Whiteboard Breakdown)',
+            instructorScript: `The eyebrow is not decoration — it is architecture. Our job is to create structure that aligns with the client's bone, muscle movement, and natural asymmetry.
 
-If you depend on stencils, you will never be a professional. Professionals see structure.`,
+Face shape determines brow shape. Round faces need angular brows. Square faces need softer curves. Oval faces can carry most shapes, but the arch placement matters. Long faces need horizontal emphasis. Heart-shaped faces need balance at the tail.
+
+If you depend on stencils, you will never be a professional. Professionals see structure. Professionals see face shape and design accordingly.`,
             activities: [
-              'Whiteboard: brow head, body, arch, tail alignment.',
-              'Students sketch in notebooks.'
+              'Whiteboard: face shape analysis — round, square, oval, long, heart-shaped.',
+              'Whiteboard: brow head, body, arch, tail alignment for each face shape.',
+              'Students sketch face shapes and corresponding brow designs in notebooks.',
+              'Pair activity: analyze partner face shape and propose brow design.'
             ]
           },
           {
-            time: '1:20 – 2:20',
+            time: '1:50 – 2:50',
             title: 'Dry Stroke Pattern Training',
             instructorScript:
               'Every stroke has a beginning, middle, and exit. If your exit flick is sloppy, the entire brow collapses visually.',
