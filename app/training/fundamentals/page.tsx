@@ -1028,11 +1028,14 @@ export default function FundamentalsTrainingPortal() {
         body: formData
       })
 
+      // Read response body once - check content type first
+      const contentType = response.headers.get('content-type') || ''
       let data
-      try {
+      
+      if (contentType.includes('application/json')) {
         data = await response.json()
-      } catch (jsonError) {
-        // If response is not JSON, try to get text
+      } else {
+        // If not JSON, read as text
         const text = await response.text()
         throw new Error(text || `Upload failed with status ${response.status}`)
       }
