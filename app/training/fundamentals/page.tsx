@@ -315,6 +315,8 @@ export default function FundamentalsTrainingPortal() {
   const { currentUser } = useDemoAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
+  const instructorFolderPresentationRef = useRef<HTMLInputElement>(null)
+  const instructorFolderAssignmentRef = useRef<HTMLInputElement>(null)
   const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(() => buildBaseWeeks())
   const [selectedWeekId, setSelectedWeekId] = useState<string>(() => buildBaseWeeks()[0]?.id ?? '')
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
@@ -367,6 +369,15 @@ export default function FundamentalsTrainingPortal() {
   const [isDeletingVideo, setIsDeletingVideo] = useState(false)
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState<LectureVideo | null>(null)
+  const [instructorFolderFile, setInstructorFolderFile] = useState<File | null>(null)
+  const [instructorFolderFileName, setInstructorFolderFileName] = useState<string | null>(null)
+  const [instructorFolderFileType, setInstructorFolderFileType] = useState<'presentation' | 'assignment' | null>(null)
+  const [instructorFolderUrl, setInstructorFolderUrl] = useState<string>('')
+  const [instructorFolderUrlTitle, setInstructorFolderUrlTitle] = useState<string>('')
+  const [instructorFolderUploadType, setInstructorFolderUploadType] = useState<'file' | 'url'>('file')
+  const [instructorFolderError, setInstructorFolderError] = useState<string | null>(null)
+  const [instructorFolderSuccess, setInstructorFolderSuccess] = useState<string | null>(null)
+  const [isUploadingInstructorFolder, setIsUploadingInstructorFolder] = useState(false)
   const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
   const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
   const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
@@ -878,6 +889,160 @@ export default function FundamentalsTrainingPortal() {
   const openVideoPlayer = (video: LectureVideo) => {
     setSelectedVideo(video)
     setVideoPlayerOpen(true)
+  }
+
+  const handleInstructorFolderFileChange = (event: ChangeEvent<HTMLInputElement>, type: 'presentation' | 'assignment') => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    setInstructorFolderError(null)
+    setInstructorFolderSuccess(null)
+
+    if (!file) {
+      setInstructorFolderFile(null)
+      setInstructorFolderFileName(null)
+      setInstructorFolderFileType(null)
+      return
+    }
+
+    // Allow PDF, PowerPoint, Word, and image files
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'image/jpeg',
+      'image/png',
+      'image/jpg'
+    ]
+
+    if (!allowedTypes.includes(file.type)) {
+      setInstructorFolderError('Please select a PDF, PowerPoint, Word document, or image file.')
+      setInstructorFolderFile(null)
+      setInstructorFolderFileName(null)
+      setInstructorFolderFileType(null)
+      return
+    }
+
+    if (file.size > 150 * 1024 * 1024) {
+      setInstructorFolderError('File size must be less than 150 MB.')
+      setInstructorFolderFile(null)
+      setInstructorFolderFileName(null)
+      setInstructorFolderFileType(null)
+      return
+    }
+
+    setInstructorFolderFile(file)
+    setInstructorFolderFileName(file.name)
+    setInstructorFolderFileType(type)
+  }
+
+  const handleInstructorFolderUpload = async () => {
+    if (!currentUser?.email) {
+      setInstructorFolderError('You must be logged in to upload files.')
+      return
+    }
+
+    if (instructorFolderUploadType === 'url') {
+      const trimmedUrl = instructorFolderUrl.trim()
+      const trimmedTitle = instructorFolderUrlTitle.trim()
+
+      if (!trimmedUrl) {
+        setInstructorFolderError('Please enter a URL.')
+        return
+      }
+
+      if (!trimmedTitle) {
+        setInstructorFolderError('Please enter a title for the URL.')
+        return
+      }
+
+      try {
+        new URL(trimmedUrl)
+      } catch {
+        setInstructorFolderError('Please enter a valid URL.')
+        return
+      }
+
+      setIsUploadingInstructorFolder(true)
+      setInstructorFolderError(null)
+      setInstructorFolderSuccess(null)
+
+      try {
+        const response = await fetch('/api/training/instructor-folder', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser.email
+          },
+          body: JSON.stringify({
+            title: trimmedTitle,
+            url: trimmedUrl,
+            type: 'url'
+          })
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to save URL.')
+        }
+
+        setInstructorFolderSuccess('URL saved successfully.')
+        setInstructorFolderUrl('')
+        setInstructorFolderUrlTitle('')
+      } catch (error) {
+        console.error('Failed to save instructor folder URL:', error)
+        setInstructorFolderError(error instanceof Error ? error.message : 'Failed to save the URL.')
+      } finally {
+        setIsUploadingInstructorFolder(false)
+      }
+      return
+    }
+
+    if (!instructorFolderFile || !instructorFolderFileType) {
+      setInstructorFolderError('Please select a file to upload.')
+      return
+    }
+
+    setIsUploadingInstructorFolder(true)
+    setInstructorFolderError(null)
+    setInstructorFolderSuccess(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', instructorFolderFile)
+      formData.append('fileType', `instructor-folder:${instructorFolderFileType}`)
+      formData.append('isTemporary', 'false')
+
+      const response = await fetch('/api/file-uploads', {
+        method: 'POST',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        body: formData
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to upload file.')
+      }
+
+      setInstructorFolderSuccess('File uploaded successfully.')
+      setInstructorFolderFile(null)
+      setInstructorFolderFileName(null)
+      setInstructorFolderFileType(null)
+      if (instructorFolderPresentationRef.current) {
+        instructorFolderPresentationRef.current.value = ''
+      }
+      if (instructorFolderAssignmentRef.current) {
+        instructorFolderAssignmentRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('Failed to upload instructor folder file:', error)
+      setInstructorFolderError(error instanceof Error ? error.message : 'Failed to upload the file.')
+    } finally {
+      setIsUploadingInstructorFolder(false)
+    }
   }
 
   const handleDeleteVideo = async () => {
@@ -2174,6 +2339,188 @@ export default function FundamentalsTrainingPortal() {
                           </div>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-dashed border-blue-300 bg-blue-50 break-words">
+                    <CardHeader className="text-center space-y-2 break-words">
+                      <CardTitle className="text-lg font-semibold text-blue-900">Instructor Folder</CardTitle>
+                      <CardDescription className="text-blue-800">
+                        Private storage for presentations, reference videos, and printable assignments. Not visible to students.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 break-words">
+                      <div className="grid gap-6 lg:grid-cols-3">
+                        <div className="rounded-lg border border-blue-200 bg-white p-4 space-y-3 text-left break-words">
+                          <div className="flex items-center gap-2 text-blue-900 font-semibold">
+                            <FileText className="h-5 w-5 text-blue-600" />
+                            Upload Presentation
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            Upload PDF, PowerPoint, or Word documents for your reference during lectures.
+                          </p>
+                          <div className="space-y-2">
+                            <input
+                              ref={instructorFolderPresentationRef}
+                              type="file"
+                              accept=".pdf,.ppt,.pptx,.doc,.docx"
+                              className="hidden"
+                              onChange={(e) => handleInstructorFolderFileChange(e, 'presentation')}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="bg-white w-full"
+                              onClick={() => instructorFolderPresentationRef.current?.click()}
+                              disabled={isUploadingInstructorFolder}
+                            >
+                              {isUploadingInstructorFolder ? (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Select File
+                                </>
+                              )}
+                            </Button>
+                            {instructorFolderFileType === 'presentation' && instructorFolderFileName && (
+                              <p className="text-xs text-blue-700">Selected: {instructorFolderFileName}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-blue-200 bg-white p-4 space-y-3 text-left break-words">
+                          <div className="flex items-center gap-2 text-blue-900 font-semibold">
+                            <Video className="h-5 w-5 text-blue-600" />
+                            Add Reference Video URL
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            Save video links (YouTube, Vimeo, etc.) for your reference during instruction.
+                          </p>
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="Video title"
+                              value={instructorFolderUrlTitle}
+                              onChange={(e) => {
+                                setInstructorFolderUrlTitle(e.target.value)
+                                setInstructorFolderError(null)
+                                setInstructorFolderSuccess(null)
+                              }}
+                              disabled={isUploadingInstructorFolder}
+                            />
+                            <Input
+                              type="url"
+                              placeholder="https://youtube.com/watch?v=..."
+                              value={instructorFolderUrl}
+                              onChange={(e) => {
+                                setInstructorFolderUrl(e.target.value)
+                                setInstructorFolderError(null)
+                                setInstructorFolderSuccess(null)
+                              }}
+                              disabled={isUploadingInstructorFolder}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-blue-200 bg-white p-4 space-y-3 text-left break-words">
+                          <div className="flex items-center gap-2 text-blue-900 font-semibold">
+                            <FileText className="h-5 w-5 text-blue-600" />
+                            Upload Assignment for Printing
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            Upload PDF or Word documents that you want to print out for students.
+                          </p>
+                          <div className="space-y-2">
+                            <input
+                              ref={instructorFolderAssignmentRef}
+                              type="file"
+                              accept=".pdf,.doc,.docx"
+                              className="hidden"
+                              onChange={(e) => handleInstructorFolderFileChange(e, 'assignment')}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="bg-white w-full"
+                              onClick={() => instructorFolderAssignmentRef.current?.click()}
+                              disabled={isUploadingInstructorFolder}
+                            >
+                              {isUploadingInstructorFolder ? (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Select File
+                                </>
+                              )}
+                            </Button>
+                            {instructorFolderFileType === 'assignment' && instructorFolderFileName && (
+                              <p className="text-xs text-blue-700">Selected: {instructorFolderFileName}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 border-b border-blue-200 pb-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="instructor-folder-upload-type"
+                            value="file"
+                            checked={instructorFolderUploadType === 'file'}
+                            onChange={(e) => {
+                              setInstructorFolderUploadType('file')
+                              setInstructorFolderError(null)
+                              setInstructorFolderSuccess(null)
+                            }}
+                            className="text-blue-600"
+                            disabled={isUploadingInstructorFolder}
+                          />
+                          <span className="text-sm text-blue-900">Upload File</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="instructor-folder-upload-type"
+                            value="url"
+                            checked={instructorFolderUploadType === 'url'}
+                            onChange={(e) => {
+                              setInstructorFolderUploadType('url')
+                              setInstructorFolderError(null)
+                              setInstructorFolderSuccess(null)
+                            }}
+                            className="text-blue-600"
+                            disabled={isUploadingInstructorFolder}
+                          />
+                          <span className="text-sm text-blue-900">Add URL</span>
+                        </label>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleInstructorFolderUpload}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={isUploadingInstructorFolder || (!instructorFolderFile && !instructorFolderUrl)}
+                      >
+                        {isUploadingInstructorFolder ? 'Uploading...' : 'Save to Instructor Folder'}
+                      </Button>
+
+                      {instructorFolderError && (
+                        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                          {instructorFolderError}
+                        </div>
+                      )}
+                      {instructorFolderSuccess && (
+                        <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+                          {instructorFolderSuccess}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
