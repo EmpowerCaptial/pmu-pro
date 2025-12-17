@@ -61,22 +61,35 @@ export async function POST(request: NextRequest) {
 
     console.log('File received:', file.name, file.size, file.type)
 
-    // Validate file type
+    // Validate file type - allow images, PDFs, Office documents, PowerPoint, Keynote, and archives
     const allowedTypes = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-      'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain', 'application/zip'
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'com.apple.keynote',
+      'application/x-iwork-keynote-sffkey',
+      'text/plain',
+      'application/zip'
     ]
 
-    if (!allowedTypes.includes(file.type)) {
-      console.log('Invalid file type:', file.type)
-      return NextResponse.json({ error: 'File type not allowed' }, { status: 400 })
+    // Also check file extension as fallback (MIME types can be inconsistent, especially for Keynote)
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'key', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'txt', 'zip']
+
+    const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension || '')
+
+    if (!isValidType) {
+      console.log('Invalid file type:', file.type, 'Extension:', fileExtension)
+      return NextResponse.json({ error: 'File type not allowed. Please upload PDF, Word, PowerPoint, Keynote, images, or ZIP files.' }, { status: 400 })
     }
 
-    // Validate file size (50MB limit)
-    if (file.size > 50 * 1024 * 1024) {
+    // Validate file size (150MB limit for presentations and large files)
+    if (file.size > 150 * 1024 * 1024) {
       console.log('File too large:', file.size)
-      return NextResponse.json({ error: 'File size must be less than 50MB' }, { status: 400 })
+      return NextResponse.json({ error: 'File size must be less than 150MB' }, { status: 400 })
     }
 
     console.log('Uploading to Vercel Blob...')

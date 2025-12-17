@@ -1028,9 +1028,17 @@ export default function FundamentalsTrainingPortal() {
         body: formData
       })
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        // If response is not JSON, try to get text
+        const text = await response.text()
+        throw new Error(text || `Upload failed with status ${response.status}`)
+      }
+
       if (!response.ok) {
-        throw new Error(data?.error || 'Failed to upload file.')
+        throw new Error(data?.error || data?.details || 'Failed to upload file.')
       }
 
       setInstructorFolderSuccess('File uploaded successfully.')
