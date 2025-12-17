@@ -904,11 +904,13 @@ export default function FundamentalsTrainingPortal() {
       return
     }
 
-    // Allow PDF, PowerPoint, Word, and image files
+    // Allow PDF, PowerPoint, Keynote, Word, and image files
     const allowedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'application/vnd.ms-powerpoint',
+      'com.apple.keynote',
+      'application/x-iwork-keynote-sffkey',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
       'image/jpeg',
@@ -916,8 +918,12 @@ export default function FundamentalsTrainingPortal() {
       'image/jpg'
     ]
 
-    if (!allowedTypes.includes(file.type)) {
-      setInstructorFolderError('Please select a PDF, PowerPoint, Word document, or image file.')
+    // Also check file extension for Keynote files (MIME type detection can be inconsistent)
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    const allowedExtensions = ['pdf', 'ppt', 'pptx', 'key', 'doc', 'docx', 'jpg', 'jpeg', 'png']
+
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension || '')) {
+      setInstructorFolderError('Please select a PDF, PowerPoint, Keynote, Word document, or image file.')
       setInstructorFolderFile(null)
       setInstructorFolderFileName(null)
       setInstructorFolderFileType(null)
@@ -2357,13 +2363,13 @@ export default function FundamentalsTrainingPortal() {
                             Upload Presentation
                           </div>
                           <p className="text-sm text-blue-700">
-                            Upload PDF, PowerPoint, or Word documents for your reference during lectures.
+                            Upload PDF, PowerPoint, Keynote, or Word documents for your reference during lectures.
                           </p>
                           <div className="space-y-2">
                             <input
                               ref={instructorFolderPresentationRef}
                               type="file"
-                              accept=".pdf,.ppt,.pptx,.doc,.docx"
+                              accept=".pdf,.ppt,.pptx,.key,.doc,.docx"
                               className="hidden"
                               onChange={(e) => handleInstructorFolderFileChange(e, 'presentation')}
                             />
