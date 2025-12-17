@@ -347,7 +347,10 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '12:45 – 1:15',
             title: 'Workbook Completion — Technique Focus',
-            activities: ['Technique placement, angles, shading, and machine procedure sections completed together.']
+            activities: [
+              'Technique placement, angles, shading, and machine procedure sections completed together.',
+              'Machine work on fake skin: students practice machine techniques on practice skin while completing workbook sections.'
+            ]
           },
           {
             time: '1:15 – 2:10',
