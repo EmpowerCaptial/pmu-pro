@@ -186,8 +186,15 @@ export async function POST(request: NextRequest) {
       type: file.type,
       lastModified: file.lastModified,
       originalFileType: fileType,
-      sanitizedFileType
+      sanitizedFileType,
+      fileNameLength: fileName.length,
+      fileNamePath: fileName.split('/')
     })
+    
+    // Compare with portfolio upload pattern for debugging
+    const portfolioPattern = `portfolio/${user.id}/before-${Date.now()}.jpg`
+    console.log('Comparison - Portfolio pattern:', portfolioPattern)
+    console.log('Comparison - Our pattern:', fileName)
     
     // Upload to Vercel Blob - pass File directly like portfolio upload does
     // Don't pass token explicitly - let it read from process.env (like portfolio upload does)
