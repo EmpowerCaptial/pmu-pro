@@ -121,11 +121,19 @@ export async function POST(request: NextRequest) {
 
     // Check if BLOB_READ_WRITE_TOKEN is available
     const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    console.log('Blob token check:', {
+      tokenExists: !!blobToken,
+      tokenLength: blobToken?.length || 0,
+      tokenPrefix: blobToken?.substring(0, 15) || 'none',
+      allEnvKeys: Object.keys(process.env).filter(k => k.includes('BLOB')).join(', ')
+    })
+    
     if (!blobToken) {
       console.error('BLOB_READ_WRITE_TOKEN is not set in environment variables')
       return NextResponse.json({ 
         error: 'Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.',
-        details: 'Go to Vercel Dashboard → Settings → Environment Variables → Add BLOB_READ_WRITE_TOKEN'
+        details: 'Go to Vercel Dashboard → Settings → Environment Variables → Add BLOB_READ_WRITE_TOKEN',
+        availableEnvKeys: Object.keys(process.env).filter(k => k.includes('BLOB'))
       }, { status: 500 })
     }
 
@@ -143,15 +151,17 @@ export async function POST(request: NextRequest) {
       type: file.type,
       lastModified: file.lastModified,
       originalFileType: fileType,
-      sanitizedFileType,
-      tokenExists: !!blobToken
+      sanitizedFileType
     })
     
     // Upload to Vercel Blob - pass File directly like portfolio upload does
+    // Explicitly pass token to ensure it's used (sometimes env vars aren't read automatically)
     let blob
     try {
+      console.log('Calling Vercel Blob put()...')
       blob = await put(fileName, file, {
         access: 'public',
+        token: blobToken, // Explicitly pass token
       })
       console.log('Blob uploaded successfully:', blob.url)
     } catch (blobError: any) {
@@ -162,15 +172,25 @@ export async function POST(request: NextRequest) {
         statusCode: blobError?.statusCode,
         code: blobError?.code,
         name: blobError?.name,
-        stack: blobError?.stack
+        stack: blobError?.stack,
+        response: blobError?.response ? JSON.stringify(blobError.response) : 'no response',
+        tokenPresent: !!blobToken,
+        tokenLength: blobToken?.length || 0
       })
       
       // Check if it's a permission/authentication error
       if (blobError?.message?.includes('Forbidden') || blobError?.statusCode === 403 || blobError?.status === 403) {
         return NextResponse.json({ 
-          error: 'Upload permission denied. Please check that BLOB_READ_WRITE_TOKEN is configured correctly in Vercel environment variables.',
+          error: 'Upload permission denied. The BLOB_READ_WRITE_TOKEN may be invalid or the Blob Store may be paused.',
           details: blobError?.message || 'Forbidden',
-          troubleshooting: 'Check Vercel dashboard → Storage → Blob Store status and ensure BLOB_READ_WRITE_TOKEN is set'
+          troubleshooting: [
+            '1. Check Vercel Dashboard → Storage → Blob Store → Ensure it is not paused',
+            '2. Verify BLOB_READ_WRITE_TOKEN is set in Vercel → Settings → Environment Variables',
+            '3. Ensure the token matches the one from your Blob Store',
+            '4. Redeploy after adding/updating the environment variable'
+          ].join('\n'),
+          tokenPresent: !!blobToken,
+          tokenPrefix: blobToken?.substring(0, 20) || 'none'
         }, { status: 403 })
       }
       
