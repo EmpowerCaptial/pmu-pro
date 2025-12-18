@@ -368,6 +368,8 @@ export default function FundamentalsTrainingPortal() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeletingVideo, setIsDeletingVideo] = useState(false)
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
+  const [instructorFileViewerOpen, setInstructorFileViewerOpen] = useState(false)
+  const [selectedInstructorFile, setSelectedInstructorFile] = useState<any>(null)
   const [selectedVideo, setSelectedVideo] = useState<LectureVideo | null>(null)
   const [instructorFolderFile, setInstructorFolderFile] = useState<File | null>(null)
   const [instructorFolderFileName, setInstructorFolderFileName] = useState<string | null>(null)
@@ -919,6 +921,11 @@ export default function FundamentalsTrainingPortal() {
   const openVideoPlayer = (video: LectureVideo) => {
     setSelectedVideo(video)
     setVideoPlayerOpen(true)
+  }
+
+  const openInstructorFileViewer = (file: any) => {
+    setSelectedInstructorFile(file)
+    setInstructorFileViewerOpen(true)
   }
 
   const handleInstructorFolderFileChange = (event: ChangeEvent<HTMLInputElement>, type: 'presentation' | 'assignment') => {
@@ -2606,15 +2613,7 @@ export default function FundamentalsTrainingPortal() {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => {
-                                        if (isUrl || isVideo) {
-                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
-                                        } else if (isPdf) {
-                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
-                                        } else {
-                                          window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
-                                        }
-                                      }}
+                                      onClick={() => openInstructorFileViewer(file)}
                                       className="text-blue-600 border-blue-200 hover:bg-blue-50"
                                     >
                                       <Eye className="h-4 w-4 mr-1" />
@@ -3461,6 +3460,159 @@ export default function FundamentalsTrainingPortal() {
                     </a>
                   </Button>
                 )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Instructor Folder File Viewer Modal */}
+      <Dialog open={instructorFileViewerOpen} onOpenChange={setInstructorFileViewerOpen}>
+        <DialogContent className="max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedInstructorFile?.fileName || 'Instructor Resource'}</DialogTitle>
+          </DialogHeader>
+          {selectedInstructorFile && (
+            <div className="space-y-4">
+              {(() => {
+                const file = selectedInstructorFile
+                const isUrl = file.mimeType === 'text/url' || file.fileUrl?.startsWith('http')
+                const fileExtension = file.fileName?.split('.').pop()?.toLowerCase() || ''
+                const isVideo = ['mp4', 'mov', 'webm', 'avi'].includes(fileExtension) || 
+                               file.fileUrl?.includes('youtube') || 
+                               file.fileUrl?.includes('vimeo')
+                const isPdf = fileExtension === 'pdf' || file.mimeType === 'application/pdf'
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension) ||
+                               file.mimeType?.startsWith('image/')
+                const isGoogleDoc = file.fileUrl?.includes('docs.google.com') ||
+                                   file.fileUrl?.includes('drive.google.com')
+
+                // Handle videos (YouTube, Vimeo, or direct video files)
+                if (isVideo) {
+                  const embedUrl = getEmbedUrl(file.fileUrl)
+                  if (embedUrl) {
+                    return (
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          src={embedUrl}
+                          className="absolute top-0 left-0 w-full h-full rounded-lg"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={file.fileName}
+                        />
+                      </div>
+                    )
+                  } else {
+                    return (
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <video
+                          src={file.fileUrl}
+                          controls
+                          className="absolute top-0 left-0 w-full h-full rounded-lg"
+                          style={{ objectFit: 'contain' }}
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    )
+                  }
+                }
+
+                // Handle PDFs
+                if (isPdf) {
+                  return (
+                    <div className="w-full" style={{ height: '80vh' }}>
+                      <iframe
+                        src={file.fileUrl}
+                        className="w-full h-full rounded-lg border"
+                        title={file.fileName}
+                      />
+                    </div>
+                  )
+                }
+
+                // Handle images
+                if (isImage) {
+                  return (
+                    <div className="flex justify-center">
+                      <img
+                        src={file.fileUrl}
+                        alt={file.fileName}
+                        className="max-w-full max-h-[80vh] rounded-lg"
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </div>
+                  )
+                }
+
+                // Handle Google Docs (convert to embeddable format)
+                if (isGoogleDoc) {
+                  let embedUrl = file.fileUrl
+                  if (file.fileUrl.includes('/view')) {
+                    embedUrl = file.fileUrl.replace('/view', '/preview')
+                  } else if (file.fileUrl.includes('/edit')) {
+                    embedUrl = file.fileUrl.replace('/edit', '/preview')
+                  }
+                  return (
+                    <div className="w-full" style={{ height: '80vh' }}>
+                      <iframe
+                        src={embedUrl}
+                        className="w-full h-full rounded-lg border"
+                        title={file.fileName}
+                      />
+                    </div>
+                  )
+                }
+
+                // Handle general URLs and documents (try to embed)
+                if (isUrl) {
+                  return (
+                    <div className="w-full" style={{ height: '80vh' }}>
+                      <iframe
+                        src={file.fileUrl}
+                        className="w-full h-full rounded-lg border"
+                        title={file.fileName}
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                      />
+                    </div>
+                  )
+                }
+
+                // Fallback: show download option
+                return (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">This file type cannot be previewed in the browser.</p>
+                    <Button
+                      asChild
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download File
+                      </a>
+                    </Button>
+                  </div>
+                )
+              })()}
+              <div className="flex items-center justify-between text-sm text-gray-600 pt-4 border-t">
+                <div className="flex flex-wrap gap-4">
+                  {selectedInstructorFile.fileSize > 0 && (
+                    <span><strong>Size:</strong> {formatFileSize(selectedInstructorFile.fileSize)}</span>
+                  )}
+                  {selectedInstructorFile.createdAt && (
+                    <span><strong>Uploaded:</strong> {formatDateTime(selectedInstructorFile.createdAt)}</span>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                >
+                  <a href={selectedInstructorFile.fileUrl} target="_blank" rel="noopener noreferrer">
+                    Open in New Tab
+                  </a>
+                </Button>
               </div>
             </div>
           )}
