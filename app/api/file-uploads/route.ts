@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { put, BlobStoreSuspendedError, BlobStoreNotFoundError, BlobAccessError } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = "force-dynamic"
@@ -210,8 +210,36 @@ export async function POST(request: NextRequest) {
         stack: blobError?.stack,
         response: blobError?.response ? JSON.stringify(blobError.response) : 'no response',
         tokenPresent: !!blobToken,
-        tokenLength: blobToken?.length || 0
+        tokenLength: blobToken?.length || 0,
+        isBlobStoreSuspended: blobError instanceof BlobStoreSuspendedError,
+        isBlobStoreNotFound: blobError instanceof BlobStoreNotFoundError,
+        isBlobAccessError: blobError instanceof BlobAccessError
       })
+      
+      // Handle specific Blob errors
+      if (blobError instanceof BlobStoreSuspendedError) {
+        return NextResponse.json({ 
+          error: 'Blob Store is suspended. Please check your Vercel Blob Store status.',
+          details: 'Your Blob Store has been paused or suspended. Go to Vercel Dashboard → Storage → Blob Store to check the status.',
+          troubleshooting: 'Contact Vercel support or check your Blob Store billing/usage limits'
+        }, { status: 403 })
+      }
+      
+      if (blobError instanceof BlobStoreNotFoundError) {
+        return NextResponse.json({ 
+          error: 'Blob Store not found. Please verify your BLOB_READ_WRITE_TOKEN.',
+          details: 'The token may be invalid or pointing to a non-existent Blob Store.',
+          troubleshooting: 'Verify the token in Vercel Dashboard → Storage → Blob Store → Copy the read-write token'
+        }, { status: 403 })
+      }
+      
+      if (blobError instanceof BlobAccessError) {
+        return NextResponse.json({ 
+          error: 'Access denied to Blob Store. The token may not have the required permissions.',
+          details: blobError?.message || 'Access denied',
+          troubleshooting: 'Verify the token has read-write permissions and matches your Blob Store'
+        }, { status: 403 })
+      }
       
       // Check if it's a permission/authentication error
       if (blobError?.message?.includes('Forbidden') || blobError?.statusCode === 403 || blobError?.status === 403) {
@@ -222,10 +250,12 @@ export async function POST(request: NextRequest) {
             '1. Check Vercel Dashboard → Storage → Blob Store → Ensure it is not paused',
             '2. Verify BLOB_READ_WRITE_TOKEN is set in Vercel → Settings → Environment Variables',
             '3. Ensure the token matches the one from your Blob Store',
-            '4. Redeploy after adding/updating the environment variable'
+            '4. Redeploy after adding/updating the environment variable',
+            '5. Check that the token starts with "vercel_blob_rw_"'
           ].join('\n'),
           tokenPresent: !!blobToken,
-          tokenPrefix: blobToken?.substring(0, 20) || 'none'
+          tokenPrefix: blobToken?.substring(0, 20) || 'none',
+          errorId: blobError?.message?.match(/sfo\d+::[\w-]+/)?.[0] || 'unknown'
         }, { status: 403 })
       }
       
