@@ -28,25 +28,60 @@ export async function POST(request: NextRequest) {
       select: { id: true, email: true, name: true, role: true }
     })
 
+    console.log('User lookup result:', {
+      userExists: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      userRole: user?.role,
+      fileType
+    })
+
     // Check if user has permission to upload (for instructor folder, need instructor role)
     if (fileType.startsWith('instructor-folder:')) {
       const ALLOWED_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor']
       const userRole = user?.role?.toLowerCase() || ''
+      const normalizedUserRole = userRole.trim()
+      
       console.log('Instructor folder upload check:', {
         userExists: !!user,
-        userRole,
+        userRole: user?.role,
+        normalizedUserRole,
         allowedRoles: ALLOWED_ROLES,
-        isAllowed: user && ALLOWED_ROLES.includes(userRole)
+        isAllowed: user && ALLOWED_ROLES.includes(normalizedUserRole),
+        roleComparison: ALLOWED_ROLES.map(r => ({ role: r, matches: r === normalizedUserRole }))
       })
-      if (!user || !ALLOWED_ROLES.includes(userRole)) {
+      
+      if (!user) {
+        console.log('User not found for instructor folder upload')
+        return NextResponse.json({ 
+          error: 'User not found. Please log in to upload files.',
+          details: 'Unable to find user account. Please ensure you are logged in.',
+          debug: {
+            userExists: false,
+            userEmail,
+            fileType
+          }
+        }, { status: 401 })
+      }
+      
+      if (!ALLOWED_ROLES.includes(normalizedUserRole)) {
         console.log('User does not have permission to upload to instructor folder', {
-          user: user ? { id: user.id, email: user.email, role: user.role } : null,
-          userRole,
-          allowedRoles: ALLOWED_ROLES
+          user: { id: user.id, email: user.email, role: user.role },
+          normalizedUserRole,
+          allowedRoles: ALLOWED_ROLES,
+          userEmail,
+          fileType
         })
         return NextResponse.json({ 
           error: 'Forbidden: Only instructors and administrators can upload to instructor folder',
-          details: `Your role (${userRole || 'none'}) is not authorized. Required roles: ${ALLOWED_ROLES.join(', ')}`
+          details: `Your role (${user.role || 'none'}) is not authorized. Required roles: ${ALLOWED_ROLES.join(', ')}`,
+          debug: {
+            userExists: true,
+            userRole: user.role,
+            normalizedUserRole,
+            userEmail,
+            allowedRoles: ALLOWED_ROLES
+          }
         }, { status: 403 })
       }
     }
