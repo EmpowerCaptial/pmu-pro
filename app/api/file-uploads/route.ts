@@ -190,13 +190,19 @@ export async function POST(request: NextRequest) {
     })
     
     // Upload to Vercel Blob - pass File directly like portfolio upload does
-    // Explicitly pass token to ensure it's used (sometimes env vars aren't read automatically)
+    // Don't pass token explicitly - let it read from process.env (like portfolio upload does)
+    // This matches the working portfolio upload pattern
     let blob
     try {
       console.log('Calling Vercel Blob put()...')
+      console.log('Token check before upload:', {
+        tokenInEnv: !!process.env.BLOB_READ_WRITE_TOKEN,
+        tokenLength: process.env.BLOB_READ_WRITE_TOKEN?.length || 0,
+        tokenPrefix: process.env.BLOB_READ_WRITE_TOKEN?.substring(0, 20) || 'none'
+      })
       blob = await put(fileName, file, {
         access: 'public',
-        token: blobToken, // Explicitly pass token
+        // Don't pass token - let it read from process.env automatically (like portfolio upload)
       })
       console.log('Blob uploaded successfully:', blob.url)
     } catch (blobError: any) {
