@@ -3486,6 +3486,13 @@ export default function FundamentalsTrainingPortal() {
                                file.mimeType?.startsWith('image/')
                 const isGoogleDoc = file.fileUrl?.includes('docs.google.com') ||
                                    file.fileUrl?.includes('drive.google.com')
+                const isPowerPoint = ['ppt', 'pptx'].includes(fileExtension) ||
+                                    file.mimeType?.includes('powerpoint') ||
+                                    file.mimeType?.includes('presentation')
+                const isKeynote = fileExtension === 'key' ||
+                                 file.mimeType?.includes('keynote')
+                const isGoogleSlides = file.fileUrl?.includes('docs.google.com/presentation') ||
+                                      file.fileUrl?.includes('slides.google.com')
 
                 // Handle videos (YouTube, Vimeo, or direct video files)
                 if (isVideo) {
@@ -3546,6 +3553,30 @@ export default function FundamentalsTrainingPortal() {
                   )
                 }
 
+                // Handle Google Slides/Presentations (convert to embeddable format)
+                if (isGoogleSlides || (isGoogleDoc && (isPowerPoint || isKeynote))) {
+                  let embedUrl = file.fileUrl
+                  if (file.fileUrl.includes('/edit')) {
+                    embedUrl = file.fileUrl.replace('/edit', '/preview')
+                  } else if (!file.fileUrl.includes('/preview') && !file.fileUrl.includes('/present')) {
+                    embedUrl = file.fileUrl.replace('/view', '/preview').replace('/edit', '/preview')
+                  }
+                  // Ensure it's in presentation mode
+                  if (file.fileUrl.includes('docs.google.com/presentation')) {
+                    embedUrl = embedUrl.replace('/edit', '/preview').replace('/view', '/preview')
+                  }
+                  return (
+                    <div className="w-full" style={{ height: '80vh' }}>
+                      <iframe
+                        src={embedUrl}
+                        className="w-full h-full rounded-lg border"
+                        title={file.fileName}
+                        allowFullScreen
+                      />
+                    </div>
+                  )
+                }
+
                 // Handle Google Docs (convert to embeddable format)
                 if (isGoogleDoc) {
                   let embedUrl = file.fileUrl
@@ -3561,6 +3592,85 @@ export default function FundamentalsTrainingPortal() {
                         className="w-full h-full rounded-lg border"
                         title={file.fileName}
                       />
+                    </div>
+                  )
+                }
+
+                // Handle PowerPoint files - try Office Online viewer or suggest alternatives
+                if (isPowerPoint) {
+                  // If it's a direct file URL, we can't embed it directly
+                  // Suggest using OneDrive/Office Online or converting to PDF
+                  if (file.fileUrl.startsWith('http') && !file.fileUrl.includes('onedrive') && !file.fileUrl.includes('office.com')) {
+                    return (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600 mb-2">PowerPoint presentations cannot be directly embedded from file URLs.</p>
+                        <p className="text-sm text-gray-500 mb-4">
+                          For best viewing experience, upload to OneDrive/Office Online or convert to PDF.
+                        </p>
+                        <div className="flex gap-2 justify-center">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          >
+                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-4 w-4 mr-2" />
+                              Download to View
+                            </a>
+                          </Button>
+                          <Button
+                            asChild
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                              Open in New Tab
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  }
+                  // If it's from OneDrive/Office Online, try to embed
+                  return (
+                    <div className="w-full" style={{ height: '80vh' }}>
+                      <iframe
+                        src={file.fileUrl}
+                        className="w-full h-full rounded-lg border"
+                        title={file.fileName}
+                        allowFullScreen
+                      />
+                    </div>
+                  )
+                }
+
+                // Handle Keynote files - can't be embedded directly, suggest conversion
+                if (isKeynote) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-2">Keynote presentations cannot be directly embedded in the browser.</p>
+                      <p className="text-sm text-gray-500 mb-4">
+                        For best viewing experience, export to PDF or upload to Google Drive/OneDrive.
+                      </p>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download to View
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                            Open in New Tab
+                          </a>
+                        </Button>
+                      </div>
                     </div>
                   )
                 }
