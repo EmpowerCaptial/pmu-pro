@@ -243,19 +243,32 @@ export async function POST(request: NextRequest) {
       
       // Check if it's a permission/authentication error
       if (blobError?.message?.includes('Forbidden') || blobError?.statusCode === 403 || blobError?.status === 403) {
+        // Extract error ID from message if present
+        const errorIdMatch = blobError?.message?.match(/sfo\d+::[\w-]+/)
+        const errorId = errorIdMatch ? errorIdMatch[0] : null
+        
         return NextResponse.json({ 
           error: 'Upload permission denied. The BLOB_READ_WRITE_TOKEN may be invalid or the Blob Store may be paused.',
           details: blobError?.message || 'Forbidden',
+          errorId: errorId,
+          errorName: blobError?.name,
+          errorCode: blobError?.code,
           troubleshooting: [
             '1. Check Vercel Dashboard → Storage → Blob Store → Ensure it is not paused',
             '2. Verify BLOB_READ_WRITE_TOKEN is set in Vercel → Settings → Environment Variables',
             '3. Ensure the token matches the one from your Blob Store',
             '4. Redeploy after adding/updating the environment variable',
-            '5. Check that the token starts with "vercel_blob_rw_"'
-          ].join('\n'),
+            '5. Check that the token starts with "vercel_blob_rw_"',
+            '6. Visit /api/file-uploads/verify-token to test the token'
+          ],
           tokenPresent: !!blobToken,
           tokenPrefix: blobToken?.substring(0, 20) || 'none',
-          errorId: blobError?.message?.match(/sfo\d+::[\w-]+/)?.[0] || 'unknown'
+          debug: {
+            errorType: typeof blobError,
+            errorConstructor: blobError?.constructor?.name,
+            hasMessage: !!blobError?.message,
+            messageLength: blobError?.message?.length || 0
+          }
         }, { status: 403 })
       }
       

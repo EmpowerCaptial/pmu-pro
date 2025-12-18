@@ -1072,10 +1072,12 @@ export default function FundamentalsTrainingPortal() {
       }
 
       if (!response.ok) {
-        // Show detailed error message including role information
+        // Show detailed error message including all available info
         const errorMsg = data?.error || data?.details || 'Failed to upload file.'
         const debugInfo = data?.debug ? ` (Role: ${data.debug.userRole || 'unknown'}, Email: ${data.debug.userEmail || 'unknown'})` : ''
-        throw new Error(`${errorMsg}${debugInfo}`)
+        const errorId = data?.errorId ? ` [Error ID: ${data.errorId}]` : ''
+        const troubleshooting = data?.troubleshooting ? `\n\nTroubleshooting:\n${data.troubleshooting}` : ''
+        throw new Error(`${errorMsg}${debugInfo}${errorId}${troubleshooting}`)
       }
 
       setInstructorFolderSuccess('File uploaded successfully.')
