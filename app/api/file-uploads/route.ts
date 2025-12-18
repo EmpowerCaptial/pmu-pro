@@ -356,16 +356,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const whereClause: any = {
+    // Support multiple fileType filters (comma-separated or multiple params)
+    let whereClause: any = {
       userId: user.id
     }
 
-    // Support multiple fileType filters (comma-separated or multiple params)
     if (fileType) {
-      // Check if it's a prefix match (for instructor-folder:)
-      if (fileType.includes('instructor-folder:')) {
-        whereClause.fileType = {
-          startsWith: 'instructor-folder:'
+      // Check if it's a prefix match (for instructor-folder: or instructor-folder|)
+      if (fileType.includes('instructor-folder')) {
+        // Match both formats: instructor-folder: (file uploads) and instructor-folder| (URL uploads)
+        whereClause = {
+          ...whereClause,
+          OR: [
+            { fileType: { startsWith: 'instructor-folder:' } },
+            { fileType: { startsWith: 'instructor-folder|' } }
+          ]
         }
       } else {
         whereClause.fileType = fileType
