@@ -119,26 +119,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 150MB' }, { status: 400 })
     }
 
+    // Check if BLOB_READ_WRITE_TOKEN is available
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    if (!blobToken) {
+      console.error('BLOB_READ_WRITE_TOKEN is not set in environment variables')
+      return NextResponse.json({ 
+        error: 'Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.',
+        details: 'Go to Vercel Dashboard → Settings → Environment Variables → Add BLOB_READ_WRITE_TOKEN'
+      }, { status: 500 })
+    }
+
     console.log('Uploading to Vercel Blob...')
-    const fileName = `uploads/${user.id}/${fileType}/${Date.now()}-${file.name}`
+    
+    // Sanitize fileType for use in path (replace colons and special chars with hyphens)
+    const sanitizedFileType = fileType.replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-')
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const fileName = `uploads/${user.id}/${sanitizedFileType}/${Date.now()}-${sanitizedFileName}`
+    
     console.log('Blob filename:', fileName)
     console.log('File details:', {
       name: file.name,
       size: file.size,
       type: file.type,
-      lastModified: file.lastModified
+      lastModified: file.lastModified,
+      originalFileType: fileType,
+      sanitizedFileType,
+      tokenExists: !!blobToken
     })
     
-    // Upload to Vercel Blob
+    // Upload to Vercel Blob - pass File directly like portfolio upload does
     let blob
     try {
-      // Convert File to Buffer for better compatibility
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-      
-      blob = await put(fileName, buffer, {
+      blob = await put(fileName, file, {
         access: 'public',
-        contentType: file.type || 'application/octet-stream'
       })
       console.log('Blob uploaded successfully:', blob.url)
     } catch (blobError: any) {
@@ -148,14 +161,16 @@ export async function POST(request: NextRequest) {
         status: blobError?.status,
         statusCode: blobError?.statusCode,
         code: blobError?.code,
-        name: blobError?.name
+        name: blobError?.name,
+        stack: blobError?.stack
       })
       
       // Check if it's a permission/authentication error
       if (blobError?.message?.includes('Forbidden') || blobError?.statusCode === 403 || blobError?.status === 403) {
         return NextResponse.json({ 
-          error: 'Upload permission denied. Please check that BLOB_READ_WRITE_TOKEN is configured correctly.',
-          details: blobError?.message || 'Forbidden'
+          error: 'Upload permission denied. Please check that BLOB_READ_WRITE_TOKEN is configured correctly in Vercel environment variables.',
+          details: blobError?.message || 'Forbidden',
+          troubleshooting: 'Check Vercel dashboard → Storage → Blob Store status and ensure BLOB_READ_WRITE_TOKEN is set'
         }, { status: 403 })
       }
       
