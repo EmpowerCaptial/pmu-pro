@@ -32,9 +32,22 @@ export async function POST(request: NextRequest) {
     if (fileType.startsWith('instructor-folder:')) {
       const ALLOWED_ROLES = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor']
       const userRole = user?.role?.toLowerCase() || ''
+      console.log('Instructor folder upload check:', {
+        userExists: !!user,
+        userRole,
+        allowedRoles: ALLOWED_ROLES,
+        isAllowed: user && ALLOWED_ROLES.includes(userRole)
+      })
       if (!user || !ALLOWED_ROLES.includes(userRole)) {
-        console.log('User does not have permission to upload to instructor folder')
-        return NextResponse.json({ error: 'Forbidden: Only instructors and administrators can upload to instructor folder' }, { status: 403 })
+        console.log('User does not have permission to upload to instructor folder', {
+          user: user ? { id: user.id, email: user.email, role: user.role } : null,
+          userRole,
+          allowedRoles: ALLOWED_ROLES
+        })
+        return NextResponse.json({ 
+          error: 'Forbidden: Only instructors and administrators can upload to instructor folder',
+          details: `Your role (${userRole || 'none'}) is not authorized. Required roles: ${ALLOWED_ROLES.join(', ')}`
+        }, { status: 403 })
       }
     }
 
@@ -109,13 +122,46 @@ export async function POST(request: NextRequest) {
     console.log('Uploading to Vercel Blob...')
     const fileName = `uploads/${user.id}/${fileType}/${Date.now()}-${file.name}`
     console.log('Blob filename:', fileName)
+    console.log('File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    })
     
     // Upload to Vercel Blob
-    const blob = await put(fileName, file, {
-      access: 'public',
-    })
-
-    console.log('Blob uploaded successfully:', blob.url)
+    let blob
+    try {
+      // Convert File to Buffer for better compatibility
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      
+      blob = await put(fileName, buffer, {
+        access: 'public',
+        contentType: file.type || 'application/octet-stream'
+      })
+      console.log('Blob uploaded successfully:', blob.url)
+    } catch (blobError: any) {
+      console.error('Vercel Blob upload error:', blobError)
+      console.error('Blob error details:', {
+        message: blobError?.message,
+        status: blobError?.status,
+        statusCode: blobError?.statusCode,
+        code: blobError?.code,
+        name: blobError?.name
+      })
+      
+      // Check if it's a permission/authentication error
+      if (blobError?.message?.includes('Forbidden') || blobError?.statusCode === 403 || blobError?.status === 403) {
+        return NextResponse.json({ 
+          error: 'Upload permission denied. Please check that BLOB_READ_WRITE_TOKEN is configured correctly.',
+          details: blobError?.message || 'Forbidden'
+        }, { status: 403 })
+      }
+      
+      // Re-throw to be caught by outer catch
+      throw blobError
+    }
 
     // Save file metadata to database
     const fileUpload = await prisma.fileUpload.create({
