@@ -66,6 +66,19 @@ export async function POST(request: NextRequest) {
           throw new Error('Unauthorized')
         }
 
+        // Check if BLOB_READ_WRITE_TOKEN is available
+        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+        if (!blobToken) {
+          console.error('BLOB_READ_WRITE_TOKEN is not set in environment variables')
+          throw new Error('Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.')
+        }
+
+        console.log('Resource library upload - Token check:', {
+          tokenExists: !!blobToken,
+          tokenLength: blobToken?.length || 0,
+          tokenPrefix: blobToken?.substring(0, 20) || 'none'
+        })
+
         const user = await prisma.user.findUnique({
           where: { email: userEmail },
           select: { id: true, email: true, name: true, role: true }
