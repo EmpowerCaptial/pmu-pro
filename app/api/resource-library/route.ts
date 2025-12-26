@@ -67,7 +67,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if BLOB_READ_WRITE_TOKEN is available
-        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+        let blobToken = process.env.BLOB_READ_WRITE_TOKEN
+        
+        // Strip quotes if present (common issue when copying from Vercel dashboard)
+        if (blobToken) {
+          blobToken = blobToken.trim().replace(/^["']|["']$/g, '')
+        }
+        
         if (!blobToken) {
           console.error('BLOB_READ_WRITE_TOKEN is not set in environment variables')
           throw new Error('Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in Vercel environment variables.')

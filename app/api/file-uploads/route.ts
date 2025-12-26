@@ -155,7 +155,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if BLOB_READ_WRITE_TOKEN is available
-    const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    let blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    
+    // Strip quotes if present (common issue when copying from Vercel dashboard)
+    if (blobToken) {
+      blobToken = blobToken.trim().replace(/^["']|["']$/g, '')
+    }
+    
     console.log('Blob token check:', {
       tokenExists: !!blobToken,
       tokenLength: blobToken?.length || 0,
@@ -202,10 +208,11 @@ export async function POST(request: NextRequest) {
     let blob
     try {
       console.log('Calling Vercel Blob put()...')
+      // Use the cleaned token (quotes already stripped above)
       console.log('Token check before upload:', {
-        tokenInEnv: !!process.env.BLOB_READ_WRITE_TOKEN,
-        tokenLength: process.env.BLOB_READ_WRITE_TOKEN?.length || 0,
-        tokenPrefix: process.env.BLOB_READ_WRITE_TOKEN?.substring(0, 20) || 'none'
+        tokenInEnv: !!blobToken,
+        tokenLength: blobToken?.length || 0,
+        tokenPrefix: blobToken?.substring(0, 20) || 'none'
       })
       blob = await put(fileName, file, {
         access: 'public',

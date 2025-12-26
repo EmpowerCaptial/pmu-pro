@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET /api/file-uploads/verify-token - Verify BLOB_READ_WRITE_TOKEN is working
 export async function GET(request: NextRequest) {
   try {
-    const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+    let blobToken = process.env.BLOB_READ_WRITE_TOKEN
     
     if (!blobToken) {
       return NextResponse.json({ 
@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
         tokenLength: 0
       }, { status: 500 })
     }
+
+    // Strip quotes if present (common issue when copying from Vercel dashboard)
+    blobToken = blobToken.trim().replace(/^["']|["']$/g, '')
 
     // Verify token format
     const tokenPrefix = blobToken.substring(0, 15)
