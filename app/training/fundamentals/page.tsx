@@ -1843,6 +1843,11 @@ export default function FundamentalsTrainingPortal() {
                     <CardTitle className="text-lg font-semibold text-gray-900">Program Resources</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-gray-700 break-words">
+                    <Button asChild className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                      <Link href="/library?category=training">
+                        <BookOpen className="h-4 w-4 mr-2" /> Resource Library
+                      </Link>
+                    </Button>
                     <Button asChild variant="outline" className="w-full">
                       <Link href="/library?category=training">
                         <Download className="h-4 w-4 mr-2" /> Download Training E-Book
