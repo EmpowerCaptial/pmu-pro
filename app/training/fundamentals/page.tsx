@@ -1537,9 +1537,17 @@ export default function FundamentalsTrainingPortal() {
           className="hidden"
           onChange={handleVideoFileChange}
         />
-        <Card className="border-purple-200 bg-white shadow-lg mb-8 break-words">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between break-words">
-            <div>
+        <Card className="border-purple-200 bg-white shadow-lg mb-8 break-words relative overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/images/cardimage.jpg)',
+              zIndex: 0
+            }}
+          />
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between break-words relative z-10">
+            <div className="relative z-10">
               <Badge className="bg-purple-600 text-white mb-2">
                 <GraduationCap className="h-4 w-4 mr-1" /> Level 1 Training Portal
               </Badge>
@@ -1548,7 +1556,7 @@ export default function FundamentalsTrainingPortal() {
                 Access curriculum, assignments, and lecture videos. Directors and instructors can manage attendance, grades, and training resources.
               </CardDescription>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center relative z-10">
               <Button asChild variant="outline">
                 <Link href="/training">
                   <Users className="h-4 w-4 mr-2" /> Back to Training Hub
