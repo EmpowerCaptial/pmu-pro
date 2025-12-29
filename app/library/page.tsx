@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Label } from '@/components/ui/label'
-import { Search, Download, FileText, BookOpen, Shield, FileCheck, Clipboard, AlertTriangle, Mail, UploadCloud, UserCircle } from 'lucide-react'
+import { Search, Download, FileText, BookOpen, Shield, FileCheck, Clipboard, AlertTriangle, Mail, UploadCloud, UserCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
@@ -42,8 +43,10 @@ interface LibraryResource {
 
 export default function LibraryPage() {
   const { currentUser } = useDemoAuth()
+  const searchParams = useSearchParams()
+  const categoryParam = searchParams.get('category')
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('all')
+  const [activeTab, setActiveTab] = useState(categoryParam || 'all')
   const [uploadedResources, setUploadedResources] = useState<UploadedResource[]>([])
   const [isLoadingUploads, setIsLoadingUploads] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -76,6 +79,13 @@ export default function LibraryPage() {
   useEffect(() => {
     fetchUploadedResources()
   }, [])
+
+  // Set active tab from URL parameter on mount
+  useEffect(() => {
+    if (categoryParam) {
+      setActiveTab(categoryParam)
+    }
+  }, [categoryParam])
 
   // Prepare user object for NavBar
   const user = currentUser ? {
@@ -353,10 +363,17 @@ export default function LibraryPage() {
           </p>
         </div>
 
-        {/* Return to Dashboard */}
-        <div className="mb-6">
+        {/* Return Navigation */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          {categoryParam === 'training' && (
+            <Link href="/training/fundamentals#student-portal">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Back to Training Portal
+              </Button>
+            </Link>
+          )}
           <Link href="/dashboard">
-            <Button variant="outline" className="mb-4">
+            <Button variant="outline">
               ← Return to Dashboard
             </Button>
           </Link>
