@@ -41,7 +41,11 @@ import {
   PenSquare,
   Download,
   Eye,
-  Trash2
+  Trash2,
+  VideoIcon,
+  ExternalLink,
+  Plus,
+  Clock
 } from 'lucide-react'
 import { TRAINING_LESSON_PLANS } from '@/data/training-lesson-plan'
 
@@ -68,6 +72,19 @@ interface LectureVideo {
   uploadedAt?: string
   uploadedBy?: string
   videoType?: 'file' | 'url' // 'file' for uploaded videos, 'url' for external links
+}
+
+interface ZoomSession {
+  id: string
+  title: string
+  meetingId: string
+  password: string
+  meetingUrl: string
+  scheduledDate: string | null
+  status: 'scheduled' | 'live' | 'ended'
+  description: string
+  createdAt: string
+  createdBy: string | null
 }
 
 interface CourseWeek {
@@ -382,6 +399,19 @@ export default function FundamentalsTrainingPortal() {
   const [isUploadingInstructorFolder, setIsUploadingInstructorFolder] = useState(false)
   const [instructorFolderFiles, setInstructorFolderFiles] = useState<any[]>([])
   const [isLoadingInstructorFolderFiles, setIsLoadingInstructorFolderFiles] = useState(false)
+  // Zoom session state
+  const [zoomSessions, setZoomSessions] = useState<ZoomSession[]>([])
+  const [isLoadingZoomSessions, setIsLoadingZoomSessions] = useState<boolean>(false)
+  const [zoomSessionError, setZoomSessionError] = useState<string | null>(null)
+  const [newZoomTitle, setNewZoomTitle] = useState('')
+  const [newZoomUrl, setNewZoomUrl] = useState('')
+  const [newZoomMeetingId, setNewZoomMeetingId] = useState('')
+  const [newZoomPassword, setNewZoomPassword] = useState('')
+  const [newZoomScheduledDate, setNewZoomScheduledDate] = useState('')
+  const [newZoomDescription, setNewZoomDescription] = useState('')
+  const [newZoomStatus, setNewZoomStatus] = useState<'scheduled' | 'live' | 'ended'>('scheduled')
+  const [isCreatingZoomSession, setIsCreatingZoomSession] = useState<boolean>(false)
+  const [zoomSessionDialogOpen, setZoomSessionDialogOpen] = useState<boolean>(false)
   const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
   const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
   const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
@@ -685,6 +715,149 @@ export default function FundamentalsTrainingPortal() {
   useEffect(() => {
     fetchTrainingVideos()
   }, [fetchTrainingVideos])
+
+  // Fetch Zoom sessions
+  const fetchZoomSessions = useCallback(async () => {
+    if (!currentUser?.email) return
+    
+    setIsLoadingZoomSessions(true)
+    setZoomSessionError(null)
+    try {
+      const response = await fetch('/api/training/zoom-sessions', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch Zoom sessions')
+      }
+      const data = await response.json()
+      setZoomSessions(data.sessions || [])
+    } catch (error) {
+      console.error('Failed to fetch Zoom sessions:', error)
+      setZoomSessionError(error instanceof Error ? error.message : 'Unable to load live sessions.')
+      setZoomSessions([])
+    } finally {
+      setIsLoadingZoomSessions(false)
+    }
+  }, [currentUser?.email])
+
+  useEffect(() => {
+    fetchZoomSessions()
+  }, [fetchZoomSessions])
+
+  // Create Zoom session
+  const handleCreateZoomSession = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!currentUser?.email) return
+
+    if (!newZoomTitle || !newZoomUrl) {
+      setZoomSessionError('Title and meeting URL are required')
+      return
+    }
+
+    setIsCreatingZoomSession(true)
+    setZoomSessionError(null)
+    try {
+      const response = await fetch('/api/training/zoom-sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          title: newZoomTitle,
+          meetingUrl: newZoomUrl,
+          meetingId: newZoomMeetingId,
+          password: newZoomPassword,
+          scheduledDate: newZoomScheduledDate || null,
+          description: newZoomDescription,
+          status: newZoomStatus
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create Zoom session')
+      }
+
+      // Reset form
+      setNewZoomTitle('')
+      setNewZoomUrl('')
+      setNewZoomMeetingId('')
+      setNewZoomPassword('')
+      setNewZoomScheduledDate('')
+      setNewZoomDescription('')
+      setNewZoomStatus('scheduled')
+      setZoomSessionDialogOpen(false)
+      
+      // Refresh sessions
+      await fetchZoomSessions()
+    } catch (error) {
+      console.error('Failed to create Zoom session:', error)
+      setZoomSessionError(error instanceof Error ? error.message : 'Failed to create session')
+    } finally {
+      setIsCreatingZoomSession(false)
+    }
+  }
+
+  // Delete Zoom session
+  const handleDeleteZoomSession = async (sessionId: string) => {
+    if (!currentUser?.email) return
+    if (!confirm('Are you sure you want to delete this live session?')) return
+
+    try {
+      const response = await fetch(`/api/training/zoom-sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data?.error || 'Failed to delete session')
+      }
+
+      // Refresh sessions
+      await fetchZoomSessions()
+    } catch (error) {
+      console.error('Failed to delete Zoom session:', error)
+      setZoomSessionError(error instanceof Error ? error.message : 'Failed to delete session')
+    }
+  }
+
+  // Format scheduled date for display
+  const formatScheduledDate = (dateString: string | null) => {
+    if (!dateString) return 'Not scheduled'
+    try {
+      return new Date(dateString).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  // Check if session is live (scheduled for today or status is 'live')
+  const isSessionLive = (session: ZoomSession) => {
+    if (session.status === 'live') return true
+    if (session.status === 'ended') return false
+    if (!session.scheduledDate) return false
+    try {
+      const scheduled = new Date(session.scheduledDate)
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const scheduledDate = new Date(scheduled.getFullYear(), scheduled.getMonth(), scheduled.getDate())
+      return scheduledDate.getTime() === today.getTime() && scheduled > now
+    } catch {
+      return false
+    }
+  }
 
   const handleUploadButtonClick = () => {
     fileInputRef.current?.click()
@@ -1846,6 +2019,103 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
+                {/* Live Sessions Card */}
+                <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white break-words">
+                  <CardHeader className="break-words">
+                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <VideoIcon className="h-5 w-5 text-purple-600" />
+                      Live Sessions
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Join live Zoom training sessions with instructors
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 break-words">
+                    {isLoadingZoomSessions && (
+                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                        Loading live sessions…
+                      </div>
+                    )}
+                    {zoomSessionError && (
+                      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        {zoomSessionError}
+                      </div>
+                    )}
+                    {zoomSessions.length === 0 && !isLoadingZoomSessions && !zoomSessionError && (
+                      <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                        No live sessions scheduled. Check back soon!
+                      </div>
+                    )}
+                    {zoomSessions
+                      .filter(session => session.status !== 'ended')
+                      .sort((a, b) => {
+                        // Sort by: live first, then scheduled by date
+                        if (a.status === 'live' && b.status !== 'live') return -1
+                        if (b.status === 'live' && a.status !== 'live') return 1
+                        if (a.scheduledDate && b.scheduledDate) {
+                          return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+                        }
+                        return 0
+                      })
+                      .map(session => {
+                        const isLive = isSessionLive(session) || session.status === 'live'
+                        return (
+                          <Card key={session.id} className={`border ${isLive ? 'border-green-300 bg-green-50' : 'border-gray-200'} shadow-sm`}>
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                                    {session.title}
+                                    {isLive && (
+                                      <Badge className="bg-green-600 text-white animate-pulse">
+                                        LIVE
+                                      </Badge>
+                                    )}
+                                    {session.status === 'scheduled' && !isLive && (
+                                      <Badge variant="outline" className="border-blue-300 text-blue-700">
+                                        Scheduled
+                                      </Badge>
+                                    )}
+                                  </h3>
+                                  {session.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{session.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="space-y-2 text-xs text-gray-600">
+                                {session.scheduledDate && (
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{formatScheduledDate(session.scheduledDate)}</span>
+                                  </div>
+                                )}
+                                {session.meetingId && (
+                                  <div>
+                                    <strong>Meeting ID:</strong> {session.meetingId}
+                                  </div>
+                                )}
+                                {session.password && (
+                                  <div>
+                                    <strong>Password:</strong> {session.password}
+                                  </div>
+                                )}
+                              </div>
+                              <Button
+                                asChild
+                                className={`w-full ${isLive ? 'bg-green-600 hover:bg-green-700' : 'bg-purple-600 hover:bg-purple-700'} text-white`}
+                              >
+                                <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  {isLive ? 'Join Live Session' : 'Join Meeting'}
+                                </a>
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                  </CardContent>
+                </Card>
+
                 <Card className="border-gray-200 break-words">
                   <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-gray-900">Program Resources</CardTitle>
@@ -2649,6 +2919,246 @@ export default function FundamentalsTrainingPortal() {
                           </div>
                         </div>
                       )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Manage Live Sessions */}
+                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white break-words">
+                    <CardHeader className="break-words">
+                      <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <VideoIcon className="h-5 w-5 text-green-600" />
+                        Manage Live Sessions
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Schedule and manage Zoom live training sessions for students to join
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 break-words">
+                      <Button
+                        onClick={() => setZoomSessionDialogOpen(true)}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add New Live Session
+                      </Button>
+
+                      {zoomSessionError && (
+                        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                          {zoomSessionError}
+                        </div>
+                      )}
+
+                      {isLoadingZoomSessions && (
+                        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                          Loading sessions...
+                        </div>
+                      )}
+
+                      {zoomSessions.length === 0 && !isLoadingZoomSessions && (
+                        <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                          No live sessions created yet. Click "Add New Live Session" to get started.
+                        </div>
+                      )}
+
+                      {zoomSessions.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold text-gray-900">Active Sessions:</p>
+                          {zoomSessions
+                            .sort((a, b) => {
+                              if (a.status === 'live' && b.status !== 'live') return -1
+                              if (b.status === 'live' && a.status !== 'live') return 1
+                              if (a.scheduledDate && b.scheduledDate) {
+                                return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()
+                              }
+                              return 0
+                            })
+                            .map(session => {
+                              const isLive = isSessionLive(session) || session.status === 'live'
+                              return (
+                                <Card key={session.id} className={`border ${isLive ? 'border-green-300 bg-green-50' : 'border-gray-200'} shadow-sm`}>
+                                  <CardContent className="p-4 space-y-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex-1">
+                                        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                                          {session.title}
+                                          {isLive && (
+                                            <Badge className="bg-green-600 text-white animate-pulse">
+                                              LIVE
+                                            </Badge>
+                                          )}
+                                          {session.status === 'scheduled' && !isLive && (
+                                            <Badge variant="outline" className="border-blue-300 text-blue-700">
+                                              Scheduled
+                                            </Badge>
+                                          )}
+                                          {session.status === 'ended' && (
+                                            <Badge variant="outline" className="border-gray-300 text-gray-700">
+                                              Ended
+                                            </Badge>
+                                          )}
+                                        </h3>
+                                        {session.description && (
+                                          <p className="text-sm text-gray-600 mt-1">{session.description}</p>
+                                        )}
+                                      </div>
+                                      {canManageVideos && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-red-200 text-red-600 hover:bg-red-50"
+                                          onClick={() => handleDeleteZoomSession(session.id)}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                    <div className="space-y-2 text-xs text-gray-600">
+                                      {session.scheduledDate && (
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="h-3 w-3" />
+                                          <span>{formatScheduledDate(session.scheduledDate)}</span>
+                                        </div>
+                                      )}
+                                      <div>
+                                        <strong>Meeting URL:</strong>{' '}
+                                        <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+                                          {session.meetingUrl}
+                                        </a>
+                                      </div>
+                                      {session.meetingId && (
+                                        <div>
+                                          <strong>Meeting ID:</strong> {session.meetingId}
+                                        </div>
+                                      )}
+                                      {session.password && (
+                                        <div>
+                                          <strong>Password:</strong> {session.password}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )
+                            })}
+                        </div>
+                      )}
+
+                      {/* Create Zoom Session Dialog */}
+                      <Dialog open={zoomSessionDialogOpen} onOpenChange={setZoomSessionDialogOpen}>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Create New Live Session</DialogTitle>
+                            <DialogDescription>
+                              Add a Zoom meeting link for students to join live training sessions
+                            </DialogDescription>
+                          </DialogHeader>
+                          <form onSubmit={handleCreateZoomSession} className="space-y-4">
+                            <div className="space-y-1">
+                              <Label htmlFor="zoom-title">Session Title *</Label>
+                              <Input
+                                id="zoom-title"
+                                value={newZoomTitle}
+                                onChange={(e) => setNewZoomTitle(e.target.value)}
+                                placeholder="e.g., Week 1 Live Q&A Session"
+                                required
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="zoom-url">Zoom Meeting URL *</Label>
+                              <Input
+                                id="zoom-url"
+                                type="url"
+                                value={newZoomUrl}
+                                onChange={(e) => setNewZoomUrl(e.target.value)}
+                                placeholder="https://zoom.us/j/1234567890"
+                                required
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                Paste the full Zoom meeting link (e.g., https://zoom.us/j/1234567890)
+                              </p>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div className="space-y-1">
+                                <Label htmlFor="zoom-meeting-id">Meeting ID (optional)</Label>
+                                <Input
+                                  id="zoom-meeting-id"
+                                  value={newZoomMeetingId}
+                                  onChange={(e) => setNewZoomMeetingId(e.target.value)}
+                                  placeholder="123 456 7890"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label htmlFor="zoom-password">Password (optional)</Label>
+                                <Input
+                                  id="zoom-password"
+                                  type="text"
+                                  value={newZoomPassword}
+                                  onChange={(e) => setNewZoomPassword(e.target.value)}
+                                  placeholder="abc123"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="zoom-scheduled-date">Scheduled Date & Time (optional)</Label>
+                              <Input
+                                id="zoom-scheduled-date"
+                                type="datetime-local"
+                                value={newZoomScheduledDate}
+                                onChange={(e) => setNewZoomScheduledDate(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="zoom-description">Description (optional)</Label>
+                              <Textarea
+                                id="zoom-description"
+                                value={newZoomDescription}
+                                onChange={(e) => setNewZoomDescription(e.target.value)}
+                                placeholder="Add any additional details about this session..."
+                                rows={3}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="zoom-status">Status</Label>
+                              <Select value={newZoomStatus} onValueChange={(value: 'scheduled' | 'live' | 'ended') => setNewZoomStatus(value)}>
+                                <SelectTrigger id="zoom-status">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                                  <SelectItem value="live">Live Now</SelectItem>
+                                  <SelectItem value="ended">Ended</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-center justify-end gap-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setZoomSessionDialogOpen(false)
+                                  setNewZoomTitle('')
+                                  setNewZoomUrl('')
+                                  setNewZoomMeetingId('')
+                                  setNewZoomPassword('')
+                                  setNewZoomScheduledDate('')
+                                  setNewZoomDescription('')
+                                  setNewZoomStatus('scheduled')
+                                  setZoomSessionError(null)
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="submit"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                disabled={isCreatingZoomSession}
+                              >
+                                {isCreatingZoomSession ? 'Creating...' : 'Create Session'}
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
                     </CardContent>
                   </Card>
 

@@ -2,3 +2,4 @@ This file triggers Vercel deployment
 Updated: 2024-11-21 - Fix infinite loop and use db push for Client Bookings table
 
 
+
