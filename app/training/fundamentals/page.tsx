@@ -2197,6 +2197,25 @@ export default function FundamentalsTrainingPortal() {
           </TabsContent>
 
           <TabsContent value="instructor" className="space-y-6 break-words">
+            {/* Quick Actions Banner */}
+            <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white break-words">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <VideoIcon className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-semibold text-gray-900">Quick Actions</span>
+                  </div>
+                  <Button
+                    onClick={() => setZoomSessionDialogOpen(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Live Session
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
               <Card className="border-gray-200 break-words">
                 <CardHeader className="break-words">
