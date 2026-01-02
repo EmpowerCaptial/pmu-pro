@@ -48,6 +48,7 @@ import {
   Clock
 } from 'lucide-react'
 import { TRAINING_LESSON_PLANS } from '@/data/training-lesson-plan'
+import { LiveStreamViewer } from '@/components/live-streaming/live-stream-viewer'
 
 interface Assignment {
   id: string
@@ -82,6 +83,17 @@ interface ZoomSession {
   meetingUrl: string
   scheduledDate: string | null
   status: 'scheduled' | 'live' | 'ended'
+  description: string
+  createdAt: string
+  createdBy: string | null
+}
+
+interface LiveStreamRoom {
+  id: string
+  roomId: string
+  roomName: string
+  roomUrl: string
+  title: string
   description: string
   createdAt: string
   createdBy: string | null
@@ -412,6 +424,16 @@ export default function FundamentalsTrainingPortal() {
   const [newZoomStatus, setNewZoomStatus] = useState<'scheduled' | 'live' | 'ended'>('scheduled')
   const [isCreatingZoomSession, setIsCreatingZoomSession] = useState<boolean>(false)
   const [zoomSessionDialogOpen, setZoomSessionDialogOpen] = useState<boolean>(false)
+  // Live streaming state
+  const [liveStreamRooms, setLiveStreamRooms] = useState<LiveStreamRoom[]>([])
+  const [isLoadingLiveStreamRooms, setIsLoadingLiveStreamRooms] = useState<boolean>(false)
+  const [liveStreamError, setLiveStreamError] = useState<string | null>(null)
+  const [newLiveStreamTitle, setNewLiveStreamTitle] = useState('')
+  const [newLiveStreamDescription, setNewLiveStreamDescription] = useState('')
+  const [isCreatingLiveStream, setIsCreatingLiveStream] = useState<boolean>(false)
+  const [liveStreamDialogOpen, setLiveStreamDialogOpen] = useState<boolean>(false)
+  const [activeLiveStream, setActiveLiveStream] = useState<{ roomUrl: string; token: string; roomName: string } | null>(null)
+  const [isJoiningLiveStream, setIsJoiningLiveStream] = useState<boolean>(false)
   const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
   const [assignmentBeingEdited, setAssignmentBeingEdited] = useState<{ assignmentId: string; weekId: string } | null>(null)
   const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
@@ -856,6 +878,152 @@ export default function FundamentalsTrainingPortal() {
       return scheduledDate.getTime() === today.getTime() && scheduled > now
     } catch {
       return false
+    }
+  }
+
+  // Fetch live streaming rooms
+  const fetchLiveStreamRooms = useCallback(async () => {
+    if (!currentUser?.email) return
+    
+    setIsLoadingLiveStreamRooms(true)
+    setLiveStreamError(null)
+    try {
+      const response = await fetch('/api/live-streaming/rooms', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch live streaming rooms')
+      }
+      const data = await response.json()
+      setLiveStreamRooms(data.rooms || [])
+    } catch (error) {
+      console.error('Failed to fetch live streaming rooms:', error)
+      setLiveStreamError(error instanceof Error ? error.message : 'Unable to load live streams.')
+      setLiveStreamRooms([])
+    } finally {
+      setIsLoadingLiveStreamRooms(false)
+    }
+  }, [currentUser?.email])
+
+  useEffect(() => {
+    fetchLiveStreamRooms()
+  }, [fetchLiveStreamRooms])
+
+  // Create live streaming room
+  const handleCreateLiveStream = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!currentUser?.email) return
+
+    if (!newLiveStreamTitle) {
+      setLiveStreamError('Title is required')
+      return
+    }
+
+    setIsCreatingLiveStream(true)
+    setLiveStreamError(null)
+    try {
+      const response = await fetch('/api/live-streaming/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          title: newLiveStreamTitle,
+          description: newLiveStreamDescription
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create live stream room')
+      }
+
+      // Reset form
+      setNewLiveStreamTitle('')
+      setNewLiveStreamDescription('')
+      setLiveStreamDialogOpen(false)
+      
+      // Refresh rooms
+      await fetchLiveStreamRooms()
+      
+      // Automatically join the room as instructor
+      await handleJoinLiveStream(data.room.roomName, data.room.roomUrl, true)
+    } catch (error) {
+      console.error('Failed to create live stream room:', error)
+      setLiveStreamError(error instanceof Error ? error.message : 'Failed to create room')
+    } finally {
+      setIsCreatingLiveStream(false)
+    }
+  }
+
+  // Join live streaming room
+  const handleJoinLiveStream = async (roomName: string, roomUrl: string, isOwner: boolean = false) => {
+    if (!currentUser?.email) return
+
+    setIsJoiningLiveStream(true)
+    setLiveStreamError(null)
+    try {
+      const response = await fetch('/api/live-streaming/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          roomName,
+          isOwner
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to generate token')
+      }
+
+      setActiveLiveStream({
+        roomUrl,
+        token: data.token,
+        roomName
+      })
+    } catch (error) {
+      console.error('Failed to join live stream:', error)
+      setLiveStreamError(error instanceof Error ? error.message : 'Failed to join stream')
+    } finally {
+      setIsJoiningLiveStream(false)
+    }
+  }
+
+  // Leave live streaming room
+  const handleLeaveLiveStream = () => {
+    setActiveLiveStream(null)
+  }
+
+  // Delete live streaming room
+  const handleDeleteLiveStreamRoom = async (roomId: string) => {
+    if (!currentUser?.email) return
+    if (!confirm('Are you sure you want to delete this live stream room?')) return
+
+    try {
+      const response = await fetch(`/api/live-streaming/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data?.error || 'Failed to delete room')
+      }
+
+      // Refresh rooms
+      await fetchLiveStreamRooms()
+    } catch (error) {
+      console.error('Failed to delete live stream room:', error)
+      setLiveStreamError(error instanceof Error ? error.message : 'Failed to delete room')
     }
   }
 
@@ -2019,12 +2187,62 @@ export default function FundamentalsTrainingPortal() {
                   </CardContent>
                 </Card>
 
-                {/* Live Sessions Card */}
+                {/* Live Streaming Card */}
+                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white break-words">
+                  <CardHeader className="break-words">
+                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <Video className="h-5 w-5 text-blue-600" />
+                      Live Streaming
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Join live video sessions directly in the app. Watch, participate, and chat with instructors.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 break-words">
+                    {isLoadingLiveStreamRooms && (
+                      <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                        Loading live streams...
+                      </div>
+                    )}
+                    {liveStreamError && (
+                      <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                        {liveStreamError}
+                      </div>
+                    )}
+                    {liveStreamRooms.length === 0 && !isLoadingLiveStreamRooms && !liveStreamError && (
+                      <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                        No live streams available. Check back when instructors start a session.
+                      </div>
+                    )}
+                    {liveStreamRooms.map(room => (
+                      <Card key={room.id} className="border border-gray-200 shadow-sm">
+                        <CardContent className="p-4 space-y-3">
+                          <div>
+                            <h3 className="text-base font-semibold text-gray-900">{room.title}</h3>
+                            {room.description && (
+                              <p className="text-sm text-gray-600 mt-1">{room.description}</p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleJoinLiveStream(room.roomName, room.roomUrl, false)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            disabled={isJoiningLiveStream}
+                          >
+                            {isJoiningLiveStream ? 'Joining...' : 'Join Live Stream'}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Live Sessions Card (Zoom) */}
                 <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white break-words">
                   <CardHeader className="break-words">
                     <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <VideoIcon className="h-5 w-5 text-purple-600" />
-                      Live Sessions
+                      Zoom Sessions
                     </CardTitle>
                     <CardDescription className="text-gray-600">
                       Join live Zoom training sessions with instructors
@@ -2205,13 +2423,22 @@ export default function FundamentalsTrainingPortal() {
                     <VideoIcon className="h-5 w-5 text-green-600" />
                     <span className="text-sm font-semibold text-gray-900">Quick Actions</span>
                   </div>
-                  <Button
-                    onClick={() => setZoomSessionDialogOpen(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Live Session
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={() => setLiveStreamDialogOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Video className="h-4 w-4 mr-2" />
+                      Go Live
+                    </Button>
+                    <Button
+                      onClick={() => setZoomSessionDialogOpen(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Zoom Session
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -3173,6 +3400,136 @@ export default function FundamentalsTrainingPortal() {
                                 disabled={isCreatingZoomSession}
                               >
                                 {isCreatingZoomSession ? 'Creating...' : 'Create Session'}
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </CardContent>
+                  </Card>
+
+                  {/* Live Streaming Section */}
+                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white break-words">
+                    <CardHeader className="break-words">
+                      <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Video className="h-5 w-5 text-blue-600" />
+                        Live Streaming
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Start live video sessions directly in the app. Students can watch, participate, and chat in real-time.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 break-words">
+                      {liveStreamError && (
+                        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                          {liveStreamError}
+                        </div>
+                      )}
+
+                      {isLoadingLiveStreamRooms && (
+                        <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                          Loading live streams...
+                        </div>
+                      )}
+
+                      {liveStreamRooms.length === 0 && !isLoadingLiveStreamRooms && (
+                        <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
+                          No live streams created yet. Click "Go Live" to start a session.
+                        </div>
+                      )}
+
+                      {liveStreamRooms.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold text-gray-900">Active Rooms:</p>
+                          {liveStreamRooms.map(room => (
+                            <Card key={room.id} className="border border-gray-200 shadow-sm">
+                              <CardContent className="p-4 space-y-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1">
+                                    <h3 className="text-base font-semibold text-gray-900">{room.title}</h3>
+                                    {room.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{room.description}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-2">
+                                      Created: {new Date(room.createdAt).toLocaleString()}
+                                    </p>
+                                  </div>
+                                  {canManageVideos && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-red-200 text-red-600 hover:bg-red-50"
+                                      onClick={() => handleDeleteLiveStreamRoom(room.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleJoinLiveStream(room.roomName, room.roomUrl, room.createdBy === currentUser?.id)}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                                    disabled={isJoiningLiveStream}
+                                  >
+                                    {isJoiningLiveStream ? 'Joining...' : 'Join Stream'}
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Create Live Stream Dialog */}
+                      <Dialog open={liveStreamDialogOpen} onOpenChange={setLiveStreamDialogOpen}>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Go Live</DialogTitle>
+                            <DialogDescription>
+                              Create a new live streaming session. Students will be able to join and participate.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <form onSubmit={handleCreateLiveStream} className="space-y-4">
+                            <div className="space-y-1">
+                              <Label htmlFor="live-stream-title">Session Title *</Label>
+                              <Input
+                                id="live-stream-title"
+                                value={newLiveStreamTitle}
+                                onChange={(e) => setNewLiveStreamTitle(e.target.value)}
+                                placeholder="e.g., Week 1 Live Training Session"
+                                required
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="live-stream-description">Description (optional)</Label>
+                              <Textarea
+                                id="live-stream-description"
+                                value={newLiveStreamDescription}
+                                onChange={(e) => setNewLiveStreamDescription(e.target.value)}
+                                placeholder="Add any additional details about this session..."
+                                rows={3}
+                              />
+                            </div>
+                            <div className="flex items-center justify-end gap-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setLiveStreamDialogOpen(false)
+                                  setNewLiveStreamTitle('')
+                                  setNewLiveStreamDescription('')
+                                  setLiveStreamError(null)
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="submit"
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                disabled={isCreatingLiveStream}
+                              >
+                                {isCreatingLiveStream ? 'Creating...' : 'Go Live'}
                               </Button>
                             </div>
                           </form>
@@ -4270,6 +4627,29 @@ export default function FundamentalsTrainingPortal() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Live Stream Viewer Dialog */}
+      {activeLiveStream && (
+        <Dialog open={!!activeLiveStream} onOpenChange={() => handleLeaveLiveStream()}>
+          <DialogContent className="max-w-6xl w-full h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Live Streaming Session</DialogTitle>
+              <DialogDescription>
+                {canManageVideos ? 'You are the instructor. Students can see and hear you.' : 'You are viewing the live stream.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto">
+              <LiveStreamViewer
+                roomUrl={activeLiveStream.roomUrl}
+                token={activeLiveStream.token}
+                userName={currentUser?.name || currentUser?.email || 'Student'}
+                isInstructor={canManageVideos}
+                onLeave={handleLeaveLiveStream}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
