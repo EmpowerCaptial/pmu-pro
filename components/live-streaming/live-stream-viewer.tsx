@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { DailyCall } from '@daily-co/daily-js'
-import { DailyProvider, useDaily, useParticipant } from '@daily-co/daily-react'
+import { DailyProvider, useDaily } from '@daily-co/daily-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -188,108 +188,40 @@ function ParticipantList({ isInstructor }: { isInstructor: boolean }) {
 
 function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStreamViewerProps) {
   const daily = useDaily()
-  const [isJoined, setIsJoined] = useState(false)
   const [camEnabled, setCamEnabled] = useState(true)
   const [micEnabled, setMicEnabled] = useState(true)
-  const videoContainerRef = useRef<HTMLDivElement>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
-    if (!daily || !videoContainerRef.current) return
+    if (!daily || !iframeRef.current) return
 
     // Join the call
     daily.join({ url: roomUrl, token })
 
-    const handleJoined = () => {
-      setIsJoined(true)
-    }
-
-    const handleLeft = () => {
-      onLeave()
-    }
-
-    daily.on('joined-meeting', handleJoined)
-    daily.on('left-meeting', handleLeft)
-
-    // Set up local video
-    daily.setLocalVideo(true)
-    daily.setLocalAudio(true)
-
-    return () => {
-      daily.off('joined-meeting', handleJoined)
-      daily.off('left-meeting', handleLeft)
-      daily.leave().catch(() => {})
-    }
-  }, [daily, roomUrl, token, onLeave])
-
-  // Render local video
-  useEffect(() => {
-    if (!daily || !videoContainerRef.current || !isJoined) return
-
-    const container = videoContainerRef.current
-    container.innerHTML = '' // Clear container
-
-    // Create video element for local video
-    const localVideo = document.createElement('video')
-    localVideo.autoplay = true
-    localVideo.playsInline = true
-    localVideo.style.width = '100%'
-    localVideo.style.height = '100%'
-    localVideo.style.objectFit = 'cover'
-    
+    // Set up local video/audio
     daily.setLocalVideo(camEnabled)
     daily.setLocalAudio(micEnabled)
 
-    // Get local video track
-    daily.getLocalVideoTrack().then((track: any) => {
-      if (track && localVideo) {
-        localVideo.srcObject = new MediaStream([track])
-        container.appendChild(localVideo)
-      }
-    }).catch(() => {})
-
-    // Handle remote participants
-    const updateParticipants = () => {
-      const participants = daily.participants()
-      Object.values(participants).forEach((participant: any) => {
-        if (participant.local) return // Skip local participant
-        
-        const remoteVideo = document.createElement('video')
-        remoteVideo.autoplay = true
-        remoteVideo.playsInline = true
-        remoteVideo.style.width = '100%'
-        remoteVideo.style.height = '100%'
-        remoteVideo.style.objectFit = 'cover'
-        
-        daily.getRemoteVideoTrack(participant.session_id).then((track: any) => {
-          if (track && remoteVideo) {
-            remoteVideo.srcObject = new MediaStream([track])
-            if (!container.querySelector(`[data-session-id="${participant.session_id}"]`)) {
-              remoteVideo.setAttribute('data-session-id', participant.session_id)
-              container.appendChild(remoteVideo)
-            }
-          }
-        }).catch(() => {})
-      })
-    }
-
-    daily.on('participant-joined', updateParticipants)
-    daily.on('participant-updated', updateParticipants)
-
     return () => {
-      daily.off('participant-joined', updateParticipants)
-      daily.off('participant-updated', updateParticipants)
+      daily.leave().catch(() => {})
     }
-  }, [daily, isJoined, camEnabled, micEnabled])
+  }, [daily, roomUrl, token])
+
+  useEffect(() => {
+    if (!daily) return
+    daily.setLocalVideo(camEnabled)
+  }, [daily, camEnabled])
+
+  useEffect(() => {
+    if (!daily) return
+    daily.setLocalAudio(micEnabled)
+  }, [daily, micEnabled])
 
   const toggleCamera = () => {
-    if (!daily) return
-    daily.setLocalVideo(!camEnabled)
     setCamEnabled(!camEnabled)
   }
 
   const toggleMic = () => {
-    if (!daily) return
-    daily.setLocalAudio(!micEnabled)
     setMicEnabled(!micEnabled)
   }
 
@@ -300,14 +232,19 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
     onLeave()
   }
 
+  // Build iframe URL with token
+  const iframeUrl = `${roomUrl}?t=${encodeURIComponent(token)}`
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 relative bg-black rounded-lg overflow-hidden mb-4" ref={videoContainerRef}>
-        {!isJoined && (
-          <div className="absolute inset-0 flex items-center justify-center text-white">
-            <p>Joining call...</p>
-          </div>
-        )}
+      <div className="flex-1 relative bg-black rounded-lg overflow-hidden mb-4">
+        <iframe
+          ref={iframeRef}
+          src={iframeUrl}
+          allow="camera; microphone; fullscreen; speaker; display-capture"
+          className="absolute inset-0 w-full h-full border-0"
+          style={{ borderRadius: '0.5rem' }}
+        />
       </div>
       
       <div className="flex items-center justify-center gap-3">
