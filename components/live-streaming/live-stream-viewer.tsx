@@ -276,18 +276,29 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
 }
 
 export function LiveStreamViewer({ roomUrl, token, userName, isInstructor, onLeave }: LiveStreamViewerProps) {
-  const [daily, setDaily] = useState<DailyCall | null>(null)
+  const [daily, setDaily] = useState<any>(null)
 
   useEffect(() => {
-    const call = DailyCall.createInstance()
-    setDaily(call)
+    // Dynamically import DailyCall to avoid build-time issues
+    import('@daily-co/daily-js').then((dailyJs) => {
+      // Try different possible export formats
+      const DailyCallClass = (dailyJs as any).DailyCall || (dailyJs as any).default?.DailyCall || (dailyJs as any).default
+      if (DailyCallClass && typeof DailyCallClass.createInstance === 'function') {
+        const call = DailyCallClass.createInstance()
+        setDaily(call)
+      } else {
+        console.error('DailyCall.createInstance not found')
+      }
+    }).catch((error) => {
+      console.error('Failed to load Daily.co:', error)
+    })
 
     return () => {
-      if (call) {
-        call.destroy().catch(() => {})
+      if (daily) {
+        daily.destroy().catch(() => {})
       }
     }
-  }, [])
+  }, [daily])
 
   if (!daily) {
     return (
