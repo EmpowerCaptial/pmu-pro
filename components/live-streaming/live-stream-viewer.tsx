@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { DailyIframe } from '@daily-co/daily-js'
+import { DailyCall } from '@daily-co/daily-js'
 import { DailyProvider, useDaily, useParticipant } from '@daily-co/daily-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -191,65 +191,124 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
   const [isJoined, setIsJoined] = useState(false)
   const [camEnabled, setCamEnabled] = useState(true)
   const [micEnabled, setMicEnabled] = useState(true)
-  const callFrameRef = useRef<HTMLDivElement>(null)
-  const callFrameInstanceRef = useRef<any>(null)
+  const videoContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!callFrameRef.current) return
+    if (!daily || !videoContainerRef.current) return
 
-    // Create iframe using DailyIframe static method
-    const callFrame = DailyIframe.createFrame(callFrameRef.current, {
-      showLeaveButton: false,
-      showFullscreenButton: true,
-      iframeStyle: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        border: '0'
-      }
-    })
+    // Join the call
+    daily.join({ url: roomUrl, token })
 
-    callFrameInstanceRef.current = callFrame
-
-    callFrame.join({ url: roomUrl, token })
-
-    callFrame.on('joined-meeting', () => {
+    const handleJoined = () => {
       setIsJoined(true)
-    })
+    }
 
-    callFrame.on('left-meeting', () => {
+    const handleLeft = () => {
       onLeave()
-    })
+    }
+
+    daily.on('joined-meeting', handleJoined)
+    daily.on('left-meeting', handleLeft)
+
+    // Set up local video
+    daily.setLocalVideo(true)
+    daily.setLocalAudio(true)
 
     return () => {
-      if (callFrame) {
-        callFrame.leave().catch(() => {})
-      }
+      daily.off('joined-meeting', handleJoined)
+      daily.off('left-meeting', handleLeft)
+      daily.leave().catch(() => {})
     }
-  }, [roomUrl, token, onLeave])
+  }, [daily, roomUrl, token, onLeave])
+
+  // Render local video
+  useEffect(() => {
+    if (!daily || !videoContainerRef.current || !isJoined) return
+
+    const container = videoContainerRef.current
+    container.innerHTML = '' // Clear container
+
+    // Create video element for local video
+    const localVideo = document.createElement('video')
+    localVideo.autoplay = true
+    localVideo.playsInline = true
+    localVideo.style.width = '100%'
+    localVideo.style.height = '100%'
+    localVideo.style.objectFit = 'cover'
+    
+    daily.setLocalVideo(camEnabled)
+    daily.setLocalAudio(micEnabled)
+
+    // Get local video track
+    daily.getLocalVideoTrack().then((track: any) => {
+      if (track && localVideo) {
+        localVideo.srcObject = new MediaStream([track])
+        container.appendChild(localVideo)
+      }
+    }).catch(() => {})
+
+    // Handle remote participants
+    const updateParticipants = () => {
+      const participants = daily.participants()
+      Object.values(participants).forEach((participant: any) => {
+        if (participant.local) return // Skip local participant
+        
+        const remoteVideo = document.createElement('video')
+        remoteVideo.autoplay = true
+        remoteVideo.playsInline = true
+        remoteVideo.style.width = '100%'
+        remoteVideo.style.height = '100%'
+        remoteVideo.style.objectFit = 'cover'
+        
+        daily.getRemoteVideoTrack(participant.session_id).then((track: any) => {
+          if (track && remoteVideo) {
+            remoteVideo.srcObject = new MediaStream([track])
+            if (!container.querySelector(`[data-session-id="${participant.session_id}"]`)) {
+              remoteVideo.setAttribute('data-session-id', participant.session_id)
+              container.appendChild(remoteVideo)
+            }
+          }
+        }).catch(() => {})
+      })
+    }
+
+    daily.on('participant-joined', updateParticipants)
+    daily.on('participant-updated', updateParticipants)
+
+    return () => {
+      daily.off('participant-joined', updateParticipants)
+      daily.off('participant-updated', updateParticipants)
+    }
+  }, [daily, isJoined, camEnabled, micEnabled])
 
   const toggleCamera = () => {
-    if (!callFrameInstanceRef.current) return
-    callFrameInstanceRef.current.setLocalVideo(!camEnabled)
+    if (!daily) return
+    daily.setLocalVideo(!camEnabled)
     setCamEnabled(!camEnabled)
   }
 
   const toggleMic = () => {
-    if (!callFrameInstanceRef.current) return
-    callFrameInstanceRef.current.setLocalAudio(!micEnabled)
+    if (!daily) return
+    daily.setLocalAudio(!micEnabled)
     setMicEnabled(!micEnabled)
   }
 
   const leaveCall = () => {
-    if (callFrameInstanceRef.current) {
-      callFrameInstanceRef.current.leave().catch(() => {})
+    if (daily) {
+      daily.leave().catch(() => {})
     }
     onLeave()
   }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 relative bg-black rounded-lg overflow-hidden mb-4" ref={callFrameRef} />
+      <div className="flex-1 relative bg-black rounded-lg overflow-hidden mb-4" ref={videoContainerRef}>
+        {!isJoined && (
+          <div className="absolute inset-0 flex items-center justify-center text-white">
+            <p>Joining call...</p>
+          </div>
+        )}
+      </div>
       
       <div className="flex items-center justify-center gap-3">
         <Button
@@ -280,56 +339,46 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
 }
 
 export function LiveStreamViewer({ roomUrl, token, userName, isInstructor, onLeave }: LiveStreamViewerProps) {
-  const [daily, setDaily] = useState<any>(null)
+  const [daily, setDaily] = useState<DailyCall | null>(null)
 
   useEffect(() => {
-    import('@daily-co/daily-js').then(({ DailyCall }) => {
-      const call = DailyCall.createInstance()
-      setDaily(call)
-    })
+    const call = DailyCall.createInstance()
+    setDaily(call)
 
     return () => {
-      if (daily) {
-        daily.destroy().catch(() => {})
+      if (call) {
+        call.destroy().catch(() => {})
       }
     }
-  }, [daily])
+  }, [])
 
-  // For iframe-based approach, we don't need DailyProvider
-  // But we still need daily instance for chat and participants
+  if (!daily) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>Loading video call...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
-      <div className="lg:col-span-2">
-        <VideoCall
-          roomUrl={roomUrl}
-          token={token}
-          userName={userName}
-          isInstructor={isInstructor}
-          onLeave={onLeave}
-        />
+    <DailyProvider callObject={daily}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
+        <div className="lg:col-span-2">
+          <VideoCall
+            roomUrl={roomUrl}
+            token={token}
+            userName={userName}
+            isInstructor={isInstructor}
+            onLeave={onLeave}
+          />
+        </div>
+        <div className="space-y-4">
+          <ParticipantList isInstructor={isInstructor} />
+          <ChatPanel userName={userName} />
+        </div>
       </div>
-      <div className="space-y-4">
-        {daily ? (
-          <DailyProvider callObject={daily}>
-            <ParticipantList isInstructor={isInstructor} />
-            <ChatPanel userName={userName} />
-          </DailyProvider>
-        ) : (
-          <>
-            <Card className="h-full">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-500">Loading...</p>
-              </CardContent>
-            </Card>
-            <Card className="h-full">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-500">Loading...</p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-    </div>
+    </DailyProvider>
   )
 }
+
 
