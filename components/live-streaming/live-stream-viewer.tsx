@@ -186,53 +186,18 @@ function ParticipantList({ isInstructor }: { isInstructor: boolean }) {
 }
 
 function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStreamViewerProps) {
-  const daily = useDaily()
-  const [camEnabled, setCamEnabled] = useState(true)
-  const [micEnabled, setMicEnabled] = useState(true)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-
-  useEffect(() => {
-    if (!daily || !iframeRef.current) return
-
-    // Join the call
-    daily.join({ url: roomUrl, token })
-
-    // Set up local video/audio
-    daily.setLocalVideo(camEnabled)
-    daily.setLocalAudio(micEnabled)
-
-    return () => {
-      daily.leave().catch(() => {})
-    }
-  }, [daily, roomUrl, token])
-
-  useEffect(() => {
-    if (!daily) return
-    daily.setLocalVideo(camEnabled)
-  }, [daily, camEnabled])
-
-  useEffect(() => {
-    if (!daily) return
-    daily.setLocalAudio(micEnabled)
-  }, [daily, micEnabled])
-
-  const toggleCamera = () => {
-    setCamEnabled(!camEnabled)
-  }
-
-  const toggleMic = () => {
-    setMicEnabled(!micEnabled)
-  }
-
-  const leaveCall = () => {
-    if (daily) {
-      daily.leave().catch(() => {})
-    }
-    onLeave()
-  }
 
   // Build iframe URL with token
   const iframeUrl = `${roomUrl}?t=${encodeURIComponent(token)}`
+
+  const leaveCall = () => {
+    // Send message to iframe to leave
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'leave-meeting' }, '*')
+    }
+    onLeave()
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -243,24 +208,11 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
           allow="camera; microphone; fullscreen; speaker; display-capture"
           className="absolute inset-0 w-full h-full border-0"
           style={{ borderRadius: '0.5rem' }}
+          title="Daily.co Video Call"
         />
       </div>
       
       <div className="flex items-center justify-center gap-3">
-        <Button
-          onClick={toggleCamera}
-          variant={camEnabled ? "default" : "destructive"}
-          size="sm"
-        >
-          {camEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
-        </Button>
-        <Button
-          onClick={toggleMic}
-          variant={micEnabled ? "default" : "destructive"}
-          size="sm"
-        >
-          {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-        </Button>
         <Button
           onClick={leaveCall}
           variant="destructive"
@@ -297,34 +249,43 @@ export function LiveStreamViewer({ roomUrl, token, userName, isInstructor, onLea
         daily.destroy().catch(() => {})
       }
     }
-  }, [daily])
+  }, [])
 
-  if (!daily) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p>Loading video call...</p>
-      </div>
-    )
-  }
-
+  // For iframe-based video, we still need DailyCall for chat/participants
+  // But if it fails to load, we can still show the video
   return (
-    <DailyProvider callObject={daily}>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
-        <div className="lg:col-span-2">
-          <VideoCall
-            roomUrl={roomUrl}
-            token={token}
-            userName={userName}
-            isInstructor={isInstructor}
-            onLeave={onLeave}
-          />
-        </div>
-        <div className="space-y-4">
-          <ParticipantList isInstructor={isInstructor} />
-          <ChatPanel userName={userName} />
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
+      <div className="lg:col-span-2">
+        <VideoCall
+          roomUrl={roomUrl}
+          token={token}
+          userName={userName}
+          isInstructor={isInstructor}
+          onLeave={onLeave}
+        />
       </div>
-    </DailyProvider>
+      <div className="space-y-4">
+        {daily ? (
+          <DailyProvider callObject={daily}>
+            <ParticipantList isInstructor={isInstructor} />
+            <ChatPanel userName={userName} />
+          </DailyProvider>
+        ) : (
+          <>
+            <Card className="h-full">
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-500">Loading chat and participants...</p>
+              </CardContent>
+            </Card>
+            <Card className="h-full">
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-500">Loading...</p>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
