@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { DailyCall } from '@daily-co/daily-js'
-import { DailyProvider, useDaily, useParticipant, useParticipants } from '@daily-co/daily-react'
+import { DailyProvider, useDaily, useParticipant } from '@daily-co/daily-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -109,8 +109,31 @@ function ChatPanel({ userName }: { userName: string }) {
 }
 
 function ParticipantList({ isInstructor }: { isInstructor: boolean }) {
-  const participants = useParticipants()
   const daily = useDaily()
+  const [participants, setParticipants] = useState<Record<string, any>>({})
+
+  useEffect(() => {
+    if (!daily) return
+
+    const updateParticipants = () => {
+      const participantsObj = daily.participants()
+      setParticipants(participantsObj || {})
+    }
+
+    // Initial update
+    updateParticipants()
+
+    // Listen for participant updates
+    daily.on('participant-joined', updateParticipants)
+    daily.on('participant-left', updateParticipants)
+    daily.on('participant-updated', updateParticipants)
+
+    return () => {
+      daily.off('participant-joined', updateParticipants)
+      daily.off('participant-left', updateParticipants)
+      daily.off('participant-updated', updateParticipants)
+    }
+  }, [daily])
 
   const muteParticipant = (sessionId: string) => {
     if (!daily || !isInstructor) return
@@ -119,37 +142,43 @@ function ParticipantList({ isInstructor }: { isInstructor: boolean }) {
     // This would require server-side implementation
   }
 
+  const participantCount = Object.keys(participants).length
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <Users className="h-4 w-4" />
-          Participants ({Object.keys(participants).length})
+          Participants ({participantCount})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0">
         <ScrollArea className="h-[200px]">
           <div className="space-y-2">
-            {Object.values(participants).map((participant: any) => (
-              <div key={participant.session_id} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  <span className="font-medium">{participant.user_name || 'Anonymous'}</span>
+            {participantCount === 0 ? (
+              <p className="text-xs text-gray-500 text-center py-4">No participants yet</p>
+            ) : (
+              Object.values(participants).map((participant: any) => (
+                <div key={participant.session_id} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    <span className="font-medium">{participant.user_name || participant.userName || 'Anonymous'}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {participant.audio ? (
+                      <Mic className="h-3 w-3 text-green-600" />
+                    ) : (
+                      <MicOff className="h-3 w-3 text-gray-400" />
+                    )}
+                    {participant.video ? (
+                      <Video className="h-3 w-3 text-green-600" />
+                    ) : (
+                      <VideoOff className="h-3 w-3 text-gray-400" />
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  {participant.audio ? (
-                    <Mic className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <MicOff className="h-3 w-3 text-gray-400" />
-                  )}
-                  {participant.video ? (
-                    <Video className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <VideoOff className="h-3 w-3 text-gray-400" />
-                  )}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </ScrollArea>
       </CardContent>
