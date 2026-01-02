@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { DailyCall } from '@daily-co/daily-js'
+import { DailyIframe } from '@daily-co/daily-js'
 import { DailyProvider, useDaily, useParticipant } from '@daily-co/daily-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -192,11 +192,13 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
   const [camEnabled, setCamEnabled] = useState(true)
   const [micEnabled, setMicEnabled] = useState(true)
   const callFrameRef = useRef<HTMLDivElement>(null)
+  const callFrameInstanceRef = useRef<any>(null)
 
   useEffect(() => {
-    if (!daily || !callFrameRef.current) return
+    if (!callFrameRef.current) return
 
-    const callFrame = daily.createFrame(callFrameRef.current, {
+    // Create iframe using DailyIframe static method
+    const callFrame = DailyIframe.createFrame(callFrameRef.current, {
       showLeaveButton: false,
       showFullscreenButton: true,
       iframeStyle: {
@@ -206,6 +208,8 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
         border: '0'
       }
     })
+
+    callFrameInstanceRef.current = callFrame
 
     callFrame.join({ url: roomUrl, token })
 
@@ -218,25 +222,27 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
     })
 
     return () => {
-      callFrame.leave()
+      if (callFrame) {
+        callFrame.leave().catch(() => {})
+      }
     }
-  }, [daily, roomUrl, token, onLeave])
+  }, [roomUrl, token, onLeave])
 
   const toggleCamera = () => {
-    if (!daily) return
-    daily.setLocalVideo(!camEnabled)
+    if (!callFrameInstanceRef.current) return
+    callFrameInstanceRef.current.setLocalVideo(!camEnabled)
     setCamEnabled(!camEnabled)
   }
 
   const toggleMic = () => {
-    if (!daily) return
-    daily.setLocalAudio(!micEnabled)
+    if (!callFrameInstanceRef.current) return
+    callFrameInstanceRef.current.setLocalAudio(!micEnabled)
     setMicEnabled(!micEnabled)
   }
 
   const leaveCall = () => {
-    if (daily) {
-      daily.leave()
+    if (callFrameInstanceRef.current) {
+      callFrameInstanceRef.current.leave().catch(() => {})
     }
     onLeave()
   }
@@ -274,7 +280,7 @@ function VideoCall({ roomUrl, token, userName, isInstructor, onLeave }: LiveStre
 }
 
 export function LiveStreamViewer({ roomUrl, token, userName, isInstructor, onLeave }: LiveStreamViewerProps) {
-  const [daily, setDaily] = useState<DailyCall | null>(null)
+  const [daily, setDaily] = useState<any>(null)
 
   useEffect(() => {
     import('@daily-co/daily-js').then(({ DailyCall }) => {
@@ -284,37 +290,46 @@ export function LiveStreamViewer({ roomUrl, token, userName, isInstructor, onLea
 
     return () => {
       if (daily) {
-        daily.destroy()
+        daily.destroy().catch(() => {})
       }
     }
-  }, [])
+  }, [daily])
 
-  if (!daily) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p>Loading video call...</p>
-      </div>
-    )
-  }
-
+  // For iframe-based approach, we don't need DailyProvider
+  // But we still need daily instance for chat and participants
   return (
-    <DailyProvider callObject={daily}>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
-        <div className="lg:col-span-2">
-          <VideoCall
-            roomUrl={roomUrl}
-            token={token}
-            userName={userName}
-            isInstructor={isInstructor}
-            onLeave={onLeave}
-          />
-        </div>
-        <div className="space-y-4">
-          <ParticipantList isInstructor={isInstructor} />
-          <ChatPanel userName={userName} />
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
+      <div className="lg:col-span-2">
+        <VideoCall
+          roomUrl={roomUrl}
+          token={token}
+          userName={userName}
+          isInstructor={isInstructor}
+          onLeave={onLeave}
+        />
       </div>
-    </DailyProvider>
+      <div className="space-y-4">
+        {daily ? (
+          <DailyProvider callObject={daily}>
+            <ParticipantList isInstructor={isInstructor} />
+            <ChatPanel userName={userName} />
+          </DailyProvider>
+        ) : (
+          <>
+            <Card className="h-full">
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-500">Loading...</p>
+              </CardContent>
+            </Card>
+            <Card className="h-full">
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-500">Loading...</p>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
