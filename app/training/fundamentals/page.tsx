@@ -411,6 +411,12 @@ export default function FundamentalsTrainingPortal() {
   const [isUploadingInstructorFolder, setIsUploadingInstructorFolder] = useState(false)
   const [instructorFolderFiles, setInstructorFolderFiles] = useState<any[]>([])
   const [isLoadingInstructorFolderFiles, setIsLoadingInstructorFolderFiles] = useState(false)
+  // Instructor folder file deletion state
+  const [isInstructorFileDeleteDialogOpen, setIsInstructorFileDeleteDialogOpen] = useState(false)
+  const [instructorFilePendingDelete, setInstructorFilePendingDelete] = useState<any | null>(null)
+  const [instructorFileDeleteConfirmText, setInstructorFileDeleteConfirmText] = useState('')
+  const [instructorFileDeleteError, setInstructorFileDeleteError] = useState<string | null>(null)
+  const [isDeletingInstructorFile, setIsDeletingInstructorFile] = useState(false)
   // Zoom session state
   const [zoomSessions, setZoomSessions] = useState<ZoomSession[]>([])
   const [isLoadingZoomSessions, setIsLoadingZoomSessions] = useState<boolean>(false)
@@ -1472,6 +1478,35 @@ export default function FundamentalsTrainingPortal() {
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete the video.')
     } finally {
       setIsDeletingVideo(false)
+    }
+  }
+
+  const handleDeleteInstructorFile = async () => {
+    if (!instructorFilePendingDelete || !currentUser?.email) return
+    setInstructorFileDeleteError(null)
+    setIsDeletingInstructorFile(true)
+    try {
+      const response = await fetch(`/api/file-uploads?id=${instructorFilePendingDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        }
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result?.error || 'Failed to delete the file.')
+      }
+      setIsInstructorFileDeleteDialogOpen(false)
+      setInstructorFilePendingDelete(null)
+      setInstructorFileDeleteConfirmText('')
+      await fetchInstructorFolderFiles()
+      setInstructorFolderSuccess('File deleted successfully.')
+    } catch (error) {
+      console.error('Failed to delete instructor folder file:', error)
+      setInstructorFileDeleteError(error instanceof Error ? error.message : 'Failed to delete the file.')
+    } finally {
+      setIsDeletingInstructorFile(false)
     }
   }
 
@@ -3158,6 +3193,19 @@ export default function FundamentalsTrainingPortal() {
                                         <Download className="h-4 w-4" />
                                       </Button>
                                     )}
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setInstructorFilePendingDelete(file)
+                                        setIsInstructorFileDeleteDialogOpen(true)
+                                        setInstructorFileDeleteConfirmText('')
+                                        setInstructorFileDeleteError(null)
+                                      }}
+                                      className="text-red-600 border-red-200 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                 </div>
                               )
@@ -4301,6 +4349,72 @@ export default function FundamentalsTrainingPortal() {
               onClick={handleDeleteVideo}
             >
               {isDeletingVideo ? 'Deleting…' : 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isInstructorFileDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsInstructorFileDeleteDialogOpen(open)
+          if (!open) {
+            setInstructorFilePendingDelete(null)
+            setInstructorFileDeleteConfirmText('')
+            setInstructorFileDeleteError(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Instructor Folder File</DialogTitle>
+            <DialogDescription>
+              {instructorFilePendingDelete
+                ? `This will permanently remove "${instructorFilePendingDelete.fileName}" from the instructor folder.`
+                : 'This will permanently remove the selected file from the instructor folder.'}
+            </DialogDescription>
+          </DialogHeader>
+          {instructorFilePendingDelete && (
+            <div className="space-y-3 text-sm text-gray-700">
+              <p>
+                Type <span className="font-semibold text-gray-900">"{instructorFilePendingDelete.fileName}"</span> to confirm deletion.
+              </p>
+              <Input
+                value={instructorFileDeleteConfirmText}
+                onChange={(event) => setInstructorFileDeleteConfirmText(event.target.value)}
+                placeholder={instructorFilePendingDelete.fileName}
+              />
+              {instructorFileDeleteError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {instructorFileDeleteError}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsInstructorFileDeleteDialogOpen(false)
+                setInstructorFilePendingDelete(null)
+                setInstructorFileDeleteConfirmText('')
+                setInstructorFileDeleteError(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !instructorFilePendingDelete ||
+                instructorFileDeleteConfirmText.trim() !== instructorFilePendingDelete.fileName ||
+                isDeletingInstructorFile
+              }
+              onClick={handleDeleteInstructorFile}
+            >
+              {isDeletingInstructorFile ? 'Deleting…' : 'Delete'}
             </Button>
           </div>
         </DialogContent>
