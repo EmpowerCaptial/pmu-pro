@@ -2964,6 +2964,58 @@ export default function FundamentalsTrainingPortal() {
                           </div>
                         </div>
                       </div>
+
+                      {/* List of uploaded lecture videos */}
+                      {lectureVideos.length > 0 && (
+                        <div className="mt-6 rounded-lg border border-purple-200 bg-white p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-purple-900">Uploaded Lecture Videos</h3>
+                            <Badge variant="outline" className="text-xs">{lectureVideos.length} video{lectureVideos.length !== 1 ? 's' : ''}</Badge>
+                          </div>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {lectureVideos.map(video => (
+                              <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 border border-purple-200 rounded">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <Video className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                                    <p className="text-sm font-medium text-purple-900 truncate">{video.title}</p>
+                                    {video.videoType === 'url' && (
+                                      <Badge variant="outline" className="text-xs">URL</Badge>
+                                    )}
+                                  </div>
+                                  {video.description && (
+                                    <p className="text-xs text-gray-600 mt-1 line-clamp-1">{video.description}</p>
+                                  )}
+                                  <div className="flex flex-wrap gap-2 mt-1 text-xs text-gray-500">
+                                    {video.duration && <span>Duration: {video.duration}</span>}
+                                    {video.fileSize && video.videoType !== 'url' && <span>Size: {formatFileSize(video.fileSize)}</span>}
+                                    {video.uploadedAt && <span>Uploaded: {formatDateTime(video.uploadedAt)}</span>}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 ml-3">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openVideoPlayer(video)}
+                                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openDeleteDialog(video)}
+                                    className="text-red-600 border-red-200 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
