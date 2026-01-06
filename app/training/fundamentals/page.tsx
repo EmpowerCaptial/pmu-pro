@@ -3785,7 +3785,7 @@ export default function FundamentalsTrainingPortal() {
                             <TabsTrigger
                               key={week.id}
                               value={week.id}
-                              className="whitespace-nowrap"
+                              className="whitespace-nowrap data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-purple-400 transition-all duration-200 hover:bg-purple-200/50"
                             >
                               Week {week.order}
                             </TabsTrigger>
