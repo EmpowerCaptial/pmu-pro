@@ -4125,7 +4125,7 @@ export default function FundamentalsTrainingPortal() {
               Close
             </Button>
             <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Link href="mailto:instructor@pmupro.com?subject=Training%20Assignment%20Submission">
+              <Link href="mailto:Instructor@universalbeautystudio.com?subject=Training%20Assignment%20Submission">
                 <Upload className="h-4 w-4 mr-2" />
                 Email Instructor
               </Link>
