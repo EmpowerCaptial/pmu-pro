@@ -40,6 +40,7 @@ import {
   Trash2
 } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
+import { DiscussionBoard } from '@/components/training/discussion-board'
 
 interface SMPModule {
   id: string
