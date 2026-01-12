@@ -8,27 +8,27 @@ datasource db {
 }
 
 model User {
-  id                     String                @id @default(cuid())
+  id                     String                    @id @default(cuid())
   name                   String
-  email                  String                @unique
+  email                  String                    @unique
   password               String
   businessName           String
   phone                  String?
   licenseNumber          String
   licenseState           String
   yearsExperience        String?
-  selectedPlan           String                @default("pro")
+  selectedPlan           String                    @default("pro")
   licenseFile            String?
   insuranceFile          String?
-  hasActiveSubscription  Boolean               @default(false)
-  isLicenseVerified      Boolean               @default(false)
-  role                   String                @default("artist")
-  stripeId               String?               @unique
+  hasActiveSubscription  Boolean                   @default(false)
+  isLicenseVerified      Boolean                   @default(false)
+  role                   String                    @default("artist")
+  stripeId               String?                   @unique
   stripeCustomerId       String?
   stripeSubscriptionId   String?
-  subscriptionStatus     String                @default("inactive")
-  createdAt              DateTime              @default(now())
-  updatedAt              DateTime              @updatedAt
+  subscriptionStatus     String                    @default("inactive")
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
   address                String?
   avatar                 String?
   bio                    String?
@@ -41,7 +41,7 @@ model User {
   website                String?
   venmoUsername          String?
   cashAppUsername        String?
-  stripeConnectAccountId String?               @unique
+  stripeConnectAccountId String?                   @unique
   boothRentAmount        Float?
   commissionRate         Float?
   employmentType         String?
@@ -68,18 +68,53 @@ model User {
   products               Product[]
   reviewLinks            ReviewLink[]
   reviews                Review[]
-  assignedServices       ServiceAssignment[]   @relation("AssignedByUser")
-  serviceAssignments     ServiceAssignment[]   @relation("UserServiceAssignments")
+  assignedServices       ServiceAssignment[]       @relation("AssignedByUser")
+  serviceAssignments     ServiceAssignment[]       @relation("UserServiceAssignments")
   services               Service[]
   supportTickets         SupportTicket[]
-  receivedMessages       TeamMessage[]         @relation("ReceivedMessages")
-  sentMessages           TeamMessage[]         @relation("SentMessages")
+  receivedMessages       TeamMessage[]             @relation("ReceivedMessages")
+  sentMessages           TeamMessage[]             @relation("SentMessages")
   timeBlocks             TimeBlock[]
   timeTrackingSessions   TimeTrackingSession[]
   roomBookings           RoomBooking[]
   trainingAssignments    TrainingAssignment[]
+  trainingDiscussions    TrainingDiscussion[]
+  trainingReplies        TrainingDiscussionReply[]
 
   @@map("users")
+}
+
+model TrainingDiscussion {
+  id        String                    @id @default(cuid())
+  programId String // 'fundamentals' or 'smp'
+  title     String
+  content   String
+  userId    String
+  user      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   TrainingDiscussionReply[]
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+
+  @@index([programId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("training_discussions")
+}
+
+model TrainingDiscussionReply {
+  id           String             @id @default(cuid())
+  discussionId String
+  discussion   TrainingDiscussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  content      String
+  userId       String
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([discussionId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("training_discussion_replies")
 }
 
 model Client {

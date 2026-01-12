@@ -680,6 +680,9 @@ export default function SMPTrainingPortal() {
               </Card>
             </div>
 
+            {/* Discussion Board */}
+            <DiscussionBoard programId="smp" />
+
             {/* Resources */}
             <Card className="border-slate-200">
               <CardHeader>

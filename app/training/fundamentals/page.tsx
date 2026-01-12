@@ -49,6 +49,7 @@ import {
 } from 'lucide-react'
 import { TRAINING_LESSON_PLANS } from '@/data/training-lesson-plan'
 import { LiveStreamViewer } from '@/components/live-streaming/live-stream-viewer'
+import { DiscussionBoard } from '@/components/training/discussion-board'
 
 interface Assignment {
   id: string
@@ -2134,6 +2135,9 @@ export default function FundamentalsTrainingPortal() {
                     </Tabs>
                   </CardContent>
                 </Card>
+
+                {/* Discussion Board */}
+                <DiscussionBoard programId="fundamentals" />
 
                 <Card className="border-gray-200 break-words">
                   <CardHeader className="break-words">
