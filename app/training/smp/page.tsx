@@ -56,14 +56,14 @@ const SMP_MODULES: SMPModule[] = [
     content: [
       'Welcome to MicroBarberTM Academy',
       'Congratulations on beginning your journey into the field of Scalp Micropigmentation (SMP)—a specialized, fast-growing solution in the world of hair loss. At Universal Beauty Studio Academy, we are committed to delivering education that is practical, thorough, and rooted in real-world experience, so you can confidently create natural, lasting results for your clients.',
-      'This workbook is your training guide and professional reference. Inside, you'll find:',
+      'This workbook is your training guide and professional reference. Inside, you\'ll find:',
       '• The science of skin and hair, including anatomy, pigment behaviour, and hair loss conditions.',
       '• Step-by-step SMP techniques: mapping, needle selection, depth control, layering, and blending.',
       '• Guidance on hairline design and density planning for natural, customized results.',
       '• Client protocols: consultations, contraindications, pain management, aftercare, and healing.',
       '• Essential business foundations: pricing, consent protocols, marketing strategies, and systems for growth.',
       'Use this resource both in class for structured learning and afterwards as a reference tool as you begin working with clients.',
-      'We're proud to guide you through this certification and excited to see how you'll use these skills to build a successful SMP career.'
+      'We\'re proud to guide you through this certification and excited to see how you\'ll use these skills to build a successful SMP career.'
     ]
   },
   {
@@ -80,7 +80,7 @@ const SMP_MODULES: SMPModule[] = [
       '• Thinning or diffuse hair',
       '• Scarring from injury or transplant',
       '• Desire for a sharper or more youthful hairline',
-      'By the end of this course, you'll understand not only how to perform SMP, but also how to tailor it to each client's needs — giving them confidence and a renewed sense of self.'
+      'By the end of this course, you\'ll understand not only how to perform SMP, but also how to tailor it to each client\'s needs — giving them confidence and a renewed sense of self.'
     ]
   },
   {
@@ -228,7 +228,7 @@ export default function SMPTrainingPortal() {
                 Scalp Micropigmentation (SMP) Certification
               </h1>
               <p className="text-lg text-slate-100 leading-relaxed mb-4">
-                Welcome in. This is a step-by-step SMP system built for precision, restraint, and repeatable results. Follow this order and you'll progress fast.
+                Welcome in. This is a step-by-step SMP system built for precision, restraint, and repeatable results. Follow this order and you\'ll progress fast.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Badge className="bg-white/20 text-white">40 CPD Hours</Badge>
