@@ -136,7 +136,7 @@ const STEP_BY_STEP_PATH = [
     title: 'Download the Student Workbooks',
     description: 'Use it while you watch',
     instructions: [
-      'Use it while you watch. Don't just watch videos — do the reps.'
+      "Use it while you watch. Don't just watch videos — do the reps."
     ]
   },
   {
