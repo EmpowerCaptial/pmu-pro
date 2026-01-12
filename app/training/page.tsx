@@ -56,6 +56,17 @@ const TRAINING_TRACKS: TrainingTrack[] = [
     description: 'Structured onboarding curriculum that guides new apprentices through core PMU theory, sanitation standards, and supervised practice requirements.'
   },
   {
+    id: 'scalp-micropigmentation',
+    title: 'Scalp Micropigmentation (SMP) Certification',
+    level: 'Advanced',
+    audience: ['apprentice', 'staff'],
+    duration: 'Self-paced',
+    competencies: ['SMP Techniques', 'Hairline Design', 'Depth Control', 'Client Protocols', 'Business Foundations'],
+    cpdHours: 40,
+    link: '/training/smp',
+    description: 'Step-by-step SMP system built for precision, restraint, and repeatable results. Learn hairline design, density planning, and professional SMP application techniques.'
+  },
+  {
     id: 'advanced-brows',
     title: 'Advanced Brows Practicum',
     level: 'Level 2',
