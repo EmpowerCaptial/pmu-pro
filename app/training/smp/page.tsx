@@ -90,7 +90,7 @@ const SMP_MODULES: SMPModule[] = [
     order: 3,
     content: [
       'This Foundations Certification in Scalp Micropigmentation (SMP) blends theory, hands-on practice, and business training to give you the skills, confidence, and systems to launch your SMP career.',
-      'What You'll Learn:',
+      'What You\'ll Learn:',
       '• Core Theory: Skin anatomy, hair biology, colour theory, pigment behaviour.',
       '• Techniques: Machine setup, needle choices, depth, angle, spacing, layering.',
       '• Design Skills: Hairline types, density planning, blending, scar camouflage.',
