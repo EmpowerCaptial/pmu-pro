@@ -111,8 +111,7 @@ export async function POST(request: NextRequest) {
             email: true,
             avatar: true
           }
-        },
-        replies: []
+        }
       }
     })
 
