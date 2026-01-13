@@ -867,7 +867,7 @@ export default function SMPTrainingPortal() {
             <Card className="border-slate-200">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold text-gray-900">Course Modules</CardTitle>
-                <CardDescription>Work through each module in order</CardDescription>
+                <CardDescription>Work through each module in order - click to view details</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -889,7 +889,27 @@ export default function SMPTrainingPortal() {
                           )}
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
-                        <p className="text-sm text-gray-600">{module.description}</p>
+                        <p className="text-sm text-gray-600 mb-2">{module.description}</p>
+                        {module.subModules && module.subModules.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs font-medium text-gray-700 mb-1">
+                              {module.subModules.length} sub-module{module.subModules.length !== 1 ? 's' : ''}:
+                            </p>
+                            <ul className="text-xs text-gray-600 space-y-0.5">
+                              {module.subModules.slice(0, 3).map((sub) => (
+                                <li key={sub.id} className="flex items-center gap-1">
+                                  <span className="text-slate-500">•</span>
+                                  <span className="truncate">{sub.title}</span>
+                                </li>
+                              ))}
+                              {module.subModules.length > 3 && (
+                                <li className="text-slate-500 italic">
+                                  +{module.subModules.length - 3} more
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -899,7 +919,13 @@ export default function SMPTrainingPortal() {
                 {currentModule && (
                   <Card className="mt-6 border-slate-200">
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold text-gray-900">{currentModule.title}</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg font-semibold text-gray-900">{currentModule.title}</CardTitle>
+                          <CardDescription className="mt-1">{currentModule.description}</CardDescription>
+                        </div>
+                        <Badge className="bg-slate-600 text-white">Module {currentModule.order}</Badge>
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {currentModule.content.map((paragraph, idx) => (
@@ -907,6 +933,29 @@ export default function SMPTrainingPortal() {
                           {paragraph}
                         </p>
                       ))}
+                      
+                      {currentModule.subModules && currentModule.subModules.length > 0 && (
+                        <div className="mt-6 pt-6 border-t border-slate-200">
+                          <h4 className="font-semibold text-gray-900 mb-3">Sub-Modules in this Section:</h4>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {currentModule.subModules.map((subModule) => (
+                              <Card key={subModule.id} className="border-slate-200 bg-slate-50">
+                                <CardContent className="p-3">
+                                  <div className="flex items-start gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                      <h5 className="font-medium text-sm text-gray-900">{subModule.title}</h5>
+                                      {subModule.description && (
+                                        <p className="text-xs text-gray-600 mt-1">{subModule.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
