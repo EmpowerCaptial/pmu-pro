@@ -889,25 +889,12 @@ export default function SMPTrainingPortal() {
                           )}
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{module.description}</p>
+                        <p className="text-sm text-gray-600">{module.description}</p>
                         {module.subModules && module.subModules.length > 0 && (
-                          <div className="mt-2">
-                            <p className="text-xs font-medium text-gray-700 mb-1">
-                              {module.subModules.length} sub-module{module.subModules.length !== 1 ? 's' : ''}:
+                          <div className="mt-2 pt-2 border-t border-slate-200">
+                            <p className="text-xs text-slate-600">
+                              {module.subModules.length} lesson{module.subModules.length !== 1 ? 's' : ''} included
                             </p>
-                            <ul className="text-xs text-gray-600 space-y-0.5">
-                              {module.subModules.slice(0, 3).map((sub) => (
-                                <li key={sub.id} className="flex items-center gap-1">
-                                  <span className="text-slate-500">•</span>
-                                  <span className="truncate">{sub.title}</span>
-                                </li>
-                              ))}
-                              {module.subModules.length > 3 && (
-                                <li className="text-slate-500 italic">
-                                  +{module.subModules.length - 3} more
-                                </li>
-                              )}
-                            </ul>
                           </div>
                         )}
                       </CardContent>
