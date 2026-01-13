@@ -48,6 +48,11 @@ interface SMPModule {
   description: string
   content: string[]
   order: number
+  subModules?: Array<{
+    id: string
+    title: string
+    description?: string
+  }>
 }
 
 const SMP_MODULES: SMPModule[] = [
@@ -107,6 +112,344 @@ const SMP_MODULES: SMPModule[] = [
       '• Advise clients on expectations, aftercare, and maintenance.',
       '• Start and grow your SMP business with confidence.',
       'Outcome: Graduate with SMP Certification, hands-on practice, and a clear path to offering SMP as a professional service.'
+    ]
+  },
+  {
+    id: 'tools-equipment',
+    title: 'Tools & Equipment for SMP',
+    description: 'Your SMP Toolkit Explained',
+    order: 4,
+    subModules: [
+      { id: 'tools-overview', title: 'Tools & Equipment Overview' },
+      { id: 'tattoo-machine-safety', title: 'Tattoo Machine Safety' },
+      { id: 'practice-supplies', title: 'Practice Supplies & Equipment – Quick Reference' }
+    ],
+    content: [
+      'Your SMP toolkit consists of specialized equipment designed for precision and safety.',
+      'Essential tools include: SMP machine or pen, needles, pigments, practice skins, mannequins, and sanitization supplies.',
+      'Understanding your equipment is the foundation of professional SMP work.'
+    ]
+  },
+  {
+    id: 'faq',
+    title: 'Frequently Asked Questions (FAQ)',
+    description: 'Frequently Asked Questions Explained',
+    order: 5,
+    content: [
+      'Common questions about SMP pricing, sessions, healing, and maintenance are covered in this module.',
+      'Understanding client concerns and having clear answers builds trust and sets proper expectations.'
+    ]
+  },
+  {
+    id: 'business-smp',
+    title: 'The Business of SMP',
+    description: 'Pricing, marketing, and growing your SMP practice',
+    order: 6,
+    content: [
+      'Learn how to price your services, market your SMP practice, and build a sustainable business.',
+      'This module covers client consultations, consent protocols, and systems for growth.'
+    ]
+  },
+  {
+    id: 'trichology',
+    title: 'Trichology: The Science of Hair Loss',
+    description: 'Introduction to Trichology',
+    order: 7,
+    subModules: [
+      { id: 'trichology-intro', title: 'Introduction to Trichology' },
+      { id: 'hair-loss-anatomy', title: 'Hair Loss & Skin Anatomy Explained' }
+    ],
+    content: [
+      'Trichology is the study of hair and scalp health. Understanding hair loss patterns, skin anatomy, and the science behind hair growth is essential for creating realistic SMP results.',
+      'This module covers the biological foundations that inform your SMP technique.'
+    ]
+  },
+  {
+    id: 'hairlines-part1',
+    title: 'Hairlines Part 1: Shapes & Fundamentals',
+    description: 'Introduction to Hairlines',
+    order: 8,
+    subModules: [
+      { id: 'hairline-intro', title: 'Introduction to Hairlines' },
+      { id: 'hairline-shapes', title: 'Hairline Shapes & Design Basics' },
+      { id: 'straight-hairline-paper', title: 'Drawing a Straight Hairline on Paper' },
+      { id: 'round-hairline-paper', title: 'Drawing a Round Hairline on Paper' },
+      { id: 'winged-hairline-paper', title: 'Drawing a Winged Hairline on Paper' }
+    ],
+    content: [
+      'Hairline design is where artistry meets technique. Learn the three fundamental shapes: Straight, Round, and Winged.',
+      'Start with paper exercises to train your eye and develop muscle memory before moving to practice skins.'
+    ]
+  },
+  {
+    id: 'hairlines-part2',
+    title: 'Hairlines Part 2: Mannequin Practice',
+    description: 'Introduction to Hairlines Level 2',
+    order: 9,
+    subModules: [
+      { id: 'hairline-level2-intro', title: 'Introduction to Hairlines Level 2' },
+      { id: 'straight-hairline-mannequin', title: 'Drawing a Straight Hairline on a Mannequin' },
+      { id: 'round-hairline-mannequin', title: 'Drawing a Round Hairline on a Mannequin' },
+      { id: 'winged-hairline-mannequin', title: 'Drawing a Winged Hairline on a Mannequin' }
+    ],
+    content: [
+      'Progress from paper to mannequin work. Practice creating hairlines on a 3D surface to develop spatial awareness and technique.',
+      'This builds the foundation for working on real clients.'
+    ]
+  },
+  {
+    id: 'female-hairlines',
+    title: 'Designing Female Hairlines',
+    description: 'Introduction to Female Hairlines',
+    order: 10,
+    subModules: [
+      { id: 'female-hairline-intro', title: 'Introduction to Female Hairlines' },
+      { id: 'female-hairline-principles', title: 'Female Hairline Shapes & Design Principles' }
+    ],
+    content: [
+      'Female hairlines require different techniques than male hairlines. Learn the softer, more rounded approach needed for natural feminine results.',
+      'Key differences include higher placement, softer diffusion, and rounded temple transitions.'
+    ]
+  },
+  {
+    id: 'layering-sessions',
+    title: 'Layering & Sessions',
+    description: 'Introduction to Sessions & Layering',
+    order: 11,
+    subModules: [
+      { id: 'sessions-intro', title: 'Introduction to Sessions & Layering' },
+      { id: 'smp-builds-sessions', title: 'How SMP Builds Across Sessions' },
+      { id: 'paper-exercise-1', title: 'Paper Exercise 1: Foundation Layer' },
+      { id: 'paper-exercise-2', title: 'Paper Exercise 2: Layer Two Development' },
+      { id: 'paper-exercise-3', title: 'Paper Exercise 3: Final Layer & Blending' }
+    ],
+    content: [
+      'SMP is built over multiple sessions. Learn the 3-layer technique: Foundation, Density, and Refinement.',
+      'Each session builds upon the previous one, allowing for healing, adjustment, and natural-looking results.'
+    ]
+  },
+  {
+    id: 'follicle-patterns',
+    title: 'Understanding Natural Follicle Patterns',
+    description: 'Follicle Flow, Growth Patterns & SMP Design',
+    order: 12,
+    subModules: [
+      { id: 'follicle-patterns-intro', title: 'Follicle Flow, Growth Patterns & SMP Design' },
+      { id: 'follicle-patterns-guide', title: 'How Follicle Patterns Guide Your SMP Work' }
+    ],
+    content: [
+      'Every client has a unique follicle pattern. Learn to observe and replicate fine hair, random/diffuse patterns, and coarse/afro textures.',
+      'Matching the natural follicle pattern ensures realistic, natural-looking results.'
+    ]
+  },
+  {
+    id: 'diffusion',
+    title: 'Diffusion: Softness, Blending & Transitions',
+    description: 'Introduction to Diffusion',
+    order: 13,
+    subModules: [
+      { id: 'diffusion-intro', title: 'Introduction to Diffusion' },
+      { id: 'diffusion-techniques', title: 'Diffusion Techniques: Blending & Feathering' },
+      { id: 'diffusion-exercise-1', title: 'Exercise 1: Pigment Gradient' },
+      { id: 'diffusion-exercise-2', title: 'Exercise 2: Density Gradient (Dense → Sparse)' },
+      { id: 'diffusion-exercise-3', title: 'Exercise 3: Needle Size Gradient' },
+      { id: 'diffusion-exercise-4', title: 'Exercise 4: Combination Blend Technique' }
+    ],
+    content: [
+      'Diffusion creates soft, natural transitions at hairlines and blend areas. Master three methods: Pigment Shade, Density, and Needle Gauge.',
+      'Proper diffusion makes SMP look natural and allows clients to maintain their style when shaving.'
+    ]
+  },
+  {
+    id: 'hairlines-part3',
+    title: 'Hairlines Part 3: Diffusion & Soft Transitions',
+    description: 'Introduction: Diffusion for Hairlines',
+    order: 14,
+    subModules: [
+      { id: 'hairline-diffusion-intro', title: 'Introduction: Diffusion for Hairlines' },
+      { id: 'zero-diffusion-straight', title: 'Zero Diffusion Practice — Straight Hairline' },
+      { id: 'medium-diffusion-round', title: 'Medium Diffusion Practice — Round Hairline' },
+      { id: 'high-diffusion-winged', title: 'High Diffusion Practice — Winged Hairline' }
+    ],
+    content: [
+      'Apply diffusion techniques to hairlines. Practice Zero, Medium, and High diffusion levels for different hairline styles.',
+      'This creates the soft, feathered edges that make SMP look natural.'
+    ]
+  },
+  {
+    id: 'smp-needles',
+    title: 'Understanding SMP Needles',
+    description: 'Introduction to SMP Needles',
+    order: 15,
+    subModules: [
+      { id: 'needles-intro', title: 'Introduction to SMP Needles' },
+      { id: 'needle-sizes', title: 'SMP Needle Sizes & When to Use Them' }
+    ],
+    content: [
+      'SMP needles are coded by diameter, count, and type (e.g., 0603RL). Understanding needle terminology is key for consistent results.',
+      'Learn which needle configurations work best for different follicle patterns and techniques.'
+    ]
+  },
+  {
+    id: 'pigment-depth',
+    title: 'Proper Pigment Depth',
+    description: 'Introduction to Depth',
+    order: 16,
+    subModules: [
+      { id: 'depth-intro', title: 'Introduction to Depth' },
+      { id: 'correct-depth', title: 'Correct Pigment Depth for SMP' },
+      { id: 'depth-control-drills', title: 'Depth Control Drills' }
+    ],
+    content: [
+      'Correct depth placement (upper dermis, ~1mm) is critical. Too deep causes blowouts; too shallow causes premature fading.',
+      'Master the "short, sharp jab" technique for clean, lasting impressions.'
+    ]
+  },
+  {
+    id: 'skin-pigment',
+    title: 'Skin Types & Pigment Selection',
+    description: 'Introduction to Skin & Pigment',
+    order: 17,
+    subModules: [
+      { id: 'skin-pigment-intro', title: 'Introduction to Skin & Pigment' },
+      { id: 'choosing-pigment', title: 'Choosing the Right Pigment for Each Client' },
+      { id: 'pigment-cheat-sheet', title: 'Pigment Selection Cheat Sheet' }
+    ],
+    content: [
+      'Understanding the Fitzpatrick scale helps you select the right pigment shade for each client\'s skin type.',
+      'Learn to match pigment to skin tone, existing hair color, and desired density for natural results.'
+    ]
+  },
+  {
+    id: 'scalp-prep',
+    title: 'Preparing the Scalp for SMP',
+    description: 'Introduction to Scalp Preparation',
+    order: 18,
+    subModules: [
+      { id: 'scalp-prep-intro', title: 'Introduction to Scalp Preparation' },
+      { id: 'how-to-prep', title: 'How to Prep the Scalp for SMP' }
+    ],
+    content: [
+      'Proper scalp preparation ensures clean, safe, and predictable results. Learn the step-by-step prep process for buzzed and density clients.',
+      'Includes marking guides, shaving, exfoliation, moisturization, and sanitization protocols.'
+    ]
+  },
+  {
+    id: 'sessions-level2',
+    title: 'Sessions Level 2: Machine Work on Practice Skin',
+    description: 'Introduction to Sessions Level 2',
+    order: 19,
+    subModules: [
+      { id: 'sessions-level2-intro', title: 'Introduction to Sessions Level 2' },
+      { id: 'session1-practice-skin', title: 'Session 1: Foundation Layer on Fake Skin' },
+      { id: 'session2-practice-skin', title: 'Session 2: Building Layer Two on Fake Skin' },
+      { id: 'session3-practice-skin', title: 'Session 3: Final Layer & Blend on Fake Skin' }
+    ],
+    content: [
+      'Progress to machine work on practice skins. Apply the 3-session technique with real equipment.',
+      'Practice skins allow you to build muscle memory and technique before working on mannequins or clients.'
+    ]
+  },
+  {
+    id: 'diffusion-level2',
+    title: 'Diffusion Level 2: Practice Skin',
+    description: 'Intro to creating soft, natural diffusion',
+    order: 20,
+    subModules: [
+      { id: 'diffusion-level2-intro', title: 'Intro to creating soft, natural diffusion' },
+      { id: 'zero-diffusion-practice', title: 'Exercise 1: Zero Diffusion – Straight Hairline' },
+      { id: 'medium-diffusion-practice', title: 'Exercise 2: Medium Diffusion – Round Hairline' },
+      { id: 'high-diffusion-practice', title: 'Exercise 3: High Diffusion – Winged Hairline' }
+    ],
+    content: [
+      'Practice diffusion techniques on practice skins. Apply what you learned in paper exercises to machine work.',
+      'Master the three diffusion levels for different hairline styles.'
+    ]
+  },
+  {
+    id: 'mannequin-straight',
+    title: 'Full Mannequin Total Look: Straight Hairline',
+    description: 'Introduction to the Straight Hairline Sessions',
+    order: 21,
+    subModules: [
+      { id: 'straight-intro', title: 'Introduction to the Straight Hairline Sessions' },
+      { id: 'straight-session1', title: 'Session 1: Straight Hairline – Foundation Layer' },
+      { id: 'straight-session2', title: 'Session 2: Second Layer & Density Build' },
+      { id: 'straight-session3', title: 'Session 3: Final Layer & Precision Blend' },
+      { id: 'straight-session4', title: 'Introducing Session 4: Randomized Diffuse Pattern' },
+      { id: 'straight-session4-detail', title: 'Session 4: Randomized Diffuse Follicle Pattern' }
+    ],
+    content: [
+      'Complete a full straight hairline treatment on a mannequin. This combines all techniques into a realistic outcome.',
+      'Practice the complete 3-4 session process from foundation to final refinement.'
+    ]
+  },
+  {
+    id: 'mannequin-round',
+    title: 'Full Mannequin Total Look: Round Hairline',
+    description: 'Introduction to the Round Hairline Sessions',
+    order: 22,
+    subModules: [
+      { id: 'round-intro', title: 'Introduction to the Round Hairline Sessions' },
+      { id: 'round-session1', title: 'Session 1: Round Hairline – Foundation Layer' },
+      { id: 'round-session2', title: 'Session 2: Second Layer & Medium Diffusion' },
+      { id: 'round-session3', title: 'Session 3: Refinement & Final Blend' },
+      { id: 'round-session4', title: 'Introducing Session 4: Randomized Diffuse Pattern' },
+      { id: 'round-session4-detail', title: 'Session 4: Randomized Diffuse Follicle Pattern' }
+    ],
+    content: [
+      'Complete a full round hairline treatment. Round hairlines require softer curves and medium diffusion.',
+      'Practice the complete treatment process for this popular hairline style.'
+    ]
+  },
+  {
+    id: 'mannequin-winged',
+    title: 'Full Mannequin Total Look: Winged Hairline',
+    description: 'Introduction to the Winged Hairline Sessions',
+    order: 23,
+    subModules: [
+      { id: 'winged-intro', title: 'Introduction to the Winged Hairline Sessions' },
+      { id: 'winged-session1', title: 'Session 1: Winged Hairline – Foundation Layer' },
+      { id: 'winged-session2', title: 'Session 2: Second Layer & High Diffusion' },
+      { id: 'winged-session3', title: 'Session 3: Refinement & Final Blend' },
+      { id: 'winged-session4', title: 'Introducing Session 4: Randomized Diffuse Pattern' },
+      { id: 'winged-session4-detail', title: 'Session 4: Randomized Diffuse Follicle Pattern' }
+    ],
+    content: [
+      'Complete a full winged hairline treatment. Winged hairlines feature receded temples and require high diffusion.',
+      'Master the angled, receded look that works well for mature clients.'
+    ]
+  },
+  {
+    id: 'mannequin-afro',
+    title: 'Full Mannequin Total Look: Afro Follicle Pattern',
+    description: 'Afro Hair Follicle Pattern Overview',
+    order: 24,
+    subModules: [
+      { id: 'afro-overview', title: 'Afro Hair Follicle Pattern Overview' },
+      { id: 'afro-session1', title: 'Session 1: Base Clusters for Afro Texture' },
+      { id: 'afro-session2', title: 'Session 2: Expanding the Afro Clusters' },
+      { id: 'afro-session3', title: 'Session 3: Final Cluster Build & Refinement' }
+    ],
+    content: [
+      'Afro-textured hair requires a different approach. Learn to create larger gaps and clustered formations using triple-tap techniques.',
+      'This pattern mimics the natural look of coarse, coily hair when shaved.'
+    ]
+  },
+  {
+    id: 'density-smp',
+    title: 'Density SMP (Under Longer Hair)',
+    description: 'Understanding Density SMP',
+    order: 25,
+    subModules: [
+      { id: 'density-intro', title: 'Understanding Density SMP' },
+      { id: 'density-session1', title: 'Session 1 — Foundation Layer' },
+      { id: 'density-session2', title: 'Session 2 — Build & Reinforce Density' },
+      { id: 'density-session3', title: 'Session 3 — Refine & Perfect the Blend' }
+    ],
+    content: [
+      'Density SMP adds fullness to thinning hair without requiring a shaved look. Learn to blend SMP seamlessly with existing hair.',
+      'This technique requires careful part management and blending to create a natural, undetectable result.'
     ]
   }
 ]
