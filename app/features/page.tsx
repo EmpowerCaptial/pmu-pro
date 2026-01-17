@@ -406,7 +406,7 @@ const getFilteredFeatures = (userPlan: string, userRole?: string) => {
     }
 
     if (feature.id === 'crm') {
-      return normalizedRole === 'owner' || normalizedRole === 'staff'
+      return normalizedRole === 'owner' || normalizedRole === 'staff' || normalizedRole === 'manager' || normalizedRole === 'director'
     }
     
     // Team feature is only available for Studio plans
