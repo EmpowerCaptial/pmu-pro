@@ -24,6 +24,8 @@ interface EncodedMetadata {
   blobPathname?: string
   originalFilename?: string
   uploaderName?: string
+  category?: string
+  coverImageUrl?: string
 }
 
 function encodeMetadata(metadata: EncodedMetadata) {
