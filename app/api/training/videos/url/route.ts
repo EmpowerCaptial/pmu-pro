@@ -11,6 +11,8 @@ interface EncodedMetadata {
   durationLabel?: string
   videoUrl?: string
   uploaderName?: string
+  category?: string
+  coverImageUrl?: string
 }
 
 function encodeMetadata(metadata: EncodedMetadata) {
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, durationLabel, url } = body
+    const { title, description, durationLabel, url, category, coverImageUrl } = body
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -65,7 +67,9 @@ export async function POST(request: NextRequest) {
       description: description || '',
       durationLabel: durationLabel || '',
       videoUrl: url.trim(),
-      uploaderName: user.name || user.email
+      uploaderName: user.name || user.email,
+      category: category || '',
+      coverImageUrl: coverImageUrl || ''
     })
 
     await prisma.fileUpload.create({

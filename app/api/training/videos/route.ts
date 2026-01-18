@@ -104,7 +104,9 @@ export async function GET() {
         mimeType: upload.mimeType,
         uploadedAt: upload.createdAt,
         uploadedBy: metadata.uploaderName || upload.user?.name || upload.user?.email || 'Unknown',
-        videoType: isUrlVideo ? 'url' : 'file'
+        videoType: isUrlVideo ? 'url' : 'file',
+        category: metadata.category || '',
+        coverImageUrl: metadata.coverImageUrl || ''
       }
     })
 

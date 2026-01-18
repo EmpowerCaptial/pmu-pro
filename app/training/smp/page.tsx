@@ -13,6 +13,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -606,6 +613,8 @@ interface SMPVideo {
   videoType: 'file' | 'url'
   uploadedAt?: string
   uploadedBy?: string
+  category?: string
+  coverImageUrl?: string
 }
 
 export default function SMPTrainingPortal() {
@@ -633,7 +642,12 @@ export default function SMPTrainingPortal() {
   const [videoTitle, setVideoTitle] = useState('')
   const [videoDescription, setVideoDescription] = useState('')
   const [videoDuration, setVideoDuration] = useState('')
+  const [videoCategory, setVideoCategory] = useState<SMPCategory | ''>('')
+  const [videoCoverImage, setVideoCoverImage] = useState<File | null>(null)
+  const [videoCoverImageUrl, setVideoCoverImageUrl] = useState<string | null>(null)
+  const coverImageInputRef = useRef<HTMLInputElement>(null)
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
+  const [isUploadingCoverImage, setIsUploadingCoverImage] = useState(false)
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [smpVideos, setSmpVideos] = useState<SMPVideo[]>([])
@@ -772,6 +786,30 @@ export default function SMPTrainingPortal() {
     }
   }
 
+  // Cover Image Upload Handler
+  const handleCoverImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setVideoUploadError('Please select an image file for the cover.')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setVideoUploadError('Cover image must be less than 5 MB.')
+      return
+    }
+
+    setVideoCoverImage(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setVideoCoverImageUrl(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+    setVideoUploadError(null)
+  }
+
   // Video URL Upload Handler
   const handleVideoUrlSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -794,6 +832,11 @@ export default function SMPTrainingPortal() {
       return
     }
 
+    if (!videoCategory) {
+      setVideoUploadError('Please select a category for this video.')
+      return
+    }
+
     try {
       new URL(trimmedUrl)
     } catch {
@@ -804,6 +847,46 @@ export default function SMPTrainingPortal() {
     setIsUploadingVideo(true)
     setVideoUploadError(null)
     setVideoUploadSuccess(null)
+
+    let coverImageUrl: string | null = null
+
+    // Upload cover image if provided
+    if (videoCoverImage && currentUser.email) {
+      setIsUploadingCoverImage(true)
+      try {
+        const normalizedTitle = videoTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        const fileName = `video-cover-${normalizedTitle}-${Date.now()}.${videoCoverImage.name.split('.').pop()}`
+        const userIdentifier = currentUser.id || currentUser.email.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'user'
+        const pathname = `resource-library/${userIdentifier}/${fileName}`
+
+        const clientPayload = JSON.stringify({
+          title: `Cover: ${videoTitle}`,
+          category: 'training',
+          fileSize: videoCoverImage.size,
+          originalFilename: videoCoverImage.name
+        })
+
+        const blob = await upload(pathname, videoCoverImage, {
+          access: 'public',
+          contentType: videoCoverImage.type,
+          handleUploadUrl: '/api/resource-library',
+          headers: {
+            'x-user-email': currentUser.email
+          },
+          clientPayload
+        })
+
+        coverImageUrl = blob.url
+      } catch (error) {
+        console.error('Failed to upload cover image:', error)
+        setVideoUploadError('Failed to upload cover image. Please try again.')
+        setIsUploadingVideo(false)
+        setIsUploadingCoverImage(false)
+        return
+      } finally {
+        setIsUploadingCoverImage(false)
+      }
+    }
 
     try {
       const response = await fetch('/api/training/videos/url', {
@@ -816,7 +899,9 @@ export default function SMPTrainingPortal() {
           title: trimmedTitle + ' (SMP Training)',
           url: trimmedUrl,
           description: (videoDescription.trim() || 'SMP training video') + ' - SMP Training Course',
-          durationLabel: videoDuration.trim() || undefined
+          durationLabel: videoDuration.trim() || undefined,
+          category: videoCategory,
+          coverImageUrl: coverImageUrl || undefined
         })
       })
 
@@ -830,6 +915,12 @@ export default function SMPTrainingPortal() {
       setVideoTitle('')
       setVideoDescription('')
       setVideoDuration('')
+      setVideoCategory('')
+      setVideoCoverImage(null)
+      setVideoCoverImageUrl(null)
+      if (coverImageInputRef.current) {
+        coverImageInputRef.current.value = ''
+      }
       await fetchSMPVideos()
     } catch (error) {
       console.error('Failed to save video URL:', error)
@@ -1395,6 +1486,31 @@ export default function SMPTrainingPortal() {
                       />
                     </div>
                     <div>
+                      <Label htmlFor="video-category">Category *</Label>
+                      <Select
+                        value={videoCategory}
+                        onValueChange={(value: SMPCategory) => {
+                          setVideoCategory(value)
+                          setVideoUploadError(null)
+                        }}
+                        required
+                      >
+                        <SelectTrigger id="video-category">
+                          <SelectValue placeholder="Select a category for this video" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(CATEGORIES) as SMPCategory[]).map((categoryKey) => (
+                            <SelectItem key={categoryKey} value={categoryKey}>
+                              {CATEGORIES[categoryKey].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        This determines which module category the video will appear in for students
+                      </p>
+                    </div>
+                    <div>
                       <Label htmlFor="video-url">Video URL *</Label>
                       <Input
                         id="video-url"
@@ -1407,6 +1523,46 @@ export default function SMPTrainingPortal() {
                         }}
                         required
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="video-cover-image">Cover Image (optional)</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="video-cover-image"
+                          type="file"
+                          accept="image/*"
+                          ref={coverImageInputRef}
+                          onChange={handleCoverImageChange}
+                          className="cursor-pointer"
+                        />
+                        {videoCoverImageUrl && (
+                          <div className="relative w-full h-48 border border-slate-200 rounded-md overflow-hidden bg-slate-50">
+                            <img
+                              src={videoCoverImageUrl}
+                              alt="Cover preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="destructive"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                setVideoCoverImage(null)
+                                setVideoCoverImageUrl(null)
+                                if (coverImageInputRef.current) {
+                                  coverImageInputRef.current.value = ''
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          Upload a cover image for students to see (max 5 MB). Recommended size: 1280x720px
+                        </p>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="video-description">Description (optional)</Label>
@@ -1430,9 +1586,9 @@ export default function SMPTrainingPortal() {
                     <Button
                       type="submit"
                       className="w-full bg-slate-600 hover:bg-slate-700 text-white"
-                      disabled={isUploadingVideo || !videoTitle.trim() || !videoUrl.trim()}
+                      disabled={isUploadingVideo || isUploadingCoverImage || !videoTitle.trim() || !videoUrl.trim() || !videoCategory}
                     >
-                      {isUploadingVideo ? (
+                      {isUploadingVideo || isUploadingCoverImage ? (
                         <>
                           <Upload className="h-4 w-4 mr-2 animate-spin" />
                           Uploading...
