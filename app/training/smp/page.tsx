@@ -42,12 +42,21 @@ import {
 import { upload } from '@vercel/blob/client'
 import { DiscussionBoard } from '@/components/training/discussion-board'
 
+type SMPCategory = 
+  | 'hairline-design'
+  | 'smp-techniques'
+  | 'client-protocols'
+  | 'treatment-sessions'
+  | 'depth-needles'
+  | 'business-foundations'
+
 interface SMPModule {
   id: string
   title: string
   description: string
   content: string[]
   order: number
+  category: SMPCategory
   subModules?: Array<{
     id: string
     title: string
@@ -55,11 +64,39 @@ interface SMPModule {
   }>
 }
 
+const CATEGORIES: Record<SMPCategory, { label: string; description: string }> = {
+  'hairline-design': {
+    label: 'Hairline Design',
+    description: 'Learn to create natural, customized hairlines for any face shape. Master straight, round, and winged styles with proper diffusion.'
+  },
+  'smp-techniques': {
+    label: 'SMP Techniques',
+    description: 'Master needle selection, depth control, spacing, layering, and blending techniques for realistic results.'
+  },
+  'client-protocols': {
+    label: 'Client Protocols',
+    description: 'Learn consultations, contraindications, pain management, aftercare, and healing protocols.'
+  },
+  'treatment-sessions': {
+    label: 'Treatment Sessions',
+    description: 'Understand the 3-session approach: Foundation, Density, and Refinement for complete results.'
+  },
+  'depth-needles': {
+    label: 'Depth & Needles',
+    description: 'Learn proper depth placement (upper dermis), needle gauge selection, and how to avoid blowouts.'
+  },
+  'business-foundations': {
+    label: 'Business Foundations',
+    description: 'Pricing strategies, consent protocols, marketing, and systems for growing your SMP business.'
+  }
+}
+
 const SMP_MODULES: SMPModule[] = [
   {
     id: 'welcome',
     title: 'Welcome to MicroBarber™ Academy',
     description: 'Your step-by-step SMP system for precision, restraint, and repeatable results',
+    category: 'business-foundations',
     order: 1,
     content: [
       'Welcome to MicroBarberTM Academy',
@@ -78,6 +115,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'what-is-smp',
     title: 'What is SMP?',
     description: 'Understanding Scalp Micropigmentation',
+    category: 'business-foundations',
     order: 2,
     content: [
       'Scalp MicroPigmentation (SMP) is a non-surgical cosmetic tattoo procedure that replicates the appearance of natural hair follicles on the scalp. By carefully implanting pigment into the upper dermis, SMP creates the look of a short buzz cut, adds density to thinning hair, and camouflages scars or areas of hair loss.',
@@ -95,6 +133,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'course-overview',
     title: 'Course Overview',
     description: 'Foundations Certification in Scalp Micropigmentation',
+    category: 'business-foundations',
     order: 3,
     content: [
       'This Foundations Certification in Scalp Micropigmentation (SMP) blends theory, hands-on practice, and business training to give you the skills, confidence, and systems to launch your SMP career.',
@@ -118,6 +157,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'tools-equipment',
     title: 'Tools & Equipment for SMP',
     description: 'Your SMP Toolkit Explained',
+    category: 'client-protocols',
     order: 4,
     subModules: [
       { id: 'tools-overview', title: 'Tools & Equipment Overview' },
@@ -134,6 +174,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'faq',
     title: 'Frequently Asked Questions (FAQ)',
     description: 'Frequently Asked Questions Explained',
+    category: 'client-protocols',
     order: 5,
     content: [
       'Common questions about SMP pricing, sessions, healing, and maintenance are covered in this module.',
@@ -144,6 +185,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'business-smp',
     title: 'The Business of SMP',
     description: 'Pricing, marketing, and growing your SMP practice',
+    category: 'business-foundations',
     order: 6,
     content: [
       'Learn how to price your services, market your SMP practice, and build a sustainable business.',
@@ -154,6 +196,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'trichology',
     title: 'Trichology: The Science of Hair Loss',
     description: 'Introduction to Trichology',
+    category: 'smp-techniques',
     order: 7,
     subModules: [
       { id: 'trichology-intro', title: 'Introduction to Trichology' },
@@ -168,6 +211,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'hairlines-part1',
     title: 'Hairlines Part 1: Shapes & Fundamentals',
     description: 'Introduction to Hairlines',
+    category: 'hairline-design',
     order: 8,
     subModules: [
       { id: 'hairline-intro', title: 'Introduction to Hairlines' },
@@ -185,6 +229,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'hairlines-part2',
     title: 'Hairlines Part 2: Mannequin Practice',
     description: 'Introduction to Hairlines Level 2',
+    category: 'hairline-design',
     order: 9,
     subModules: [
       { id: 'hairline-level2-intro', title: 'Introduction to Hairlines Level 2' },
@@ -201,6 +246,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'female-hairlines',
     title: 'Designing Female Hairlines',
     description: 'Introduction to Female Hairlines',
+    category: 'hairline-design',
     order: 10,
     subModules: [
       { id: 'female-hairline-intro', title: 'Introduction to Female Hairlines' },
@@ -215,6 +261,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'layering-sessions',
     title: 'Layering & Sessions',
     description: 'Introduction to Sessions & Layering',
+    category: 'treatment-sessions',
     order: 11,
     subModules: [
       { id: 'sessions-intro', title: 'Introduction to Sessions & Layering' },
@@ -232,6 +279,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'follicle-patterns',
     title: 'Understanding Natural Follicle Patterns',
     description: 'Follicle Flow, Growth Patterns & SMP Design',
+    category: 'smp-techniques',
     order: 12,
     subModules: [
       { id: 'follicle-patterns-intro', title: 'Follicle Flow, Growth Patterns & SMP Design' },
@@ -246,6 +294,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'diffusion',
     title: 'Diffusion: Softness, Blending & Transitions',
     description: 'Introduction to Diffusion',
+    category: 'smp-techniques',
     order: 13,
     subModules: [
       { id: 'diffusion-intro', title: 'Introduction to Diffusion' },
@@ -264,6 +313,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'hairlines-part3',
     title: 'Hairlines Part 3: Diffusion & Soft Transitions',
     description: 'Introduction: Diffusion for Hairlines',
+    category: 'hairline-design',
     order: 14,
     subModules: [
       { id: 'hairline-diffusion-intro', title: 'Introduction: Diffusion for Hairlines' },
@@ -280,6 +330,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'smp-needles',
     title: 'Understanding SMP Needles',
     description: 'Introduction to SMP Needles',
+    category: 'depth-needles',
     order: 15,
     subModules: [
       { id: 'needles-intro', title: 'Introduction to SMP Needles' },
@@ -294,6 +345,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'pigment-depth',
     title: 'Proper Pigment Depth',
     description: 'Introduction to Depth',
+    category: 'depth-needles',
     order: 16,
     subModules: [
       { id: 'depth-intro', title: 'Introduction to Depth' },
@@ -309,6 +361,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'skin-pigment',
     title: 'Skin Types & Pigment Selection',
     description: 'Introduction to Skin & Pigment',
+    category: 'depth-needles',
     order: 17,
     subModules: [
       { id: 'skin-pigment-intro', title: 'Introduction to Skin & Pigment' },
@@ -324,6 +377,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'scalp-prep',
     title: 'Preparing the Scalp for SMP',
     description: 'Introduction to Scalp Preparation',
+    category: 'client-protocols',
     order: 18,
     subModules: [
       { id: 'scalp-prep-intro', title: 'Introduction to Scalp Preparation' },
@@ -338,6 +392,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'sessions-level2',
     title: 'Sessions Level 2: Machine Work on Practice Skin',
     description: 'Introduction to Sessions Level 2',
+    category: 'treatment-sessions',
     order: 19,
     subModules: [
       { id: 'sessions-level2-intro', title: 'Introduction to Sessions Level 2' },
@@ -354,6 +409,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'diffusion-level2',
     title: 'Diffusion Level 2: Practice Skin',
     description: 'Intro to creating soft, natural diffusion',
+    category: 'smp-techniques',
     order: 20,
     subModules: [
       { id: 'diffusion-level2-intro', title: 'Intro to creating soft, natural diffusion' },
@@ -370,6 +426,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'mannequin-straight',
     title: 'Full Mannequin Total Look: Straight Hairline',
     description: 'Introduction to the Straight Hairline Sessions',
+    category: 'treatment-sessions',
     order: 21,
     subModules: [
       { id: 'straight-intro', title: 'Introduction to the Straight Hairline Sessions' },
@@ -388,6 +445,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'mannequin-round',
     title: 'Full Mannequin Total Look: Round Hairline',
     description: 'Introduction to the Round Hairline Sessions',
+    category: 'treatment-sessions',
     order: 22,
     subModules: [
       { id: 'round-intro', title: 'Introduction to the Round Hairline Sessions' },
@@ -406,6 +464,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'mannequin-winged',
     title: 'Full Mannequin Total Look: Winged Hairline',
     description: 'Introduction to the Winged Hairline Sessions',
+    category: 'treatment-sessions',
     order: 23,
     subModules: [
       { id: 'winged-intro', title: 'Introduction to the Winged Hairline Sessions' },
@@ -424,6 +483,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'mannequin-afro',
     title: 'Full Mannequin Total Look: Afro Follicle Pattern',
     description: 'Afro Hair Follicle Pattern Overview',
+    category: 'treatment-sessions',
     order: 24,
     subModules: [
       { id: 'afro-overview', title: 'Afro Hair Follicle Pattern Overview' },
@@ -440,6 +500,7 @@ const SMP_MODULES: SMPModule[] = [
     id: 'density-smp',
     title: 'Density SMP (Under Longer Hair)',
     description: 'Understanding Density SMP',
+    category: 'treatment-sessions',
     order: 25,
     subModules: [
       { id: 'density-intro', title: 'Understanding Density SMP' },
@@ -551,6 +612,12 @@ export default function SMPTrainingPortal() {
   const { currentUser } = useDemoAuth()
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
   const [selectedModule, setSelectedModule] = useState<string>('welcome')
+  const [expandedCategory, setExpandedCategory] = useState<SMPCategory | null>(null)
+  
+  // Helper function to get modules by category
+  const getModulesByCategory = (category: SMPCategory) => {
+    return SMP_MODULES.filter(module => module.category === category).sort((a, b) => a.order - b.order)
+  }
   
   // PDF Upload State
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -863,91 +930,113 @@ export default function SMPTrainingPortal() {
               </CardContent>
             </Card>
 
-            {/* Course Modules */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900">Course Modules</CardTitle>
-                <CardDescription>Work through each module in order - click to view details</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {SMP_MODULES.map((module) => (
-                    <Card
-                      key={module.id}
-                      className={`cursor-pointer transition-all ${
-                        selectedModule === module.id
-                          ? 'border-slate-600 bg-slate-50 shadow-md'
-                          : 'border-slate-200 hover:border-slate-400'
-                      }`}
-                      onClick={() => setSelectedModule(module.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <Badge className="bg-slate-600 text-white">Module {module.order}</Badge>
-                          {selectedModule === module.id && (
-                            <CheckCircle2 className="h-5 w-5 text-slate-600" />
-                          )}
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
-                        <p className="text-sm text-gray-600">{module.description}</p>
-                        {module.subModules && module.subModules.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-slate-200">
-                            <p className="text-xs text-slate-600">
-                              {module.subModules.length} lesson{module.subModules.length !== 1 ? 's' : ''} included
-                            </p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Module Content */}
-                {currentModule && (
-                  <Card className="mt-6 border-slate-200">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg font-semibold text-gray-900">{currentModule.title}</CardTitle>
-                          <CardDescription className="mt-1">{currentModule.description}</CardDescription>
-                        </div>
-                        <Badge className="bg-slate-600 text-white">Module {currentModule.order}</Badge>
+            {/* Course Modules by Category */}
+            {(Object.keys(CATEGORIES) as SMPCategory[]).map((categoryKey) => {
+              const category = CATEGORIES[categoryKey]
+              const modules = getModulesByCategory(categoryKey)
+              const isExpanded = expandedCategory === categoryKey
+              
+              return (
+                <Card key={categoryKey} data-category={categoryKey} className="border-slate-200">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl font-semibold text-gray-900">{category.label}</CardTitle>
+                        <CardDescription>{category.description}</CardDescription>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {currentModule.content.map((paragraph, idx) => (
-                        <p key={idx} className="text-gray-700 leading-relaxed">
-                          {paragraph}
-                        </p>
-                      ))}
-                      
-                      {currentModule.subModules && currentModule.subModules.length > 0 && (
-                        <div className="mt-6 pt-6 border-t border-slate-200">
-                          <h4 className="font-semibold text-gray-900 mb-3">Sub-Modules in this Section:</h4>
-                          <div className="grid gap-3 md:grid-cols-2">
-                            {currentModule.subModules.map((subModule) => (
-                              <Card key={subModule.id} className="border-slate-200 bg-slate-50">
-                                <CardContent className="p-3">
-                                  <div className="flex items-start gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                      <h5 className="font-medium text-sm text-gray-900">{subModule.title}</h5>
-                                      {subModule.description && (
-                                        <p className="text-xs text-gray-600 mt-1">{subModule.description}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setExpandedCategory(isExpanded ? null : categoryKey)}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        {isExpanded ? 'Hide Modules' : `View Modules (${modules.length})`}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  {isExpanded && (
+                    <CardContent>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                        {modules.map((module) => (
+                          <Card
+                            key={module.id}
+                            className={`cursor-pointer transition-all ${
+                              selectedModule === module.id
+                                ? 'border-slate-600 bg-slate-50 shadow-md'
+                                : 'border-slate-200 hover:border-slate-400'
+                            }`}
+                            onClick={() => setSelectedModule(module.id)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <Badge className="bg-slate-600 text-white">Module {module.order}</Badge>
+                                {selectedModule === module.id && (
+                                  <CheckCircle2 className="h-5 w-5 text-slate-600" />
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
+                              <p className="text-sm text-gray-600">{module.description}</p>
+                              {module.subModules && module.subModules.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-slate-200">
+                                  <p className="text-xs text-slate-600">
+                                    {module.subModules.length} lesson{module.subModules.length !== 1 ? 's' : ''} included
+                                  </p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+
+                      {/* Module Content */}
+                      {selectedModule && modules.find(m => m.id === selectedModule) && currentModule && (
+                        <Card className="border-slate-200 bg-slate-50">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-lg font-semibold text-gray-900">{currentModule.title}</CardTitle>
+                                <CardDescription className="mt-1">{currentModule.description}</CardDescription>
+                              </div>
+                              <Badge className="bg-slate-600 text-white">Module {currentModule.order}</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {currentModule.content.map((paragraph, idx) => (
+                              <p key={idx} className="text-gray-700 leading-relaxed">
+                                {paragraph}
+                              </p>
                             ))}
-                          </div>
-                        </div>
+                            
+                            {currentModule.subModules && currentModule.subModules.length > 0 && (
+                              <div className="mt-6 pt-6 border-t border-slate-200">
+                                <h4 className="font-semibold text-gray-900 mb-3">Sub-Modules in this Section:</h4>
+                                <div className="grid gap-3 md:grid-cols-2">
+                                  {currentModule.subModules.map((subModule) => (
+                                    <Card key={subModule.id} className="border-slate-200 bg-white">
+                                      <CardContent className="p-3">
+                                        <div className="flex items-start gap-2">
+                                          <CheckCircle2 className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
+                                          <div>
+                                            <h5 className="font-medium text-sm text-gray-900">{subModule.title}</h5>
+                                            {subModule.description && (
+                                              <p className="text-xs text-gray-600 mt-1">{subModule.description}</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
                       )}
                     </CardContent>
-                  </Card>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </Card>
+              )
+            })}
 
             {/* Key Topics Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -962,9 +1051,21 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Learn to create natural, customized hairlines for any face shape. Master straight, round, and winged styles with proper diffusion.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'hairline-design' ? null : 'hairline-design')
+                      // Scroll to category section
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="hairline-design"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('hairline-design').length})
                   </Button>
                 </CardContent>
               </Card>
@@ -980,9 +1081,20 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Master needle selection, depth control, spacing, layering, and blending techniques for realistic results.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'smp-techniques' ? null : 'smp-techniques')
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="smp-techniques"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('smp-techniques').length})
                   </Button>
                 </CardContent>
               </Card>
@@ -998,9 +1110,20 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Learn consultations, contraindications, pain management, aftercare, and healing protocols.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'client-protocols' ? null : 'client-protocols')
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="client-protocols"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('client-protocols').length})
                   </Button>
                 </CardContent>
               </Card>
@@ -1016,9 +1139,20 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Understand the 3-session approach: Foundation, Density, and Refinement for complete results.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'treatment-sessions' ? null : 'treatment-sessions')
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="treatment-sessions"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('treatment-sessions').length})
                   </Button>
                 </CardContent>
               </Card>
@@ -1034,9 +1168,20 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Learn proper depth placement (upper dermis), needle gauge selection, and how to avoid blowouts.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'depth-needles' ? null : 'depth-needles')
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="depth-needles"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('depth-needles').length})
                   </Button>
                 </CardContent>
               </Card>
@@ -1052,9 +1197,20 @@ export default function SMPTrainingPortal() {
                   <p className="text-sm text-gray-600 mb-3">
                     Pricing strategies, consent protocols, marketing, and systems for growing your SMP business.
                   </p>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      setExpandedCategory(expandedCategory === 'business-foundations' ? null : 'business-foundations')
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-category="business-foundations"]')
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }, 100)
+                    }}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View Module
+                    View Modules ({getModulesByCategory('business-foundations').length})
                   </Button>
                 </CardContent>
               </Card>
