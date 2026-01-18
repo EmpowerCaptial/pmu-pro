@@ -1343,20 +1343,45 @@ export default function SMPTrainingPortal() {
                     <h3 className="text-sm font-semibold text-gray-900 mb-3">Instructional Videos</h3>
                     <div className="space-y-2">
                       {smpVideos.map(video => (
-                        <Card key={video.id} className="border border-slate-200">
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                              <Video className="h-5 w-5 text-slate-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-1">{video.title}</h4>
+                        <Card key={video.id} className="border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                          <CardContent className="p-0">
+                            <div className="flex flex-col sm:flex-row">
+                              {video.coverImageUrl ? (
+                                <div className="relative w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex-shrink-0">
+                                  <img
+                                    src={video.coverImageUrl}
+                                    alt={video.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                                    <PlayCircle className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                  <Video className="h-12 w-12 text-slate-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 p-4 flex flex-col">
+                                <div className="flex items-start gap-2 mb-2">
+                                  {!video.coverImageUrl && <Video className="h-5 w-5 text-slate-600 flex-shrink-0 mt-0.5" />}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-sm font-semibold text-gray-900 mb-1">{video.title}</h4>
+                                    {video.category && (
+                                      <Badge variant="outline" className="text-xs mb-1">
+                                        {CATEGORIES[video.category as SMPCategory]?.label || video.category}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
                                 {video.description && (
-                                  <p className="text-xs text-gray-600 mb-2">{video.description}</p>
+                                  <p className="text-xs text-gray-600 mb-3 flex-1">{video.description}</p>
                                 )}
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
-                                  className="text-slate-600 border-slate-200 hover:bg-slate-50"
+                                  className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
                                 >
                                   <PlayCircle className="h-4 w-4 mr-1" />
                                   Watch Video
