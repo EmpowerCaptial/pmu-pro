@@ -31,6 +31,18 @@ export async function GET(request: NextRequest) {
     }
 
     const assignments = await prisma.trainingAssignment.findMany({
+      include: {
+        video: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      },
       orderBy: [
         { weekId: 'asc' },
         { order: 'asc' },
@@ -83,7 +95,8 @@ export async function POST(request: NextRequest) {
       dueDateISO,
       status,
       estimatedHours,
-      rubric
+      rubric,
+      videoId
     } = body || {}
 
     if (!weekId || !title) {
@@ -112,7 +125,8 @@ export async function POST(request: NextRequest) {
               estimatedHours: parseFloatOrNull(estimatedHours),
               rubric: rubric ? String(rubric) : null,
               order: newOrder,
-              createdBy: user.id
+              createdBy: user.id,
+              videoId: videoId || null
             }
           })
 

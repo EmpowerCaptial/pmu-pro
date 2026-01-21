@@ -343,8 +343,11 @@ model TrainingAssignment {
   updatedAt      DateTime @updatedAt
   createdBy      String?
   createdByUser  User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  videoId        String?
+  video          FileUpload? @relation(fields: [videoId], references: [id], onDelete: SetNull)
 
   @@index([weekId])
+  @@index([videoId])
   @@map("training_assignments")
 }
 
@@ -847,6 +850,7 @@ model FileUpload {
   client      Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekVideoAssignments WeekVideoAssignment[]
+  assignmentVideos    TrainingAssignment[]
 
   @@index([userId])
   @@index([clientId])

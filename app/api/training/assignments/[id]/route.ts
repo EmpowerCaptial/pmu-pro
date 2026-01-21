@@ -50,7 +50,8 @@ export async function PATCH(
       dueDateISO,
       status,
       estimatedHours,
-      rubric
+      rubric,
+      videoId
     } = body || {}
 
     if (!weekId || !title) {
@@ -93,6 +94,7 @@ export async function PATCH(
         status: (status || 'pending').toLowerCase(),
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
+        videoId: videoId || null,
         // Don't update order - preserve existing order
         order: orderValue
       },
@@ -106,6 +108,7 @@ export async function PATCH(
         status: (status || 'pending').toLowerCase(),
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
+        videoId: videoId || null,
         order: orderValue,
         createdBy: user.id
       }

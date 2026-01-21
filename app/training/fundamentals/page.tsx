@@ -63,6 +63,8 @@ interface Assignment {
   weekId?: string
   dueDateISO?: string | null
   isPersisted?: boolean
+  videoId?: string
+  video?: LectureVideo
 }
 
 interface LectureVideo {
@@ -363,6 +365,7 @@ export default function FundamentalsTrainingPortal() {
   const [newAssignmentWeekId, setNewAssignmentWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
   const [newAssignmentHours, setNewAssignmentHours] = useState<string>('')
   const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
+  const [newAssignmentVideoId, setNewAssignmentVideoId] = useState<string>('')
   const [lectureVideos, setLectureVideos] = useState<LectureVideo[]>(LECTURE_VIDEOS)
   const [isLoadingVideos, setIsLoadingVideos] = useState<boolean>(false)
   const [videoError, setVideoError] = useState<string | null>(null)
@@ -457,6 +460,7 @@ export default function FundamentalsTrainingPortal() {
   const [weekVideos, setWeekVideos] = useState<Record<string, LectureVideo[]>>({})
   const [editAssignmentRubric, setEditAssignmentRubric] = useState('')
   const [editAssignmentStatus, setEditAssignmentStatus] = useState<'pending' | 'submitted' | 'graded'>('pending')
+  const [editAssignmentVideoId, setEditAssignmentVideoId] = useState<string>('')
   const [editAssignmentDueDateISO, setEditAssignmentDueDateISO] = useState<string>('')
   const [editAssignmentCustomDueLabel, setEditAssignmentCustomDueLabel] = useState<string>('')
   const totalCourseHours = useMemo(
@@ -555,18 +559,54 @@ export default function FundamentalsTrainingPortal() {
           throw new Error(data?.error || 'Unable to load assignments.')
         }
 
-        const persistedAssignments: Assignment[] = (data.assignments || []).map((assignment: any) => ({
-          id: assignment.id,
-          weekId: assignment.weekId,
-          title: assignment.title,
-          description: assignment.description || '',
-          dueDate: assignment.dueDateLabel || 'Due date shared in class',
-          dueDateISO: assignment.dueDateISO || null,
-          status: toAssignmentStatus(assignment.status),
-          estimatedHours: assignment.estimatedHours ?? undefined,
-          rubric: assignment.rubric ?? undefined,
-          isPersisted: true
-        }))
+        const persistedAssignments: Assignment[] = (data.assignments || []).map((assignment: any) => {
+          let video: LectureVideo | undefined
+          if (assignment.video) {
+            const upload = assignment.video
+            const isUrlVideo = upload.fileType.startsWith('training-video-url')
+            
+            // Parse metadata from fileType
+            let metadata: any = {}
+            if (upload.fileType.includes('|')) {
+              const [, encoded] = upload.fileType.split('|')
+              if (encoded) {
+                try {
+                  const json = Buffer.from(encoded, 'base64').toString('utf8')
+                  metadata = JSON.parse(json)
+                } catch (e) {
+                  // Ignore parse errors
+                }
+              }
+            }
+
+            video = {
+              id: upload.id,
+              title: upload.fileName,
+              description: metadata.description || '',
+              duration: metadata.durationLabel || 'Self-paced',
+              url: isUrlVideo ? metadata.videoUrl || upload.fileUrl : upload.fileUrl,
+              fileSize: upload.fileSize,
+              uploadedAt: upload.createdAt,
+              uploadedBy: metadata.uploaderName || upload.user?.name || upload.user?.email || 'Unknown',
+              videoType: isUrlVideo ? 'url' : 'file'
+            }
+          }
+
+          return {
+            id: assignment.id,
+            weekId: assignment.weekId,
+            title: assignment.title,
+            description: assignment.description || '',
+            dueDate: assignment.dueDateLabel || 'Due date shared in class',
+            dueDateISO: assignment.dueDateISO || null,
+            status: toAssignmentStatus(assignment.status),
+            estimatedHours: assignment.estimatedHours ?? undefined,
+            rubric: assignment.rubric ?? undefined,
+            isPersisted: true,
+            videoId: assignment.videoId || undefined,
+            video
+          }
+        })
 
         const weekMap = new Map<string, CourseWeek>()
         buildBaseWeeks().forEach(week => {
@@ -1314,10 +1354,11 @@ export default function FundamentalsTrainingPortal() {
     setEditAssignmentDescription('')
     setEditAssignmentWeekId(COURSE_WEEKS[0]?.id ?? '')
     setEditAssignmentHours('')
-    setEditAssignmentRubric('')
-    setEditAssignmentStatus('pending')
-    setEditAssignmentDueDateISO('')
-    setEditAssignmentCustomDueLabel('')
+      setEditAssignmentRubric('')
+      setEditAssignmentStatus('pending')
+      setEditAssignmentDueDateISO('')
+      setEditAssignmentCustomDueLabel('')
+      setEditAssignmentVideoId('')
     setIsSavingAssignment(false)
   }
 
@@ -1752,7 +1793,8 @@ export default function FundamentalsTrainingPortal() {
           dueDateISO,
           status: 'pending',
           estimatedHours: parsedHours ?? null,
-          rubric
+          rubric,
+          videoId: newAssignmentVideoId || null
         })
       })
 
@@ -1769,6 +1811,7 @@ export default function FundamentalsTrainingPortal() {
       setNewAssignmentDescription('')
       setNewAssignmentDueDate('')
       setNewAssignmentRubric('')
+      setNewAssignmentVideoId('')
       await fetchAssignments(false)
     } catch (error) {
       console.error('Failed to create training assignment:', error)
@@ -1847,7 +1890,8 @@ export default function FundamentalsTrainingPortal() {
           dueDateISO,
           status: editAssignmentStatus,
           estimatedHours: parsedHours ?? null,
-          rubric: editAssignmentRubric.trim()
+          rubric: editAssignmentRubric.trim(),
+          videoId: editAssignmentVideoId || null
         })
       })
       const data = await response.json().catch(() => ({}))
@@ -2200,6 +2244,28 @@ export default function FundamentalsTrainingPortal() {
                                     {assignment.rubric && openRubricId === assignment.id && (
                                       <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
                                         {assignment.rubric}
+                                      </div>
+                                    )}
+                                    {assignment.video && (
+                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
+                                        <div className="flex items-center gap-2">
+                                          <Video className="h-5 w-5 text-purple-600" />
+                                          <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                          {assignment.video.description && (
+                                            <p className="text-sm text-purple-700">{assignment.video.description}</p>
+                                          )}
+                                          <div className="flex items-center gap-4 text-xs text-purple-600">
+                                            <span>Duration: {assignment.video.duration}</span>
+                                            {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                          </div>
+                                          <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                                            <Video className="h-4 w-4 mr-2" />
+                                            Watch Lecture
+                                          </Button>
+                                        </div>
                                       </div>
                                     )}
                                   </CardContent>
@@ -3893,6 +3959,25 @@ export default function FundamentalsTrainingPortal() {
                           />
                         </div>
                         <div className="space-y-1">
+                          <Label htmlFor="assignment-video">Assigned Lecture Video (optional)</Label>
+                          <Select value={newAssignmentVideoId} onValueChange={setNewAssignmentVideoId}>
+                            <SelectTrigger id="assignment-video">
+                              <SelectValue placeholder="Select a lecture video for students to watch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">No video assigned</SelectItem>
+                              {lectureVideos.map(video => (
+                                <SelectItem key={video.id} value={video.id}>
+                                  {video.title} {video.videoType === 'url' && '(URL)'}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Select a lecture video that students should watch before completing this assignment.
+                          </p>
+                        </div>
+                        <div className="space-y-1">
                           <Label htmlFor="assignment-rubric">Rubric / evaluation criteria</Label>
                           <Textarea
                             id="assignment-rubric"
@@ -4413,6 +4498,25 @@ export default function FundamentalsTrainingPortal() {
                 />
               </div>
 
+              <div className="space-y-1">
+                <Label htmlFor="edit-assignment-video">Assigned Lecture Video (optional)</Label>
+                <Select value={editAssignmentVideoId} onValueChange={setEditAssignmentVideoId}>
+                  <SelectTrigger id="edit-assignment-video">
+                    <SelectValue placeholder="Select a lecture video for students to watch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No video assigned</SelectItem>
+                    {lectureVideos.map(video => (
+                      <SelectItem key={video.id} value={video.id}>
+                        {video.title} {video.videoType === 'url' && '(URL)'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a lecture video that students should watch before completing this assignment.
+                </p>
+              </div>
               <div className="space-y-1">
                 <Label htmlFor="edit-assignment-rubric">Rubric / evaluation criteria</Label>
                 <Textarea
