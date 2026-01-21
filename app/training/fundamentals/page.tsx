@@ -4132,15 +4132,37 @@ export default function FundamentalsTrainingPortal() {
                                           </Button>
                                         </div>
                                       </div>
-                                      {assignment.rubric && openRubricId === assignment.id && (
-                                        <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
-                                          {assignment.rubric}
-                                        </div>
-                                      )}
-                                    </CardContent>
-                                  </Card>
-                                ))
-                              )}
+                                        {assignment.rubric && openRubricId === assignment.id && (
+                                          <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                            {assignment.rubric}
+                                          </div>
+                                        )}
+                                        {assignment.video && (
+                                          <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
+                                            <div className="flex items-center gap-2">
+                                              <Video className="h-5 w-5 text-purple-600" />
+                                              <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                              {assignment.video.description && (
+                                                <p className="text-sm text-purple-700">{assignment.video.description}</p>
+                                              )}
+                                              <div className="flex items-center gap-4 text-xs text-purple-600">
+                                                <span>Duration: {assignment.video.duration}</span>
+                                                {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                              </div>
+                                              <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                                                <Video className="h-4 w-4 mr-2" />
+                                                Watch Lecture
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </CardContent>
+                                    </Card>
+                                  ))
+                                )}
 
                               {lessonHomeworkByWeek[week.id]?.length ? (
                                 <div className="rounded-md border border-amber-200 bg-amber-50 p-4 space-y-3">
