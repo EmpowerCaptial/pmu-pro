@@ -3960,12 +3960,12 @@ export default function FundamentalsTrainingPortal() {
                         </div>
                         <div className="space-y-1">
                           <Label htmlFor="assignment-video">Assigned Lecture Video (optional)</Label>
-                          <Select value={newAssignmentVideoId} onValueChange={setNewAssignmentVideoId}>
+                          <Select value={newAssignmentVideoId || 'none'} onValueChange={(value) => setNewAssignmentVideoId(value === 'none' ? '' : value)}>
                             <SelectTrigger id="assignment-video">
                               <SelectValue placeholder="Select a lecture video for students to watch" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">No video assigned</SelectItem>
+                              <SelectItem value="none">No video assigned</SelectItem>
                               {lectureVideos.map(video => (
                                 <SelectItem key={video.id} value={video.id}>
                                   {video.title} {video.videoType === 'url' && '(URL)'}
@@ -4522,12 +4522,12 @@ export default function FundamentalsTrainingPortal() {
 
               <div className="space-y-1">
                 <Label htmlFor="edit-assignment-video">Assigned Lecture Video (optional)</Label>
-                <Select value={editAssignmentVideoId} onValueChange={setEditAssignmentVideoId}>
+                <Select value={editAssignmentVideoId || 'none'} onValueChange={(value) => setEditAssignmentVideoId(value === 'none' ? '' : value)}>
                   <SelectTrigger id="edit-assignment-video">
                     <SelectValue placeholder="Select a lecture video for students to watch" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No video assigned</SelectItem>
+                    <SelectItem value="none">No video assigned</SelectItem>
                     {lectureVideos.map(video => (
                       <SelectItem key={video.id} value={video.id}>
                         {video.title} {video.videoType === 'url' && '(URL)'}
