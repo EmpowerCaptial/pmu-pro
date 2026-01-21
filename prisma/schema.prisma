@@ -80,6 +80,7 @@ model User {
   trainingAssignments    TrainingAssignment[]
   trainingDiscussions    TrainingDiscussion[]
   trainingReplies        TrainingDiscussionReply[]
+  weekVideoAssignments   WeekVideoAssignment[]
 
   @@map("users")
 }
@@ -345,6 +346,23 @@ model TrainingAssignment {
 
   @@index([weekId])
   @@map("training_assignments")
+}
+
+model WeekVideoAssignment {
+  id        String   @id @default(cuid())
+  weekId    String   // e.g., "week-1", "week-2", etc.
+  videoId   String   // FileUpload.id
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  createdByUser User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  video     FileUpload @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([weekId, videoId])
+  @@index([weekId])
+  @@index([videoId])
+  @@map("week_video_assignments")
 }
 
 model CalendarIntegration {
@@ -828,6 +846,7 @@ model FileUpload {
   updatedAt   DateTime @updatedAt
   client      Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekVideoAssignments WeekVideoAssignment[]
 
   @@index([userId])
   @@index([clientId])

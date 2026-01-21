@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { upload } from '@vercel/blob/client'
 import {
   BookOpen,
@@ -447,6 +448,13 @@ export default function FundamentalsTrainingPortal() {
   const [editAssignmentDescription, setEditAssignmentDescription] = useState('')
   const [editAssignmentWeekId, setEditAssignmentWeekId] = useState<string>(COURSE_WEEKS[0]?.id ?? '')
   const [editAssignmentHours, setEditAssignmentHours] = useState<string>('')
+  // Week video assignments state
+  const [weekVideoAssignments, setWeekVideoAssignments] = useState<Record<string, string[]>>({})
+  const [isLoadingWeekVideos, setIsLoadingWeekVideos] = useState<Record<string, boolean>>({})
+  const [weekVideoDialogOpen, setWeekVideoDialogOpen] = useState<string | null>(null)
+  const [selectedWeekVideos, setSelectedWeekVideos] = useState<string[]>([])
+  const [isSavingWeekVideos, setIsSavingWeekVideos] = useState(false)
+  const [weekVideos, setWeekVideos] = useState<Record<string, LectureVideo[]>>({})
   const [editAssignmentRubric, setEditAssignmentRubric] = useState('')
   const [editAssignmentStatus, setEditAssignmentStatus] = useState<'pending' | 'submitted' | 'graded'>('pending')
   const [editAssignmentDueDateISO, setEditAssignmentDueDateISO] = useState<string>('')
@@ -744,6 +752,95 @@ export default function FundamentalsTrainingPortal() {
   useEffect(() => {
     fetchTrainingVideos()
   }, [fetchTrainingVideos])
+
+  // Fetch week video assignments
+  const fetchWeekVideos = useCallback(
+    async (weekId: string) => {
+      if (!currentUser?.email) return
+      
+      setIsLoadingWeekVideos(prev => ({ ...prev, [weekId]: true }))
+      try {
+        const response = await fetch(`/api/training/week-videos?weekId=${weekId}`, {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        const data = await response.json()
+        if (response.ok) {
+          const videos: LectureVideo[] = (data.videos || []).map((v: any) => ({
+            id: v.id,
+            title: v.title,
+            description: v.description || '',
+            duration: v.duration || 'Self-paced',
+            url: v.url,
+            fileSize: v.fileSize,
+            uploadedAt: v.uploadedAt,
+            uploadedBy: v.uploadedBy,
+            videoType: v.videoType || 'file'
+          }))
+          setWeekVideos(prev => ({ ...prev, [weekId]: videos }))
+          const videoIds = videos.map(v => v.id)
+          setWeekVideoAssignments(prev => ({ ...prev, [weekId]: videoIds }))
+        }
+      } catch (error) {
+        console.error('Failed to fetch week videos:', error)
+      } finally {
+        setIsLoadingWeekVideos(prev => ({ ...prev, [weekId]: false }))
+      }
+    },
+    [currentUser?.email]
+  )
+
+  // Save week video assignments
+  const saveWeekVideos = useCallback(
+    async (weekId: string, videoIds: string[]) => {
+      if (!currentUser?.email || !canManageVideos) return
+
+      setIsSavingWeekVideos(true)
+      try {
+        const response = await fetch('/api/training/week-videos', {
+          method: 'POST',
+          headers: {
+            'x-user-email': currentUser.email,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ weekId, videoIds })
+        })
+        const data = await response.json()
+        if (response.ok) {
+          setWeekVideoAssignments(prev => ({ ...prev, [weekId]: videoIds }))
+          await fetchWeekVideos(weekId)
+          setWeekVideoDialogOpen(null)
+          setSelectedWeekVideos([])
+        } else {
+          throw new Error(data.error || 'Failed to save week videos')
+        }
+      } catch (error) {
+        console.error('Failed to save week videos:', error)
+        alert(error instanceof Error ? error.message : 'Failed to save week videos')
+      } finally {
+        setIsSavingWeekVideos(false)
+      }
+    },
+    [currentUser?.email, canManageVideos, fetchWeekVideos]
+  )
+
+  // Open week video assignment dialog
+  const openWeekVideoDialog = useCallback(
+    (weekId: string) => {
+      const currentAssignments = weekVideoAssignments[weekId] || []
+      setSelectedWeekVideos([...currentAssignments])
+      setWeekVideoDialogOpen(weekId)
+    },
+    [weekVideoAssignments]
+  )
+
+  // Fetch week videos when week is selected
+  useEffect(() => {
+    if (selectedWeekId && !weekVideos[selectedWeekId]) {
+      fetchWeekVideos(selectedWeekId)
+    }
+  }, [selectedWeekId, weekVideos, fetchWeekVideos])
 
   // Fetch Zoom sessions
   const fetchZoomSessions = useCallback(async () => {
@@ -2129,6 +2226,74 @@ export default function FundamentalsTrainingPortal() {
                               </div>
                             </div>
                           ) : null}
+
+                          {/* Week Video Lectures Section */}
+                          {isLoadingWeekVideos[week.id] ? (
+                            <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
+                              Loading assigned lectures...
+                            </div>
+                          ) : weekVideos[week.id] && weekVideos[week.id].length > 0 ? (
+                            <Card className="border-purple-200 bg-purple-50">
+                              <CardHeader>
+                                <CardTitle className="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                                  <Video className="h-5 w-5" />
+                                  Assigned Lectures for This Week
+                                </CardTitle>
+                                <CardDescription className="text-purple-700">
+                                  Watch these lectures before completing assignments
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                {weekVideos[week.id].map(video => (
+                                  <Card key={video.id} className="border-purple-200 bg-white">
+                                    <CardContent className="p-4 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <Video className="h-4 w-4 text-purple-600" />
+                                        <h4 className="font-semibold text-gray-900">{video.title}</h4>
+                                        {video.videoType === 'url' && (
+                                          <Badge variant="outline" className="text-xs">External Video</Badge>
+                                        )}
+                                      </div>
+                                      {video.description && (
+                                        <p className="text-sm text-gray-600">{video.description}</p>
+                                      )}
+                                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                                        <span>Duration: {video.duration}</span>
+                                        {video.uploadedBy && <span>Instructor: {video.uploadedBy}</span>}
+                                      </div>
+                                      <Button size="sm" onClick={() => openVideoPlayer(video)} className="w-full">
+                                        Watch Lecture
+                                      </Button>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </CardContent>
+                            </Card>
+                          ) : null}
+
+                          {/* Instructor: Assign Videos Button */}
+                          {canManageVideos && activeTab === 'instructor' && (
+                            <Card className="border-dashed border-purple-300 bg-purple-50">
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h4 className="font-semibold text-purple-900">Assign Lectures to This Week</h4>
+                                    <p className="text-sm text-purple-700 mt-1">
+                                      Select which lectures students should watch for this week
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => openWeekVideoDialog(week.id)}
+                                    className="border-purple-300 text-purple-700 hover:bg-purple-100"
+                                  >
+                                    <Video className="h-4 w-4 mr-2" />
+                                    {weekVideoAssignments[week.id]?.length ? 'Edit Lectures' : 'Assign Lectures'}
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
                           </TabsContent>
                         )
                       })}
@@ -4820,6 +4985,83 @@ export default function FundamentalsTrainingPortal() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Week Video Assignment Dialog */}
+      <Dialog open={weekVideoDialogOpen !== null} onOpenChange={(open) => !open && setWeekVideoDialogOpen(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Assign Lectures to Week</DialogTitle>
+            <DialogDescription>
+              Select which lectures students should watch for this week. You can select multiple videos.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            {lectureVideos.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No videos available. Upload videos first in the Lecture Library section.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {lectureVideos.map(video => (
+                  <div
+                    key={video.id}
+                    className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50"
+                  >
+                    <Checkbox
+                      checked={selectedWeekVideos.includes(video.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedWeekVideos([...selectedWeekVideos, video.id])
+                        } else {
+                          setSelectedWeekVideos(selectedWeekVideos.filter(id => id !== video.id))
+                        }
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                        <h4 className="font-semibold text-gray-900">{video.title}</h4>
+                        {video.videoType === 'url' && (
+                          <Badge variant="outline" className="text-xs">URL</Badge>
+                        )}
+                      </div>
+                      {video.description && (
+                        <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-1 text-xs text-gray-500">
+                        {video.duration && <span>Duration: {video.duration}</span>}
+                        {video.uploadedBy && <span>Instructor: {video.uploadedBy}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setWeekVideoDialogOpen(null)
+                setSelectedWeekVideos([])
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (weekVideoDialogOpen) {
+                  saveWeekVideos(weekVideoDialogOpen, selectedWeekVideos)
+                }
+              }}
+              disabled={isSavingWeekVideos}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isSavingWeekVideos ? 'Saving...' : 'Save Assignments'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
