@@ -4671,24 +4671,42 @@ export default function FundamentalsTrainingPortal() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="edit-assignment-video">Assigned Lecture Video (optional)</Label>
-                <Select value={editAssignmentVideoId || 'none'} onValueChange={(value) => setEditAssignmentVideoId(value === 'none' ? '' : value)}>
-                  <SelectTrigger id="edit-assignment-video">
-                    <SelectValue placeholder="Select a lecture video for students to watch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No video assigned</SelectItem>
-                    {lectureVideos.map(video => (
-                      <SelectItem key={video.id} value={video.id}>
-                        {video.title} {video.videoType === 'url' && '(URL)'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Select a lecture video that students should watch before completing this assignment.
-                </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-day">Day Assignment (optional)</Label>
+                  <Select value={editAssignmentDayId} onValueChange={setEditAssignmentDayId}>
+                    <SelectTrigger id="edit-assignment-day">
+                      <SelectValue placeholder="Select day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No specific day</SelectItem>
+                      <SelectItem value="day-1">Day 1</SelectItem>
+                      <SelectItem value="day-2">Day 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Assign this to Day 1 or Day 2 for better organization.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-assignment-video">Assigned Lecture Video (optional)</Label>
+                  <Select value={editAssignmentVideoId || 'none'} onValueChange={(value) => setEditAssignmentVideoId(value === 'none' ? '' : value)}>
+                    <SelectTrigger id="edit-assignment-video">
+                      <SelectValue placeholder="Select a lecture video for students to watch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No video assigned</SelectItem>
+                      {lectureVideos.map(video => (
+                        <SelectItem key={video.id} value={video.id}>
+                          {video.title} {video.videoType === 'url' && '(URL)'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Select a lecture video that students should watch before completing this assignment.
+                  </p>
+                </div>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="edit-assignment-rubric">Rubric / evaluation criteria</Label>
