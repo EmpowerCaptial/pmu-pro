@@ -954,6 +954,150 @@ export default function SMPTrainingPortal() {
     }
   }
 
+  // Edit Video Handlers
+  const handleEditCoverImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setVideoUploadError('Please select an image file for the cover.')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setVideoUploadError('Cover image must be less than 5 MB.')
+      return
+    }
+
+    setEditVideoCoverImage(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setEditVideoCoverImageUrl(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+    setVideoUploadError(null)
+  }
+
+  const handleEditVideoSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    
+    if (!currentUser?.email || !editingVideo) {
+      setVideoUploadError('You must be logged in to edit videos.')
+      return
+    }
+
+    const trimmedUrl = editVideoUrl.trim()
+    const trimmedTitle = editVideoTitle.trim()
+
+    if (!trimmedUrl) {
+      setVideoUploadError('Please enter a video URL.')
+      return
+    }
+
+    if (!trimmedTitle) {
+      setVideoUploadError('Please enter a video title.')
+      return
+    }
+
+    if (!editVideoCategory) {
+      setVideoUploadError('Please select a category for this video.')
+      return
+    }
+
+    try {
+      new URL(trimmedUrl)
+    } catch {
+      setVideoUploadError('Please enter a valid URL.')
+      return
+    }
+
+    setIsEditingVideo(true)
+    setVideoUploadError(null)
+    setVideoUploadSuccess(null)
+
+    let coverImageUrl: string | null = editVideoCoverImageUrl
+
+    // Upload new cover image if provided
+    if (editVideoCoverImage && currentUser.email) {
+      setIsUploadingEditCover(true)
+      try {
+        const normalizedTitle = editVideoTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        const fileName = `video-cover-${normalizedTitle}-${Date.now()}.${editVideoCoverImage.name.split('.').pop()}`
+        const userIdentifier = currentUser.id || currentUser.email.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'user'
+        const pathname = `resource-library/${userIdentifier}/${fileName}`
+
+        const clientPayload = JSON.stringify({
+          title: `Cover: ${editVideoTitle}`,
+          category: 'training',
+          fileSize: editVideoCoverImage.size,
+          originalFilename: editVideoCoverImage.name
+        })
+
+        const blob = await upload(pathname, editVideoCoverImage, {
+          access: 'public',
+          contentType: editVideoCoverImage.type,
+          handleUploadUrl: '/api/resource-library',
+          headers: {
+            'x-user-email': currentUser.email
+          },
+          clientPayload
+        })
+
+        coverImageUrl = blob.url
+      } catch (error) {
+        console.error('Failed to upload cover image:', error)
+        setVideoUploadError('Failed to upload cover image. Please try again.')
+        setIsEditingVideo(false)
+        setIsUploadingEditCover(false)
+        return
+      } finally {
+        setIsUploadingEditCover(false)
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/training/videos/${editingVideo.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          title: trimmedTitle + ' (SMP Training)',
+          url: trimmedUrl,
+          description: (editVideoDescription.trim() || 'SMP training video') + ' - SMP Training Course',
+          durationLabel: editVideoDuration.trim() || undefined,
+          category: editVideoCategory,
+          coverImageUrl: coverImageUrl || undefined
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to update video.')
+      }
+
+      setVideoUploadSuccess('Video updated successfully!')
+      setEditingVideo(null)
+      setEditVideoTitle('')
+      setEditVideoDescription('')
+      setEditVideoUrl('')
+      setEditVideoDuration('')
+      setEditVideoCategory('')
+      setEditVideoCoverImage(null)
+      setEditVideoCoverImageUrl(null)
+      if (editCoverImageInputRef.current) {
+        editCoverImageInputRef.current.value = ''
+      }
+      await fetchSMPVideos()
+    } catch (error) {
+      console.error('Failed to update video:', error)
+      setVideoUploadError(error instanceof Error ? error.message : 'Failed to update the video.')
+    } finally {
+      setIsEditingVideo(false)
+    }
+  }
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
