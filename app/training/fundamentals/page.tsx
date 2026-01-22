@@ -65,6 +65,7 @@ interface Assignment {
   isPersisted?: boolean
   videoId?: string
   video?: LectureVideo
+  dayId?: string // 'day-1' or 'day-2'
 }
 
 interface LectureVideo {
@@ -461,6 +462,7 @@ export default function FundamentalsTrainingPortal() {
   const [editAssignmentRubric, setEditAssignmentRubric] = useState('')
   const [editAssignmentStatus, setEditAssignmentStatus] = useState<'pending' | 'submitted' | 'graded'>('pending')
   const [editAssignmentVideoId, setEditAssignmentVideoId] = useState<string>('')
+  const [editAssignmentDayId, setEditAssignmentDayId] = useState<string>('none')
   const [editAssignmentDueDateISO, setEditAssignmentDueDateISO] = useState<string>('')
   const [editAssignmentCustomDueLabel, setEditAssignmentCustomDueLabel] = useState<string>('')
   const totalCourseHours = useMemo(
@@ -604,7 +606,8 @@ export default function FundamentalsTrainingPortal() {
             rubric: assignment.rubric ?? undefined,
             isPersisted: true,
             videoId: assignment.videoId || undefined,
-            video
+            video,
+            dayId: assignment.dayId || undefined
           }
         })
 
@@ -1359,6 +1362,7 @@ export default function FundamentalsTrainingPortal() {
       setEditAssignmentDueDateISO('')
       setEditAssignmentCustomDueLabel('')
       setEditAssignmentVideoId('')
+      setEditAssignmentDayId('none')
     setIsSavingAssignment(false)
   }
 
@@ -1794,7 +1798,8 @@ export default function FundamentalsTrainingPortal() {
           status: 'pending',
           estimatedHours: parsedHours ?? null,
           rubric,
-          videoId: newAssignmentVideoId || null
+          videoId: newAssignmentVideoId || null,
+          dayId: newAssignmentDayId === 'none' ? null : newAssignmentDayId
         })
       })
 
@@ -1812,6 +1817,7 @@ export default function FundamentalsTrainingPortal() {
       setNewAssignmentDueDate('')
       setNewAssignmentRubric('')
       setNewAssignmentVideoId('')
+      setNewAssignmentDayId('none')
       await fetchAssignments(false)
     } catch (error) {
       console.error('Failed to create training assignment:', error)
@@ -1891,7 +1897,8 @@ export default function FundamentalsTrainingPortal() {
           status: editAssignmentStatus,
           estimatedHours: parsedHours ?? null,
           rubric: editAssignmentRubric.trim(),
-          videoId: editAssignmentVideoId || null
+          videoId: editAssignmentVideoId || null,
+          dayId: editAssignmentDayId === 'none' ? null : editAssignmentDayId
         })
       })
       const data = await response.json().catch(() => ({}))
@@ -2161,7 +2168,26 @@ export default function FundamentalsTrainingPortal() {
                                 No assignments published for this week yet.
                               </div>
                             ) : (
-                              week.assignments.map(assignment => (
+                              (() => {
+                                // Group assignments by day
+                                const day1Assignments = week.assignments.filter(a => a.dayId === 'day-1' || !a.dayId)
+                                const day2Assignments = week.assignments.filter(a => a.dayId === 'day-2')
+                                const unassignedAssignments = week.assignments.filter(a => a.dayId && a.dayId !== 'day-1' && a.dayId !== 'day-2')
+                                
+                                // Get day titles from lesson plan
+                                const lessonWeek = TRAINING_LESSON_PLANS.find(plan => plan.id === week.id)
+                                const day1Title = lessonWeek?.days.find(d => d.id === 'day-1')?.title || 'Day 1 Assignments'
+                                const day2Title = lessonWeek?.days.find(d => d.id === 'day-2')?.title || 'Day 2 Assignments'
+                                
+                                return (
+                                  <div className="space-y-6">
+                                    {/* Day 1 Assignments */}
+                                    {day1Assignments.length > 0 && (
+                                      <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold text-purple-900 border-b border-purple-200 pb-2">
+                                          {day1Title}
+                                        </h3>
+                                        {day1Assignments.map(assignment => (
                                 <Card key={assignment.id} className="border border-gray-200 shadow-sm break-words">
                                   <CardContent className="p-4 space-y-3 break-words">
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -2270,7 +2296,131 @@ export default function FundamentalsTrainingPortal() {
                                     )}
                                   </CardContent>
                                 </Card>
-                              ))
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Day 2 Assignments */}
+                                    {day2Assignments.length > 0 && (
+                                      <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold text-purple-900 border-b border-purple-200 pb-2">
+                                          {day2Title}
+                                        </h3>
+                                        {day2Assignments.map(assignment => (
+                                <Card key={assignment.id} className="border border-gray-200 shadow-sm break-words">
+                                  <CardContent className="p-4 space-y-3 break-words">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                      <div>
+                                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                          <FileText className="h-5 w-5 text-purple-600" />
+                                          {assignment.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                      </div>
+                                      <Badge
+                                        className={
+                                          assignment.status === 'graded'
+                                            ? 'bg-green-100 text-green-700 border border-green-200'
+                                            : assignment.status === 'submitted'
+                                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                            : 'bg-amber-100 text-amber-700 border border-amber-200'
+                                        }
+                                      >
+                                        {assignment.status === 'graded' && 'Graded'}
+                                        {assignment.status === 'submitted' && 'Submitted'}
+                                        {assignment.status === 'pending' && 'Pending'}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span>{assignment.dueDate}</span>
+                                        {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
+                                          <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
+                                            ~{assignment.estimatedHours} hrs
+                                          </Badge>
+                                        )}
+                                      </div>
+                <div className="flex gap-2">
+                                          {canEditAssignments && (
+                                            <>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => openEditAssignmentDialog(assignment, week.id)}
+                                              >
+                                                <PenSquare className="h-4 w-4 mr-1" />
+                                                Edit
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => openDeleteAssignmentDialog(assignment, week.id)}
+                                                disabled={!assignment.isPersisted}
+                                              >
+                                                <Trash2 className="h-4 w-4 mr-1" />
+                                                Delete
+                                              </Button>
+                                            </>
+                                          )}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setAssignmentPendingUpload(assignment)
+                                            setUploadDialogOpen(true)
+                                          }}
+                                        >
+                                          <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={() =>
+                                            assignment.rubric &&
+                                            setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                          }
+                                          disabled={!assignment.rubric}
+                                        >
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {assignment.rubric && openRubricId === assignment.id && (
+                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
+                                        {assignment.rubric}
+                                      </div>
+                                    )}
+                                    {assignment.video && (
+                                      <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
+                                        <div className="flex items-center gap-2">
+                                          <Video className="h-5 w-5 text-purple-600" />
+                                          <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                          {assignment.video.description && (
+                                            <p className="text-sm text-purple-700">{assignment.video.description}</p>
+                                          )}
+                                          <div className="flex items-center gap-4 text-xs text-purple-600">
+                                            <span>Duration: {assignment.video.duration}</span>
+                                            {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                          </div>
+                                          <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                                            <Video className="h-4 w-4 mr-2" />
+                                            Watch Lecture
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })()
                             )}
 
                           {lessonHomeworkByWeek[week.id]?.length ? (

@@ -345,9 +345,11 @@ model TrainingAssignment {
   createdByUser  User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   videoId        String?
   video          FileUpload? @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  dayId          String?  // 'day-1' or 'day-2' to associate with lesson plan days
 
   @@index([weekId])
   @@index([videoId])
+  @@index([dayId])
   @@map("training_assignments")
 }
 

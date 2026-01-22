@@ -51,7 +51,8 @@ export async function PATCH(
       status,
       estimatedHours,
       rubric,
-      videoId
+      videoId,
+      dayId
     } = body || {}
 
     if (!weekId || !title) {
@@ -95,6 +96,7 @@ export async function PATCH(
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
         videoId: videoId || null,
+        dayId: dayId || null,
         // Don't update order - preserve existing order
         order: orderValue
       },
@@ -109,6 +111,7 @@ export async function PATCH(
         estimatedHours: parseFloatOrNull(estimatedHours),
         rubric: rubric ? String(rubric) : null,
         videoId: videoId || null,
+        dayId: dayId || null,
         order: orderValue,
         createdBy: user.id
       }

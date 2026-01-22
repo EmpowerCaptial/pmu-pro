@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
       status,
       estimatedHours,
       rubric,
-      videoId
+      videoId,
+      dayId
     } = body || {}
 
     if (!weekId || !title) {
@@ -126,7 +127,8 @@ export async function POST(request: NextRequest) {
               rubric: rubric ? String(rubric) : null,
               order: newOrder,
               createdBy: user.id,
-              videoId: videoId || null
+              videoId: videoId || null,
+              dayId: dayId || null
             }
           })
 
