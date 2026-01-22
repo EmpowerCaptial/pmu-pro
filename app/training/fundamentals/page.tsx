@@ -367,6 +367,7 @@ export default function FundamentalsTrainingPortal() {
   const [newAssignmentHours, setNewAssignmentHours] = useState<string>('')
   const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
   const [newAssignmentVideoId, setNewAssignmentVideoId] = useState<string>('')
+  const [newAssignmentDayId, setNewAssignmentDayId] = useState<string>('none')
   const [lectureVideos, setLectureVideos] = useState<LectureVideo[]>(LECTURE_VIDEOS)
   const [isLoadingVideos, setIsLoadingVideos] = useState<boolean>(false)
   const [videoError, setVideoError] = useState<string | null>(null)
