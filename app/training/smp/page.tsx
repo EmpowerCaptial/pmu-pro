@@ -652,6 +652,18 @@ export default function SMPTrainingPortal() {
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [smpVideos, setSmpVideos] = useState<SMPVideo[]>([])
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
+  // Video edit state
+  const [editingVideo, setEditingVideo] = useState<SMPVideo | null>(null)
+  const [editVideoTitle, setEditVideoTitle] = useState('')
+  const [editVideoDescription, setEditVideoDescription] = useState('')
+  const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [editVideoDuration, setEditVideoDuration] = useState('')
+  const [editVideoCategory, setEditVideoCategory] = useState<SMPCategory | ''>('')
+  const [editVideoCoverImage, setEditVideoCoverImage] = useState<File | null>(null)
+  const [editVideoCoverImageUrl, setEditVideoCoverImageUrl] = useState<string | null>(null)
+  const [isEditingVideo, setIsEditingVideo] = useState(false)
+  const [isUploadingEditCover, setIsUploadingEditCover] = useState(false)
+  const editCoverImageInputRef = useRef<HTMLInputElement>(null)
 
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageContent = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
@@ -675,15 +687,27 @@ export default function SMPTrainingPortal() {
     
     setIsLoadingVideos(true)
     try {
-      const response = await fetch('/api/training/videos')
+      const response = await fetch('/api/training/videos', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
       if (response.ok) {
         const data = await response.json()
-        // Filter for SMP training videos (those with fileType containing 'smp' or all training videos)
+        // Filter for SMP training videos (those with category matching SMP categories)
         const videos = (data.videos || []).filter((v: any) => 
-          v.title?.toLowerCase().includes('smp') || 
-          v.description?.toLowerCase().includes('smp') ||
-          v.fileType?.includes('smp')
-        )
+          v.category && Object.keys(CATEGORIES).includes(v.category)
+        ).map((v: any) => ({
+          id: v.id,
+          title: v.title,
+          url: v.url,
+          description: v.description,
+          videoType: v.videoType || 'url',
+          uploadedAt: v.uploadedAt,
+          uploadedBy: v.uploadedBy,
+          category: v.category,
+          coverImageUrl: v.coverImageUrl
+        }))
         setSmpVideos(videos)
       }
     } catch (error) {
@@ -1098,6 +1122,62 @@ export default function SMPTrainingPortal() {
                               </p>
                             ))}
                             
+                            {/* Videos for this category */}
+                            {(() => {
+                              const categoryVideos = smpVideos.filter(v => v.category === categoryKey)
+                              return categoryVideos.length > 0 ? (
+                                <div className="mt-6 pt-6 border-t border-slate-200">
+                                  <h4 className="font-semibold text-gray-900 mb-3">Instructional Videos</h4>
+                                  <div className="space-y-2">
+                                    {categoryVideos.map(video => (
+                                      <Card key={video.id} className="border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        <CardContent className="p-0">
+                                          <div className="flex flex-col sm:flex-row">
+                                            {video.coverImageUrl ? (
+                                              <div className="relative w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex-shrink-0">
+                                                <img
+                                                  src={video.coverImageUrl}
+                                                  alt={video.title}
+                                                  className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                  <PlayCircle className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                                <Video className="h-12 w-12 text-slate-400" />
+                                              </div>
+                                            )}
+                                            <div className="flex-1 p-4 flex flex-col">
+                                              <div className="flex items-start gap-2 mb-2">
+                                                {!video.coverImageUrl && <Video className="h-5 w-5 text-slate-600 flex-shrink-0 mt-0.5" />}
+                                                <div className="flex-1 min-w-0">
+                                                  <h5 className="text-sm font-semibold text-gray-900 mb-1">{video.title}</h5>
+                                                </div>
+                                              </div>
+                                              {video.description && (
+                                                <p className="text-xs text-gray-600 mb-3 flex-1">{video.description}</p>
+                                              )}
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
+                                                className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
+                                              >
+                                                <PlayCircle className="h-4 w-4 mr-1" />
+                                                Watch Video
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null
+                            })()}
+                            
                             {currentModule.subModules && currentModule.subModules.length > 0 && (
                               <div className="mt-6 pt-6 border-t border-slate-200">
                                 <h4 className="font-semibold text-gray-900 mb-3">Sub-Modules in this Section:</h4>
@@ -1332,71 +1412,77 @@ export default function SMPTrainingPortal() {
                   </Button>
                 </div>
 
-                {/* Video Library */}
+                {/* Video Library - Grouped by Category */}
                 {isLoadingVideos && (
                   <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
                     Loading videos...
                   </div>
                 )}
-                {smpVideos.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Instructional Videos</h3>
-                    <div className="space-y-2">
-                      {smpVideos.map(video => (
-                        <Card key={video.id} className="border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-                          <CardContent className="p-0">
-                            <div className="flex flex-col sm:flex-row">
-                              {video.coverImageUrl ? (
-                                <div className="relative w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex-shrink-0">
-                                  <img
-                                    src={video.coverImageUrl}
-                                    alt={video.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
-                                    <PlayCircle className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex items-center justify-center flex-shrink-0">
-                                  <Video className="h-12 w-12 text-slate-400" />
-                                </div>
-                              )}
-                              <div className="flex-1 p-4 flex flex-col">
-                                <div className="flex items-start gap-2 mb-2">
-                                  {!video.coverImageUrl && <Video className="h-5 w-5 text-slate-600 flex-shrink-0 mt-0.5" />}
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-semibold text-gray-900 mb-1">{video.title}</h4>
-                                    {video.category && (
-                                      <Badge variant="outline" className="text-xs mb-1">
-                                        {CATEGORIES[video.category as SMPCategory]?.label || video.category}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                {video.description && (
-                                  <p className="text-xs text-gray-600 mb-3 flex-1">{video.description}</p>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
-                                  className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
-                                >
-                                  <PlayCircle className="h-4 w-4 mr-1" />
-                                  Watch Video
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 {!isLoadingVideos && smpVideos.length === 0 && (
                   <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 text-center">
                     No videos available yet. Instructors will add video links here.
+                  </div>
+                )}
+                {!isLoadingVideos && smpVideos.length > 0 && (
+                  <div className="mt-4 space-y-6">
+                    {(Object.keys(CATEGORIES) as SMPCategory[]).map((categoryKey) => {
+                      const categoryVideos = smpVideos.filter(v => v.category === categoryKey)
+                      if (categoryVideos.length === 0) return null
+                      
+                      return (
+                        <div key={categoryKey}>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                            {CATEGORIES[categoryKey].label} Videos
+                          </h3>
+                          <div className="space-y-2">
+                            {categoryVideos.map(video => (
+                              <Card key={video.id} className="border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                                <CardContent className="p-0">
+                                  <div className="flex flex-col sm:flex-row">
+                                    {video.coverImageUrl ? (
+                                      <div className="relative w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex-shrink-0">
+                                        <img
+                                          src={video.coverImageUrl}
+                                          alt={video.title}
+                                          className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                                          <PlayCircle className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="w-full sm:w-48 h-48 sm:h-auto bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                        <Video className="h-12 w-12 text-slate-400" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 p-4 flex flex-col">
+                                      <div className="flex items-start gap-2 mb-2">
+                                        {!video.coverImageUrl && <Video className="h-5 w-5 text-slate-600 flex-shrink-0 mt-0.5" />}
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="text-sm font-semibold text-gray-900 mb-1">{video.title}</h4>
+                                        </div>
+                                      </div>
+                                      {video.description && (
+                                        <p className="text-xs text-gray-600 mb-3 flex-1">{video.description}</p>
+                                      )}
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
+                                        className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
+                                      >
+                                        <PlayCircle className="h-4 w-4 mr-1" />
+                                        Watch Video
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -1672,6 +1758,26 @@ export default function SMPTrainingPortal() {
                               <Eye className="h-4 w-4 mr-1" />
                               View
                             </Button>
+                            {canManageContent && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingVideo(video)
+                                  setEditVideoTitle(video.title.replace(' (SMP Training)', ''))
+                                  setEditVideoDescription(video.description?.replace(' - SMP Training Course', '') || '')
+                                  setEditVideoUrl(video.url)
+                                  setEditVideoDuration('')
+                                  setEditVideoCategory((video.category as SMPCategory) || '')
+                                  setEditVideoCoverImageUrl(video.coverImageUrl || null)
+                                  setEditVideoCoverImage(null)
+                                }}
+                                className="text-slate-600 border-slate-200 hover:bg-slate-50"
+                              >
+                                <PenSquare className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1682,6 +1788,176 @@ export default function SMPTrainingPortal() {
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Edit Video Dialog */}
+        <Dialog open={!!editingVideo} onOpenChange={(open) => !open && setEditingVideo(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Video</DialogTitle>
+              <DialogDescription>Update video information and category</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEditVideoSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="edit-video-title">Video Title *</Label>
+                <Input
+                  id="edit-video-title"
+                  placeholder="e.g., SMP Hairline Design Basics"
+                  value={editVideoTitle}
+                  onChange={(e) => {
+                    setEditVideoTitle(e.target.value)
+                    setVideoUploadError(null)
+                  }}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-video-category">Category *</Label>
+                <Select
+                  value={editVideoCategory}
+                  onValueChange={(value: SMPCategory) => {
+                    setEditVideoCategory(value)
+                    setVideoUploadError(null)
+                  }}
+                  required
+                >
+                  <SelectTrigger id="edit-video-category">
+                    <SelectValue placeholder="Select a category for this video" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(CATEGORIES) as SMPCategory[]).map((categoryKey) => (
+                      <SelectItem key={categoryKey} value={categoryKey}>
+                        {CATEGORIES[categoryKey].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  This determines which module category the video will appear in for students
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="edit-video-url">Video URL *</Label>
+                <Input
+                  id="edit-video-url"
+                  type="url"
+                  placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                  value={editVideoUrl}
+                  onChange={(e) => {
+                    setEditVideoUrl(e.target.value)
+                    setVideoUploadError(null)
+                  }}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-video-cover-image">Cover Image (optional)</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="edit-video-cover-image"
+                    type="file"
+                    accept="image/*"
+                    ref={editCoverImageInputRef}
+                    onChange={handleEditCoverImageChange}
+                    className="cursor-pointer"
+                  />
+                  {editVideoCoverImageUrl && (
+                    <div className="relative w-full h-48 border border-slate-200 rounded-md overflow-hidden bg-slate-50">
+                      <img
+                        src={editVideoCoverImageUrl}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setEditVideoCoverImage(null)
+                          setEditVideoCoverImageUrl(null)
+                          if (editCoverImageInputRef.current) {
+                            editCoverImageInputRef.current.value = ''
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Upload a new cover image to replace the existing one (max 5 MB). Recommended size: 1280x720px
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-video-description">Description (optional)</Label>
+                <Textarea
+                  id="edit-video-description"
+                  rows={3}
+                  placeholder="Brief description of the video content..."
+                  value={editVideoDescription}
+                  onChange={(e) => setEditVideoDescription(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-video-duration">Duration (optional)</Label>
+                <Input
+                  id="edit-video-duration"
+                  placeholder="e.g., 45 min"
+                  value={editVideoDuration}
+                  onChange={(e) => setEditVideoDuration(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingVideo(null)
+                    setEditVideoTitle('')
+                    setEditVideoDescription('')
+                    setEditVideoUrl('')
+                    setEditVideoDuration('')
+                    setEditVideoCategory('')
+                    setEditVideoCoverImage(null)
+                    setEditVideoCoverImageUrl(null)
+                    setVideoUploadError(null)
+                    setVideoUploadSuccess(null)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-slate-600 hover:bg-slate-700 text-white"
+                  disabled={isEditingVideo || isUploadingEditCover || !editVideoTitle.trim() || !editVideoUrl.trim() || !editVideoCategory}
+                >
+                  {isEditingVideo || isUploadingEditCover ? (
+                    <>
+                      <Upload className="h-4 w-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <PenSquare className="h-4 w-4 mr-2" />
+                      Update Video
+                    </>
+                  )}
+                </Button>
+              </div>
+              {videoUploadError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {videoUploadError}
+                </div>
+              )}
+              {videoUploadSuccess && (
+                <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+                  {videoUploadSuccess}
+                </div>
+              )}
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )
