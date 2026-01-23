@@ -44,7 +44,8 @@ import {
   PlayCircle,
   MessageSquare,
   UserCircle,
-  Trash2
+  Trash2,
+  ArrowLeft
 } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
 import { DiscussionBoard } from '@/components/training/discussion-board'
@@ -1163,6 +1164,16 @@ export default function SMPTrainingPortal() {
           </TabsList>
 
           <TabsContent value="student" className="space-y-6">
+            {/* Return to Training Hub */}
+            <div className="flex justify-start">
+              <Button variant="outline" asChild className="text-slate-600 border-slate-200 hover:bg-slate-50">
+                <Link href="/training">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Return to Training HUB
+                </Link>
+              </Button>
+            </div>
+
             {/* Step-by-Step Path */}
             <Card className="border-slate-200">
               <CardHeader>
@@ -1489,6 +1500,16 @@ export default function SMPTrainingPortal() {
 
           {canManageContent && (
             <TabsContent value="instructor" className="space-y-6">
+              {/* Return to Training Hub */}
+              <div className="flex justify-start">
+                <Button variant="outline" asChild className="text-slate-600 border-slate-200 hover:bg-slate-50">
+                  <Link href="/training">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Return to Training HUB
+                  </Link>
+                </Button>
+              </div>
+
               {/* Upload PDF Section */}
               <Card className="border-slate-200">
                 <CardHeader>
