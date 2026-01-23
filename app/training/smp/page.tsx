@@ -1225,30 +1225,53 @@ export default function SMPTrainingPortal() {
                         {modules.map((module) => (
                           <Card
                             key={module.id}
-                            className={`cursor-pointer transition-all ${
+                            className={`cursor-pointer transition-all overflow-hidden ${
                               selectedModule === module.id
                                 ? 'border-slate-600 bg-slate-50 shadow-md'
                                 : 'border-slate-200 hover:border-slate-400'
                             }`}
                             onClick={() => setSelectedModule(module.id)}
                           >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between mb-2">
-                                <Badge className="bg-slate-600 text-white">Module {module.order}</Badge>
-                                {selectedModule === module.id && (
-                                  <CheckCircle2 className="h-5 w-5 text-slate-600" />
-                                )}
-                              </div>
-                              <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
-                              <p className="text-sm text-gray-600">{module.description}</p>
-                              {module.subModules && module.subModules.length > 0 && (
-                                <div className="mt-2 pt-2 border-t border-slate-200">
-                                  <p className="text-xs text-slate-600">
-                                    {module.subModules.length} lesson{module.subModules.length !== 1 ? 's' : ''} included
-                                  </p>
+                            {module.coverImage && (
+                              <div className="relative w-full h-48 bg-slate-100 overflow-hidden">
+                                <img
+                                  src={module.coverImage}
+                                  alt={module.title}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                <div className="absolute top-2 right-2">
+                                  <Badge className="bg-slate-600 text-white">Module {module.order}</Badge>
                                 </div>
-                              )}
-                            </CardContent>
+                                {selectedModule === module.id && (
+                                  <div className="absolute top-2 left-2">
+                                    <CheckCircle2 className="h-5 w-5 text-white drop-shadow-lg" />
+                                  </div>
+                                )}
+                                <h3 className="absolute bottom-4 left-4 right-4 font-semibold text-white text-sm drop-shadow-lg">
+                                  {module.title}
+                                </h3>
+                              </div>
+                            )}
+                            {!module.coverImage && (
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-2">
+                                  <Badge className="bg-slate-600 text-white">Module {module.order}</Badge>
+                                  {selectedModule === module.id && (
+                                    <CheckCircle2 className="h-5 w-5 text-slate-600" />
+                                  )}
+                                </div>
+                                <h3 className="font-semibold text-gray-900 mb-1">{module.title}</h3>
+                                <p className="text-sm text-gray-600">{module.description}</p>
+                                {module.subModules && module.subModules.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-slate-200">
+                                    <p className="text-xs text-slate-600">
+                                      {module.subModules.length} lesson{module.subModules.length !== 1 ? 's' : ''} included
+                                    </p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            )}
                           </Card>
                         ))}
                       </div>
