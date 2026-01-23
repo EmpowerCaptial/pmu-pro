@@ -48,6 +48,7 @@ import {
 } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
 import { DiscussionBoard } from '@/components/training/discussion-board'
+import { VideoPlayer } from '@/components/training/video-player'
 
 type SMPCategory = 
   | 'hairline-design'
@@ -64,6 +65,7 @@ interface SMPModule {
   content: string[]
   order: number
   category: SMPCategory
+  coverImage?: string
   subModules?: Array<{
     id: string
     title: string
@@ -105,6 +107,7 @@ const SMP_MODULES: SMPModule[] = [
     description: 'Your step-by-step SMP system for precision, restraint, and repeatable results',
     category: 'business-foundations',
     order: 1,
+    coverImage: undefined, // Can be set to a URL later
     content: [
       'Welcome to MicroBarberTM Academy',
       'Congratulations on beginning your journey into the field of Scalp Micropigmentation (SMP)—a specialized, fast-growing solution in the world of hair loss. At Universal Beauty Studio Academy, we are committed to delivering education that is practical, thorough, and rooted in real-world experience, so you can confidently create natural, lasting results for your clients.',
@@ -664,6 +667,9 @@ export default function SMPTrainingPortal() {
   const [isEditingVideo, setIsEditingVideo] = useState(false)
   const [isUploadingEditCover, setIsUploadingEditCover] = useState(false)
   const editCoverImageInputRef = useRef<HTMLInputElement>(null)
+  // Video player state
+  const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null)
+  const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
 
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageContent = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
@@ -1306,7 +1312,10 @@ export default function SMPTrainingPortal() {
                                               <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
+                                                onClick={() => {
+                                                  setSelectedVideo({ url: video.url, title: video.title })
+                                                  setVideoPlayerOpen(true)
+                                                }}
                                                 className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
                                               >
                                                 <PlayCircle className="h-4 w-4 mr-1" />
@@ -1718,7 +1727,10 @@ export default function SMPTrainingPortal() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
+                              onClick={() => {
+                                setSelectedVideo({ url: video.url, title: video.title })
+                                setVideoPlayerOpen(true)
+                              }}
                               className="text-slate-600 border-slate-200 hover:bg-slate-50"
                             >
                               <Eye className="h-4 w-4 mr-1" />
@@ -1924,6 +1936,19 @@ export default function SMPTrainingPortal() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Video Player Dialog */}
+        {selectedVideo && (
+          <VideoPlayer
+            url={selectedVideo.url}
+            title={selectedVideo.title}
+            open={videoPlayerOpen}
+            onClose={() => {
+              setVideoPlayerOpen(false)
+              setSelectedVideo(null)
+            }}
+          />
+        )}
       </main>
     </div>
   )
