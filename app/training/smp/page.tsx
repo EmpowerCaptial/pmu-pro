@@ -45,7 +45,8 @@ import {
   MessageSquare,
   UserCircle,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Plus
 } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
 import { DiscussionBoard } from '@/components/training/discussion-board'
