@@ -572,7 +572,13 @@ export default function FundamentalsTrainingPortal() {
           throw new Error(data?.error || 'Unable to load assignments.')
         }
 
-        const persistedAssignments: Assignment[] = (data.assignments || []).map((assignment: any) => {
+        const persistedAssignments: Assignment[] = (data.assignments || [])
+          .filter((assignment: any) => {
+            // Only include assignments for fundamentals course (week-1, week-2, etc.)
+            // Filter out SMP assignments (which use module IDs like 'welcome', 'what-is-smp', etc.)
+            return assignment.weekId && assignment.weekId.startsWith('week-')
+          })
+          .map((assignment: any) => {
           let video: LectureVideo | undefined
           if (assignment.video) {
             const upload = assignment.video
