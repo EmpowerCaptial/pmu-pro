@@ -382,6 +382,14 @@ export default function FundamentalsTrainingPortal() {
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null)
   const [videoUploadSuccess, setVideoUploadSuccess] = useState<string | null>(null)
   const [videoUploadProgress, setVideoUploadProgress] = useState<number | null>(null)
+  // Video edit state
+  const [editingVideo, setEditingVideo] = useState<LectureVideo | null>(null)
+  const [editVideoTitle, setEditVideoTitle] = useState('')
+  const [editVideoDescription, setEditVideoDescription] = useState('')
+  const [editVideoDuration, setEditVideoDuration] = useState('')
+  const [editVideoCategory, setEditVideoCategory] = useState<string>('')
+  const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [isEditingVideo, setIsEditingVideo] = useState(false)
   const [pdfFileName, setPdfFileName] = useState<string | null>(null)
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -1383,6 +1391,96 @@ export default function FundamentalsTrainingPortal() {
     setDeleteConfirmText('')
     setDeleteError(null)
     setIsDeleteDialogOpen(true)
+  }
+
+  const openEditVideoDialog = (video: LectureVideo) => {
+    if (video.videoType !== 'url') {
+      setVideoUploadError('Only URL videos can be edited.')
+      return
+    }
+    setEditingVideo(video)
+    setEditVideoTitle(video.title)
+    setEditVideoDescription(video.description || '')
+    setEditVideoDuration(video.duration || '')
+    setEditVideoCategory(video.category || '')
+    setEditVideoUrl(video.url)
+    setVideoUploadError(null)
+    setVideoUploadSuccess(null)
+  }
+
+  const handleEditVideoSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    
+    if (!currentUser?.email || !editingVideo) {
+      setVideoUploadError('You must be logged in to edit videos.')
+      return
+    }
+
+    const trimmedUrl = editVideoUrl.trim()
+    const trimmedTitle = editVideoTitle.trim()
+
+    if (!trimmedUrl) {
+      setVideoUploadError('Please enter a video URL.')
+      return
+    }
+
+    if (!trimmedTitle) {
+      setVideoUploadError('Please enter a video title.')
+      return
+    }
+
+    if (!editVideoCategory) {
+      setVideoUploadError('Please select a category for this video.')
+      return
+    }
+
+    // Basic URL validation
+    try {
+      new URL(trimmedUrl)
+    } catch {
+      setVideoUploadError('Please enter a valid URL (e.g., https://youtube.com/watch?v=...).')
+      return
+    }
+
+    setIsEditingVideo(true)
+    setVideoUploadError(null)
+    setVideoUploadSuccess(null)
+
+    try {
+      const response = await fetch(`/api/training/videos/${editingVideo.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          title: trimmedTitle,
+          description: editVideoDescription.trim() || undefined,
+          durationLabel: editVideoDuration.trim() || undefined,
+          url: trimmedUrl,
+          category: editVideoCategory || undefined
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to update video.')
+      }
+
+      setVideoUploadSuccess('Video updated successfully.')
+      setEditingVideo(null)
+      setEditVideoTitle('')
+      setEditVideoDescription('')
+      setEditVideoDuration('')
+      setEditVideoCategory('')
+      setEditVideoUrl('')
+      await fetchTrainingVideos(false)
+    } catch (error) {
+      console.error('Failed to update video:', error)
+      setVideoUploadError(error instanceof Error ? error.message : 'Failed to update the video.')
+    } finally {
+      setIsEditingVideo(false)
+    }
   }
 
   // Convert video URL to embeddable format
@@ -2609,6 +2707,17 @@ export default function FundamentalsTrainingPortal() {
                                           <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
                                             Watch
                                           </Button>
+                                          {canManageVideos && activeTab === 'instructor' && video.videoType === 'url' && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                                              onClick={() => openEditVideoDialog(video)}
+                                            >
+                                              <PenSquare className="h-4 w-4 mr-1" />
+                                              Edit
+                                            </Button>
+                                          )}
                                           {canManageVideos && activeTab === 'instructor' && (
                                             <Button
                                               size="sm"
@@ -2660,6 +2769,17 @@ export default function FundamentalsTrainingPortal() {
                                         <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
                                           Watch
                                         </Button>
+                                        {canManageVideos && activeTab === 'instructor' && video.videoType === 'url' && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                                            onClick={() => openEditVideoDialog(video)}
+                                          >
+                                            <PenSquare className="h-4 w-4 mr-1" />
+                                            Edit
+                                          </Button>
+                                        )}
                                         {canManageVideos && activeTab === 'instructor' && (
                                           <Button
                                             size="sm"
