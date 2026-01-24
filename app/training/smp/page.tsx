@@ -672,6 +672,53 @@ export default function SMPTrainingPortal() {
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null)
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
 
+  // Assignment state
+  interface SMPAssignment {
+    id: string
+    title: string
+    description: string
+    dueDate: string
+    status: 'pending' | 'submitted' | 'graded'
+    rubric?: string
+    estimatedHours?: number
+    moduleId: string
+    dueDateISO?: string | null
+    isPersisted?: boolean
+  }
+  
+  const [moduleAssignments, setModuleAssignments] = useState<Record<string, SMPAssignment[]>>({})
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(false)
+  const [assignmentError, setAssignmentError] = useState<string | null>(null)
+  const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null)
+  const [openRubricId, setOpenRubricId] = useState<string | null>(null)
+  const [assignmentPendingUpload, setAssignmentPendingUpload] = useState<SMPAssignment | null>(null)
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  
+  // Assignment creation state
+  const [newAssignmentTitle, setNewAssignmentTitle] = useState('')
+  const [newAssignmentDescription, setNewAssignmentDescription] = useState('')
+  const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('')
+  const [newAssignmentModuleId, setNewAssignmentModuleId] = useState<string>('')
+  const [newAssignmentHours, setNewAssignmentHours] = useState<string>('')
+  const [newAssignmentRubric, setNewAssignmentRubric] = useState('')
+  const [isSavingAssignment, setIsSavingAssignment] = useState(false)
+  
+  // Assignment edit state
+  const [editingAssignment, setEditingAssignment] = useState<SMPAssignment | null>(null)
+  const [editAssignmentTitle, setEditAssignmentTitle] = useState('')
+  const [editAssignmentDescription, setEditAssignmentDescription] = useState('')
+  const [editAssignmentDueDate, setEditAssignmentDueDate] = useState('')
+  const [editAssignmentHours, setEditAssignmentHours] = useState<string>('')
+  const [editAssignmentRubric, setEditAssignmentRubric] = useState('')
+  const [isEditAssignmentDialogOpen, setIsEditAssignmentDialogOpen] = useState(false)
+  
+  // Assignment delete state
+  const [assignmentPendingDelete, setAssignmentPendingDelete] = useState<{ assignment: SMPAssignment; moduleId: string } | null>(null)
+  const [isDeleteAssignmentDialogOpen, setIsDeleteAssignmentDialogOpen] = useState(false)
+  const [deleteAssignmentConfirmText, setDeleteAssignmentConfirmText] = useState('')
+  const [deleteAssignmentError, setDeleteAssignmentError] = useState<string | null>(null)
+  const [isDeletingAssignment, setIsDeletingAssignment] = useState(false)
+
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageContent = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
 
@@ -729,6 +776,238 @@ export default function SMPTrainingPortal() {
       fetchSMPVideos()
     }
   }, [activeTab, fetchSMPVideos])
+
+  // Fetch assignments for SMP modules
+  const fetchAssignments = useCallback(async () => {
+    if (!currentUser?.email) return
+    
+    setIsLoadingAssignments(true)
+    setAssignmentError(null)
+    try {
+      const response = await fetch('/api/training/assignments', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to load assignments')
+      }
+      
+      const data = await response.json()
+      // Filter assignments for SMP modules (weekId will contain module IDs for SMP)
+      const assignments: SMPAssignment[] = (data.assignments || [])
+        .filter((a: any) => SMP_MODULES.some(m => m.id === a.weekId))
+        .map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          description: a.description || '',
+          dueDate: a.dueDateLabel || 'Due date shared in class',
+          dueDateISO: a.dueDateISO || null,
+          status: (a.status || 'pending') as 'pending' | 'submitted' | 'graded',
+          estimatedHours: a.estimatedHours ?? undefined,
+          rubric: a.rubric ?? undefined,
+          moduleId: a.weekId, // Using weekId to store moduleId
+          isPersisted: true
+        }))
+      
+      // Group assignments by moduleId
+      const grouped: Record<string, SMPAssignment[]> = {}
+      assignments.forEach(assignment => {
+        if (!grouped[assignment.moduleId]) {
+          grouped[assignment.moduleId] = []
+        }
+        grouped[assignment.moduleId].push(assignment)
+      })
+      
+      setModuleAssignments(grouped)
+    } catch (error) {
+      console.error('Failed to fetch assignments:', error)
+      setAssignmentError(error instanceof Error ? error.message : 'Failed to load assignments')
+    } finally {
+      setIsLoadingAssignments(false)
+    }
+  }, [currentUser?.email])
+
+  useEffect(() => {
+    fetchAssignments()
+  }, [fetchAssignments])
+
+  // Assignment CRUD handlers
+  const handleCreateAssignment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    
+    if (!currentUser?.email || !canEditAssignments) {
+      setAssignmentError('You do not have permission to create assignments.')
+      return
+    }
+
+    if (!newAssignmentTitle.trim()) {
+      setAssignmentError('Please enter an assignment title.')
+      return
+    }
+
+    if (!newAssignmentModuleId) {
+      setAssignmentError('Please select a module for this assignment.')
+      return
+    }
+
+    setIsSavingAssignment(true)
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+
+    try {
+      const response = await fetch('/api/training/assignments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          weekId: newAssignmentModuleId, // Using weekId field to store moduleId
+          title: newAssignmentTitle.trim(),
+          description: newAssignmentDescription.trim() || '',
+          dueDateLabel: newAssignmentDueDate.trim() || 'Due date shared in class',
+          dueDateISO: newAssignmentDueDate ? new Date(newAssignmentDueDate).toISOString() : null,
+          status: 'pending',
+          estimatedHours: newAssignmentHours ? parseFloat(newAssignmentHours) : null,
+          rubric: newAssignmentRubric.trim() || null
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create assignment')
+      }
+
+      setAssignmentSuccess('Assignment created successfully!')
+      setNewAssignmentTitle('')
+      setNewAssignmentDescription('')
+      setNewAssignmentDueDate('')
+      setNewAssignmentModuleId('')
+      setNewAssignmentHours('')
+      setNewAssignmentRubric('')
+      await fetchAssignments()
+    } catch (error) {
+      console.error('Failed to create assignment:', error)
+      setAssignmentError(error instanceof Error ? error.message : 'Failed to create assignment')
+    } finally {
+      setIsSavingAssignment(false)
+    }
+  }
+
+  const openEditAssignmentDialog = (assignment: SMPAssignment, moduleId: string) => {
+    if (!canEditAssignments) return
+    setEditingAssignment(assignment)
+    setEditAssignmentTitle(assignment.title)
+    setEditAssignmentDescription(assignment.description)
+    setEditAssignmentDueDate(assignment.dueDateISO ? new Date(assignment.dueDateISO).toISOString().split('T')[0] : '')
+    setEditAssignmentHours(assignment.estimatedHours?.toString() || '')
+    setEditAssignmentRubric(assignment.rubric || '')
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+    setIsEditAssignmentDialogOpen(true)
+  }
+
+  const closeEditAssignmentDialog = () => {
+    setEditingAssignment(null)
+    setEditAssignmentTitle('')
+    setEditAssignmentDescription('')
+    setEditAssignmentDueDate('')
+    setEditAssignmentHours('')
+    setEditAssignmentRubric('')
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+    setIsEditAssignmentDialogOpen(false)
+  }
+
+  const handleUpdateAssignment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    
+    if (!currentUser?.email || !editingAssignment || !canEditAssignments) {
+      setAssignmentError('You do not have permission to update assignments.')
+      return
+    }
+
+    setIsSavingAssignment(true)
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+
+    try {
+      const response = await fetch(`/api/training/assignments/${editingAssignment.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          weekId: editingAssignment.moduleId,
+          title: editAssignmentTitle.trim(),
+          description: editAssignmentDescription.trim() || '',
+          dueDateLabel: editAssignmentDueDate.trim() || 'Due date shared in class',
+          dueDateISO: editAssignmentDueDate ? new Date(editAssignmentDueDate).toISOString() : null,
+          estimatedHours: editAssignmentHours ? parseFloat(editAssignmentHours) : null,
+          rubric: editAssignmentRubric.trim() || null
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to update assignment')
+      }
+
+      setAssignmentSuccess('Assignment updated successfully!')
+      closeEditAssignmentDialog()
+      await fetchAssignments()
+    } catch (error) {
+      console.error('Failed to update assignment:', error)
+      setAssignmentError(error instanceof Error ? error.message : 'Failed to update assignment')
+    } finally {
+      setIsSavingAssignment(false)
+    }
+  }
+
+  const openDeleteAssignmentDialog = (assignment: SMPAssignment, moduleId: string) => {
+    if (!canEditAssignments) return
+    setAssignmentError(null)
+    setAssignmentSuccess(null)
+    setAssignmentPendingDelete({ assignment, moduleId })
+    setDeleteAssignmentConfirmText('')
+    setDeleteAssignmentError(null)
+    setIsDeleteAssignmentDialogOpen(true)
+  }
+
+  const handleDeleteAssignment = async () => {
+    if (!assignmentPendingDelete || !currentUser?.email) return
+    
+    setIsDeletingAssignment(true)
+    setDeleteAssignmentError(null)
+
+    try {
+      const response = await fetch(`/api/training/assignments/${assignmentPendingDelete.assignment.id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to delete assignment')
+      }
+
+      setAssignmentSuccess('Assignment deleted successfully!')
+      setIsDeleteAssignmentDialogOpen(false)
+      setAssignmentPendingDelete(null)
+      setDeleteAssignmentConfirmText('')
+      await fetchAssignments()
+    } catch (error) {
+      console.error('Failed to delete assignment:', error)
+      setDeleteAssignmentError(error instanceof Error ? error.message : 'Failed to delete assignment')
+    } finally {
+      setIsDeletingAssignment(false)
+    }
+  }
 
   // PDF Upload Handlers
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -1387,6 +1666,85 @@ export default function SMPTrainingPortal() {
                                 </div>
                               </div>
                             )}
+                            
+                            {/* Assignments for this module */}
+                            {(() => {
+                              const moduleAssignmentsList = moduleAssignments[selectedModule] || []
+                              return moduleAssignmentsList.length > 0 ? (
+                                <div className="mt-6 pt-6 border-t border-slate-200">
+                                  <h4 className="font-semibold text-gray-900 mb-3">Module Assignments</h4>
+                                  <div className="space-y-3">
+                                    {moduleAssignmentsList.map(assignment => (
+                                      <Card key={assignment.id} className="border border-slate-200 shadow-sm">
+                                        <CardContent className="p-4 space-y-3">
+                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div>
+                                              <h5 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                                                <FileText className="h-5 w-5 text-slate-600" />
+                                                {assignment.title}
+                                              </h5>
+                                              <p className="text-sm text-gray-600 leading-relaxed mt-1">{assignment.description}</p>
+                                            </div>
+                                            <Badge
+                                              className={
+                                                assignment.status === 'graded'
+                                                  ? 'bg-green-100 text-green-700 border border-green-200'
+                                                  : assignment.status === 'submitted'
+                                                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                                  : 'bg-amber-100 text-amber-700 border border-amber-200'
+                                              }
+                                            >
+                                              {assignment.status === 'graded' && 'Graded'}
+                                              {assignment.status === 'submitted' && 'Submitted'}
+                                              {assignment.status === 'pending' && 'Pending'}
+                                            </Badge>
+                                          </div>
+                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              <span>{assignment.dueDate}</span>
+                                              {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
+                                                <Badge className="bg-slate-100 text-slate-700 border border-slate-200">
+                                                  ~{assignment.estimatedHours} hrs
+                                                </Badge>
+                                              )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  setAssignmentPendingUpload(assignment)
+                                                  setUploadDialogOpen(true)
+                                                }}
+                                              >
+                                                <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                              </Button>
+                                              {assignment.rubric && (
+                                                <Button
+                                                  size="sm"
+                                                  variant="secondary"
+                                                  onClick={() =>
+                                                    setOpenRubricId(prev => (prev === assignment.id ? null : assignment.id))
+                                                  }
+                                                >
+                                                  <Eye className="h-4 w-4 mr-1" />
+                                                  {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                                </Button>
+                                              )}
+                                            </div>
+                                          </div>
+                                          {assignment.rubric && openRubricId === assignment.id && (
+                                            <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 whitespace-pre-line">
+                                              {assignment.rubric}
+                                            </div>
+                                          )}
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null
+                            })()}
                           </CardContent>
                         </Card>
                       )}
@@ -1807,9 +2165,372 @@ export default function SMPTrainingPortal() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Assignment Management Section */}
+              <Card className="border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold text-gray-900">Module Assignments</CardTitle>
+                  <CardDescription>Create and manage assignments for each module</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {assignmentError && (
+                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {assignmentError}
+                    </div>
+                  )}
+                  {assignmentSuccess && (
+                    <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                      {assignmentSuccess}
+                    </div>
+                  )}
+                  
+                  {/* Create Assignment Form */}
+                  <form onSubmit={handleCreateAssignment} className="space-y-4">
+                    <div>
+                      <Label htmlFor="assignment-module">Module *</Label>
+                      <Select
+                        value={newAssignmentModuleId}
+                        onValueChange={setNewAssignmentModuleId}
+                        required
+                      >
+                        <SelectTrigger id="assignment-module">
+                          <SelectValue placeholder="Select a module" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SMP_MODULES.map(module => (
+                            <SelectItem key={module.id} value={module.id}>
+                              {module.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="assignment-title">Assignment Title *</Label>
+                      <Input
+                        id="assignment-title"
+                        placeholder="e.g., Hairline Design Practice"
+                        value={newAssignmentTitle}
+                        onChange={(e) => setNewAssignmentTitle(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="assignment-description">Description</Label>
+                      <Textarea
+                        id="assignment-description"
+                        rows={3}
+                        placeholder="Describe what students need to complete..."
+                        value={newAssignmentDescription}
+                        onChange={(e) => setNewAssignmentDescription(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label htmlFor="assignment-due-date">Due Date (optional)</Label>
+                        <Input
+                          id="assignment-due-date"
+                          type="date"
+                          value={newAssignmentDueDate}
+                          onChange={(e) => setNewAssignmentDueDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="assignment-hours">Estimated Hours (optional)</Label>
+                        <Input
+                          id="assignment-hours"
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          placeholder="e.g., 2.5"
+                          value={newAssignmentHours}
+                          onChange={(e) => setNewAssignmentHours(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="assignment-rubric">Rubric/Grading Criteria (optional)</Label>
+                      <Textarea
+                        id="assignment-rubric"
+                        rows={4}
+                        placeholder="Enter grading criteria, point breakdown, or evaluation standards..."
+                        value={newAssignmentRubric}
+                        onChange={(e) => setNewAssignmentRubric(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-slate-600 hover:bg-slate-700 text-white"
+                      disabled={isSavingAssignment || !newAssignmentTitle.trim() || !newAssignmentModuleId}
+                    >
+                      {isSavingAssignment ? (
+                        <>
+                          <Upload className="h-4 w-4 mr-2 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Assignment
+                        </>
+                      )}
+                    </Button>
+                  </form>
+
+                  {/* Existing Assignments */}
+                  {isLoadingAssignments && (
+                    <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+                      Loading assignments...
+                    </div>
+                  )}
+                  {!isLoadingAssignments && Object.keys(moduleAssignments).length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900">Existing Assignments</h4>
+                      {Object.entries(moduleAssignments).map(([moduleId, assignments]) => {
+                        const module = SMP_MODULES.find(m => m.id === moduleId)
+                        if (!module || assignments.length === 0) return null
+                        return (
+                          <div key={moduleId} className="space-y-2">
+                            <h5 className="text-sm font-medium text-gray-700">{module.title}</h5>
+                            {assignments.map(assignment => (
+                              <Card key={assignment.id} className="border border-slate-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                      <h6 className="font-semibold text-gray-900">{assignment.title}</h6>
+                                      {assignment.description && (
+                                        <p className="text-sm text-gray-600 mt-1">{assignment.description}</p>
+                                      )}
+                                      <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+                                        <span>{assignment.dueDate}</span>
+                                        {assignment.estimatedHours && (
+                                          <span>~{assignment.estimatedHours} hrs</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openEditAssignmentDialog(assignment, moduleId)}
+                                      >
+                                        <PenSquare className="h-4 w-4 mr-1" />
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => openDeleteAssignmentDialog(assignment, moduleId)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-1" />
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Assignment Upload Dialog */}
+        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Assignment</DialogTitle>
+              <DialogDescription>
+                {assignmentPendingUpload
+                  ? `Submit your work for "${assignmentPendingUpload.title}"`
+                  : 'Submit your assignment work'}
+              </DialogDescription>
+            </DialogHeader>
+            {assignmentPendingUpload && (
+              <div className="space-y-4">
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-2">
+                  <p className="text-sm font-semibold text-gray-900">{assignmentPendingUpload.title}</p>
+                  {assignmentPendingUpload.description && (
+                    <p className="text-sm text-gray-600">{assignmentPendingUpload.description}</p>
+                  )}
+                  <p className="text-xs text-gray-500">Due: {assignmentPendingUpload.dueDate}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-700">
+                    To submit your assignment, email your work to the instructor:
+                  </p>
+                  <Button asChild className="w-full bg-slate-600 hover:bg-slate-700 text-white">
+                    <Link href={`mailto:Instructor@universalbeautystudio.com?subject=SMP Training Assignment Submission: ${encodeURIComponent(assignmentPendingUpload.title)}`}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Email Instructor
+                    </Link>
+                  </Button>
+                  <p className="text-xs text-gray-500">
+                    Attach your files (photos, documents, etc.) to the email. Include your name and the assignment title in the email body.
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Assignment Dialog */}
+        <Dialog open={isEditAssignmentDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            closeEditAssignmentDialog()
+          }
+        }}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Assignment</DialogTitle>
+              <DialogDescription>Update assignment details</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateAssignment} className="space-y-4">
+              <div>
+                <Label htmlFor="edit-assignment-title">Assignment Title *</Label>
+                <Input
+                  id="edit-assignment-title"
+                  value={editAssignmentTitle}
+                  onChange={(e) => setEditAssignmentTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-assignment-description">Description</Label>
+                <Textarea
+                  id="edit-assignment-description"
+                  rows={3}
+                  value={editAssignmentDescription}
+                  onChange={(e) => setEditAssignmentDescription(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="edit-assignment-due-date">Due Date (optional)</Label>
+                  <Input
+                    id="edit-assignment-due-date"
+                    type="date"
+                    value={editAssignmentDueDate}
+                    onChange={(e) => setEditAssignmentDueDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-assignment-hours">Estimated Hours (optional)</Label>
+                  <Input
+                    id="edit-assignment-hours"
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={editAssignmentHours}
+                    onChange={(e) => setEditAssignmentHours(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-assignment-rubric">Rubric/Grading Criteria (optional)</Label>
+                <Textarea
+                  id="edit-assignment-rubric"
+                  rows={4}
+                  value={editAssignmentRubric}
+                  onChange={(e) => setEditAssignmentRubric(e.target.value)}
+                />
+              </div>
+              {assignmentError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {assignmentError}
+                </div>
+              )}
+              {assignmentSuccess && (
+                <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                  {assignmentSuccess}
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={closeEditAssignmentDialog}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSavingAssignment} className="bg-slate-600 hover:bg-slate-700 text-white">
+                  {isSavingAssignment ? 'Updating...' : 'Update Assignment'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Assignment Dialog */}
+        <Dialog open={isDeleteAssignmentDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setIsDeleteAssignmentDialogOpen(false)
+            setAssignmentPendingDelete(null)
+            setDeleteAssignmentConfirmText('')
+            setDeleteAssignmentError(null)
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Assignment</DialogTitle>
+              <DialogDescription>
+                {assignmentPendingDelete
+                  ? `This will permanently remove "${assignmentPendingDelete.assignment.title}" from the module.`
+                  : 'This will permanently remove the selected assignment.'}
+              </DialogDescription>
+            </DialogHeader>
+            {assignmentPendingDelete && (
+              <div className="space-y-3 text-sm text-gray-700">
+                <p>
+                  Type <span className="font-semibold text-gray-900">"{assignmentPendingDelete.assignment.title}"</span> to confirm deletion.
+                </p>
+                <Input
+                  value={deleteAssignmentConfirmText}
+                  onChange={(e) => setDeleteAssignmentConfirmText(e.target.value)}
+                  placeholder={assignmentPendingDelete.assignment.title}
+                />
+                {deleteAssignmentError && (
+                  <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {deleteAssignmentError}
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteAssignmentDialogOpen(false)
+                  setAssignmentPendingDelete(null)
+                  setDeleteAssignmentConfirmText('')
+                  setDeleteAssignmentError(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={
+                  !assignmentPendingDelete ||
+                  deleteAssignmentConfirmText.trim() !== assignmentPendingDelete.assignment.title ||
+                  isDeletingAssignment
+                }
+                onClick={handleDeleteAssignment}
+              >
+                {isDeletingAssignment ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Video Dialog */}
         <Dialog open={!!editingVideo} onOpenChange={(open) => !open && setEditingVideo(null)}>
