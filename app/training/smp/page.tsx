@@ -722,6 +722,8 @@ export default function SMPTrainingPortal() {
 
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const canManageContent = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
+  const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
+  const canEditAssignments = canManageAssignments && activeTab === 'instructor'
 
   const user = currentUser ? {
     name: currentUser.name,
