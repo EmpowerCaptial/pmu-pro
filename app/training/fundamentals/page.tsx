@@ -78,6 +78,7 @@ interface LectureVideo {
   uploadedAt?: string
   uploadedBy?: string
   videoType?: 'file' | 'url' // 'file' for uploaded videos, 'url' for external links
+  category?: string // Category for URL videos: 'scalp-micropigmentation', 'permanent-make-up', 'paramedical-cosmetics'
 }
 
 interface ZoomSession {
@@ -374,6 +375,7 @@ export default function FundamentalsTrainingPortal() {
   const [newVideoTitle, setNewVideoTitle] = useState('')
   const [newVideoDescription, setNewVideoDescription] = useState('')
   const [newVideoDuration, setNewVideoDuration] = useState('')
+  const [newVideoCategory, setNewVideoCategory] = useState<string>('')
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState<string>('')
   const [videoUploadType, setVideoUploadType] = useState<'file' | 'url'>('file')
@@ -1236,6 +1238,11 @@ export default function FundamentalsTrainingPortal() {
         return
       }
 
+      if (!newVideoCategory) {
+        setVideoUploadError('Please select a category for this video.')
+        return
+      }
+
       // Basic URL validation
       try {
         new URL(trimmedUrl)
@@ -1255,7 +1262,8 @@ export default function FundamentalsTrainingPortal() {
             title: trimmedTitle,
             description,
             durationLabel,
-            url: trimmedUrl
+            url: trimmedUrl,
+            category: newVideoCategory || undefined
           })
         })
 
@@ -1269,6 +1277,7 @@ export default function FundamentalsTrainingPortal() {
         setNewVideoTitle('')
         setNewVideoDescription('')
         setNewVideoDuration('')
+        setNewVideoCategory('')
         setVideoUploadType('file') // Reset to file upload for next time
         await fetchTrainingVideos(false)
       } catch (error) {
