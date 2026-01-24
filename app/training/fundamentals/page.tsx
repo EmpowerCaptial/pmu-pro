@@ -823,7 +823,8 @@ export default function FundamentalsTrainingPortal() {
             fileSize: v.fileSize,
             uploadedAt: v.uploadedAt,
             uploadedBy: v.uploadedBy,
-            videoType: v.videoType || 'file'
+            videoType: v.videoType || 'file',
+            category: v.category || undefined
           }))
           setWeekVideos(prev => ({ ...prev, [weekId]: videos }))
           const videoIds = videos.map(v => v.id)
@@ -2547,52 +2548,138 @@ export default function FundamentalsTrainingPortal() {
                         {videoError}
                       </div>
                     )}
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {lectureVideos.length === 0 && !isLoadingVideos && !videoError && (
-                        <div className="md:col-span-2 rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 text-center">
-                          Instructors have not uploaded any lecture recordings yet. New videos will appear here as soon as they are published.
+                    {lectureVideos.length === 0 && !isLoadingVideos && !videoError && (
+                      <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 text-center">
+                        Instructors have not uploaded any lecture recordings yet. New videos will appear here as soon as they are published.
+                      </div>
+                    )}
+                    {(() => {
+                      // Group videos by category (only URL videos have categories)
+                      const urlVideos = lectureVideos.filter(v => v.videoType === 'url' && v.category)
+                      const fileVideos = lectureVideos.filter(v => v.videoType !== 'url' || !v.category)
+                      
+                      const categoryMap: Record<string, LectureVideo[]> = {
+                        'scalp-micropigmentation': [],
+                        'permanent-make-up': [],
+                        'paramedical-cosmetics': []
+                      }
+                      
+                      urlVideos.forEach(video => {
+                        if (video.category && categoryMap[video.category]) {
+                          categoryMap[video.category].push(video)
+                        }
+                      })
+                      
+                      const categoryLabels: Record<string, string> = {
+                        'scalp-micropigmentation': 'Scalp Micropigmentation',
+                        'permanent-make-up': 'Permanent Make Up',
+                        'paramedical-cosmetics': 'Paramedical Cosmetics'
+                      }
+                      
+                      return (
+                        <div className="space-y-6">
+                          {/* Category sections for URL videos */}
+                          {Object.entries(categoryMap).map(([categoryKey, videos]) => {
+                            if (videos.length === 0) return null
+                            return (
+                              <div key={categoryKey}>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-2">
+                                  {categoryLabels[categoryKey] || categoryKey}
+                                </h3>
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  {videos.map(video => (
+                                    <Card key={video.id} className="border border-gray-200 shadow-sm break-words">
+                                      <CardContent className="p-4 space-y-3 break-words">
+                                        <div className="flex items-center gap-2">
+                                          <Video className="h-5 w-5 text-purple-600" />
+                                          <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
+                                          <Badge variant="outline" className="text-xs">External Video</Badge>
+                                        </div>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{video.description || 'Instructor uploaded lesson recording.'}</p>
+                                        <div className="text-xs text-gray-500 space-y-1">
+                                          <div className="flex flex-wrap gap-2">
+                                            <span><strong>Duration:</strong> {video.duration || 'Self-paced'}</span>
+                                          </div>
+                                          <div className="flex flex-wrap gap-2">
+                                            {video.uploadedBy && <span><strong>Instructor:</strong> {video.uploadedBy}</span>}
+                                            {video.uploadedAt && <span><strong>Uploaded:</strong> {formatDateTime(video.uploadedAt)}</span>}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
+                                            Watch
+                                          </Button>
+                                          {canManageVideos && activeTab === 'instructor' && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="border-red-200 text-red-600 hover:bg-red-50"
+                                              onClick={() => openDeleteDialog(video)}
+                                            >
+                                              Delete
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })}
+                          
+                          {/* File uploads and uncategorized URL videos */}
+                          {fileVideos.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-2">
+                                Other Videos
+                              </h3>
+                              <div className="grid gap-4 md:grid-cols-2">
+                                {fileVideos.map(video => (
+                                  <Card key={video.id} className="border border-gray-200 shadow-sm break-words">
+                                    <CardContent className="p-4 space-y-3 break-words">
+                                      <div className="flex items-center gap-2">
+                                        <Video className="h-5 w-5 text-purple-600" />
+                                        <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
+                                        {video.videoType === 'url' && (
+                                          <Badge variant="outline" className="text-xs">External Video</Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-sm text-gray-600 leading-relaxed">{video.description || 'Instructor uploaded lesson recording.'}</p>
+                                      <div className="text-xs text-gray-500 space-y-1">
+                                        <div className="flex flex-wrap gap-2">
+                                          <span><strong>Duration:</strong> {video.duration || 'Self-paced'}</span>
+                                          {video.fileSize && video.videoType !== 'url' ? <span><strong>Size:</strong> {formatFileSize(video.fileSize)}</span> : null}
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                          {video.uploadedBy && <span><strong>Instructor:</strong> {video.uploadedBy}</span>}
+                                          {video.uploadedAt && <span><strong>Uploaded:</strong> {formatDateTime(video.uploadedAt)}</span>}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
+                                          Watch
+                                        </Button>
+                                        {canManageVideos && activeTab === 'instructor' && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="border-red-200 text-red-600 hover:bg-red-50"
+                                            onClick={() => openDeleteDialog(video)}
+                                          >
+                                            Delete
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {lectureVideos.map(video => (
-                        <Card key={video.id} className="border border-gray-200 shadow-sm break-words">
-                          <CardContent className="p-4 space-y-3 break-words">
-                            <div className="flex items-center gap-2">
-                              <Video className="h-5 w-5 text-purple-600" />
-                              <h3 className="text-base font-semibold text-gray-900">{video.title}</h3>
-                              {video.videoType === 'url' && (
-                                <Badge variant="outline" className="text-xs">External Video</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-600 leading-relaxed">{video.description || 'Instructor uploaded lesson recording.'}</p>
-                            <div className="text-xs text-gray-500 space-y-1">
-                              <div className="flex flex-wrap gap-2">
-                                <span><strong>Duration:</strong> {video.duration || 'Self-paced'}</span>
-                                {video.fileSize && video.videoType !== 'url' ? <span><strong>Size:</strong> {formatFileSize(video.fileSize)}</span> : null}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {video.uploadedBy && <span><strong>Instructor:</strong> {video.uploadedBy}</span>}
-                                {video.uploadedAt && <span><strong>Uploaded:</strong> {formatDateTime(video.uploadedAt)}</span>}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button size="sm" onClick={() => openVideoPlayer(video)} className="flex-1">
-                                Watch
-                              </Button>
-                              {canManageVideos && activeTab === 'instructor' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-red-200 text-red-600 hover:bg-red-50"
-                                  onClick={() => openDeleteDialog(video)}
-                                >
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
 
