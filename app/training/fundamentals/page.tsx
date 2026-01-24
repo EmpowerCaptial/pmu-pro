@@ -740,7 +740,8 @@ export default function FundamentalsTrainingPortal() {
           fileSize: video.fileSize,
           uploadedAt: video.uploadedAt,
           uploadedBy: video.uploadedBy,
-          videoType: video.videoType || 'file'
+          videoType: video.videoType || 'file',
+          category: video.category || undefined
         }))
         setLectureVideos(videos)
       } catch (error) {
@@ -3234,6 +3235,32 @@ export default function FundamentalsTrainingPortal() {
                                 }}
                               />
                             </div>
+                            {videoUploadType === 'url' && (
+                              <div>
+                                <Label htmlFor="video-category">Category *</Label>
+                                <Select
+                                  value={newVideoCategory}
+                                  onValueChange={(value) => {
+                                    setNewVideoCategory(value)
+                                    setVideoUploadError(null)
+                                    setVideoUploadSuccess(null)
+                                  }}
+                                  required
+                                >
+                                  <SelectTrigger id="video-category">
+                                    <SelectValue placeholder="Select a category" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="scalp-micropigmentation">Scalp Micropigmentation</SelectItem>
+                                    <SelectItem value="permanent-make-up">Permanent Make Up</SelectItem>
+                                    <SelectItem value="paramedical-cosmetics">Paramedical Cosmetics</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-purple-600 mt-1">
+                                  Select the category this lecture belongs to for organized navigation
+                                </p>
+                              </div>
+                            )}
                             {videoUploadType === 'file' ? (
                               <>
                                 <div className="flex flex-col gap-2">
