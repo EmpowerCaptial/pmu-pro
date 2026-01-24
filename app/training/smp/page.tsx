@@ -1838,7 +1838,10 @@ export default function SMPTrainingPortal() {
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => window.open(video.url, '_blank', 'noopener,noreferrer')}
+                                        onClick={() => {
+                                          setSelectedVideo({ url: video.url, title: video.title })
+                                          setVideoPlayerOpen(true)
+                                        }}
                                         className="text-slate-600 border-slate-200 hover:bg-slate-50 w-full sm:w-auto self-start"
                                       >
                                         <PlayCircle className="h-4 w-4 mr-1" />
