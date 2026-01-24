@@ -5113,6 +5113,125 @@ export default function FundamentalsTrainingPortal() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Video Dialog */}
+      <Dialog open={!!editingVideo} onOpenChange={() => setEditingVideo(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Video Link</DialogTitle>
+            <DialogDescription>Update video information and category</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditVideoSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-video-title">Video Title *</Label>
+              <Input
+                id="edit-video-title"
+                placeholder="e.g., Module 4: Machine Fundamentals"
+                value={editVideoTitle}
+                onChange={(event) => {
+                  setEditVideoTitle(event.target.value)
+                  setVideoUploadError(null)
+                  setVideoUploadSuccess(null)
+                }}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-video-url">Video URL *</Label>
+              <Input
+                id="edit-video-url"
+                type="url"
+                placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                value={editVideoUrl}
+                onChange={(event) => {
+                  setEditVideoUrl(event.target.value)
+                  setVideoUploadError(null)
+                  setVideoUploadSuccess(null)
+                }}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-video-category">Category *</Label>
+              <Select
+                value={editVideoCategory}
+                onValueChange={(value) => {
+                  setEditVideoCategory(value)
+                  setVideoUploadError(null)
+                  setVideoUploadSuccess(null)
+                }}
+                required
+              >
+                <SelectTrigger id="edit-video-category">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scalp-micropigmentation">Scalp Micropigmentation</SelectItem>
+                  <SelectItem value="permanent-make-up">Permanent Make Up</SelectItem>
+                  <SelectItem value="paramedical-cosmetics">Paramedical Cosmetics</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-600 mt-1">
+                Select the category this lecture belongs to for organized navigation
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="edit-video-duration">Duration (optional)</Label>
+              <Input
+                id="edit-video-duration"
+                placeholder="45 min"
+                value={editVideoDuration}
+                onChange={(event) => {
+                  setEditVideoDuration(event.target.value)
+                  setVideoUploadError(null)
+                  setVideoUploadSuccess(null)
+                }}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-video-description">Lesson summary (optional)</Label>
+              <Textarea
+                id="edit-video-description"
+                rows={3}
+                placeholder="Outline the key objectives, demo segments, or supplies used in the recording."
+                value={editVideoDescription}
+                onChange={(event) => {
+                  setEditVideoDescription(event.target.value)
+                  setVideoUploadError(null)
+                  setVideoUploadSuccess(null)
+                }}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              disabled={isEditingVideo || !editVideoTitle.trim() || !editVideoUrl.trim() || !editVideoCategory}
+            >
+              {isEditingVideo ? (
+                <>
+                  <Upload className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <PenSquare className="h-4 w-4 mr-2" />
+                  Update Video
+                </>
+              )}
+            </Button>
+            {videoUploadError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                {videoUploadError}
+              </div>
+            )}
+            {videoUploadSuccess && (
+              <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+                {videoUploadSuccess}
+              </div>
+            )}
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={isInstructorFileDeleteDialogOpen}
         onOpenChange={(open) => {
