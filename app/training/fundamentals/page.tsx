@@ -516,6 +516,12 @@ export default function FundamentalsTrainingPortal() {
   const [isUploadingInstructorFolder, setIsUploadingInstructorFolder] = useState(false)
   const [instructorFolderFiles, setInstructorFolderFiles] = useState<any[]>([])
   const [isLoadingInstructorFolderFiles, setIsLoadingInstructorFolderFiles] = useState(false)
+  // Progress Portfolio state
+  const [progressPortfolio, setProgressPortfolio] = useState<Record<string, { photoUrl?: string; reflectionNotes?: string; photoId?: string }>>({})
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false)
+  const [portfolioUploading, setPortfolioUploading] = useState<Record<string, boolean>>({})
+  const [portfolioReflectionDialog, setPortfolioReflectionDialog] = useState<{ weekId: string; open: boolean }>({ weekId: '', open: false })
+  const [portfolioReflectionText, setPortfolioReflectionText] = useState('')
   // Instructor folder file deletion state
   const [isInstructorFileDeleteDialogOpen, setIsInstructorFileDeleteDialogOpen] = useState(false)
   const [instructorFilePendingDelete, setInstructorFilePendingDelete] = useState<any | null>(null)
@@ -786,6 +792,41 @@ export default function FundamentalsTrainingPortal() {
     fetchAssignments()
   }, [fetchAssignments])
 
+  // Fetch progress portfolio items
+  const fetchProgressPortfolio = useCallback(async () => {
+    if (!currentUser?.email) return
+    
+    setIsLoadingPortfolio(true)
+    try {
+      const response = await fetch('/api/file-uploads?fileType=training-progress-portfolio:', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const portfolioMap: Record<string, { photoUrl?: string; reflectionNotes?: string; photoId?: string }> = {}
+        
+        // Group by week ID
+        data.files?.forEach((file: any) => {
+          const weekId = file.fileType.split(':')[1] || 'week-1'
+          portfolioMap[weekId] = {
+            photoUrl: file.fileUrl,
+            photoId: file.id,
+            reflectionNotes: file.fileName.includes('reflection') ? file.fileName : undefined
+          }
+        })
+        
+        setProgressPortfolio(portfolioMap)
+      }
+    } catch (error) {
+      console.error('Failed to fetch progress portfolio:', error)
+    } finally {
+      setIsLoadingPortfolio(false)
+    }
+  }, [currentUser?.email])
+
   const fetchInstructorFolderFiles = useCallback(async () => {
     if (!currentUser?.email || !canManageVideos) return
     
@@ -812,7 +853,10 @@ export default function FundamentalsTrainingPortal() {
     if (activeTab === 'instructor' && canManageVideos) {
       fetchInstructorFolderFiles()
     }
-  }, [activeTab, canManageVideos, fetchInstructorFolderFiles])
+    if (activeTab === 'student') {
+      fetchProgressPortfolio()
+    }
+  }, [activeTab, canManageVideos, fetchInstructorFolderFiles, fetchProgressPortfolio])
 
   const fetchTrainingVideos = useCallback(
     async (showSpinner = true) => {
@@ -1855,6 +1899,94 @@ export default function FundamentalsTrainingPortal() {
     }
   }
 
+  // Handle portfolio photo upload
+  const handlePortfolioPhotoUpload = async (weekId: string, file: File) => {
+    if (!currentUser?.email) {
+      alert('You must be logged in to upload photos.')
+      return
+    }
+
+    setPortfolioUploading(prev => ({ ...prev, [weekId]: true }))
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('fileType', `training-progress-portfolio:${weekId}`)
+
+      const response = await fetch('/api/file-uploads', {
+        method: 'POST',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setProgressPortfolio(prev => ({
+          ...prev,
+          [weekId]: {
+            ...prev[weekId],
+            photoUrl: data.fileUpload.fileUrl,
+            photoId: data.fileUpload.id
+          }
+        }))
+        await fetchProgressPortfolio()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to upload photo')
+      }
+    } catch (error) {
+      console.error('Portfolio photo upload failed:', error)
+      alert('Failed to upload photo. Please try again.')
+    } finally {
+      setPortfolioUploading(prev => ({ ...prev, [weekId]: false }))
+    }
+  }
+
+  // Handle reflection notes save
+  const handleSaveReflectionNotes = async (weekId: string, notes: string) => {
+    if (!currentUser?.email) {
+      alert('You must be logged in to save notes.')
+      return
+    }
+
+    try {
+      // Save reflection notes as a text file upload
+      const blob = new Blob([notes], { type: 'text/plain' })
+      const file = new File([blob], `reflection-${weekId}.txt`, { type: 'text/plain' })
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('fileType', `training-progress-portfolio:${weekId}:reflection`)
+
+      const response = await fetch('/api/file-uploads', {
+        method: 'POST',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        body: formData
+      })
+
+      if (response.ok) {
+        setProgressPortfolio(prev => ({
+          ...prev,
+          [weekId]: {
+            ...prev[weekId],
+            reflectionNotes: notes
+          }
+        }))
+        setPortfolioReflectionDialog({ weekId: '', open: false })
+        setPortfolioReflectionText('')
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to save reflection notes')
+      }
+    } catch (error) {
+      console.error('Reflection notes save failed:', error)
+      alert('Failed to save reflection notes. Please try again.')
+    }
+  }
+
   const handleDeleteInstructorFile = async () => {
     if (!instructorFilePendingDelete || !currentUser?.email) return
     setInstructorFileDeleteError(null)
@@ -2352,36 +2484,105 @@ export default function FundamentalsTrainingPortal() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {courseWeeks.slice(0, 3).map((week, idx) => (
-                        <Card key={week.id} className="border-purple-200">
-                          <CardContent className="p-4">
-                            <h4 className="font-semibold text-purple-900 mb-2">{week.title}</h4>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">Best Work Photo</span>
-                                <Button size="sm" variant="outline" className="text-xs">
-                                  <Upload className="h-3 w-3 mr-1" />
-                                  Upload
-                                </Button>
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">Reflection Notes</span>
-                                <Button size="sm" variant="outline" className="text-xs">
-                                  <PenSquare className="h-3 w-3 mr-1" />
-                                  Add
-                                </Button>
-                              </div>
-                              {idx > 0 && (
-                                <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700">
-                                  <strong>Compare with Week {idx}:</strong> Review your progress and note improvements
+                    {isLoadingPortfolio ? (
+                      <div className="text-center py-4 text-gray-500">Loading portfolio...</div>
+                    ) : (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {courseWeeks.map((week, idx) => {
+                          const portfolioItem = progressPortfolio[week.id] || {}
+                          const isUploading = portfolioUploading[week.id] || false
+                          return (
+                            <Card key={week.id} className="border-purple-200">
+                              <CardContent className="p-4">
+                                <h4 className="font-semibold text-purple-900 mb-2">{week.title}</h4>
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-600">Best Work Photo</span>
+                                      <div className="flex gap-2">
+                                        {portfolioItem.photoUrl && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-xs"
+                                            onClick={() => window.open(portfolioItem.photoUrl, '_blank')}
+                                          >
+                                            <Eye className="h-3 w-3 mr-1" />
+                                            View
+                                          </Button>
+                                        )}
+                                        <label>
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0]
+                                              if (file) {
+                                                handlePortfolioPhotoUpload(week.id, file)
+                                              }
+                                            }}
+                                            disabled={isUploading}
+                                          />
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-xs"
+                                            disabled={isUploading}
+                                            asChild
+                                          >
+                                            <span>
+                                              <Upload className="h-3 w-3 mr-1" />
+                                              {isUploading ? 'Uploading...' : portfolioItem.photoUrl ? 'Replace' : 'Upload'}
+                                            </span>
+                                          </Button>
+                                        </label>
+                                      </div>
+                                    </div>
+                                    {portfolioItem.photoUrl && (
+                                      <div className="mt-2 p-2 bg-purple-50 rounded">
+                                        <img
+                                          src={portfolioItem.photoUrl}
+                                          alt={`${week.title} portfolio`}
+                                          className="w-full h-32 object-cover rounded"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-600">Reflection Notes</span>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-xs"
+                                        onClick={() => {
+                                          setPortfolioReflectionText(portfolioItem.reflectionNotes || '')
+                                          setPortfolioReflectionDialog({ weekId: week.id, open: true })
+                                        }}
+                                      >
+                                        <PenSquare className="h-3 w-3 mr-1" />
+                                        {portfolioItem.reflectionNotes ? 'Edit' : 'Add'}
+                                      </Button>
+                                    </div>
+                                    {portfolioItem.reflectionNotes && (
+                                      <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700 max-h-20 overflow-y-auto">
+                                        {portfolioItem.reflectionNotes}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {idx > 0 && (
+                                    <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700">
+                                      <strong>Compare with Week {idx}:</strong> Review your progress and note improvements
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                              </CardContent>
+                            </Card>
+                          )
+                        })}
+                      </div>
+                    )}
                     <div className="pt-2 border-t border-purple-200">
                       <p className="text-sm text-purple-700">
                         <strong>Tip:</strong> Upload your best work from each week to track improvement. Compare Week 1 vs Week 4 vs Week 7 to see your growth!
@@ -5969,6 +6170,47 @@ export default function FundamentalsTrainingPortal() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Reflection Notes Dialog */}
+      <Dialog open={portfolioReflectionDialog.open} onOpenChange={(open) => setPortfolioReflectionDialog({ weekId: '', open: false })}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Reflection Notes</DialogTitle>
+            <DialogDescription>
+              Document your thoughts, improvements, and observations for this week. This helps track your growth throughout the program.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={portfolioReflectionText}
+              onChange={(e) => setPortfolioReflectionText(e.target.value)}
+              placeholder="What did you learn this week? What went well? What would you like to improve? How do you feel about your progress?"
+              className="min-h-[200px]"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPortfolioReflectionDialog({ weekId: '', open: false })
+                  setPortfolioReflectionText('')
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (portfolioReflectionDialog.weekId) {
+                    handleSaveReflectionNotes(portfolioReflectionDialog.weekId, portfolioReflectionText)
+                  }
+                }}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Save Notes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Week Video Assignment Dialog */}
       <Dialog open={weekVideoDialogOpen !== null} onOpenChange={(open) => !open && setWeekVideoDialogOpen(null)}>
