@@ -460,7 +460,7 @@ Understanding this distinction helps you choose the right pigment for each clien
             time: '3:20 – 3:30',
             title: 'Homework, Exit Direction & Spaced Review',
             instructorScript:
-              'Today, you didn't just learn what to do — you started learning why you do it. The artists who become great are the ones who think before they touch skin.',
+              "Today, you didn't just learn what to do — you started learning why you do it. The artists who become great are the ones who think before they touch skin.",
             activities: ['Review: "What are the 3 components of color theory?" and "Name 2 absolute contraindications."']
           }
         ],
