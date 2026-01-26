@@ -363,12 +363,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Check if user is an instructor/admin and requesting student portfolios
+    const isInstructor = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(user.role?.toLowerCase() || '')
+    const isRequestingStudentPortfolios = fileType?.startsWith('training-progress-portfolio:') && isInstructor
+    const isRequestingPortfolioFeedback = fileType?.startsWith('training-portfolio-feedback:') && isInstructor
+
     // Support multiple fileType filters (comma-separated or multiple params)
-    let whereClause: any = {
-      userId: user.id
+    let whereClause: any = {}
+    
+    // If instructor requesting student portfolios, get all students' portfolios
+    if (isRequestingStudentPortfolios || isRequestingPortfolioFeedback) {
+      whereClause = {
+        fileType: {
+          startsWith: fileType
+        }
+      }
+    } else {
+      // Otherwise, only get current user's files
+      whereClause = {
+        userId: user.id
+      }
     }
 
-    if (fileType) {
+    if (fileType && !isRequestingStudentPortfolios && !isRequestingPortfolioFeedback) {
       // Check if it's a prefix match (for instructor-folder: or instructor-folder|)
       if (fileType.includes('instructor-folder')) {
         // Match both formats: instructor-folder: (file uploads) and instructor-folder| (URL uploads)
@@ -394,6 +411,15 @@ export async function GET(request: NextRequest) {
 
     const files = await prisma.fileUpload.findMany({
       where: whereClause,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' }
     })
 

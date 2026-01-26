@@ -523,6 +523,13 @@ export default function FundamentalsTrainingPortal() {
   const [portfolioReflectionDialog, setPortfolioReflectionDialog] = useState<{ weekId: string; open: boolean }>({ weekId: '', open: false })
   const [portfolioReflectionText, setPortfolioReflectionText] = useState('')
   const [portfolioViewDialogOpen, setPortfolioViewDialogOpen] = useState(false)
+  // Student portfolio review state (for instructors)
+  const [studentPortfolios, setStudentPortfolios] = useState<Record<string, Array<{ userId: string; userName: string; userEmail: string; weekId: string; photoUrl?: string; reflectionNotes?: string; photoId?: string; feedback?: string; feedbackId?: string }>>>({})
+  const [isLoadingStudentPortfolios, setIsLoadingStudentPortfolios] = useState(false)
+  const [selectedStudentPortfolio, setSelectedStudentPortfolio] = useState<{ userId: string; userName: string; userEmail: string; weekId: string; photoUrl?: string; reflectionNotes?: string; photoId?: string; feedback?: string; feedbackId?: string } | null>(null)
+  const [studentPortfolioDialogOpen, setStudentPortfolioDialogOpen] = useState(false)
+  const [instructorFeedbackText, setInstructorFeedbackText] = useState('')
+  const [isSavingFeedback, setIsSavingFeedback] = useState(false)
   // Instructor folder file deletion state
   const [isInstructorFileDeleteDialogOpen, setIsInstructorFileDeleteDialogOpen] = useState(false)
   const [instructorFilePendingDelete, setInstructorFilePendingDelete] = useState<any | null>(null)
@@ -1969,6 +1976,62 @@ export default function FundamentalsTrainingPortal() {
   }
 
   // Handle reflection notes save
+  // Handle instructor feedback save
+  const handleSaveInstructorFeedback = async (userId: string, weekId: string, feedback: string) => {
+    if (!currentUser?.email) {
+      alert('You must be logged in to save feedback.')
+      return
+    }
+
+    setIsSavingFeedback(true)
+    try {
+      // Save feedback as a text file upload
+      const blob = new Blob([feedback], { type: 'text/plain' })
+      const file = new File([blob], `feedback-${userId}-${weekId}.txt`, { type: 'text/plain' })
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('fileType', `training-portfolio-feedback:${userId}:${weekId}`)
+
+      const response = await fetch('/api/file-uploads', {
+        method: 'POST',
+        headers: {
+          'x-user-email': currentUser.email
+        },
+        body: formData
+      })
+
+      if (response.ok) {
+        // Update local state
+        setStudentPortfolios(prev => {
+          const updated = { ...prev }
+          if (updated[userId]) {
+            const weekPortfolio = updated[userId].find(p => p.weekId === weekId)
+            if (weekPortfolio) {
+              weekPortfolio.feedback = feedback
+            }
+          }
+          return updated
+        })
+        
+        if (selectedStudentPortfolio && selectedStudentPortfolio.userId === userId && selectedStudentPortfolio.weekId === weekId) {
+          setSelectedStudentPortfolio(prev => prev ? { ...prev, feedback } : null)
+        }
+        
+        setInstructorFeedbackText('')
+        alert('Feedback saved successfully!')
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to save feedback')
+      }
+    } catch (error) {
+      console.error('Feedback save failed:', error)
+      alert('Failed to save feedback. Please try again.')
+    } finally {
+      setIsSavingFeedback(false)
+    }
+  }
+
   const handleSaveReflectionNotes = async (weekId: string, notes: string) => {
     if (!currentUser?.email) {
       alert('You must be logged in to save notes.')
@@ -3398,6 +3461,81 @@ export default function FundamentalsTrainingPortal() {
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Student Portfolio Review Section */}
+            <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white break-words mb-6">
+              <CardHeader className="break-words">
+                <CardTitle className="text-xl font-semibold text-purple-900 flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Student Progress Portfolios
+                </CardTitle>
+                <CardDescription className="text-purple-700">
+                  Review student work, view their progress photos, read reflection notes, and provide feedback.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingStudentPortfolios ? (
+                  <div className="text-center py-4 text-gray-500">Loading student portfolios...</div>
+                ) : Object.keys(studentPortfolios).length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p>No student portfolios submitted yet.</p>
+                    <p className="text-sm mt-2">Student portfolios will appear here once they upload photos and reflection notes.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(studentPortfolios).map(([userId, portfolios]) => {
+                      const studentName = portfolios[0]?.userName || 'Unknown Student'
+                      const studentEmail = portfolios[0]?.userEmail || ''
+                      const portfolioCount = portfolios.filter(p => p.photoUrl || p.reflectionNotes).length
+                      
+                      return (
+                        <Card key={userId} className="border-purple-200">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="font-semibold text-purple-900">{studentName}</h4>
+                                <p className="text-xs text-gray-600">{studentEmail}</p>
+                              </div>
+                              <Badge className="bg-purple-100 text-purple-700">
+                                {portfolioCount} week{portfolioCount !== 1 ? 's' : ''} submitted
+                              </Badge>
+                            </div>
+                            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                              {courseWeeks.map((week) => {
+                                const portfolio = portfolios.find(p => p.weekId === week.id)
+                                const hasContent = portfolio && (portfolio.photoUrl || portfolio.reflectionNotes)
+                                
+                                return (
+                                  <Button
+                                    key={week.id}
+                                    variant={hasContent ? "default" : "outline"}
+                                    className={hasContent ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
+                                    onClick={() => {
+                                      if (hasContent) {
+                                        setSelectedStudentPortfolio(portfolio || null)
+                                        setInstructorFeedbackText(portfolio?.feedback || '')
+                                        setStudentPortfolioDialogOpen(true)
+                                      }
+                                    }}
+                                    disabled={!hasContent}
+                                  >
+                                    {week.title}
+                                    {portfolio?.feedback && (
+                                      <CheckCircle2 className="h-3 w-3 ml-1" />
+                                    )}
+                                  </Button>
+                                )
+                              })}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -6221,6 +6359,111 @@ export default function FundamentalsTrainingPortal() {
               </p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Portfolio Review Dialog (for instructors) */}
+      <Dialog open={studentPortfolioDialogOpen} onOpenChange={setStudentPortfolioDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-purple-900 flex items-center gap-2">
+              <Eye className="h-6 w-6" />
+              Student Portfolio Review
+            </DialogTitle>
+            <DialogDescription>
+              {selectedStudentPortfolio && (
+                <div>
+                  <p className="font-semibold">{selectedStudentPortfolio.userName}</p>
+                  <p className="text-sm text-gray-600">{selectedStudentPortfolio.userEmail}</p>
+                  <p className="text-sm text-purple-700 mt-1">
+                    {courseWeeks.find(w => w.id === selectedStudentPortfolio.weekId)?.title}
+                  </p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStudentPortfolio && (
+            <div className="space-y-6 mt-4">
+              {/* Student's Photo */}
+              {selectedStudentPortfolio.photoUrl && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-gray-900">Student's Best Work Photo</h4>
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <img
+                      src={selectedStudentPortfolio.photoUrl}
+                      alt="Student portfolio work"
+                      className="w-full max-h-96 object-contain rounded"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => window.open(selectedStudentPortfolio.photoUrl, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open Full Size
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Student's Reflection Notes */}
+              {selectedStudentPortfolio.reflectionNotes && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-gray-900">Student's Reflection Notes</h4>
+                  <div className="border rounded-lg p-4 bg-purple-50">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedStudentPortfolio.reflectionNotes}</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Instructor Feedback Section */}
+              <div className="space-y-2 border-t pt-4">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <PenSquare className="h-5 w-5" />
+                  Your Feedback
+                </h4>
+                <Textarea
+                  value={instructorFeedbackText}
+                  onChange={(e) => setInstructorFeedbackText(e.target.value)}
+                  placeholder="Provide constructive feedback on the student's work. Highlight strengths, areas for improvement, and specific recommendations..."
+                  className="min-h-[200px]"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStudentPortfolioDialogOpen(false)
+                      setInstructorFeedbackText('')
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (selectedStudentPortfolio) {
+                        handleSaveInstructorFeedback(
+                          selectedStudentPortfolio.userId,
+                          selectedStudentPortfolio.weekId,
+                          instructorFeedbackText
+                        )
+                      }
+                    }}
+                    disabled={isSavingFeedback}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isSavingFeedback ? 'Saving...' : 'Save Feedback'}
+                  </Button>
+                </div>
+                {selectedStudentPortfolio.feedback && (
+                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded">
+                    <p className="text-xs font-semibold text-green-700 mb-1">Previous Feedback:</p>
+                    <p className="text-sm text-green-800 whitespace-pre-wrap">{selectedStudentPortfolio.feedback}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
