@@ -111,6 +111,7 @@ interface CourseWeek {
   title: string
   summary: string
   targetHours: number
+  learningObjectives: string[] // Measurable learning objectives for the week
   assignments: Assignment[]
 }
 
@@ -121,6 +122,12 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 1 • Orientation & Safety Foundations',
     summary: 'Orientation, OSHA/BBP review, sanitation rituals, workstation setup, and client intake basics.',
     targetHours: 10,
+    learningObjectives: [
+      'Demonstrate OSHA/BBP compliance with 100% accuracy on safety quiz',
+      'Execute complete workstation setup and sanitation reset within 15 minutes',
+      'Identify and properly dispose of all BBP materials according to regulations',
+      'Demonstrate proper hand positioning and pressure control on practice skin'
+    ],
     assignments: [
       {
         id: 'week1-safety-quiz',
@@ -150,6 +157,12 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 2 • Brow Mapping & Color Theory',
     summary: 'Mapping ratios, facial symmetry, pigment undertones, and Fitzpatrick/skin depth considerations.',
     targetHours: 12,
+    learningObjectives: [
+      'Map brows with symmetry within 1mm accuracy on practice skin',
+      'Correctly identify Fitzpatrick skin types with 90% accuracy',
+      'Select appropriate pigment based on undertone analysis for 3 different skin profiles',
+      'Demonstrate understanding of color theory through pigment plan creation'
+    ],
     assignments: [
       {
         id: 'week2-brow-map',
@@ -179,6 +192,13 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 3 • Client Intake & Contraindication Screening',
     summary: 'Consent forms, medical red flags, communication scripts, and risk mitigation planning.',
     targetHours: 11,
+    learningObjectives: [
+      'Identify absolute and relative contraindications with 100% accuracy',
+      'Complete client intake forms with all required medical screening questions',
+      'Make go/no-go decisions for 3 mock consultation scenarios with proper justification',
+      'Demonstrate basic pricing structure understanding (service tiers, touch-up policies)',
+      'Create initial business plan outline with pricing ladder'
+    ],
     assignments: [
       {
         id: 'week3-contraindication-journal',
@@ -199,6 +219,26 @@ const COURSE_WEEKS: CourseWeek[] = [
         status: 'pending',
         rubric: 'Form accuracy (10 pts), contraindication follow-up questions (10 pts), reflection depth (10 pts).',
         estimatedHours: 5
+      },
+      {
+        id: 'week3-business-basics',
+        weekId: 'week-3',
+        title: 'Business Basics: Pricing & Service Structure',
+        description: 'Create your initial pricing structure with 3 service tiers (training, standard, luxury) and outline touch-up policies. Include basic client communication templates.',
+        dueDate: 'Due Week 3 Sunday',
+        status: 'pending',
+        rubric: 'Pricing ladder completeness (10 pts), touch-up policy clarity (5 pts), communication template quality (5 pts).',
+        estimatedHours: 3
+      },
+      {
+        id: 'week3-peer-review',
+        weekId: 'week-3',
+        title: 'Peer Review: Contraindication Case Analysis',
+        description: 'Review a peer\'s contraindication case journal and provide constructive feedback on risk analysis and decision-making clarity.',
+        dueDate: 'Due Week 3 Saturday',
+        status: 'pending',
+        rubric: 'Feedback specificity (5 pts), constructive tone (5 pts), accuracy of assessment (5 pts).',
+        estimatedHours: 2
       }
     ]
   },
@@ -208,6 +248,13 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 4 • Machine Technique & Needle Control',
     summary: 'Machine calibration, stroke practice, depth control, and anesthetic protocols.',
     targetHours: 12,
+    learningObjectives: [
+      'Calibrate machine settings for 3 different procedure types with documented results',
+      'Execute consistent stroke patterns on practice skin with proper depth control',
+      'Demonstrate proper needle angle and speed control in all stroke types',
+      'Create client consultation script incorporating pricing and service explanation',
+      'Develop basic social media content strategy (3 post ideas with captions)'
+    ],
     assignments: [
       {
         id: 'week4-machine-calibration',
@@ -228,6 +275,26 @@ const COURSE_WEEKS: CourseWeek[] = [
         status: 'pending',
         rubric: 'Consistency (10 pts), depth control (10 pts), documentation quality (10 pts).',
         estimatedHours: 6
+      },
+      {
+        id: 'week4-business-consultation',
+        weekId: 'week-4',
+        title: 'Business: Consultation Script & Social Media Strategy',
+        description: 'Create a luxury consultation script that incorporates pricing explanation and service benefits. Develop 3 social media post ideas with captions that align with your brand.',
+        dueDate: 'Due Week 4 Sunday',
+        status: 'pending',
+        rubric: 'Script professionalism (10 pts), pricing integration (5 pts), social media alignment (5 pts).',
+        estimatedHours: 4
+      },
+      {
+        id: 'week4-peer-review-strokes',
+        weekId: 'week-4',
+        title: 'Peer Review: Stroke Pattern Analysis',
+        description: 'Review a peer\'s stroke practice photos and provide feedback on consistency, depth control, and technique. Submit your review with specific observations.',
+        dueDate: 'Due Week 4 Saturday',
+        status: 'pending',
+        rubric: 'Observation detail (5 pts), constructive feedback (5 pts), technique accuracy (5 pts).',
+        estimatedHours: 2
       }
     ]
   },
@@ -237,6 +304,12 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 5 • Service Delivery & Client Communication',
     summary: 'Pre/post care, anesthetic strategy, client communication, and emergency protocols.',
     targetHours: 12,
+    learningObjectives: [
+      'Create comprehensive anesthetic protocol covering timing and contraindications',
+      'Demonstrate luxury client communication in roleplay scenarios',
+      'Handle client concerns about pain, healing, and pricing with confidence',
+      'Document complete service delivery workflow from consultation to aftercare'
+    ],
     assignments: [
       {
         id: 'week5-anesthetic-checklist',
@@ -266,6 +339,12 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 6 • Live Model Preparation & Supervision',
     summary: 'Mock procedures, station efficiency, photography standards, and supervised practice readiness.',
     targetHours: 11,
+    learningObjectives: [
+      'Execute complete mock procedure within time constraints with all sanitation resets',
+      'Document procedure workflow with photography meeting studio standards',
+      'Analyze healing timeline and create corrective touch-up plan',
+      'Demonstrate readiness for live model work through supervised practice'
+    ],
     assignments: [
       {
         id: 'week6-mock-procedure',
@@ -295,6 +374,12 @@ const COURSE_WEEKS: CourseWeek[] = [
     title: 'Week 7 • Capstone & Portfolio (Half Week)',
     summary: 'Capstone evaluation, portfolio submission, and exit interview preparation.',
     targetHours: 7,
+    learningObjectives: [
+      'Execute complete PMU service on live model meeting all safety and quality standards',
+      'Deliver luxury aftercare education with confidence and clarity',
+      'Compile professional portfolio demonstrating skill progression',
+      'Complete exit interview demonstrating readiness for professional practice'
+    ],
     assignments: [
       {
         id: 'week7-capstone-eval',
@@ -324,6 +409,7 @@ const COURSE_TOTAL_HOURS = COURSE_WEEKS.reduce((sum, week) => sum + week.targetH
 
 const BASE_WEEKS_TEMPLATE: CourseWeek[] = COURSE_WEEKS.map(week => ({
   ...week,
+  learningObjectives: week.learningObjectives || [],
   assignments: week.assignments.map(assignment => ({
     ...assignment,
     weekId: assignment.weekId || week.id,
@@ -416,6 +502,8 @@ export default function FundamentalsTrainingPortal() {
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false)
   const [instructorFileViewerOpen, setInstructorFileViewerOpen] = useState(false)
   const [selectedInstructorFile, setSelectedInstructorFile] = useState<any>(null)
+  const [videoLoadError, setVideoLoadError] = useState(false)
+  const [iframeLoadError, setIframeLoadError] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState<LectureVideo | null>(null)
   const [instructorFolderFile, setInstructorFolderFile] = useState<File | null>(null)
   const [instructorFolderFileName, setInstructorFolderFileName] = useState<string | null>(null)
@@ -1491,25 +1579,49 @@ export default function FundamentalsTrainingPortal() {
 
   // Convert video URL to embeddable format
   const getEmbedUrl = (url: string): string | null => {
+    if (!url || typeof url !== 'string') return url
+    
     try {
-      const urlObj = new URL(url)
+      const urlObj = new URL(url.trim())
       
-      // YouTube
+      // If already an embed URL, return as-is (but clean it up)
+      if (urlObj.pathname.includes('/embed/')) {
+        // Already an embed URL, just return it
+        return url
+      }
+      
+      // YouTube - handle multiple URL formats
       if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
         let videoId = ''
+        
+        // Handle youtu.be short URLs
         if (urlObj.hostname.includes('youtu.be')) {
-          videoId = urlObj.pathname.slice(1)
-        } else {
-          videoId = urlObj.searchParams.get('v') || ''
+          videoId = urlObj.pathname.slice(1).split('?')[0].split('#')[0]
+        } 
+        // Handle youtube.com URLs
+        else if (urlObj.hostname.includes('youtube.com')) {
+          // Check for /watch URLs
+          if (urlObj.pathname.includes('/watch')) {
+            videoId = urlObj.searchParams.get('v') || ''
+          }
+          // Check for /v/ URLs
+          else if (urlObj.pathname.includes('/v/')) {
+            videoId = urlObj.pathname.split('/v/')[1].split('?')[0].split('#')[0]
+          }
         }
-        if (videoId) {
+        
+        // Clean video ID (remove any trailing characters, whitespace, etc.)
+        videoId = videoId.split('&')[0].split('?')[0].split('#')[0].trim()
+        
+        if (videoId && videoId.length > 0 && videoId.length <= 20) { // YouTube video IDs are typically 11 chars, max ~20
+          // Return clean embed URL
           return `https://www.youtube.com/embed/${videoId}`
         }
       }
       
       // Vimeo
       if (urlObj.hostname.includes('vimeo.com')) {
-        const videoId = urlObj.pathname.split('/').filter(Boolean).pop()
+        const videoId = urlObj.pathname.split('/').filter(Boolean).pop()?.split('?')[0].split('#')[0]
         if (videoId) {
           return `https://player.vimeo.com/video/${videoId}`
         }
@@ -1532,6 +1644,8 @@ export default function FundamentalsTrainingPortal() {
   const openInstructorFileViewer = (file: any) => {
     setSelectedInstructorFile(file)
     setInstructorFileViewerOpen(true)
+    setVideoLoadError(false) // Reset error state when opening new file
+    setIframeLoadError(false) // Reset iframe error state
   }
 
   const handleInstructorFolderFileChange = (event: ChangeEvent<HTMLInputElement>, type: 'presentation' | 'assignment') => {
@@ -2225,6 +2339,56 @@ export default function FundamentalsTrainingPortal() {
           <TabsContent value="student" className="space-y-6 break-words">
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
               <div className="space-y-6">
+                {/* Progress Portfolio Section */}
+                <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white break-words">
+                  <CardHeader className="break-words">
+                    <CardTitle className="text-xl font-semibold text-purple-900 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5" />
+                      Progress Portfolio
+                    </CardTitle>
+                    <CardDescription className="text-purple-700">
+                      Track your skill development with weekly photo comparisons and reflections. Document your journey from Week 1 to graduation.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {courseWeeks.slice(0, 3).map((week, idx) => (
+                        <Card key={week.id} className="border-purple-200">
+                          <CardContent className="p-4">
+                            <h4 className="font-semibold text-purple-900 mb-2">{week.title}</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Best Work Photo</span>
+                                <Button size="sm" variant="outline" className="text-xs">
+                                  <Upload className="h-3 w-3 mr-1" />
+                                  Upload
+                                </Button>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Reflection Notes</span>
+                                <Button size="sm" variant="outline" className="text-xs">
+                                  <PenSquare className="h-3 w-3 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+                              {idx > 0 && (
+                                <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700">
+                                  <strong>Compare with Week {idx}:</strong> Review your progress and note improvements
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    <div className="pt-2 border-t border-purple-200">
+                      <p className="text-sm text-purple-700">
+                        <strong>Tip:</strong> Upload your best work from each week to track improvement. Compare Week 1 vs Week 4 vs Week 7 to see your growth!
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Card className="border-gray-200 break-words">
                   <CardHeader className="break-words">
                     <CardTitle className="text-xl font-semibold text-gray-900">Assignments</CardTitle>
@@ -2274,6 +2438,22 @@ export default function FundamentalsTrainingPortal() {
                             <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
                               <p className="text-sm font-semibold text-purple-900">{week.title}</p>
                               <p className="text-sm text-purple-800">{week.summary}</p>
+                              {week.learningObjectives && week.learningObjectives.length > 0 && (
+                                <div className="mt-3 p-3 bg-white rounded border border-purple-200">
+                                  <h4 className="text-xs font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Learning Objectives
+                                  </h4>
+                                  <ul className="space-y-1.5">
+                                    {week.learningObjectives.map((objective, idx) => (
+                                      <li key={idx} className="text-xs text-purple-800 flex items-start gap-2">
+                                        <span className="text-purple-600 mt-0.5">•</span>
+                                        <span>{objective}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                               <p className="text-xs text-purple-700">
                                 Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
                               </p>
@@ -4456,6 +4636,22 @@ export default function FundamentalsTrainingPortal() {
                               <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
                                 <p className="text-sm font-semibold text-purple-900">{week.title}</p>
                                 <p className="text-sm text-purple-800">{week.summary}</p>
+                                {week.learningObjectives && week.learningObjectives.length > 0 && (
+                                  <div className="mt-3 p-3 bg-white rounded border border-purple-200">
+                                    <h4 className="text-xs font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      Learning Objectives
+                                    </h4>
+                                    <ul className="space-y-1.5">
+                                      {week.learningObjectives.map((objective, idx) => (
+                                        <li key={idx} className="text-xs text-purple-800 flex items-start gap-2">
+                                          <span className="text-purple-600 mt-0.5">•</span>
+                                          <span>{objective}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                                 <p className="text-xs text-purple-700">
                                   Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
                                 </p>
@@ -5375,9 +5571,24 @@ export default function FundamentalsTrainingPortal() {
                 const file = selectedInstructorFile
                 const isUrl = file.mimeType === 'text/url' || file.fileUrl?.startsWith('http')
                 const fileExtension = file.fileName?.split('.').pop()?.toLowerCase() || ''
-                const isVideo = ['mp4', 'mov', 'webm', 'avi'].includes(fileExtension) || 
-                               file.fileUrl?.includes('youtube') || 
-                               file.fileUrl?.includes('vimeo')
+                
+                // Enhanced video detection: check file extension, URL patterns, and URL path
+                const videoExtensions = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'flv', 'm4v', 'mpg', 'mpeg', '3gp']
+                const videoUrlPatterns = ['youtube', 'youtu.be', 'vimeo', 'dailymotion', 'twitch', 'facebook.com/watch']
+                const urlPath = file.fileUrl?.toLowerCase() || ''
+                // Check if URL path contains a video file extension (with or without query params)
+                const urlHasVideoExtension = videoExtensions.some(ext => {
+                  const extPattern = `.${ext}`
+                  return urlPath.includes(extPattern + '?') || 
+                         urlPath.includes(extPattern + '#') || 
+                         urlPath.endsWith(extPattern) ||
+                         urlPath.match(new RegExp(`\\.${ext}(?:[?#]|$)`))
+                })
+                
+                const isVideo = videoExtensions.includes(fileExtension) || 
+                               videoUrlPatterns.some(pattern => file.fileUrl?.toLowerCase().includes(pattern)) ||
+                               urlHasVideoExtension
+                
                 const isPdf = fileExtension === 'pdf' || file.mimeType === 'application/pdf'
                 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension) ||
                                file.mimeType?.startsWith('image/')
@@ -5394,20 +5605,124 @@ export default function FundamentalsTrainingPortal() {
                 // Handle videos (YouTube, Vimeo, or direct video files)
                 if (isVideo) {
                   const embedUrl = getEmbedUrl(file.fileUrl)
-                  if (embedUrl) {
+                  // If getEmbedUrl returns a different URL (YouTube/Vimeo embed), use iframe
+                  // Otherwise, use video tag for direct video URLs
+                  if (embedUrl && embedUrl !== file.fileUrl && (embedUrl.includes('youtube.com/embed') || embedUrl.includes('vimeo.com/video'))) {
+                    // If iframe failed to load, show fallback
+                    if (iframeLoadError) {
+                      return (
+                        <div className="text-center py-8">
+                          <p className="text-gray-600 mb-4">Video player could not be loaded. The video may require opening in a new tab.</p>
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              asChild
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Open in New Tab
+                              </a>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setIframeLoadError(false)
+                                // Force iframe reload by updating the key
+                                const iframe = document.querySelector('iframe[data-video-embed]') as HTMLIFrameElement
+                                if (iframe) {
+                                  iframe.src = embedUrl
+                                }
+                              }}
+                            >
+                              Retry
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    }
+                    // Use useEffect to detect iframe load failures with timeout
+                    const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null)
+                    
+                    useEffect(() => {
+                      if (!iframeRef) return
+                      
+                      let timeoutId: NodeJS.Timeout
+                      const checkLoad = () => {
+                        try {
+                          // Try to access iframe content - if it fails, the iframe likely didn't load
+                          if (iframeRef.contentWindow) {
+                            // Iframe loaded successfully
+                            setIframeLoadError(false)
+                            return
+                          }
+                        } catch (e) {
+                          // Cross-origin or load error
+                          console.error('Iframe load check failed:', e)
+                        }
+                      }
+                      
+                      // Set a timeout to check if iframe loaded
+                      timeoutId = setTimeout(() => {
+                        checkLoad()
+                      }, 3000)
+                      
+                      // Also check on load event
+                      iframeRef.addEventListener('load', () => {
+                        clearTimeout(timeoutId)
+                        setIframeLoadError(false)
+                      })
+                      
+                      return () => {
+                        clearTimeout(timeoutId)
+                      }
+                    }, [iframeRef, embedUrl])
+                    
                     return (
-                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                        <iframe
-                          src={embedUrl}
-                          className="absolute top-0 left-0 w-full h-full rounded-lg"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          title={file.fileName}
-                        />
+                      <div className="space-y-4">
+                        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                          <iframe
+                            data-video-embed
+                            src={embedUrl}
+                            className="absolute top-0 left-0 w-full h-full rounded-lg"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={file.fileName}
+                          />
+                        </div>
+                        <div className="flex justify-center">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          >
+                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Open in New Tab
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     )
                   } else {
+                    // Use video tag for direct video URLs
+                    if (videoLoadError) {
+                      return (
+                        <div className="text-center py-8">
+                          <p className="text-gray-600 mb-4">Video could not be loaded in the player.</p>
+                          <Button
+                            asChild
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <a href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Open in New Tab
+                            </a>
+                          </Button>
+                        </div>
+                      )
+                    }
                     return (
                       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                         <video
@@ -5415,6 +5730,11 @@ export default function FundamentalsTrainingPortal() {
                           controls
                           className="absolute top-0 left-0 w-full h-full rounded-lg"
                           style={{ objectFit: 'contain' }}
+                          crossOrigin="anonymous"
+                          onError={() => {
+                            console.error('Video failed to load:', file.fileUrl)
+                            setVideoLoadError(true)
+                          }}
                         >
                           Your browser does not support the video tag.
                         </video>

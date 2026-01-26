@@ -103,10 +103,16 @@ My job is to support your growth, your skill development, and your confidence. Y
             cues: ['Instructor reminder: “If your line is shaky, your breathing is shaky. Breathe slow → move slow.”']
           },
           {
-            time: '3:00 – 3:30',
+            time: '3:00 – 3:20',
             title: 'Closing Reflection',
             instructorScript: `Put your practice skin in front of you. Circle the best line you made today. That one line tells us you can do this… and the rest tells us where to focus.`,
             activities: ['Guided reflection discussion.']
+          },
+          {
+            time: '3:20 – 3:30',
+            title: 'Spaced Review: Safety Foundations',
+            instructorScript: 'Quick review of key safety concepts: BBP disposal, workstation setup, hand positioning.',
+            activities: ['5-minute oral quiz: "What are the 3 critical safety checkpoints before starting any procedure?"']
           }
         ],
         homework: [
@@ -288,8 +294,9 @@ Understanding this distinction helps you choose the right pigment for each clien
           },
           {
             time: '3:20 – 3:30',
-            title: 'Closing Confidence Anchor',
-            instructorScript: `Color is the difference between an amateur and a master. Today you learned the why behind healed results. Take photos of your swatches and your practice skin. This becomes your record of improvement.`
+            title: 'Closing Confidence Anchor & Spaced Review',
+            instructorScript: `Color is the difference between an amateur and a master. Today you learned the why behind healed results. Take photos of your swatches and your practice skin. This becomes your record of improvement.`,
+            activities: ['Review: "Name 3 safety protocols from Week 1" and "What determines pigment selection?"']
           }
         ],
         homework: [
@@ -451,9 +458,10 @@ Understanding this distinction helps you choose the right pigment for each clien
           },
           {
             time: '3:20 – 3:30',
-            title: 'Homework & Exit Direction',
+            title: 'Homework, Exit Direction & Spaced Review',
             instructorScript:
-              'Today, you didn’t just learn what to do — you started learning why you do it. The artists who become great are the ones who think before they touch skin.'
+              'Today, you didn't just learn what to do — you started learning why you do it. The artists who become great are the ones who think before they touch skin.',
+            activities: ['Review: "What are the 3 components of color theory?" and "Name 2 absolute contraindications."']
           }
         ],
         homework: [
