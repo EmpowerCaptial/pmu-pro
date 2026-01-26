@@ -522,6 +522,7 @@ export default function FundamentalsTrainingPortal() {
   const [portfolioUploading, setPortfolioUploading] = useState<Record<string, boolean>>({})
   const [portfolioReflectionDialog, setPortfolioReflectionDialog] = useState<{ weekId: string; open: boolean }>({ weekId: '', open: false })
   const [portfolioReflectionText, setPortfolioReflectionText] = useState('')
+  const [portfolioViewDialogOpen, setPortfolioViewDialogOpen] = useState(false)
   // Instructor folder file deletion state
   const [isInstructorFileDeleteDialogOpen, setIsInstructorFileDeleteDialogOpen] = useState(false)
   const [instructorFilePendingDelete, setInstructorFilePendingDelete] = useState<any | null>(null)
@@ -2507,111 +2508,18 @@ export default function FundamentalsTrainingPortal() {
                       Track your skill development with weekly photo comparisons and reflections. Document your journey from Week 1 to graduation.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isLoadingPortfolio ? (
-                      <div className="text-center py-4 text-gray-500">Loading portfolio...</div>
-                    ) : (
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {courseWeeks.map((week, idx) => {
-                          const portfolioItem = progressPortfolio[week.id] || {}
-                          const isUploading = portfolioUploading[week.id] || false
-                          return (
-                            <Card key={week.id} className="border-purple-200">
-                              <CardContent className="p-4">
-                                <h4 className="font-semibold text-purple-900 mb-2">{week.title}</h4>
-                                <div className="space-y-3">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-600">Best Work Photo</span>
-                                      <div className="flex gap-2">
-                                        {portfolioItem.photoUrl && (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-xs"
-                                            onClick={() => window.open(portfolioItem.photoUrl, '_blank')}
-                                          >
-                                            <Eye className="h-3 w-3 mr-1" />
-                                            View
-                                          </Button>
-                                        )}
-                                        <label>
-                                          <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                              const file = e.target.files?.[0]
-                                              if (file) {
-                                                handlePortfolioPhotoUpload(week.id, file)
-                                              }
-                                            }}
-                                            disabled={isUploading}
-                                          />
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-xs"
-                                            disabled={isUploading}
-                                            asChild
-                                          >
-                                            <span>
-                                              <Upload className="h-3 w-3 mr-1" />
-                                              {isUploading ? 'Uploading...' : portfolioItem.photoUrl ? 'Replace' : 'Upload'}
-                                            </span>
-                                          </Button>
-                                        </label>
-                                      </div>
-                                    </div>
-                                    {portfolioItem.photoUrl && (
-                                      <div className="mt-2 p-2 bg-purple-50 rounded">
-                                        <img
-                                          src={portfolioItem.photoUrl}
-                                          alt={`${week.title} portfolio`}
-                                          className="w-full h-32 object-cover rounded"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-600">Reflection Notes</span>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-xs"
-                                        onClick={() => {
-                                          setPortfolioReflectionText(portfolioItem.reflectionNotes || '')
-                                          setPortfolioReflectionDialog({ weekId: week.id, open: true })
-                                        }}
-                                      >
-                                        <PenSquare className="h-3 w-3 mr-1" />
-                                        {portfolioItem.reflectionNotes ? 'Edit' : 'Add'}
-                                      </Button>
-                                    </div>
-                                    {portfolioItem.reflectionNotes && (
-                                      <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700 max-h-20 overflow-y-auto">
-                                        {portfolioItem.reflectionNotes}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {idx > 0 && (
-                                    <div className="mt-2 p-2 bg-purple-50 rounded text-xs text-purple-700">
-                                      <strong>Compare with Week {idx}:</strong> Review your progress and note improvements
-                                    </div>
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )
-                        })}
-                      </div>
-                    )}
-                    <div className="pt-2 border-t border-purple-200">
-                      <p className="text-sm text-purple-700">
-                        <strong>Tip:</strong> Upload your best work from each week to track improvement. Compare Week 1 vs Week 4 vs Week 7 to see your growth!
-                      </p>
-                    </div>
+                  <CardContent>
+                    <Button
+                      onClick={() => setPortfolioViewDialogOpen(true)}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      size="lg"
+                    >
+                      <Eye className="h-5 w-5 mr-2" />
+                      View & Manage Portfolio
+                    </Button>
+                    <p className="text-xs text-purple-600 mt-2 text-center">
+                      Click to upload photos and add reflection notes for each week
+                    </p>
                   </CardContent>
                 </Card>
 
