@@ -748,6 +748,7 @@ export default function FundamentalsTrainingPortal() {
               title: assignment.weekId ? `Week ${assignment.weekId}` : 'Custom Week',
               summary: '',
               targetHours: assignment.estimatedHours ?? 0,
+              learningObjectives: [],
               assignments: [assignment]
             })
           }
