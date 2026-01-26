@@ -808,17 +808,41 @@ export default function FundamentalsTrainingPortal() {
         const data = await response.json()
         const portfolioMap: Record<string, { photoUrl?: string; reflectionNotes?: string; photoId?: string }> = {}
         
-        // Group by week ID
+        // Group by week ID - handle both photos and reflection notes
         data.files?.forEach((file: any) => {
-          const weekId = file.fileType.split(':')[1] || 'week-1'
-          portfolioMap[weekId] = {
-            photoUrl: file.fileUrl,
-            photoId: file.id,
-            reflectionNotes: file.fileName.includes('reflection') ? file.fileName : undefined
+          const fileTypeParts = file.fileType.split(':')
+          const weekId = fileTypeParts[1] || 'week-1'
+          const isReflection = fileTypeParts[2] === 'reflection'
+          
+          if (!portfolioMap[weekId]) {
+            portfolioMap[weekId] = {}
+          }
+          
+          if (isReflection) {
+            // For reflection notes, fetch the text content
+            fetch(file.fileUrl)
+              .then(res => res.text())
+              .then(text => {
+                setProgressPortfolio(prev => ({
+                  ...prev,
+                  [weekId]: {
+                    ...prev[weekId],
+                    reflectionNotes: text
+                  }
+                }))
+              })
+              .catch(err => console.error('Failed to fetch reflection notes:', err))
+          } else {
+            // It's a photo
+            portfolioMap[weekId] = {
+              ...portfolioMap[weekId],
+              photoUrl: file.fileUrl,
+              photoId: file.id
+            }
           }
         })
         
-        setProgressPortfolio(portfolioMap)
+        setProgressPortfolio(prev => ({ ...prev, ...portfolioMap }))
       }
     } catch (error) {
       console.error('Failed to fetch progress portfolio:', error)
