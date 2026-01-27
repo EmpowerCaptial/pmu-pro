@@ -6533,6 +6533,79 @@ export default function FundamentalsTrainingPortal() {
         </DialogContent>
       </Dialog>
 
+      {/* Student Weeks Portfolio Dialog (for instructors) */}
+      <Dialog open={studentWeeksDialogOpen} onOpenChange={setStudentWeeksDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-purple-900 flex items-center gap-2">
+              <Eye className="h-6 w-6" />
+              {selectedStudentForWeeks?.userName}'s Portfolio
+            </DialogTitle>
+            <DialogDescription>
+              {selectedStudentForWeeks && (
+                <div>
+                  <p className="text-sm text-gray-600">{selectedStudentForWeeks.userEmail}</p>
+                  <p className="text-sm text-purple-700 mt-1">Click on a week to review their work and provide feedback.</p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStudentForWeeks && studentPortfolios[selectedStudentForWeeks.userId] && (
+            <div className="space-y-4 mt-4">
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {courseWeeks.map((week) => {
+                  const portfolios = studentPortfolios[selectedStudentForWeeks.userId]
+                  const portfolio = portfolios.find(p => p.weekId === week.id)
+                  const hasContent = portfolio && (portfolio.photoUrl || portfolio.reflectionNotes)
+                  
+                  return (
+                    <Card
+                      key={week.id}
+                      className={`border-purple-200 cursor-pointer transition-all hover:shadow-md ${
+                        hasContent ? 'hover:border-purple-400' : 'opacity-60'
+                      }`}
+                      onClick={() => {
+                        if (hasContent) {
+                          setSelectedStudentPortfolio(portfolio || null)
+                          setInstructorFeedbackText(portfolio?.feedback || '')
+                          setStudentPortfolioDialogOpen(true)
+                        }
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-purple-900 text-sm">{week.title}</h4>
+                          {portfolio?.feedback && (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          )}
+                        </div>
+                        <div className="space-y-1 text-xs text-gray-600">
+                          {portfolio?.photoUrl && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              <span>Photo uploaded</span>
+                            </div>
+                          )}
+                          {portfolio?.reflectionNotes && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              <span>Reflection notes</span>
+                            </div>
+                          )}
+                          {!hasContent && (
+                            <span className="text-gray-400">No content yet</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Student Portfolio Review Dialog (for instructors) */}
       <Dialog open={studentPortfolioDialogOpen} onOpenChange={setStudentPortfolioDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
