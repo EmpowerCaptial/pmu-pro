@@ -6574,7 +6574,7 @@ export default function FundamentalsTrainingPortal() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-purple-900 text-sm">{week.title}</h4>
+                          <h4 className="font-semibold text-purple-900 text-sm">W{week.order}</h4>
                           {portfolio?.feedback && (
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                           )}
