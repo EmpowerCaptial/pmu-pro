@@ -3601,33 +3601,6 @@ export default function FundamentalsTrainingPortal() {
                                 {portfolioCount} week{portfolioCount !== 1 ? 's' : ''} submitted
                               </Badge>
                             </div>
-                            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                              {courseWeeks.map((week) => {
-                                const portfolio = portfolios.find(p => p.weekId === week.id)
-                                const hasContent = portfolio && (portfolio.photoUrl || portfolio.reflectionNotes)
-                                
-                                return (
-                                  <Button
-                                    key={week.id}
-                                    variant={hasContent ? "default" : "outline"}
-                                    className={hasContent ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
-                                    onClick={() => {
-                                      if (hasContent) {
-                                        setSelectedStudentPortfolio(portfolio || null)
-                                        setInstructorFeedbackText(portfolio?.feedback || '')
-                                        setStudentPortfolioDialogOpen(true)
-                                      }
-                                    }}
-                                    disabled={!hasContent}
-                                  >
-                                    {week.title}
-                                    {portfolio?.feedback && (
-                                      <CheckCircle2 className="h-3 w-3 ml-1" />
-                                    )}
-                                  </Button>
-                                )
-                              })}
-                            </div>
                           </CardContent>
                         </Card>
                       )
@@ -6617,10 +6590,10 @@ export default function FundamentalsTrainingPortal() {
             <DialogDescription>
               {selectedStudentPortfolio && (
                 <div>
-                  <p className="font-semibold">{selectedStudentPortfolio.userName}</p>
-                  <p className="text-sm text-gray-600">{selectedStudentPortfolio.userEmail}</p>
+                  <p className="font-semibold break-words">{selectedStudentPortfolio.userName}</p>
+                  <p className="text-sm text-gray-600 break-words">{selectedStudentPortfolio.userEmail}</p>
                   <p className="text-sm text-purple-700 mt-1">
-                    {courseWeeks.find(w => w.id === selectedStudentPortfolio.weekId)?.title}
+                    W{courseWeeks.find(w => w.id === selectedStudentPortfolio.weekId)?.order}
                   </p>
                 </div>
               )}
