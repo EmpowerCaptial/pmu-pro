@@ -859,6 +859,97 @@ export default function FundamentalsTrainingPortal() {
     }
   }, [currentUser?.email])
 
+  // Fetch all student portfolios (for instructors)
+  const fetchStudentPortfolios = useCallback(async () => {
+    if (!currentUser?.email || !canManageVideos) return
+    
+    setIsLoadingStudentPortfolios(true)
+    try {
+      // Fetch all portfolio files (all students)
+      const response = await fetch('/api/file-uploads?fileType=training-progress-portfolio:', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const portfoliosByStudent: Record<string, Array<{ userId: string; userName: string; userEmail: string; weekId: string; photoUrl?: string; reflectionNotes?: string; photoId?: string; feedback?: string; feedbackId?: string }>> = {}
+        
+        // Group by student and week
+        for (const file of data.files || []) {
+          const fileTypeParts = file.fileType.split(':')
+          const weekId = fileTypeParts[1] || 'week-1'
+          const isReflection = fileTypeParts[2] === 'reflection'
+          const userId = file.userId
+          const userName = file.user?.name || file.user?.email || 'Unknown Student'
+          const userEmail = file.user?.email || ''
+          
+          if (!portfoliosByStudent[userId]) {
+            portfoliosByStudent[userId] = []
+          }
+          
+          let studentWeek = portfoliosByStudent[userId].find(p => p.weekId === weekId)
+          if (!studentWeek) {
+            studentWeek = { userId, userName, userEmail, weekId }
+            portfoliosByStudent[userId].push(studentWeek)
+          }
+          
+          if (isReflection) {
+            // Fetch reflection notes content
+            try {
+              const notesResponse = await fetch(file.fileUrl)
+              const notesText = await notesResponse.text()
+              studentWeek.reflectionNotes = notesText
+            } catch (err) {
+              console.error('Failed to fetch reflection notes:', err)
+            }
+          } else {
+            studentWeek.photoUrl = file.fileUrl
+            studentWeek.photoId = file.id
+          }
+        }
+        
+        // Fetch instructor feedback for each portfolio item
+        const feedbackResponse = await fetch('/api/file-uploads?fileType=training-portfolio-feedback:', {
+          headers: {
+            'x-user-email': currentUser.email
+          }
+        })
+        
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json()
+          // Fetch all feedback content in parallel
+          const feedbackPromises = (feedbackData.files || []).map(async (feedbackFile: any) => {
+            try {
+              const feedbackParts = feedbackFile.fileType.split(':')
+              const feedbackUserId = feedbackParts[1]
+              const feedbackWeekId = feedbackParts[2]
+              
+              const studentPortfolio = portfoliosByStudent[feedbackUserId]?.find(p => p.weekId === feedbackWeekId)
+              if (studentPortfolio) {
+                const feedbackRes = await fetch(feedbackFile.fileUrl)
+                const feedbackText = await feedbackRes.text()
+                studentPortfolio.feedback = feedbackText
+                studentPortfolio.feedbackId = feedbackFile.id
+              }
+            } catch (err) {
+              console.error('Failed to fetch feedback:', err)
+            }
+          })
+          
+          await Promise.all(feedbackPromises)
+        }
+        
+        setStudentPortfolios(portfoliosByStudent)
+      }
+    } catch (error) {
+      console.error('Failed to fetch student portfolios:', error)
+    } finally {
+      setIsLoadingStudentPortfolios(false)
+    }
+  }, [currentUser?.email, canManageVideos])
+
   const fetchInstructorFolderFiles = useCallback(async () => {
     if (!currentUser?.email || !canManageVideos) return
     
@@ -884,11 +975,12 @@ export default function FundamentalsTrainingPortal() {
   useEffect(() => {
     if (activeTab === 'instructor' && canManageVideos) {
       fetchInstructorFolderFiles()
+      fetchStudentPortfolios()
     }
     if (activeTab === 'student') {
       fetchProgressPortfolio()
     }
-  }, [activeTab, canManageVideos, fetchInstructorFolderFiles, fetchProgressPortfolio])
+  }, [activeTab, canManageVideos, fetchInstructorFolderFiles, fetchProgressPortfolio, fetchStudentPortfolios])
 
   const fetchTrainingVideos = useCallback(
     async (showSpinner = true) => {
@@ -2019,6 +2111,7 @@ export default function FundamentalsTrainingPortal() {
         }
         
         setInstructorFeedbackText('')
+        await fetchStudentPortfolios() // Refresh to show updated feedback
         alert('Feedback saved successfully!')
       } else {
         const errorData = await response.json()
