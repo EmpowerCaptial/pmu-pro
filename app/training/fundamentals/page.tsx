@@ -3584,27 +3584,76 @@ export default function FundamentalsTrainingPortal() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {Object.entries(studentPortfolios).map(([userId, portfolios]) => {
-                      const studentName = portfolios[0]?.userName || 'Unknown Student'
-                      const studentEmail = portfolios[0]?.userEmail || ''
-                      const portfolioCount = portfolios.filter(p => p.photoUrl || p.reflectionNotes).length
-                      
-                      return (
-                        <Card key={userId} className="border-purple-200">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <h4 className="font-semibold text-purple-900">{studentName}</h4>
-                                <p className="text-xs text-gray-600">{studentEmail}</p>
-                              </div>
-                              <Badge className="bg-purple-100 text-purple-700">
-                                {portfolioCount} week{portfolioCount !== 1 ? 's' : ''} submitted
-                              </Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search students by name or email..."
+                        value={studentSearchQuery}
+                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    
+                    {/* Student List */}
+                    <div className="space-y-2">
+                      {Object.entries(studentPortfolios)
+                        .filter(([userId, portfolios]) => {
+                          if (!studentSearchQuery.trim()) return true
+                          const studentName = portfolios[0]?.userName || 'Unknown Student'
+                          const studentEmail = portfolios[0]?.userEmail || ''
+                          const query = studentSearchQuery.toLowerCase()
+                          return studentName.toLowerCase().includes(query) || studentEmail.toLowerCase().includes(query)
+                        })
+                        .map(([userId, portfolios]) => {
+                          const studentName = portfolios[0]?.userName || 'Unknown Student'
+                          const studentEmail = portfolios[0]?.userEmail || ''
+                          const portfolioCount = portfolios.filter(p => p.photoUrl || p.reflectionNotes).length
+                          const feedbackCount = portfolios.filter(p => p.feedback).length
+                          
+                          return (
+                            <Card key={userId} className="border-purple-200 hover:border-purple-300 transition-colors cursor-pointer" onClick={() => {
+                              setSelectedStudentForWeeks({ userId, userName: studentName, userEmail: studentEmail })
+                              setStudentWeeksDialogOpen(true)
+                            }}>
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-purple-900 truncate">{studentName}</h4>
+                                    <p className="text-xs text-gray-600 truncate">{studentEmail}</p>
+                                  </div>
+                                  <div className="flex items-center gap-3 flex-shrink-0">
+                                    <div className="text-right">
+                                      <Badge className="bg-purple-100 text-purple-700 mb-1 whitespace-nowrap">
+                                        {portfolioCount} week{portfolioCount !== 1 ? 's' : ''} submitted
+                                      </Badge>
+                                      {feedbackCount > 0 && (
+                                        <div className="text-xs text-green-600 flex items-center gap-1 justify-end">
+                                          <CheckCircle2 className="h-3 w-3" />
+                                          <span className="whitespace-nowrap">{feedbackCount} reviewed</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )
+                        })}
+                      {Object.entries(studentPortfolios).filter(([userId, portfolios]) => {
+                        if (!studentSearchQuery.trim()) return false
+                        const studentName = portfolios[0]?.userName || 'Unknown Student'
+                        const studentEmail = portfolios[0]?.userEmail || ''
+                        const query = studentSearchQuery.toLowerCase()
+                        return studentName.toLowerCase().includes(query) || studentEmail.toLowerCase().includes(query)
+                      }).length === 0 && studentSearchQuery.trim() && (
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No students found matching "{studentSearchQuery}"</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>
