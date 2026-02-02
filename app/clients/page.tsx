@@ -14,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
 import {
   Plus,
   Loader2,
@@ -43,12 +42,6 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isClientDetailOpen, setIsClientDetailOpen] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importPreview, setImportPreview] = useState<any[]>([]);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
-  const [importResults, setImportResults] = useState<{ success: number; failed: number; errors: string[] }>({ success: 0, failed: 0, errors: [] });
 
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
@@ -329,149 +322,6 @@ export default function ClientsPage() {
     router.push(`/clients/${client.id}`)
   }
 
-  // Handle Excel/CSV file selection
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setImportFile(file)
-    setImportPreview([])
-    setImportResults({ success: 0, failed: 0, errors: [] })
-
-    try {
-      const arrayBuffer = await file.arrayBuffer()
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-      const firstSheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[firstSheetName]
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
-
-      if (data.length < 2) {
-        alert('Excel file must have at least a header row and one data row')
-        setImportFile(null)
-        return
-      }
-
-      // Get headers (first row)
-      const headers = data[0].map((h: any) => String(h || '').toLowerCase().trim())
-      
-      // Map common column names to our client fields
-      const columnMap: Record<string, string> = {
-        'name': 'name',
-        'full name': 'name',
-        'client name': 'name',
-        'email': 'email',
-        'email address': 'email',
-        'phone': 'phone',
-        'phone number': 'phone',
-        'telephone': 'phone',
-        'mobile': 'phone',
-        'date of birth': 'dateOfBirth',
-        'dob': 'dateOfBirth',
-        'birthday': 'dateOfBirth',
-        'emergency contact': 'emergencyContact',
-        'emergency': 'emergencyContact',
-        'medical history': 'medicalHistory',
-        'medical': 'medicalHistory',
-        'allergies': 'allergies',
-        'allergy': 'allergies',
-        'skin type': 'skinType',
-        'fitzpatrick': 'skinType',
-        'fitz': 'skinType',
-        'notes': 'notes',
-        'note': 'notes',
-        'comments': 'notes'
-      }
-
-      // Find column indices
-      const columnIndices: Record<string, number> = {}
-      Object.keys(columnMap).forEach(key => {
-        const index = headers.findIndex(h => h.includes(key))
-        if (index >= 0) {
-          columnIndices[columnMap[key]] = index
-        }
-      })
-
-      // Parse data rows (limit to first 100 rows for preview)
-      const preview = data.slice(1, Math.min(101, data.length)).map((row, idx) => {
-        const client: any = {}
-        Object.entries(columnIndices).forEach(([field, colIndex]) => {
-          const value = row[colIndex]
-          if (value !== undefined && value !== null && value !== '') {
-            client[field] = String(value).trim()
-          }
-        })
-        return { ...client, _rowIndex: idx + 2 } // +2 because row 1 is header, and we're 0-indexed
-      })
-
-      setImportPreview(preview)
-    } catch (error) {
-      console.error('Error parsing Excel file:', error)
-      alert('Error reading Excel file. Please make sure it\'s a valid .xlsx or .csv file.')
-      setImportFile(null)
-    }
-  }
-
-  // Handle importing clients from preview
-  const handleImportClients = async () => {
-    if (!importFile || importPreview.length === 0) return
-
-    setIsImporting(true)
-    setImportProgress({ current: 0, total: importPreview.length })
-    setImportResults({ success: 0, failed: 0, errors: [] })
-
-    const results = { success: 0, failed: 0, errors: [] as string[] }
-
-    for (let i = 0; i < importPreview.length; i++) {
-      const clientData = importPreview[i]
-      setImportProgress({ current: i + 1, total: importPreview.length })
-
-      // Skip if no name (required field)
-      if (!clientData.name || clientData.name.trim() === '') {
-        results.failed++
-        results.errors.push(`Row ${clientData._rowIndex}: Missing required field "name"`)
-        continue
-      }
-
-      try {
-        const response = await fetch('/api/clients', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'x-user-email': currentUser?.email || '',
-          },
-          body: JSON.stringify({
-            name: clientData.name,
-            email: clientData.email || '',
-            phone: clientData.phone || '',
-            dateOfBirth: clientData.dateOfBirth || '',
-            emergencyContact: clientData.emergencyContact || '',
-            medicalHistory: clientData.medicalHistory || '',
-            allergies: clientData.allergies || '',
-            skinType: clientData.skinType || '',
-            notes: clientData.notes || ''
-          }),
-        })
-
-        if (response.ok) {
-          results.success++
-        } else {
-          const errorData = await response.json()
-          results.failed++
-          results.errors.push(`Row ${clientData._rowIndex}: ${errorData.error || 'Failed to create client'}`)
-        }
-      } catch (error) {
-        results.failed++
-        results.errors.push(`Row ${clientData._rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-    }
-
-    setImportResults(results)
-    await fetchClients() // Refresh the list
-    setIsImporting(false)
-  }
-
       if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
@@ -520,16 +370,6 @@ export default function ClientsPage() {
         onBookAppointment={handleBookAppointment}
       />
 
-      {/* Import Clients Button - Floating action button */}
-      <div className="fixed bottom-24 right-4 md:bottom-auto md:top-24 md:right-6 z-50">
-        <Button
-          onClick={() => setIsImportDialogOpen(true)}
-          className="h-12 w-12 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          title="Import clients from Excel/CSV"
-        >
-          <FileSpreadsheet className="h-5 w-5" />
-        </Button>
-      </div>
 
       {/* Add Client Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -919,142 +759,6 @@ export default function ClientsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Import Clients Dialog */}
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-base sm:text-lg flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5" />
-              Import Clients from Excel/CSV
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 p-4 sm:p-6 pt-0">
-            {/* File Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="import-file" className="text-sm sm:text-base">Select Excel or CSV File</Label>
-              <Input
-                id="import-file"
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileSelect}
-                className="text-sm sm:text-base"
-              />
-              <p className="text-xs text-gray-500">
-                Supported formats: .xlsx, .xls, .csv. The first row should contain column headers.
-              </p>
-            </div>
-
-            {/* Preview */}
-            {importPreview.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-sm sm:text-base">Preview ({importPreview.length} clients)</Label>
-                <div className="border rounded-lg overflow-x-auto max-h-64">
-                  <table className="w-full text-xs sm:text-sm">
-                    <thead className="bg-gray-50 sticky top-0">
-                      <tr>
-                        <th className="px-2 py-1 text-left border">Name</th>
-                        <th className="px-2 py-1 text-left border">Email</th>
-                        <th className="px-2 py-1 text-left border">Phone</th>
-                        <th className="px-2 py-1 text-left border">Date of Birth</th>
-                        <th className="px-2 py-1 text-left border">Skin Type</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {importPreview.map((client, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-2 py-1 border">{client.name || '-'}</td>
-                          <td className="px-2 py-1 border">{client.email || '-'}</td>
-                          <td className="px-2 py-1 border">{client.phone || '-'}</td>
-                          <td className="px-2 py-1 border">{client.dateOfBirth || '-'}</td>
-                          <td className="px-2 py-1 border">{client.skinType || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Import Progress */}
-            {isImporting && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Importing clients...</span>
-                  <span>{importProgress.current} / {importProgress.total}</span>
-                </div>
-                <Progress value={(importProgress.current / importProgress.total) * 100} />
-              </div>
-            )}
-
-            {/* Import Results */}
-            {!isImporting && importResults.success + importResults.failed > 0 && (
-              <div className="space-y-2">
-                <div className={`p-3 rounded-lg ${importResults.failed === 0 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {importResults.failed === 0 ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-yellow-600" />
-                    )}
-                    <span className="font-semibold">
-                      Import Complete: {importResults.success} succeeded, {importResults.failed} failed
-                    </span>
-                  </div>
-                  {importResults.errors.length > 0 && (
-                    <div className="mt-2 max-h-32 overflow-y-auto">
-                      <p className="text-xs font-semibold mb-1">Errors:</p>
-                      <ul className="text-xs space-y-1">
-                        {importResults.errors.slice(0, 10).map((error, idx) => (
-                          <li key={idx} className="text-red-600">• {error}</li>
-                        ))}
-                        {importResults.errors.length > 10 && (
-                          <li className="text-gray-500">... and {importResults.errors.length - 10} more errors</li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setIsImportDialogOpen(false)
-                  setImportFile(null)
-                  setImportPreview([])
-                  setImportResults({ success: 0, failed: 0, errors: [] })
-                }}
-                className="w-full sm:w-auto text-sm sm:text-base"
-                disabled={isImporting}
-              >
-                {importResults.success + importResults.failed > 0 ? 'Close' : 'Cancel'}
-              </Button>
-              {importPreview.length > 0 && (
-                <Button 
-                  onClick={handleImportClients}
-                  disabled={isImporting}
-                  className="w-full sm:w-auto bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-sm sm:text-base"
-                >
-                  {isImporting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Importing...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import {importPreview.length} Client{importPreview.length !== 1 ? 's' : ''}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
         </div>
       </div>
     </SubscriptionGate>
