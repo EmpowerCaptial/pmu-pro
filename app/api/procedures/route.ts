@@ -133,13 +133,21 @@ export async function POST(request: NextRequest) {
       }
 
       // Create procedure
+      // Convert arrays to JSON strings for beforePhotos and afterPhotos (schema expects String?)
+      const beforePhotosStr = Array.isArray(beforePhotos) 
+        ? (beforePhotos.length > 0 ? JSON.stringify(beforePhotos) : null)
+        : (beforePhotos || null)
+      const afterPhotosStr = Array.isArray(afterPhotos)
+        ? (afterPhotos.length > 0 ? JSON.stringify(afterPhotos) : null)
+        : (afterPhotos || null)
+
       const procedure = await prisma.procedure.create({
         data: {
           userId: user.id,
           clientId,
           serviceId: serviceId || null,
           appointmentId: appointmentId || null,
-          procedureType,
+          procedureType: procedureType || '',
           voltage: voltage || null,
           needleConfiguration: needleConfiguration || '',
           needleSize: needleSize || null,
@@ -151,8 +159,8 @@ export async function POST(request: NextRequest) {
           duration: duration || null,
           areaTreated: areaTreated || null,
           notes: notes || null,
-          beforePhotos: beforePhotos || [],
-          afterPhotos: afterPhotos || [],
+          beforePhotos: beforePhotosStr,
+          afterPhotos: afterPhotosStr,
           healingProgress: healingProgress || null,
           procedureDate: procedureDate ? new Date(procedureDate) : new Date(),
           followUpDate: followUpDate ? new Date(followUpDate) : null,
