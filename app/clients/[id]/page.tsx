@@ -120,7 +120,10 @@ export default function ClientProfilePage() {
   }
 
   const handleSaveProcedure = async (procedureData: any) => {
-    if (!currentUser?.email) return
+    if (!currentUser?.email) {
+      alert('You must be logged in to save procedures.')
+      return
+    }
 
     try {
       const response = await fetch('/api/procedures', {
@@ -136,14 +139,20 @@ export default function ClientProfilePage() {
         const result = await response.json()
         setProcedures(prev => [result.procedure, ...prev])
         setShowProcedureForm(false)
+        // Reload client data to get updated procedures
+        loadClientData()
         // Show success message
         alert('Procedure saved successfully!')
       } else {
-        throw new Error('Failed to save procedure')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        const errorMessage = errorData.error || 'Failed to save procedure'
+        console.error('Error saving procedure:', errorMessage)
+        alert(`Failed to save procedure: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Error saving procedure:', error)
-      alert('Failed to save procedure. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Network error. Please check your connection and try again.'
+      alert(`Failed to save procedure: ${errorMessage}`)
     }
   }
 

@@ -187,15 +187,35 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ procedure }, { status: 201 })
 
-    } catch (dbError) {
-      console.log('Database error creating procedure:', dbError)
-      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    } catch (dbError: any) {
+      console.error('Database error creating procedure:', dbError)
+      
+      // Provide more specific error messages
+      if (dbError.code === 'P2002') {
+        return NextResponse.json({ error: 'A procedure with this information already exists' }, { status: 400 })
+      }
+      if (dbError.code === 'P2003') {
+        return NextResponse.json({ error: 'Invalid client or service reference' }, { status: 400 })
+      }
+      if (dbError.code === 'P2025') {
+        return NextResponse.json({ error: 'Client not found or you do not have access' }, { status: 404 })
+      }
+      
+      return NextResponse.json({ 
+        error: dbError.message || 'Database error occurred. Please try again.' 
+      }, { status: 500 })
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating procedure:', error)
+    
+    // Provide more specific error messages
+    if (error.message?.includes('JSON')) {
+      return NextResponse.json({ error: 'Invalid request data format' }, { status: 400 })
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create procedure' },
+      { error: error.message || 'Failed to create procedure. Please check all required fields and try again.' },
       { status: 500 }
     )
   }
