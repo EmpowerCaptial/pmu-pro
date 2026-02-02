@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic"
 
 const clientSchema = z.object({
   name: z.string().min(1),
-  email: z.union([z.string().email(), z.string().length(0)]).optional().or(z.literal('')),
+  email: z.string().optional().refine((val) => !val || val.trim() === '' || z.string().email().safeParse(val).success, {
+    message: 'Email must be a valid email address or empty'
+  }),
   phone: z.string().optional(),
   notes: z.string().optional(),
   dateOfBirth: z.string().optional(),
