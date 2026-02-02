@@ -81,6 +81,10 @@ export default function ClientProfilePage() {
       if (clientResponse.ok) {
         const clientData = await clientResponse.json()
         setClient(clientData.client)
+        // Load procedures if they exist
+        if (clientData.client?.procedures) {
+          setProcedures(clientData.client.procedures)
+        }
       } else {
         // If client not found via API, try to get from the clients list
         console.log('Client not found via API, trying to get from clients list')
