@@ -329,6 +329,149 @@ export default function ClientsPage() {
     router.push(`/clients/${client.id}`)
   }
 
+  // Handle Excel/CSV file selection
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImportFile(file)
+    setImportPreview([])
+    setImportResults({ success: 0, failed: 0, errors: [] })
+
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+      const firstSheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[firstSheetName]
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
+
+      if (data.length < 2) {
+        alert('Excel file must have at least a header row and one data row')
+        setImportFile(null)
+        return
+      }
+
+      // Get headers (first row)
+      const headers = data[0].map((h: any) => String(h || '').toLowerCase().trim())
+      
+      // Map common column names to our client fields
+      const columnMap: Record<string, string> = {
+        'name': 'name',
+        'full name': 'name',
+        'client name': 'name',
+        'email': 'email',
+        'email address': 'email',
+        'phone': 'phone',
+        'phone number': 'phone',
+        'telephone': 'phone',
+        'mobile': 'phone',
+        'date of birth': 'dateOfBirth',
+        'dob': 'dateOfBirth',
+        'birthday': 'dateOfBirth',
+        'emergency contact': 'emergencyContact',
+        'emergency': 'emergencyContact',
+        'medical history': 'medicalHistory',
+        'medical': 'medicalHistory',
+        'allergies': 'allergies',
+        'allergy': 'allergies',
+        'skin type': 'skinType',
+        'fitzpatrick': 'skinType',
+        'fitz': 'skinType',
+        'notes': 'notes',
+        'note': 'notes',
+        'comments': 'notes'
+      }
+
+      // Find column indices
+      const columnIndices: Record<string, number> = {}
+      Object.keys(columnMap).forEach(key => {
+        const index = headers.findIndex(h => h.includes(key))
+        if (index >= 0) {
+          columnIndices[columnMap[key]] = index
+        }
+      })
+
+      // Parse data rows (limit to first 100 rows for preview)
+      const preview = data.slice(1, Math.min(101, data.length)).map((row, idx) => {
+        const client: any = {}
+        Object.entries(columnIndices).forEach(([field, colIndex]) => {
+          const value = row[colIndex]
+          if (value !== undefined && value !== null && value !== '') {
+            client[field] = String(value).trim()
+          }
+        })
+        return { ...client, _rowIndex: idx + 2 } // +2 because row 1 is header, and we're 0-indexed
+      })
+
+      setImportPreview(preview)
+    } catch (error) {
+      console.error('Error parsing Excel file:', error)
+      alert('Error reading Excel file. Please make sure it\'s a valid .xlsx or .csv file.')
+      setImportFile(null)
+    }
+  }
+
+  // Handle importing clients from preview
+  const handleImportClients = async () => {
+    if (!importFile || importPreview.length === 0) return
+
+    setIsImporting(true)
+    setImportProgress({ current: 0, total: importPreview.length })
+    setImportResults({ success: 0, failed: 0, errors: [] })
+
+    const results = { success: 0, failed: 0, errors: [] as string[] }
+
+    for (let i = 0; i < importPreview.length; i++) {
+      const clientData = importPreview[i]
+      setImportProgress({ current: i + 1, total: importPreview.length })
+
+      // Skip if no name (required field)
+      if (!clientData.name || clientData.name.trim() === '') {
+        results.failed++
+        results.errors.push(`Row ${clientData._rowIndex}: Missing required field "name"`)
+        continue
+      }
+
+      try {
+        const response = await fetch('/api/clients', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'x-user-email': currentUser?.email || '',
+          },
+          body: JSON.stringify({
+            name: clientData.name,
+            email: clientData.email || '',
+            phone: clientData.phone || '',
+            dateOfBirth: clientData.dateOfBirth || '',
+            emergencyContact: clientData.emergencyContact || '',
+            medicalHistory: clientData.medicalHistory || '',
+            allergies: clientData.allergies || '',
+            skinType: clientData.skinType || '',
+            notes: clientData.notes || ''
+          }),
+        })
+
+        if (response.ok) {
+          results.success++
+        } else {
+          const errorData = await response.json()
+          results.failed++
+          results.errors.push(`Row ${clientData._rowIndex}: ${errorData.error || 'Failed to create client'}`)
+        }
+      } catch (error) {
+        results.failed++
+        results.errors.push(`Row ${clientData._rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    }
+
+    setImportResults(results)
+    await fetchClients() // Refresh the list
+    setIsImporting(false)
+  }
+
       if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
@@ -376,6 +519,17 @@ export default function ClientsPage() {
         onSendMessage={handleSendMessage}
         onBookAppointment={handleBookAppointment}
       />
+
+      {/* Import Clients Button - Floating action button */}
+      <div className="fixed bottom-24 right-4 md:bottom-auto md:top-24 md:right-6 z-50">
+        <Button
+          onClick={() => setIsImportDialogOpen(true)}
+          className="h-12 w-12 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          title="Import clients from Excel/CSV"
+        >
+          <FileSpreadsheet className="h-5 w-5" />
+        </Button>
+      </div>
 
       {/* Add Client Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
