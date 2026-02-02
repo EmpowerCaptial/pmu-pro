@@ -19,6 +19,7 @@ interface Message {
 export function LeahChat() {
   const pathname = usePathname()
   const isClientsPage = pathname === '/clients'
+  const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -32,6 +33,16 @@ export function LeahChat() {
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -105,8 +116,8 @@ export function LeahChat() {
 
   return (
     <>
-      {/* Chat Toggle Button */}
-      {!(isClientsPage && typeof window !== 'undefined' && window.innerWidth < 768) && (
+      {/* Chat Toggle Button - Hidden on mobile clients page to prevent overlap with Add Client button */}
+      {!(isClientsPage && isMobile) && (
         <div className="fixed bottom-20 right-4 md:top-20 md:right-6 md:bottom-auto z-[60]">
           <Button
             onClick={() => setIsOpen(!isOpen)}
