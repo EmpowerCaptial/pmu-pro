@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,8 @@ interface Message {
 }
 
 export function LeahChat() {
+  const pathname = usePathname()
+  const isClientsPage = pathname === '/clients'
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -103,14 +106,16 @@ export function LeahChat() {
   return (
     <>
       {/* Chat Toggle Button */}
-      <div className="fixed bottom-20 right-4 md:top-20 md:right-6 md:bottom-auto z-[60]">
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          className="h-12 w-12 rounded-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
-        </Button>
-      </div>
+      {!(isClientsPage && typeof window !== 'undefined' && window.innerWidth < 768) && (
+        <div className="fixed bottom-20 right-4 md:top-20 md:right-6 md:bottom-auto z-[60]">
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-12 w-12 rounded-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+          </Button>
+        </div>
+      )}
 
       {/* Chat Window */}
       {isOpen && (
