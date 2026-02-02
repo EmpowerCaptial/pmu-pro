@@ -103,7 +103,7 @@ export function LeahChat() {
   return (
     <>
       {/* Chat Toggle Button */}
-      <div className="fixed top-20 right-6 z-[60]">
+      <div className="fixed top-20 right-6 z-[60] md:top-20 md:right-6 bottom-20 md:bottom-auto left-auto md:left-auto">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className="h-12 w-12 rounded-full bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender-700 shadow-lg hover:shadow-xl transition-all duration-200"
@@ -114,7 +114,7 @@ export function LeahChat() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed top-32 right-6 z-[60] w-80 h-96">
+        <div className="fixed top-32 right-6 z-[60] w-80 h-96 md:top-32 md:right-6 bottom-24 md:bottom-auto left-4 md:left-auto max-w-[calc(100vw-2rem)] md:max-w-none">
           <Card className="h-full bg-white/95 backdrop-blur-sm border-lavender/30 shadow-xl">
             <CardHeader className="bg-gradient-to-r from-lavender to-lavender-600 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-2 text-sm">

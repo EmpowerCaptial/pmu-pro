@@ -358,7 +358,7 @@ export default function ClientsPage() {
     <SubscriptionGate>
       <div className="min-h-screen bg-gradient-to-br from-ivory via-white to-beige">
         <NavBar currentPath="/clients" user={user} />
-        <div className="pb-20 sm:pb-0">
+        <div className="pb-24 sm:pb-0">
       {/* Client List Component */}
       <ClientList
         clients={clients}

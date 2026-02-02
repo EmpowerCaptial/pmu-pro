@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"
 
 const clientSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email().optional(),
+  email: z.union([z.string().email(), z.string().length(0)]).optional().or(z.literal('')),
   phone: z.string().optional(),
   notes: z.string().optional(),
   dateOfBirth: z.string().optional(),
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         name: validatedData.name,
-        email: validatedData.email,
+        email: validatedData.email && validatedData.email.trim() !== '' ? validatedData.email : null,
         phone: validatedData.phone,
         notes: validatedData.notes,
         dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
