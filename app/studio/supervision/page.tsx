@@ -2711,7 +2711,6 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 The instructor must approve this walk-in booking before it's added to the schedule
                               </p>
                             </div>
-                          </div>
 
                           {/* Selected Service Details */}
                           {clientInfo.service && (
