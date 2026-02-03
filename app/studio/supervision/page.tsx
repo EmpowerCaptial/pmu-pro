@@ -87,10 +87,15 @@ export default function StudioSupervisionPage() {
     phone: '',
     email: '',
     service: '',
-    selectedInstructor: '' // For walk-in bookings
+    selectedInstructor: '', // For walk-in bookings
+    clientId: '' // For existing client selection
   })
   const [showClientForm, setShowClientForm] = useState(false)
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'deposit-sent' | 'confirmed' | 'completed'>('pending')
+  const [clientSelectionType, setClientSelectionType] = useState<'new' | 'existing'>('new')
+  const [existingClients, setExistingClients] = useState<any[]>([])
+  const [clientSearchTerm, setClientSearchTerm] = useState('')
+  const [isLoadingClients, setIsLoadingClients] = useState(false)
   
   // Procedure logging state
   const [procedureForm, setProcedureForm] = useState({
@@ -1077,27 +1082,32 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
         localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
       }
 
-      // Create client in database
+      // Create or use existing client in database
       const token = localStorage.getItem('authToken')
+      let dbClientId = clientInfo.clientId // Use existing client ID if selected
+      
       if (token) {
         try {
-          const clientResponse = await fetch('/api/clients', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'x-user-email': currentUser?.email || ''
-            },
-            body: JSON.stringify({
-              name: clientInfo.name,
-              email: clientInfo.email || '',
-              phone: clientInfo.phone,
-              notes: `Supervision session with ${instructor?.name} - ${service?.name}`
+          // Only create new client if not using existing one
+          if (clientSelectionType === 'new' || !dbClientId) {
+            const clientResponse = await fetch('/api/clients', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'x-user-email': currentUser?.email || ''
+              },
+              body: JSON.stringify({
+                name: clientInfo.name,
+                email: clientInfo.email || '',
+                phone: clientInfo.phone,
+                notes: `Supervision session with ${instructor?.name} - ${service?.name}`
+              })
             })
-          })
 
-          if (clientResponse.ok) {
-            const dbClient = await clientResponse.json()
+            if (clientResponse.ok) {
+              const dbClient = await clientResponse.json()
+              dbClientId = dbClient.client.id
             
             // Add client to student's local client list for immediate visibility
             const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
@@ -1121,7 +1131,55 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               console.log('✅ Client already exists in student\'s list')
             }
             
-            // Generate deposit payment link
+            // Generate deposit payment link (only if we have a client ID)
+            if (dbClientId) {
+              const depositResponse = await fetch('/api/deposit-payments', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  clientId: dbClientId,
+                  appointmentId: newBooking.id,
+                  amount: (service as any)?.deposit || 150,
+                  totalAmount: (service as any)?.total || 400,
+                  currency: 'USD',
+                  notes: `Supervision session deposit - ${service?.name} with ${instructor?.name}`,
+                  linkExpirationDays: 7
+                })
+              })
+
+              if (depositResponse.ok) {
+                const depositData = await depositResponse.json()
+                
+                // Update booking with deposit link
+                newBooking.depositLink = depositData.depositLink
+                newBooking.depositSent = true
+                newBooking.status = 'deposit-sent'
+                
+                // Update local storage
+                const updatedBookingsWithDeposit = bookings.map(b => 
+                  b.id === newBooking.id ? newBooking : b
+                )
+                setBookings(updatedBookingsWithDeposit)
+                localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookingsWithDeposit))
+                
+                setBookingStatus('deposit-sent')
+                
+                alert(`Booking created! Deposit link has been sent to ${clientInfo.email || 'the client'}. Check the booking details for the deposit link.`)
+              } else {
+                console.error('Failed to create deposit payment')
+                alert('Booking created but failed to generate deposit link. Please contact support.')
+              }
+            }
+          } else {
+            console.error('Failed to create client')
+            alert('Booking created but failed to create client. Please contact support.')
+          }
+        } else {
+          // Using existing client - still need to generate deposit link
+          if (dbClientId) {
             const depositResponse = await fetch('/api/deposit-payments', {
               method: 'POST',
               headers: {
@@ -1129,7 +1187,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                clientId: dbClient.id,
+                clientId: dbClientId,
                 appointmentId: newBooking.id,
                 amount: (service as any)?.deposit || 150,
                 totalAmount: (service as any)?.total || 400,
@@ -1162,6 +1220,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               alert('Booking created but failed to generate deposit link. Please contact support.')
             }
           }
+        }
         } catch (error) {
           console.error('Error creating client or deposit:', error)
           alert('Booking created but there was an error with client setup. Please contact support.')
@@ -1174,7 +1233,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       setSelectedTime('')
       setAvailableSlots([])
       setShowClientForm(false)
-      setClientInfo({ name: '', phone: '', email: '', service: '', selectedInstructor: '' })
+      setClientInfo({ name: '', phone: '', email: '', service: '', selectedInstructor: '', clientId: '' })
+      setClientSelectionType('new')
+      setClientSearchTerm('')
       setBookingStatus('pending')
 
     } catch (error) {
@@ -2581,7 +2642,12 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </Button>
                             <Button 
                               onClick={handleClientFormSubmit}
-                              disabled={!clientInfo.name || !clientInfo.phone || !clientInfo.service || !clientInfo.selectedInstructor}
+                              disabled={
+                                (clientSelectionType === 'new' && (!clientInfo.name || !clientInfo.phone)) ||
+                                (clientSelectionType === 'existing' && !clientInfo.clientId) ||
+                                !clientInfo.service || 
+                                !clientInfo.selectedInstructor
+                              }
                               className="flex-1 bg-gradient-to-r from-lavender to-lavender-600 hover:from-lavender-600 hover:to-lavender text-white shadow-lg hover:shadow-xl transition-all duration-300"
                             >
                               <div className="flex flex-col items-center">
