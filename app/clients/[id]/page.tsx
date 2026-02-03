@@ -20,7 +20,9 @@ import {
   Eye,
   Plus,
   Clock,
-  DollarSign
+  DollarSign,
+  X,
+  ChevronRight
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -867,6 +869,79 @@ export default function ClientProfilePage() {
               onCancel={() => setShowEditForm(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Lightbox Modal */}
+      <Dialog open={!!selectedImage} onOpenChange={() => {
+        setSelectedImage(null)
+        setImageGallery([])
+        setCurrentImageIndex(0)
+      }}>
+        <DialogContent className="max-w-7xl max-h-[95vh] p-0 bg-black/95 border-none">
+          <div className="relative w-full h-[95vh] flex items-center justify-center">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
+              onClick={() => {
+                setSelectedImage(null)
+                setImageGallery([])
+                setCurrentImageIndex(0)
+              }}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+
+            {/* Previous Button */}
+            {imageGallery.length > 1 && currentImageIndex > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={() => {
+                  const newIndex = currentImageIndex - 1
+                  setCurrentImageIndex(newIndex)
+                  setSelectedImage({ url: imageGallery[newIndex], title: `Photo ${newIndex + 1}` })
+                }}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+            )}
+
+            {/* Next Button */}
+            {imageGallery.length > 1 && currentImageIndex < imageGallery.length - 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={() => {
+                  const newIndex = currentImageIndex + 1
+                  setCurrentImageIndex(newIndex)
+                  setSelectedImage({ url: imageGallery[newIndex], title: `Photo ${newIndex + 1}` })
+                }}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
+            )}
+
+            {/* Image Display */}
+            {selectedImage && (
+              <div className="w-full h-full flex flex-col items-center justify-center p-8">
+                <img
+                  src={selectedImage.url}
+                  alt={selectedImage.title}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                />
+                {imageGallery.length > 1 && (
+                  <div className="mt-4 text-white text-sm">
+                    {currentImageIndex + 1} / {imageGallery.length}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
