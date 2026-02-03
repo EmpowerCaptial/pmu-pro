@@ -131,6 +131,9 @@ export async function GET(
           procedures: {
             orderBy: { createdAt: 'desc' }
           },
+          appointments: {
+            orderBy: { startTime: 'desc' }
+          },
           analyses: {
             orderBy: { createdAt: 'desc' }
           },

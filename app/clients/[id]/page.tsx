@@ -92,6 +92,14 @@ export default function ClientProfilePage() {
           console.log('No procedures found for this client')
           setProcedures([])
         }
+        // Load appointments if they exist
+        if (clientData.client?.appointments) {
+          console.log('Appointments loaded:', clientData.client.appointments.length, 'appointments')
+          setAppointments(clientData.client.appointments)
+        } else {
+          console.log('No appointments found for this client')
+          setAppointments([])
+        }
       } else {
         // If client not found via API, try to get from the clients list
         console.log('Client not found via API, trying to get from clients list')
@@ -434,11 +442,11 @@ export default function ClientProfilePage() {
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 bg-lavender/10 rounded-lg">
-                      <div className="text-2xl font-bold text-lavender">0</div>
+                      <div className="text-2xl font-bold text-lavender">{procedures.length}</div>
                       <div className="text-sm text-gray-600">Procedures</div>
                     </div>
                     <div className="text-center p-4 bg-lavender/10 rounded-lg">
-                      <div className="text-2xl font-bold text-lavender">0</div>
+                      <div className="text-2xl font-bold text-lavender">{appointments.length}</div>
                       <div className="text-sm text-gray-600">Appointments</div>
                     </div>
                   </div>
@@ -645,22 +653,112 @@ export default function ClientProfilePage() {
 
           {/* Appointments Tab */}
           <TabsContent value="appointments" className="mt-6">
-            <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-16 w-16 text-lavender mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Appointments Yet</h3>
-                <p className="text-gray-600 mb-6">
-                  Schedule appointments and track the client's treatment journey.
-                </p>
-                <Button 
-                  className="bg-lavender hover:bg-lavender-600 text-white"
-                  onClick={() => setShowAppointmentForm(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Schedule Appointment
-                </Button>
-              </CardContent>
-            </Card>
+            {appointments.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Calendar className="h-16 w-16 text-lavender mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Appointments Yet</h3>
+                  <p className="text-gray-600 mb-6">
+                    Schedule appointments and track the client's treatment journey.
+                  </p>
+                  <Button 
+                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    onClick={() => setShowAppointmentForm(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Schedule Appointment
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900">Appointments ({appointments.length})</h3>
+                  <Button 
+                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    onClick={() => setShowAppointmentForm(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Schedule Appointment
+                  </Button>
+                </div>
+                <div className="grid gap-4">
+                  {appointments.map((appointment: any) => {
+                    const startTime = appointment.startTime 
+                      ? (typeof appointment.startTime === 'string' 
+                          ? new Date(appointment.startTime) 
+                          : appointment.startTime)
+                      : new Date()
+                    const endTime = appointment.endTime 
+                      ? (typeof appointment.endTime === 'string' 
+                          ? new Date(appointment.endTime) 
+                          : appointment.endTime)
+                      : null
+                    
+                    return (
+                      <Card key={appointment.id}>
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="text-lg font-semibold text-gray-900">{appointment.title || appointment.serviceType || 'Appointment'}</h4>
+                              <p className="text-sm text-gray-600">
+                                {startTime.toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {startTime.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}
+                                {endTime && ` - ${endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
+                              </p>
+                            </div>
+                            <Badge className={
+                              appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }>
+                              {appointment.status || 'scheduled'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                            {appointment.duration && (
+                              <div>
+                                <span className="text-gray-600">Duration:</span>
+                                <p className="font-medium">{appointment.duration} min</p>
+                              </div>
+                            )}
+                            {appointment.price && (
+                              <div>
+                                <span className="text-gray-600">Price:</span>
+                                <p className="font-medium">${appointment.price}</p>
+                              </div>
+                            )}
+                            {appointment.paymentStatus && (
+                              <div>
+                                <span className="text-gray-600">Payment:</span>
+                                <p className="font-medium">{appointment.paymentStatus}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {appointment.notes && (
+                            <div className="mt-4 pt-4 border-t">
+                              <Label className="text-sm font-medium text-gray-700 mb-2 block">Notes</Label>
+                              <p className="text-sm text-gray-600">{appointment.notes}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
