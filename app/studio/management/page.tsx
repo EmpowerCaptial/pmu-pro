@@ -50,6 +50,14 @@ export default function StudioManagementPage() {
   const [inviteRole, setInviteRole] = useState<'instructor' | 'licensed' | 'student'>('instructor')
   const [isInviting, setIsInviting] = useState(false)
 
+  // Load instructors from localStorage - MUST be called before any early returns
+  useEffect(() => {
+    const savedInstructors = localStorage.getItem('studio-instructors')
+    if (savedInstructors) {
+      setInstructors(JSON.parse(savedInstructors))
+    }
+  }, [])
+
   // Check if user has access to studio management
   const hasAccess = currentUser?.role === 'owner' || 
                    currentUser?.role === 'manager' || 
@@ -95,14 +103,6 @@ export default function StudioManagementPage() {
       </div>
     )
   }
-
-  // Load instructors from localStorage
-  useEffect(() => {
-    const savedInstructors = localStorage.getItem('studio-instructors')
-    if (savedInstructors) {
-      setInstructors(JSON.parse(savedInstructors))
-    }
-  }, [])
 
   // Save instructors to localStorage
   const saveInstructors = (newInstructors: Instructor[]) => {
