@@ -172,6 +172,11 @@ function CheckoutContent() {
           }),
         })
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to create BNPL checkout' }))
+          throw new Error(errorData.error || errorData.details || 'Failed to create BNPL checkout')
+        }
+        
         const data = await response.json()
         
         if (data.success && data.url) {
@@ -179,7 +184,7 @@ function CheckoutContent() {
           window.location.href = data.url
           return
         } else {
-          throw new Error(data.error || 'Failed to create BNPL checkout')
+          throw new Error(data.error || data.details || 'Failed to create BNPL checkout')
         }
       }
       

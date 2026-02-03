@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getTransactionStripeAccount } from '@/lib/stripe-management';
 
+// Import Stripe error types for better error handling
+const StripeError = Stripe.errors?.StripeError || Error;
+
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-07-30.basil',
 }) : null
@@ -70,15 +73,17 @@ export async function POST(req: NextRequest) {
         stripeAccountId: stripeAccountId || 'default',
         isOwnerAccount: isOwnerAccount ? 'true' : 'false'
       },
-      customer_email: clientEmail,
+      customer_email: clientEmail || undefined,
       billing_address_collection: 'required',
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA'],
-      },
+      // Only require shipping for physical products - BNPL may not need it for services
+      // shipping_address_collection: {
+      //   allowed_countries: ['US', 'CA'],
+      // },
       // BNPL specific settings
       payment_method_options: {
         [stripePaymentMethod]: {
-          // BNPL specific options can be added here
+          // Affirm requires capture_method: 'manual' for some cases
+          capture_method: stripePaymentMethod === 'affirm' ? 'manual' : undefined,
         }
       }
     };
