@@ -996,6 +996,36 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
     setShowMessageComposer(true)
   }
 
+  // Load existing clients when form opens
+  useEffect(() => {
+    if (showClientForm && clientSelectionType === 'existing') {
+      loadExistingClients()
+    }
+  }, [showClientForm, clientSelectionType, currentUser])
+
+  const loadExistingClients = async () => {
+    if (!currentUser?.email) return
+    setIsLoadingClients(true)
+    try {
+      const clients = await getClients(currentUser.email)
+      setExistingClients(clients)
+    } catch (error) {
+      console.error('Error loading clients:', error)
+    } finally {
+      setIsLoadingClients(false)
+    }
+  }
+
+  const filteredExistingClients = existingClients.filter(client => {
+    if (!clientSearchTerm) return true
+    const search = clientSearchTerm.toLowerCase()
+    return (
+      client.name?.toLowerCase().includes(search) ||
+      client.email?.toLowerCase().includes(search) ||
+      client.phone?.toLowerCase().includes(search)
+    )
+  })
+
   // Handle initial booking submission (shows client form)
   const handleBookingSubmit = () => {
     if (selectedInstructor && selectedDate && selectedTime) {
@@ -1005,9 +1035,30 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Handle client form submission and deposit generation
   const handleClientFormSubmit = async () => {
-    if (!clientInfo.name || !clientInfo.phone || !clientInfo.service || !clientInfo.selectedInstructor) {
-      alert('Please fill in all required fields including supervising instructor')
-      return
+    // Validate based on selection type
+    if (clientSelectionType === 'existing') {
+      if (!clientInfo.clientId || !clientInfo.service || !clientInfo.selectedInstructor) {
+        alert('Please select a client, service, and supervising instructor')
+        return
+      }
+      // Get client details from existing clients
+      const selectedClient = existingClients.find(c => c.id === clientInfo.clientId)
+      if (!selectedClient) {
+        alert('Selected client not found')
+        return
+      }
+      // Update clientInfo with existing client data
+      setClientInfo({
+        ...clientInfo,
+        name: selectedClient.name,
+        email: selectedClient.email || '',
+        phone: selectedClient.phone || ''
+      })
+    } else {
+      if (!clientInfo.name || !clientInfo.phone || !clientInfo.service || !clientInfo.selectedInstructor) {
+        alert('Please fill in all required fields including supervising instructor')
+        return
+      }
     }
 
     try {
@@ -2513,40 +2564,140 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </div>
                           </div>
 
-                          {/* Client Form */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-ink mb-2">Client Name *</label>
-                              <input
-                                type="text"
-                                value={clientInfo.name}
-                                onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
-                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
-                                placeholder="Enter client's full name"
-                                required
-                              />
+                          {/* Client Selection Type */}
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-ink mb-2">Client Type *</label>
+                            <div className="flex gap-4">
+                              <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="clientType"
+                                  value="new"
+                                  checked={clientSelectionType === 'new'}
+                                  onChange={(e) => {
+                                    setClientSelectionType('new')
+                                    setClientInfo({...clientInfo, clientId: '', name: '', phone: '', email: ''})
+                                  }}
+                                  className="w-4 h-4 text-lavender focus:ring-lavender"
+                                />
+                                <span className="text-sm text-ink">New Client</span>
+                              </label>
+                              <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="clientType"
+                                  value="existing"
+                                  checked={clientSelectionType === 'existing'}
+                                  onChange={(e) => {
+                                    setClientSelectionType('existing')
+                                    setClientInfo({...clientInfo, name: '', phone: '', email: '', clientId: ''})
+                                    if (existingClients.length === 0) {
+                                      loadExistingClients()
+                                    }
+                                  }}
+                                  className="w-4 h-4 text-lavender focus:ring-lavender"
+                                />
+                                <span className="text-sm text-ink">Existing Client</span>
+                              </label>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-ink mb-2">Phone Number *</label>
-                              <input
-                                type="tel"
-                                value={clientInfo.phone}
-                                onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
-                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
-                                placeholder="(555) 123-4567"
-                                required
-                              />
+                          </div>
+
+                          {/* Existing Client Selection */}
+                          {clientSelectionType === 'existing' && (
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-ink mb-2">Select Existing Client *</label>
+                              {isLoadingClients ? (
+                                <div className="p-4 text-center text-gray-500">Loading clients...</div>
+                              ) : (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={clientSearchTerm}
+                                    onChange={(e) => setClientSearchTerm(e.target.value)}
+                                    className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender mb-2"
+                                    placeholder="Search by name, email, or phone..."
+                                  />
+                                  <div className="max-h-48 overflow-y-auto border border-lavender/30 rounded-lg">
+                                    {filteredExistingClients.length === 0 ? (
+                                      <div className="p-4 text-center text-gray-500 text-sm">
+                                        {clientSearchTerm ? 'No clients found matching your search' : 'No existing clients found'}
+                                      </div>
+                                    ) : (
+                                      filteredExistingClients.map((client) => (
+                                        <div
+                                          key={client.id}
+                                          onClick={() => {
+                                            setClientInfo({
+                                              ...clientInfo,
+                                              clientId: client.id,
+                                              name: client.name,
+                                              email: client.email || '',
+                                              phone: client.phone || ''
+                                            })
+                                            setClientSearchTerm('')
+                                          }}
+                                          className={`p-3 border-b border-lavender/20 cursor-pointer hover:bg-lavender/10 transition-colors ${
+                                            clientInfo.clientId === client.id ? 'bg-lavender/20' : ''
+                                          }`}
+                                        >
+                                          <div className="font-medium text-ink">{client.name}</div>
+                                          {client.email && (
+                                            <div className="text-xs text-ink/70">{client.email}</div>
+                                          )}
+                                          {client.phone && (
+                                            <div className="text-xs text-ink/70">{client.phone}</div>
+                                          )}
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                  {clientInfo.clientId && (
+                                    <div className="mt-2 p-2 bg-lavender/10 rounded text-sm text-ink">
+                                      Selected: {clientInfo.name} {clientInfo.email && `(${clientInfo.email})`}
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-ink mb-2">Email Address</label>
-                              <input
-                                type="email"
-                                value={clientInfo.email}
-                                onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
-                                className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
-                                placeholder="client@example.com"
-                              />
+                          )}
+
+                          {/* New Client Form */}
+                          {clientSelectionType === 'new' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-ink mb-2">Client Name *</label>
+                                <input
+                                  type="text"
+                                  value={clientInfo.name}
+                                  onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
+                                  className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                  placeholder="Enter client's full name"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-ink mb-2">Phone Number *</label>
+                                <input
+                                  type="tel"
+                                  value={clientInfo.phone}
+                                  onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
+                                  className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                  placeholder="(555) 123-4567"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-ink mb-2">Email Address</label>
+                                <input
+                                  type="email"
+                                  value={clientInfo.email}
+                                  onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
+                                  className="w-full p-3 border border-lavender/30 rounded-lg focus:ring-2 focus:ring-lavender/50 focus:border-lavender"
+                                  placeholder="client@example.com"
+                                />
+                              </div>
                             </div>
+                          )}
                             <div>
                               <label className="block text-sm font-medium text-ink mb-2">Service *</label>
                               
