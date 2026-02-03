@@ -58,6 +58,9 @@ export default function ClientProfilePage() {
   const [procedures, setProcedures] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
   const [editingProcedure, setEditingProcedure] = useState<any | null>(null)
+  const [selectedImage, setSelectedImage] = useState<{ url: string; title: string } | null>(null)
+  const [imageGallery, setImageGallery] = useState<string[]>([])
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const clientId = params.id as string
 
@@ -553,10 +556,31 @@ export default function ClientProfilePage() {
                                       ? JSON.parse(procedure.beforePhotos) 
                                       : procedure.beforePhotos
                                     return Array.isArray(photos) ? photos.map((url: string, idx: number) => (
-                                      <img key={idx} src={url} alt={`Before ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                                      <img 
+                                        key={idx} 
+                                        src={url} 
+                                        alt={`Before ${idx + 1}`} 
+                                        className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" 
+                                        onClick={() => {
+                                          setImageGallery(photos)
+                                          setCurrentImageIndex(idx)
+                                          setSelectedImage({ url, title: `Before Photo ${idx + 1}` })
+                                        }}
+                                      />
                                     )) : null
                                   } catch {
-                                    return <img src={procedure.beforePhotos} alt="Before" className="w-20 h-20 object-cover rounded" />
+                                    return (
+                                      <img 
+                                        src={procedure.beforePhotos} 
+                                        alt="Before" 
+                                        className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" 
+                                        onClick={() => {
+                                          setImageGallery([procedure.beforePhotos])
+                                          setCurrentImageIndex(0)
+                                          setSelectedImage({ url: procedure.beforePhotos, title: 'Before Photo' })
+                                        }}
+                                      />
+                                    )
                                   }
                                 })()}
                               </div>
@@ -572,10 +596,31 @@ export default function ClientProfilePage() {
                                       ? JSON.parse(procedure.afterPhotos) 
                                       : procedure.afterPhotos
                                     return Array.isArray(photos) ? photos.map((url: string, idx: number) => (
-                                      <img key={idx} src={url} alt={`After ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                                      <img 
+                                        key={idx} 
+                                        src={url} 
+                                        alt={`After ${idx + 1}`} 
+                                        className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" 
+                                        onClick={() => {
+                                          setImageGallery(photos)
+                                          setCurrentImageIndex(idx)
+                                          setSelectedImage({ url, title: `After Photo ${idx + 1}` })
+                                        }}
+                                      />
                                     )) : null
                                   } catch {
-                                    return <img src={procedure.afterPhotos} alt="After" className="w-20 h-20 object-cover rounded" />
+                                    return (
+                                      <img 
+                                        src={procedure.afterPhotos} 
+                                        alt="After" 
+                                        className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity" 
+                                        onClick={() => {
+                                          setImageGallery([procedure.afterPhotos])
+                                          setCurrentImageIndex(0)
+                                          setSelectedImage({ url: procedure.afterPhotos, title: 'After Photo' })
+                                        }}
+                                      />
+                                    )
                                   }
                                 })()}
                               </div>
