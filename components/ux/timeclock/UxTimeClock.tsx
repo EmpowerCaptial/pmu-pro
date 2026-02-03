@@ -246,8 +246,8 @@ export function UxTimeClock({ userId }: { userId?: string }) {
 }
 
 function UxShiftRow({ shift }: { shift: UxShift }) {
-  const inTime = new Date(shift.clockIn).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  const outTime = shift.clockOut ? new Date(shift.clockOut).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "Active";
+  const inTime = new Date(shift.clockIn).toLocaleTimeString('en-US', { hour: "numeric", minute: "2-digit", hour12: true });
+  const outTime = shift.clockOut ? new Date(shift.clockOut).toLocaleTimeString('en-US', { hour: "numeric", minute: "2-digit", hour12: true }) : "Active";
   const worked = shiftWorkedSeconds(shift, new Date().toISOString());
   
   return (

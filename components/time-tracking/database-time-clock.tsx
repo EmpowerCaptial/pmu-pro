@@ -208,7 +208,12 @@ export function DatabaseTimeClock() {
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString()
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    })
   }
 
   const formatDuration = (hours: number) => {

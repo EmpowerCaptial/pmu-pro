@@ -45,7 +45,13 @@ export function ClockIndicator({ className = "" }: ClockIndicatorProps) {
   const getTooltipText = () => {
     if (isLocationLoading) return 'Checking location...'
     if (clockStatus.isClockedIn) {
-      const clockInTime = clockStatus.clockInTime ? new Date(clockStatus.clockInTime).toLocaleTimeString() : 'Unknown'
+      const clockInTime = clockStatus.clockInTime 
+        ? new Date(clockStatus.clockInTime).toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+          })
+        : 'Unknown'
       return `Clocked in since ${clockInTime}\nClick to clock out`
     }
     return 'Click to clock in'
