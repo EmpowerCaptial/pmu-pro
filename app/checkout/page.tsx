@@ -128,6 +128,34 @@ function CheckoutContent() {
   const total = subtotal + tax + tipAmount - discountAmount
 
   const processPayment = async () => {
+    // Validate cart has items
+    if (!cart || cart.length === 0) {
+      alert('Please add items to your cart before proceeding to checkout.')
+      setIsProcessing(false)
+      return
+    }
+
+    // Validate client information for BNPL payments
+    if (['affirm', 'afterpay', 'klarna'].includes(selectedPaymentMethod)) {
+      if (!client.name || client.name === 'Guest Client') {
+        alert('Please enter client name before processing BNPL payment.')
+        setIsProcessing(false)
+        return
+      }
+      if (!client.email || !client.email.trim()) {
+        alert('Please enter client email address. BNPL payments require a valid email.')
+        setIsProcessing(false)
+        return
+      }
+    }
+
+    // Validate payment method is selected
+    if (!selectedPaymentMethod) {
+      alert('Please select a payment method.')
+      setIsProcessing(false)
+      return
+    }
+
     setIsProcessing(true)
     
     try {

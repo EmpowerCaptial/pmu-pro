@@ -1338,8 +1338,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
   // Show access denied message for licensed artists (unless they're instructors)
   if (!canUseSupervisionBooking && !isInstructor) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-beige/20 to-ivory">
         <NavBar 
           currentPath="/studio/supervision"
           user={currentUser ? {
