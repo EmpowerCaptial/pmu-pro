@@ -3496,23 +3496,6 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           </TabsContent>
         </Tabs>
 
-        {/* Test Message Modal Button */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button
-            onClick={() => {
-              console.log('Test button clicked, setting showMessageComposer to true')
-              setShowMessageComposer(true)
-              setNewMessage({
-                to: 'Test Instructor',
-                subject: 'Test Subject',
-                content: ''
-              })
-            }}
-            className="bg-red-500 hover:bg-red-600"
-          >
-            Test Modal
-          </Button>
-        </div>
 
         {/* Message Composer Modal */}
         {showMessageComposer && (
