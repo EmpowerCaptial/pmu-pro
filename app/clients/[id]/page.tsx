@@ -80,10 +80,15 @@ export default function ClientProfilePage() {
       
       if (clientResponse.ok) {
         const clientData = await clientResponse.json()
+        console.log('Client data loaded:', clientData.client)
         setClient(clientData.client)
         // Load procedures if they exist
         if (clientData.client?.procedures) {
+          console.log('Procedures loaded:', clientData.client.procedures.length, 'procedures')
           setProcedures(clientData.client.procedures)
+        } else {
+          console.log('No procedures found for this client')
+          setProcedures([])
         }
       } else {
         // If client not found via API, try to get from the clients list
@@ -141,10 +146,10 @@ export default function ClientProfilePage() {
 
       if (response.ok) {
         const result = await response.json()
-        setProcedures(prev => [result.procedure, ...prev])
+        console.log('Procedure saved successfully:', result.procedure)
+        // Reload client data to get updated procedures from database
+        await loadClientData()
         setShowProcedureForm(false)
-        // Reload client data to get updated procedures
-        loadClientData()
         // Show success message
         alert('Procedure saved successfully!')
       } else {
@@ -537,9 +542,49 @@ export default function ClientProfilePage() {
                             <p className="text-sm text-gray-600">{procedure.notes}</p>
                           </div>
                         )}
+
+                        {/* Additional Details */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mt-4 pt-4 border-t">
+                          {procedure.voltage && (
+                            <div>
+                              <span className="text-gray-600">Voltage:</span>
+                              <p className="font-medium">{procedure.voltage}V</p>
+                            </div>
+                          )}
+                          {procedure.needleSize && (
+                            <div>
+                              <span className="text-gray-600">Needle Size:</span>
+                              <p className="font-medium">{procedure.needleSize}</p>
+                            </div>
+                          )}
+                          {procedure.depth && (
+                            <div>
+                              <span className="text-gray-600">Depth:</span>
+                              <p className="font-medium">{procedure.depth}</p>
+                            </div>
+                          )}
+                          {procedure.areaTreated && (
+                            <div>
+                              <span className="text-gray-600">Area Treated:</span>
+                              <p className="font-medium">{procedure.areaTreated}</p>
+                            </div>
+                          )}
+                          {procedure.lotNumber && (
+                            <div>
+                              <span className="text-gray-600">Lot Number:</span>
+                              <p className="font-medium">{procedure.lotNumber}</p>
+                            </div>
+                          )}
+                          {procedure.healingProgress && (
+                            <div className="col-span-full">
+                              <span className="text-gray-600">Healing Progress:</span>
+                              <p className="font-medium mt-1">{procedure.healingProgress}</p>
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}

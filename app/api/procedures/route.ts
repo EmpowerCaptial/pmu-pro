@@ -193,6 +193,13 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      console.log('Procedure created successfully:', {
+        id: procedure.id,
+        clientId: procedure.clientId,
+        procedureType: procedure.procedureType,
+        procedureDate: procedure.procedureDate
+      })
+
       return NextResponse.json({ procedure }, { status: 201 })
 
     } catch (dbError: any) {
