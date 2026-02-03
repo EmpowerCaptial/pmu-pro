@@ -77,27 +77,37 @@ export default function ProfilePage() {
       formData.append('image', file)
 
       const response = await fetch('/api/profile/upload-image', {
-          method: 'POST',
-          headers: {
+        method: 'POST',
+        headers: {
           'x-user-email': currentUser?.email || ''
         },
         body: formData
       })
 
       if (!response.ok) {
-        throw new Error('Failed to upload image')
+        const errorData = await response.json().catch(() => ({ error: 'Failed to upload image' }))
+        const errorMessage = errorData.error || 'Failed to upload image'
+        console.error('Upload error:', errorMessage)
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
+      
+      if (!result.imageUrl) {
+        throw new Error('No image URL returned from server')
+      }
+      
       setProfileData(prev => ({ ...prev, avatar: result.imageUrl }))
       
       // Update currentUser in localStorage or trigger a refresh
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && currentUser) {
         const updatedUser = { ...currentUser, avatar: result.imageUrl }
         localStorage.setItem('demoUser', JSON.stringify(updatedUser))
       }
     } catch (error) {
       console.error('Error uploading image:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image. Please try again.'
+      alert(`Error uploading image: ${errorMessage}`)
       throw error
     }
   }
@@ -551,7 +561,7 @@ export default function ProfilePage() {
 
             {/* Save Button */}
             {isEditing && (
-              <div className="flex justify-end">
+              <div className="flex justify-end mb-8 pb-8">
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}

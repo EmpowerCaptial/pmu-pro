@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { put } from '@vercel/blob'
 
 export const dynamic = "force-dynamic"
 
@@ -39,20 +40,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Convert file to base64 (Vercel-friendly storage)
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`
+    // Upload to Vercel Blob Storage
+    const fileName = `avatars/${user.id}-${Date.now()}.${file.name.split('.').pop() || 'jpg'}`
+    
+    const blob = await put(fileName, file, {
+      access: 'public',
+      contentType: file.type
+    })
 
-    // Update user's avatar in database (stored as base64)
+    // Update user's avatar URL in database
     await prisma.user.update({
       where: { id: user.id },
-      data: { avatar: base64Image }
+      data: { avatar: blob.url }
     })
 
     return NextResponse.json({
       success: true,
-      imageUrl: base64Image,
+      imageUrl: blob.url,
       message: 'Profile image uploaded successfully'
     })
 
