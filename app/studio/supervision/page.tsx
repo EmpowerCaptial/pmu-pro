@@ -1431,13 +1431,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
           <div className="bg-white/95 backdrop-blur-sm border border-lavender/50 shadow-xl rounded-2xl p-4">
             <div className={`grid gap-3 ${userRole === 'INSTRUCTOR' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'} w-full`}>
               
-              {/* Overview Tab */}
+              {/* Overview Tab - Lavender */}
               <button
                 onClick={() => setActiveTab('overview')}
                 className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
                   activeTab === 'overview' 
                     ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
-                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md border border-lavender/30'
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
@@ -1448,17 +1448,17 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                 <span className="text-xs font-medium text-center leading-tight">Overview</span>
               </button>
 
-              {/* Availability/Book Instructor Tab */}
+              {/* Availability/Book Instructor Tab - Teal */}
               <button
                 onClick={() => setActiveTab(userRole === 'INSTRUCTOR' ? 'availability' : 'find')}
                 className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
                   activeTab === (userRole === 'INSTRUCTOR' ? 'availability' : 'find')
-                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
-                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                    ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-teal-50 text-ink hover:bg-teal-100 hover:shadow-md border border-teal-200'
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  activeTab === (userRole === 'INSTRUCTOR' ? 'availability' : 'find') ? 'bg-white/20' : 'bg-lavender/20'
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'availability' : 'find') ? 'bg-white/20' : 'bg-teal-100'
                 }`}>
                   <Calendar className="h-5 w-5" />
                 </div>
@@ -1467,17 +1467,17 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                 </span>
               </button>
 
-              {/* Bookings/History Tab */}
+              {/* Bookings/History Tab - Purple */}
               <button
                 onClick={() => setActiveTab(userRole === 'INSTRUCTOR' ? 'bookings' : 'history')}
                 className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
                   activeTab === (userRole === 'INSTRUCTOR' ? 'bookings' : 'history')
-                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
-                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg transform scale-105' 
+                    : 'bg-purple-50 text-ink hover:bg-purple-100 hover:shadow-md border border-purple-200'
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  activeTab === (userRole === 'INSTRUCTOR' ? 'bookings' : 'history') ? 'bg-white/20' : 'bg-lavender/20'
+                  activeTab === (userRole === 'INSTRUCTOR' ? 'bookings' : 'history') ? 'bg-white/20' : 'bg-purple-100'
                 }`}>
                   <Clock className="h-5 w-5" />
                 </div>
@@ -1486,17 +1486,17 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                 </span>
               </button>
 
-              {/* Inbox Tab */}
+              {/* Inbox Tab - Pink/Rose */}
               <button
                 onClick={() => setActiveTab('inbox')}
                 className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 ${
                   activeTab === 'inbox'
-                    ? 'bg-gradient-to-br from-lavender to-lavender-600 text-white shadow-lg transform scale-105' 
-                    : 'bg-lavender/10 text-ink hover:bg-lavender/20 hover:shadow-md'
+                    ? 'bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-lg transform scale-105' 
+                    : 'bg-pink-50 text-ink hover:bg-pink-100 hover:shadow-md border border-pink-200'
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  activeTab === 'inbox' ? 'bg-white/20' : 'bg-lavender/20'
+                  activeTab === 'inbox' ? 'bg-white/20' : 'bg-pink-100'
                 }`}>
                   <Users className="h-5 w-5" />
                 </div>
@@ -3059,6 +3059,101 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
           <TabsContent value="history">
             <div className="space-y-6">
+              {/* Upcoming Supervision Bookings - Student View */}
+              {userRole === 'APPRENTICE' && (
+                <Card className="relative overflow-hidden border-purple-500/50 shadow-2xl bg-gradient-to-br from-white/95 to-purple-50 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                      <Calendar className="h-6 w-6 text-purple-600" />
+                      My Upcoming Bookings
+                    </CardTitle>
+                    <CardDescription className="text-ink/70 font-medium">
+                      Click on any booking to view details and manage your supervision sessions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <div className="space-y-4">
+                      {bookings
+                        .filter(booking => {
+                          // Show only bookings for the current student (apprentice)
+                          const bookingDate = new Date(booking.date)
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          return bookingDate >= today && booking.apprenticeEmail === currentUser?.email
+                        })
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .length > 0 ? (
+                        bookings
+                          .filter(booking => {
+                            const bookingDate = new Date(booking.date)
+                            const today = new Date()
+                            today.setHours(0, 0, 0, 0)
+                            return bookingDate >= today && booking.apprenticeEmail === currentUser?.email
+                          })
+                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                          .map((booking) => {
+                            const service = availableServices.find((s: any) => s.id === booking.service?.id || s.name === booking.service?.name)
+                            return (
+                              <div 
+                                key={booking.id} 
+                                onClick={() => {
+                                  // Show booking details in a modal or expand view
+                                  const details = `Booking Details:\n\nClient: ${booking.clientInfo?.name || 'N/A'}\nInstructor: ${booking.instructorName || 'N/A'}\nService: ${service?.name || booking.service?.name || 'N/A'}\nDate: ${new Date(booking.date).toLocaleDateString()}\nTime: ${booking.time}\nStatus: ${booking.status}\n${booking.depositLink ? `Deposit Link: ${booking.depositLink}` : ''}`
+                                  alert(details)
+                                }}
+                                className="flex items-center justify-between p-4 bg-white border border-purple-200 rounded-lg shadow-sm hover:shadow-md hover:border-purple-400 cursor-pointer transition-all duration-200"
+                              >
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                      <Calendar className="h-4 w-4 text-purple-600" />
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-ink">{booking.clientInfo?.name || 'Client'}</p>
+                                      <p className="text-sm text-ink/70">Supervision Session with {booking.instructorName || 'Instructor'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-sm text-ink/70">
+                                    <div>
+                                      <span className="font-medium">Date:</span> {new Date(booking.date).toLocaleDateString()}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Time:</span> {booking.time}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Service:</span> {service?.name || booking.service?.name || 'N/A'}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Status:</span> 
+                                      <Badge variant={
+                                        booking.status === 'completed' ? 'default' :
+                                        booking.status === 'confirmed' ? 'secondary' : 'outline'
+                                      } className="ml-1">
+                                        {booking.status}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Info className="h-5 w-5 text-purple-600" />
+                                  <span className="text-xs text-purple-600 font-medium">Click to view</span>
+                                </div>
+                              </div>
+                            )
+                          })
+                      ) : (
+                        <div className="text-center py-8">
+                          <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600 mb-2">No upcoming bookings</p>
+                          <p className="text-sm text-gray-500">Book a supervision session to see it here</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Procedure Logging Form */}
               <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
