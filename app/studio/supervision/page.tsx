@@ -35,6 +35,7 @@ import { checkStudioSupervisionAccess, shouldUseSupervisionBooking } from '@/lib
 import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
 import { NavBar } from '@/components/ui/navbar'
+import { getClients } from '@/lib/client-storage'
 
 // Interface for real instructor data
 interface Instructor {
