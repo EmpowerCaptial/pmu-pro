@@ -530,16 +530,16 @@ export default function ProcedureForm({
                     if (!file) return
                     
                     try {
-                      const formData = new FormData()
-                      formData.append('file', file)
-                      formData.append('fileType', `client-photo:${clientId}`)
+                      const uploadFormData = new FormData()
+                      uploadFormData.append('file', file)
+                      uploadFormData.append('fileType', `client-photo:${clientId}`)
                       
                       const response = await fetch('/api/file-uploads', {
                         method: 'POST',
                         headers: {
                           'x-user-email': currentUser?.email || ''
                         },
-                        body: formData
+                        body: uploadFormData
                       })
                       
                       if (response.ok) {
@@ -595,16 +595,16 @@ export default function ProcedureForm({
                     if (!file) return
                     
                     try {
-                      const formData = new FormData()
-                      formData.append('file', file)
-                      formData.append('fileType', `client-photo:${clientId}`)
+                      const uploadFormData = new FormData()
+                      uploadFormData.append('file', file)
+                      uploadFormData.append('fileType', `client-photo:${clientId}`)
                       
                       const response = await fetch('/api/file-uploads', {
                         method: 'POST',
                         headers: {
                           'x-user-email': currentUser?.email || ''
                         },
-                        body: formData
+                        body: uploadFormData
                       })
                       
                       if (response.ok) {
