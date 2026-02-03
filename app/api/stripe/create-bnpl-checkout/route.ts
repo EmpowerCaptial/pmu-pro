@@ -46,17 +46,30 @@ export async function POST(req: NextRequest) {
     }
 
     // Create line items from cart
-    const lineItems = items.map((item: any) => ({
-      price_data: {
-        currency: currency.toLowerCase(),
-        product_data: {
-          name: item.name || 'PMU Service',
-          description: item.description || 'Professional PMU service',
-        },
-        unit_amount: Math.round((item.price || 0) * 100), // Convert to cents
-      },
-      quantity: item.quantity || 1,
-    }));
+    // If items array is missing or empty, create a single line item from the total amount
+    const lineItems = items && Array.isArray(items) && items.length > 0
+      ? items.map((item: any) => ({
+          price_data: {
+            currency: currency.toLowerCase(),
+            product_data: {
+              name: item.name || 'PMU Service',
+              description: item.description || 'Professional PMU service',
+            },
+            unit_amount: Math.round((item.price || 0) * 100), // Convert to cents
+          },
+          quantity: item.quantity || 1,
+        }))
+      : [{
+          price_data: {
+            currency: currency.toLowerCase(),
+            product_data: {
+              name: 'PMU Service',
+              description: 'Professional PMU service',
+            },
+            unit_amount: Math.round(amount * 100), // Convert to cents
+          },
+          quantity: 1,
+        }];
 
     // Create Stripe checkout session for BNPL payment
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
