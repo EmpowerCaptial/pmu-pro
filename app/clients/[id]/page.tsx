@@ -57,6 +57,7 @@ export default function ClientProfilePage() {
   const [showEditForm, setShowEditForm] = useState(false)
   const [procedures, setProcedures] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
+  const [editingProcedure, setEditingProcedure] = useState<any | null>(null)
 
   const clientId = params.id as string
 
@@ -136,8 +137,14 @@ export default function ClientProfilePage() {
     }
 
     try {
-      const response = await fetch('/api/procedures', {
-        method: 'POST',
+      // If editing, use PUT endpoint; otherwise use POST
+      const url = editingProcedure 
+        ? `/api/procedures/${editingProcedure.id}`
+        : '/api/procedures'
+      const method = editingProcedure ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'x-user-email': currentUser.email
@@ -147,23 +154,46 @@ export default function ClientProfilePage() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log('Procedure saved successfully:', result.procedure)
+        console.log(editingProcedure ? 'Procedure updated successfully:' : 'Procedure saved successfully:', result.procedure)
         // Reload client data to get updated procedures from database
         await loadClientData()
         setShowProcedureForm(false)
+        setEditingProcedure(null)
         // Show success message
-        alert('Procedure saved successfully!')
+        alert(editingProcedure ? 'Procedure updated successfully!' : 'Procedure saved successfully!')
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        const errorMessage = errorData.error || 'Failed to save procedure'
+        const errorMessage = errorData.error || (editingProcedure ? 'Failed to update procedure' : 'Failed to save procedure')
         console.error('Error saving procedure:', errorMessage)
-        alert(`Failed to save procedure: ${errorMessage}`)
+        alert(`Failed to ${editingProcedure ? 'update' : 'save'} procedure: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Error saving procedure:', error)
       const errorMessage = error instanceof Error ? error.message : 'Network error. Please check your connection and try again.'
-      alert(`Failed to save procedure: ${errorMessage}`)
+      alert(`Failed to ${editingProcedure ? 'update' : 'save'} procedure: ${errorMessage}`)
     }
+  }
+
+  const handleEditProcedure = (procedure: any) => {
+    // Parse photos if they're JSON strings
+    const procedureData = {
+      ...procedure,
+      beforePhotos: procedure.beforePhotos 
+        ? (typeof procedure.beforePhotos === 'string' 
+            ? (procedure.beforePhotos.startsWith('[') ? JSON.parse(procedure.beforePhotos) : [procedure.beforePhotos])
+            : procedure.beforePhotos)
+        : [],
+      afterPhotos: procedure.afterPhotos
+        ? (typeof procedure.afterPhotos === 'string'
+            ? (procedure.afterPhotos.startsWith('[') ? JSON.parse(procedure.afterPhotos) : [procedure.afterPhotos])
+            : procedure.afterPhotos)
+        : [],
+      procedureDate: procedure.procedureDate ? new Date(procedure.procedureDate) : new Date(),
+      followUpDate: procedure.followUpDate ? new Date(procedure.followUpDate) : null,
+      touchUpDate: procedure.touchUpDate ? new Date(procedure.touchUpDate) : null
+    }
+    setEditingProcedure(procedureData)
+    setShowProcedureForm(true)
   }
 
   const handleSaveAppointment = async (appointmentData: any) => {
@@ -591,6 +621,19 @@ export default function ClientProfilePage() {
                             </div>
                           )}
                         </div>
+
+                        {/* Edit Button */}
+                        <div className="mt-4 pt-4 border-t flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditProcedure(procedure)}
+                            className="text-lavender border-lavender hover:bg-lavender hover:text-white"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Procedure
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                     )
@@ -623,10 +666,15 @@ export default function ClientProfilePage() {
       </div>
 
       {/* Procedure Form Dialog */}
-      <Dialog open={showProcedureForm} onOpenChange={setShowProcedureForm}>
+      <Dialog open={showProcedureForm} onOpenChange={(open) => {
+        setShowProcedureForm(open)
+        if (!open) {
+          setEditingProcedure(null)
+        }
+      }}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New Procedure</DialogTitle>
+            <DialogTitle>{editingProcedure ? 'Edit Procedure' : 'Add New Procedure'}</DialogTitle>
           </DialogHeader>
           <div className="relative z-50">
             {client && (
@@ -634,7 +682,12 @@ export default function ClientProfilePage() {
                 clientId={client.id}
                 clientName={client.name}
                 onSave={handleSaveProcedure}
-                onCancel={() => setShowProcedureForm(false)}
+                onCancel={() => {
+                  setShowProcedureForm(false)
+                  setEditingProcedure(null)
+                }}
+                initialData={editingProcedure}
+                isEditing={!!editingProcedure}
               />
             )}
           </div>

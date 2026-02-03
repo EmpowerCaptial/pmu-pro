@@ -88,6 +88,28 @@ export async function PUT(
     }
 
     const body = await request.json()
+    const {
+      procedureType,
+      voltage,
+      needleConfiguration,
+      needleSize,
+      pigmentBrand,
+      pigmentColor,
+      lotNumber,
+      depth,
+      technique,
+      duration,
+      areaTreated,
+      notes,
+      beforePhotos,
+      afterPhotos,
+      healingProgress,
+      procedureDate,
+      followUpDate,
+      touchUpScheduled,
+      touchUpDate,
+      isCompleted
+    } = body
 
     // Try to find user and update procedure
     try {
@@ -111,11 +133,38 @@ export async function PUT(
         return NextResponse.json({ error: 'Procedure not found' }, { status: 404 })
       }
 
+      // Convert arrays to JSON strings for beforePhotos and afterPhotos (schema expects String?)
+      const beforePhotosStr = Array.isArray(beforePhotos) 
+        ? (beforePhotos.length > 0 ? JSON.stringify(beforePhotos) : null)
+        : (beforePhotos || null)
+      const afterPhotosStr = Array.isArray(afterPhotos)
+        ? (afterPhotos.length > 0 ? JSON.stringify(afterPhotos) : null)
+        : (afterPhotos || null)
+
       // Update procedure
       const updatedProcedure = await prisma.procedure.update({
         where: { id: params.id },
         data: {
-          ...body,
+          procedureType: procedureType !== undefined ? procedureType : existingProcedure.procedureType,
+          voltage: voltage !== undefined ? voltage : existingProcedure.voltage,
+          needleConfiguration: needleConfiguration !== undefined ? needleConfiguration : existingProcedure.needleConfiguration,
+          needleSize: needleSize !== undefined ? needleSize : existingProcedure.needleSize,
+          pigmentBrand: pigmentBrand !== undefined ? pigmentBrand : existingProcedure.pigmentBrand,
+          pigmentColor: pigmentColor !== undefined ? pigmentColor : existingProcedure.pigmentColor,
+          lotNumber: lotNumber !== undefined ? lotNumber : existingProcedure.lotNumber,
+          depth: depth !== undefined ? depth : existingProcedure.depth,
+          technique: technique !== undefined ? technique : existingProcedure.technique,
+          duration: duration !== undefined ? duration : existingProcedure.duration,
+          areaTreated: areaTreated !== undefined ? areaTreated : existingProcedure.areaTreated,
+          notes: notes !== undefined ? notes : existingProcedure.notes,
+          beforePhotos: beforePhotosStr !== undefined ? beforePhotosStr : existingProcedure.beforePhotos,
+          afterPhotos: afterPhotosStr !== undefined ? afterPhotosStr : existingProcedure.afterPhotos,
+          healingProgress: healingProgress !== undefined ? healingProgress : existingProcedure.healingProgress,
+          procedureDate: procedureDate ? new Date(procedureDate) : existingProcedure.procedureDate,
+          followUpDate: followUpDate !== undefined ? (followUpDate ? new Date(followUpDate) : null) : existingProcedure.followUpDate,
+          touchUpScheduled: touchUpScheduled !== undefined ? touchUpScheduled : existingProcedure.touchUpScheduled,
+          touchUpDate: touchUpDate !== undefined ? (touchUpDate ? new Date(touchUpDate) : null) : existingProcedure.touchUpDate,
+          isCompleted: isCompleted !== undefined ? isCompleted : existingProcedure.isCompleted,
           updatedAt: new Date()
         },
         include: {
