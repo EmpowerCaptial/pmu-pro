@@ -75,15 +75,15 @@ export async function POST(req: NextRequest) {
       },
       customer_email: clientEmail || undefined,
       billing_address_collection: 'required',
-      // Only require shipping for physical products - BNPL may not need it for services
-      // shipping_address_collection: {
-      //   allowed_countries: ['US', 'CA'],
-      // },
+      // Affirm and other BNPL methods typically require shipping address for verification
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA'],
+      },
       // BNPL specific settings
       payment_method_options: {
         [stripePaymentMethod]: {
-          // Affirm requires capture_method: 'manual' for some cases
-          capture_method: stripePaymentMethod === 'affirm' ? 'manual' : undefined,
+          // Stripe handles BNPL-specific requirements automatically
+          // Note: capture_method is not valid for checkout sessions
         }
       }
     };
@@ -112,8 +112,46 @@ export async function POST(req: NextRequest) {
       url: session.url
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Stripe BNPL checkout session error:", error);
+    
+    // Check for specific Stripe errors
+    if (error?.type && error?.code) {
+      console.error("Stripe error details:", {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+        param: error.param,
+        decline_code: error.decline_code
+      });
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to create BNPL payment session";
+      if (error.type === 'StripeInvalidRequestError') {
+        errorMessage = `Invalid request: ${error.message}`;
+        // Check for common Affirm-specific errors
+        if (error.message?.toLowerCase().includes('affirm')) {
+          errorMessage = `Affirm payment error: ${error.message}. Please ensure Affirm is enabled in your Stripe account and the amount meets Affirm's requirements (typically $50-$30,000).`;
+        }
+      } else if (error.type === 'StripeAPIError') {
+        errorMessage = `Stripe API error: ${error.message}`;
+      } else if (error.type === 'StripeAuthenticationError') {
+        errorMessage = "Stripe authentication failed. Please check your API keys.";
+      } else {
+        errorMessage = error.message || "Failed to create BNPL payment session";
+      }
+      
+      return NextResponse.json(
+        { 
+          error: errorMessage,
+          details: error.message,
+          type: error.type,
+          code: error.code
+        }, 
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { 
         error: "Failed to create BNPL payment session", 
