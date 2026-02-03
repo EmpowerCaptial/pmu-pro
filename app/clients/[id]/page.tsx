@@ -413,22 +413,136 @@ export default function ClientProfilePage() {
 
           {/* Procedures Tab */}
           <TabsContent value="procedures" className="mt-6">
-            <Card>
-              <CardContent className="text-center py-12">
-                <FileText className="h-16 w-16 text-lavender mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Procedures Yet</h3>
-                <p className="text-gray-600 mb-6">
-                  Start tracking procedures, pigment colors, needle configurations, and notes.
-                </p>
-                <Button 
-                  className="bg-lavender hover:bg-lavender-600 text-white"
-                  onClick={() => setShowProcedureForm(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Procedure
-                </Button>
-              </CardContent>
-            </Card>
+            {procedures.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <FileText className="h-16 w-16 text-lavender mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Procedures Yet</h3>
+                  <p className="text-gray-600 mb-6">
+                    Start tracking procedures, pigment colors, needle configurations, and notes.
+                  </p>
+                  <Button 
+                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    onClick={() => setShowProcedureForm(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Procedure
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900">Procedures ({procedures.length})</h3>
+                  <Button 
+                    className="bg-lavender hover:bg-lavender-600 text-white"
+                    onClick={() => setShowProcedureForm(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Procedure
+                  </Button>
+                </div>
+                <div className="grid gap-4">
+                  {procedures.map((procedure: any) => (
+                    <Card key={procedure.id}>
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900">{procedure.procedureType}</h4>
+                            <p className="text-sm text-gray-600">
+                              {new Date(procedure.procedureDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                          <Badge className={procedure.isCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {procedure.isCompleted ? 'Completed' : 'In Progress'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                          {procedure.pigmentBrand && (
+                            <div>
+                              <span className="text-gray-600">Pigment:</span>
+                              <p className="font-medium">{procedure.pigmentBrand} {procedure.pigmentColor}</p>
+                            </div>
+                          )}
+                          {procedure.needleConfiguration && (
+                            <div>
+                              <span className="text-gray-600">Needle:</span>
+                              <p className="font-medium">{procedure.needleConfiguration}</p>
+                            </div>
+                          )}
+                          {procedure.technique && (
+                            <div>
+                              <span className="text-gray-600">Technique:</span>
+                              <p className="font-medium">{procedure.technique}</p>
+                            </div>
+                          )}
+                          {procedure.duration && (
+                            <div>
+                              <span className="text-gray-600">Duration:</span>
+                              <p className="font-medium">{procedure.duration} min</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Photo Display */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          {procedure.beforePhotos && (
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700 mb-2 block">Before Photos</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {(() => {
+                                  try {
+                                    const photos = typeof procedure.beforePhotos === 'string' 
+                                      ? JSON.parse(procedure.beforePhotos) 
+                                      : procedure.beforePhotos
+                                    return Array.isArray(photos) ? photos.map((url: string, idx: number) => (
+                                      <img key={idx} src={url} alt={`Before ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                                    )) : null
+                                  } catch {
+                                    return <img src={procedure.beforePhotos} alt="Before" className="w-20 h-20 object-cover rounded" />
+                                  }
+                                })()}
+                              </div>
+                            </div>
+                          )}
+                          {procedure.afterPhotos && (
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700 mb-2 block">After Photos</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {(() => {
+                                  try {
+                                    const photos = typeof procedure.afterPhotos === 'string' 
+                                      ? JSON.parse(procedure.afterPhotos) 
+                                      : procedure.afterPhotos
+                                    return Array.isArray(photos) ? photos.map((url: string, idx: number) => (
+                                      <img key={idx} src={url} alt={`After ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                                    )) : null
+                                  } catch {
+                                    return <img src={procedure.afterPhotos} alt="After" className="w-20 h-20 object-cover rounded" />
+                                  }
+                                })()}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {procedure.notes && (
+                          <div className="mb-4">
+                            <Label className="text-sm font-medium text-gray-700 mb-2 block">Notes</Label>
+                            <p className="text-sm text-gray-600">{procedure.notes}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Appointments Tab */}

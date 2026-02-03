@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../ui/switch';
 import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, Save, X, Plus } from 'lucide-react';
+import { CalendarIcon, Save, X, Plus, Upload, Image as ImageIcon, X as XIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useFileUpload } from '@/hooks/use-file-upload';
+import { useDemoAuth } from '@/hooks/use-demo-auth';
 
 interface ProcedureFormProps {
   clientId: string;
@@ -91,6 +93,7 @@ export default function ProcedureForm({
   initialData,
   isEditing = false
 }: ProcedureFormProps) {
+  const { currentUser } = useDemoAuth()
   const [formData, setFormData] = useState({
     procedureType: initialData?.procedureType || '',
     voltage: initialData?.voltage || '',
@@ -493,6 +496,136 @@ export default function ProcedureForm({
               placeholder="Notes about healing progress, follow-up observations, etc."
               rows={3}
             />
+          </div>
+
+          {/* Before Photos */}
+          <div className="space-y-2">
+            <Label>Before Photos</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {formData.beforePhotos.map((photo: string, index: number) => (
+                <div key={index} className="relative group">
+                  <img src={photo} alt={`Before ${index + 1}`} className="w-full h-32 object-cover rounded-lg border" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => {
+                      const newPhotos = formData.beforePhotos.filter((_: string, i: number) => i !== index)
+                      handleInputChange('beforePhotos', newPhotos)
+                    }}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-32 cursor-pointer hover:border-lavender transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id="before-photo-upload"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    
+                    try {
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      formData.append('fileType', `client-photo:${clientId}`)
+                      
+                      const response = await fetch('/api/file-uploads', {
+                        method: 'POST',
+                        headers: {
+                          'x-user-email': currentUser?.email || ''
+                        },
+                        body: formData
+                      })
+                      
+                      if (response.ok) {
+                        const result = await response.json()
+                        const newPhotos = [...formData.beforePhotos, result.fileUpload.fileUrl]
+                        handleInputChange('beforePhotos', newPhotos)
+                      } else {
+                        alert('Failed to upload photo')
+                      }
+                    } catch (error) {
+                      console.error('Error uploading photo:', error)
+                      alert('Failed to upload photo')
+                    }
+                  }}
+                />
+                <label htmlFor="before-photo-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                  <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                  <span className="text-xs text-gray-500">Add Photo</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* After Photos */}
+          <div className="space-y-2">
+            <Label>After Photos</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {formData.afterPhotos.map((photo: string, index: number) => (
+                <div key={index} className="relative group">
+                  <img src={photo} alt={`After ${index + 1}`} className="w-full h-32 object-cover rounded-lg border" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => {
+                      const newPhotos = formData.afterPhotos.filter((_: string, i: number) => i !== index)
+                      handleInputChange('afterPhotos', newPhotos)
+                    }}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-32 cursor-pointer hover:border-lavender transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id="after-photo-upload"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    
+                    try {
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      formData.append('fileType', `client-photo:${clientId}`)
+                      
+                      const response = await fetch('/api/file-uploads', {
+                        method: 'POST',
+                        headers: {
+                          'x-user-email': currentUser?.email || ''
+                        },
+                        body: formData
+                      })
+                      
+                      if (response.ok) {
+                        const result = await response.json()
+                        const newPhotos = [...formData.afterPhotos, result.fileUpload.fileUrl]
+                        handleInputChange('afterPhotos', newPhotos)
+                      } else {
+                        alert('Failed to upload photo')
+                      }
+                    } catch (error) {
+                      console.error('Error uploading photo:', error)
+                      alert('Failed to upload photo')
+                    }
+                  }}
+                />
+                <label htmlFor="after-photo-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                  <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                  <span className="text-xs text-gray-500">Add Photo</span>
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Action Buttons */}
