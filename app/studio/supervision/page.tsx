@@ -1160,76 +1160,34 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               const dbClient = await clientResponse.json()
               dbClientId = dbClient.client.id
             
-            // Add client to student's local client list for immediate visibility
-            const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
-            const newClient = {
-              id: dbClient.client.id,
-              name: clientInfo.name,
-              email: clientInfo.email || '',
-              phone: clientInfo.phone,
-              notes: `Supervision session with ${instructor?.name} - ${service?.name}`,
-              createdAt: new Date().toISOString(),
-              lastSeenAt: new Date().toISOString()
-            }
-            
-            // Check if client already exists to avoid duplicates
-            const clientExists = existingClients.some((c: any) => c.email === clientInfo.email || c.phone === clientInfo.phone)
-            if (!clientExists) {
-              const updatedClients = [...existingClients, newClient]
-              localStorage.setItem('clients', JSON.stringify(updatedClients))
-              console.log('✅ Client added to student\'s client list:', newClient)
-            } else {
-              console.log('✅ Client already exists in student\'s list')
-            }
-            
-            // Generate deposit payment link (only if we have a client ID)
-            if (dbClientId) {
-              const depositResponse = await fetch('/api/deposit-payments', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  clientId: dbClientId,
-                  appointmentId: newBooking.id,
-                  amount: (service as any)?.deposit || 150,
-                  totalAmount: (service as any)?.total || 400,
-                  currency: 'USD',
-                  notes: `Supervision session deposit - ${service?.name} with ${instructor?.name}`,
-                  linkExpirationDays: 7
-                })
-              })
-
-              if (depositResponse.ok) {
-                const depositData = await depositResponse.json()
-                
-                // Update booking with deposit link
-                newBooking.depositLink = depositData.depositLink
-                newBooking.depositSent = true
-                newBooking.status = 'deposit-sent'
-                
-                // Update local storage
-                const updatedBookingsWithDeposit = bookings.map(b => 
-                  b.id === newBooking.id ? newBooking : b
-                )
-                setBookings(updatedBookingsWithDeposit)
-                localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookingsWithDeposit))
-                
-                setBookingStatus('deposit-sent')
-                
-                alert(`Booking created! Deposit link has been sent to ${clientInfo.email || 'the client'}. Check the booking details for the deposit link.`)
-              } else {
-                console.error('Failed to create deposit payment')
-                alert('Booking created but failed to generate deposit link. Please contact support.')
+              // Add client to student's local client list for immediate visibility
+              const existingClients = JSON.parse(localStorage.getItem('clients') || '[]')
+              const newClient = {
+                id: dbClient.client.id,
+                name: clientInfo.name,
+                email: clientInfo.email || '',
+                phone: clientInfo.phone,
+                notes: `Supervision session with ${instructor?.name} - ${service?.name}`,
+                createdAt: new Date().toISOString(),
+                lastSeenAt: new Date().toISOString()
               }
+              
+              // Check if client already exists to avoid duplicates
+              const clientExists = existingClients.some((c: any) => c.email === clientInfo.email || c.phone === clientInfo.phone)
+              if (!clientExists) {
+                const updatedClients = [...existingClients, newClient]
+                localStorage.setItem('clients', JSON.stringify(updatedClients))
+                console.log('✅ Client added to student\'s client list:', newClient)
+              } else {
+                console.log('✅ Client already exists in student\'s list')
+              }
+            } else {
+              console.error('Failed to create client')
+              alert('Booking created but failed to create client. Please contact support.')
             }
-          } else {
-            console.error('Failed to create client')
-            alert('Booking created but failed to create client. Please contact support.')
           }
-        } else {
-          // Using existing client - still need to generate deposit link
+          
+          // Generate deposit payment link (for both new and existing clients)
           if (dbClientId) {
             const depositResponse = await fetch('/api/deposit-payments', {
               method: 'POST',
@@ -1271,7 +1229,6 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               alert('Booking created but failed to generate deposit link. Please contact support.')
             }
           }
-        }
         } catch (error) {
           console.error('Error creating client or deposit:', error)
           alert('Booking created but there was an error with client setup. Please contact support.')
