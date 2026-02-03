@@ -448,14 +448,22 @@ export default function ClientProfilePage() {
                   </Button>
                 </div>
                 <div className="grid gap-4">
-                  {procedures.map((procedure: any) => (
+                  {procedures.map((procedure: any) => {
+                    // Parse procedure date safely
+                    const procedureDate = procedure.procedureDate 
+                      ? (typeof procedure.procedureDate === 'string' 
+                          ? new Date(procedure.procedureDate) 
+                          : procedure.procedureDate)
+                      : new Date()
+                    
+                    return (
                     <Card key={procedure.id}>
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h4 className="text-lg font-semibold text-gray-900">{procedure.procedureType}</h4>
+                            <h4 className="text-lg font-semibold text-gray-900">{procedure.procedureType || 'Unknown Procedure'}</h4>
                             <p className="text-sm text-gray-600">
-                              {new Date(procedure.procedureDate).toLocaleDateString('en-US', {
+                              {procedureDate.toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -584,7 +592,8 @@ export default function ClientProfilePage() {
                         </div>
                       </CardContent>
                     </Card>
-                  )})}
+                    )
+                  })}
                 </div>
               </div>
             )}
