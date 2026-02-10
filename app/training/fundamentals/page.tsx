@@ -2666,14 +2666,22 @@ export default function FundamentalsTrainingPortal() {
           </CardHeader>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'student' | 'instructor')} className="space-y-6 break-words">
+        <Tabs value={activeTab} onValueChange={(value) => {
+          // Prevent students from switching to instructor tab
+          if (value === 'instructor' && isStudent) {
+            return
+          }
+          setActiveTab(value as 'student' | 'instructor')
+        }} className="space-y-6 break-words">
           <TabsList className="bg-purple-100/70 p-1 rounded-lg flex flex-wrap gap-2 w-full">
             <TabsTrigger value="student" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" /> Student Portal
             </TabsTrigger>
-            <TabsTrigger value="instructor" className="flex items-center gap-2">
-              <Users className="h-4 w-4" /> Instructor Console
-            </TabsTrigger>
+            {canAccessInstructorConsole && (
+              <TabsTrigger value="instructor" className="flex items-center gap-2">
+                <Users className="h-4 w-4" /> Instructor Console
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="student" className="space-y-6 break-words">
