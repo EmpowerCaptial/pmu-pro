@@ -442,7 +442,26 @@ export default function FundamentalsTrainingPortal() {
   const instructorFolderAssignmentRef = useRef<HTMLInputElement>(null)
   const [courseWeeks, setCourseWeeks] = useState<CourseWeek[]>(() => buildBaseWeeks())
   const [selectedWeekId, setSelectedWeekId] = useState<string>(() => buildBaseWeeks()[0]?.id ?? '')
-  const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
+  // Initialize activeTab - students should always start on 'student' tab
+  const [activeTab, setActiveTab] = useState<'student' | 'instructor'>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const viewParam = urlParams.get('view')
+      const userRole = (currentUser?.role?.toLowerCase() || 'guest')
+      const isStudent = ['student', 'apprentice'].includes(userRole)
+      
+      // If student tries to access instructor view, force them to student view
+      if (isStudent && viewParam === 'instructor') {
+        return 'student'
+      }
+      
+      // Only allow instructor view for non-students
+      if (!isStudent && viewParam === 'instructor') {
+        return 'instructor'
+      }
+    }
+    return 'student'
+  })
   const [openRubricId, setOpenRubricId] = useState<string | null>(null)
   const [assignmentSuccess, setAssignmentSuccess] = useState<string | null>(null)
   const [assignmentError, setAssignmentError] = useState<string | null>(null)
@@ -590,9 +609,11 @@ export default function FundamentalsTrainingPortal() {
   const MAX_VIDEO_MB = 500
   const VIDEO_UPLOAD_PREFIX = 'training-video'
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
+  const isStudent = ['student', 'apprentice'].includes(userRole)
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
   const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
   const canEditAssignments = canManageAssignments && activeTab === 'instructor'
+  const canAccessInstructorConsole = !isStudent && (canManageVideos || canManageAssignments)
   const [isDeleteAssignmentDialogOpen, setIsDeleteAssignmentDialogOpen] = useState(false)
   const [assignmentPendingDelete, setAssignmentPendingDelete] = useState<{ assignment: Assignment; weekId: string } | null>(null)
   const [deleteAssignmentConfirmText, setDeleteAssignmentConfirmText] = useState('')

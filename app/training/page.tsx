@@ -257,7 +257,8 @@ export default function TrainingPage() {
 
   const fallbackView = !isOwner && !isStudentRole && !isInstructorRole
   const showStudentPortal = isOwner || isStudentRole || fallbackView
-  const showInstructorConsole = isOwner || isInstructorRole || fallbackView
+  // Explicitly hide Instructor Console from students
+  const showInstructorConsole = !isStudentRole && (isOwner || isInstructorRole || fallbackView)
 
   const studentPrograms = useMemo(
     () => TRAINING_TRACKS.filter(track => track.audience.some(audience => audience === 'apprentice' || audience === 'student')),
