@@ -998,6 +998,22 @@ export default function FundamentalsTrainingPortal() {
     }
   }, [currentUser?.email, canManageVideos])
 
+  // Prevent students from accessing instructor tab via URL or state manipulation
+  useEffect(() => {
+    if (isStudent && activeTab === 'instructor') {
+      setActiveTab('student')
+      // Clean up URL if it has instructor view parameter
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search)
+        if (urlParams.get('view') === 'instructor') {
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('view')
+          window.history.replaceState({}, '', newUrl.toString())
+        }
+      }
+    }
+  }, [isStudent, activeTab])
+
   useEffect(() => {
     if (activeTab === 'instructor' && canManageVideos) {
       fetchInstructorFolderFiles()
