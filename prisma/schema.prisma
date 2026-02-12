@@ -707,6 +707,21 @@ model Complaint {
   @@map("complaints")
 }
 
+model Location {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  inventoryItems InventoryItem[]
+
+  @@map("locations")
+}
+
 model InventoryItem {
   id           String   @id @default(cuid())
   name         String
@@ -720,15 +735,18 @@ model InventoryItem {
   totalValue   Float    @default(0)
   status       String   @default("in_stock")
   description  String?
-  location     String?
+  location     String?  // Legacy field - keeping for backward compatibility
+  locationId   String?
   supplier     String?
   lastUpdated  DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  locationRef  Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
 
   @@index([category])
   @@index([status])
   @@index([brand])
+  @@index([locationId])
   @@map("inventory_items")
 }
 

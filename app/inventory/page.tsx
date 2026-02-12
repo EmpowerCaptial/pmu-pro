@@ -22,10 +22,21 @@ import {
   TrendingUp,
   BarChart3,
   Download,
-  Upload
+  Upload,
+  MapPin
 } from 'lucide-react'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+
+interface Location {
+  id: string
+  name: string
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  isActive: boolean
+}
 
 interface InventoryItem {
   id: string
@@ -42,6 +53,8 @@ interface InventoryItem {
   status: 'in_stock' | 'low_stock' | 'out_of_stock'
   description?: string
   location?: string
+  locationId?: string
+  locationRef?: Location
   supplier?: string
 }
 
@@ -120,18 +133,28 @@ export default function InventoryPage() {
   const { currentUser, isLoading } = useDemoAuth()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showLocationDialog, setShowLocationDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const [loading, setLoading] = useState(true)
+  const [newLocation, setNewLocation] = useState({
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  })
 
   // Check if user has permission to access inventory
   const hasInventoryAccess = currentUser && 
     (currentUser.role === 'owner' || 
      currentUser.role === 'manager' || 
-     currentUser.role === 'director') &&
-    (currentUser as any)?.selectedPlan === 'studio'
+     currentUser.role === 'director' ||
+     currentUser.role === 'instructor')
   
   const [newItem, setNewItem] = useState({
     name: '',
@@ -144,15 +167,43 @@ export default function InventoryPage() {
     unitCost: 0,
     description: '',
     location: '',
+    locationId: '',
     supplier: ''
   })
 
   const categories = ['all', 'Tools', 'Pigments', 'Consumables', 'Anesthetics', 'Aftercare']
 
+  const loadLocations = async () => {
+    if (!currentUser?.email) return
+    try {
+      const response = await fetch('/api/locations', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setLocations(data.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading locations:', error)
+    }
+  }
+
   const loadData = async () => {
+    if (!currentUser?.email) return
     setLoading(true)
     try {
-      const response = await fetch('/api/inventory')
+      const url = new URL('/api/inventory', window.location.origin)
+      if (selectedLocationId && selectedLocationId !== 'all') {
+        url.searchParams.set('locationId', selectedLocationId)
+      }
+      
+      const response = await fetch(url.toString(), {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setInventory(data.data || [])
@@ -165,8 +216,16 @@ export default function InventoryPage() {
   }
 
   useEffect(() => {
-    loadData()
-  }, [])
+    if (currentUser && !isLoading) {
+      loadLocations()
+    }
+  }, [currentUser, isLoading])
+
+  useEffect(() => {
+    if (currentUser && !isLoading) {
+      loadData()
+    }
+  }, [selectedLocationId, currentUser, isLoading])
 
   useEffect(() => {
     let filtered = inventory
@@ -185,6 +244,38 @@ export default function InventoryPage() {
 
     setFilteredInventory(filtered)
   }, [searchTerm, selectedCategory, inventory])
+
+  const handleAddLocation = async () => {
+    if (!newLocation.name || !currentUser?.email) {
+      alert('Please enter a location name')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify(newLocation)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setLocations([...locations, data.data])
+        setNewLocation({ name: '', address: '', city: '', state: '', zipCode: '' })
+        setShowLocationDialog(false)
+        alert('Location added successfully!')
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to add location')
+      }
+    } catch (error) {
+      console.error('Error adding location:', error)
+      alert('Failed to add location')
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -220,46 +311,62 @@ export default function InventoryPage() {
     return inventory.filter(item => item.currentStock <= item.minStock)
   }
 
-  const handleAddItem = () => {
-    if (!newItem.name || !newItem.category) {
+  const handleAddItem = async () => {
+    if (!newItem.name || !newItem.category || !currentUser?.email) {
       alert('Please fill in required fields')
       return
     }
 
-    const item: InventoryItem = {
-      id: Date.now().toString(),
-      name: newItem.name,
-      category: newItem.category,
-      brand: newItem.brand,
-      sku: newItem.sku,
-      currentStock: newItem.currentStock,
-      minStock: newItem.minStock,
-      maxStock: newItem.maxStock,
-      unitCost: newItem.unitCost,
-      totalValue: newItem.currentStock * newItem.unitCost,
-      lastUpdated: new Date().toISOString().split('T')[0],
-      status: (newItem.currentStock === 0 ? 'out_of_stock' : 
-              newItem.currentStock <= newItem.minStock ? 'low_stock' : 'in_stock') as InventoryItem['status'],
-      description: newItem.description,
-      location: newItem.location,
-      supplier: newItem.supplier
-    }
+    try {
+      const response = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser.email
+        },
+        body: JSON.stringify({
+          name: newItem.name,
+          category: newItem.category,
+          brand: newItem.brand,
+          sku: newItem.sku,
+          currentStock: newItem.currentStock,
+          minStock: newItem.minStock,
+          maxStock: newItem.maxStock,
+          unitCost: newItem.unitCost,
+          description: newItem.description,
+          location: newItem.location,
+          locationId: newItem.locationId || null,
+          supplier: newItem.supplier
+        })
+      })
 
-    setInventory([...inventory, item])
-    setNewItem({
-      name: '',
-      category: '',
-      brand: '',
-      sku: '',
-      currentStock: 0,
-      minStock: 0,
-      maxStock: 0,
-      unitCost: 0,
-      description: '',
-      location: '',
-      supplier: ''
-    })
-    setShowAddDialog(false)
+      if (response.ok) {
+        const data = await response.json()
+        setInventory([...inventory, data.data])
+        setNewItem({
+          name: '',
+          category: '',
+          brand: '',
+          sku: '',
+          currentStock: 0,
+          minStock: 0,
+          maxStock: 0,
+          unitCost: 0,
+          description: '',
+          location: '',
+          locationId: '',
+          supplier: ''
+        })
+        setShowAddDialog(false)
+        loadData() // Reload to get updated data
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to add item')
+      }
+    } catch (error) {
+      console.error('Error adding item:', error)
+      alert('Failed to add item')
+    }
   }
 
   const handleUpdateStock = (id: string, newStock: number) => {
@@ -323,7 +430,7 @@ export default function InventoryPage() {
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
               <p className="text-gray-600 mb-4">
-                Inventory management is only available to studio owners, managers, and directors.
+                Inventory management is only available to instructors, directors, and owners.
               </p>
               <p className="text-sm text-gray-500">
                 Your current role: <span className="font-medium">{currentUser?.role || 'Unknown'}</span>
@@ -360,6 +467,80 @@ export default function InventoryPage() {
             </div>
             
             <div className="flex items-center space-x-2 md:space-x-3">
+              <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-teal-500 text-teal-600 hover:bg-teal-50 text-xs sm:text-sm flex-1 md:flex-none">
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Add Location
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Location</DialogTitle>
+                    <DialogDescription>
+                      Add a new location to track inventory
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="loc-name">Location Name *</Label>
+                      <Input
+                        id="loc-name"
+                        value={newLocation.name}
+                        onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                        placeholder="e.g., Springfield Missouri"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="loc-address">Address</Label>
+                      <Input
+                        id="loc-address"
+                        value={newLocation.address}
+                        onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
+                        placeholder="Street address"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="loc-city">City</Label>
+                        <Input
+                          id="loc-city"
+                          value={newLocation.city}
+                          onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
+                          placeholder="City"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="loc-state">State</Label>
+                        <Input
+                          id="loc-state"
+                          value={newLocation.state}
+                          onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
+                          placeholder="State"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="loc-zip">Zip Code</Label>
+                      <Input
+                        id="loc-zip"
+                        value={newLocation.zipCode}
+                        onChange={(e) => setNewLocation({ ...newLocation, zipCode: e.target.value })}
+                        placeholder="Zip code"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setShowLocationDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddLocation} className="bg-teal-600 hover:bg-teal-700">
+                        Add Location
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
                   <Button className="bg-lavender hover:bg-lavender-600 text-white text-xs sm:text-sm flex-1 md:flex-none">
@@ -480,12 +661,28 @@ export default function InventoryPage() {
                   </div>
                   
                   <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="location" className="text-sm sm:text-base">Storage Location</Label>
+                    <Label htmlFor="locationId" className="text-sm sm:text-base">Location *</Label>
+                    <Select value={newItem.locationId} onValueChange={(value) => setNewItem({ ...newItem, locationId: value })}>
+                      <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.filter(loc => loc.isActive).map(location => (
+                          <SelectItem key={location.id} value={location.id} className="text-sm sm:text-base">
+                            {location.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-1 sm:space-y-2">
+                    <Label htmlFor="location" className="text-sm sm:text-base">Storage Location (Optional)</Label>
                     <Input
                       id="location"
                       value={newItem.location}
                       onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
-                      placeholder="Storage location"
+                      placeholder="e.g., Storage Room A"
                       className="h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
@@ -577,6 +774,20 @@ export default function InventoryPage() {
               className="pl-8 sm:pl-10 h-9 sm:h-10 text-sm sm:text-base"
             />
           </div>
+          
+          <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+            <SelectTrigger className="w-full md:w-48 h-9 sm:h-10 text-sm sm:text-base">
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-sm sm:text-base">All Locations</SelectItem>
+              {locations.filter(loc => loc.isActive).map(location => (
+                <SelectItem key={location.id} value={location.id} className="text-sm sm:text-base">
+                  {location.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full md:w-48 h-9 sm:h-10 text-sm sm:text-base">

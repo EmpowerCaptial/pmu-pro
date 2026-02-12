@@ -6,9 +6,31 @@ export const dynamic = "force-dynamic"
 // GET /api/inventory - Get all inventory items
 export async function GET(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check user role
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { role: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Only allow Instructors, Directors, and Owners
+    const allowedRoles = ['instructor', 'director', 'owner']
+    if (!allowedRoles.includes(user.role.toLowerCase())) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const status = searchParams.get('status')
+    const locationId = searchParams.get('locationId')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const search = searchParams.get('search')
@@ -21,6 +43,10 @@ export async function GET(request: NextRequest) {
     
     if (status) {
       where.status = status
+    }
+
+    if (locationId) {
+      where.locationId = locationId
     }
     
     if (search) {
@@ -35,6 +61,9 @@ export async function GET(request: NextRequest) {
     const [items, total] = await Promise.all([
       prisma.inventoryItem.findMany({
         where,
+        include: {
+          locationRef: true
+        },
         orderBy: { lastUpdated: 'desc' },
         skip: (page - 1) * limit,
         take: limit
@@ -92,6 +121,27 @@ export async function GET(request: NextRequest) {
 // POST /api/inventory - Create a new inventory item
 export async function POST(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check user role
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { role: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Only allow Instructors, Directors, and Owners
+    const allowedRoles = ['instructor', 'director', 'owner']
+    if (!allowedRoles.includes(user.role.toLowerCase())) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { 
       name, 
       category, 
@@ -103,10 +153,11 @@ export async function POST(request: NextRequest) {
       unitCost, 
       description, 
       location, 
+      locationId,
       supplier 
     } = await request.json()
 
-    if (!name || !category || !currentStock || !unitCost) {
+    if (!name || !category || currentStock === undefined || !unitCost) {
       return NextResponse.json(
         { error: 'Name, category, current stock, and unit cost are required' },
         { status: 400 }
@@ -135,9 +186,13 @@ export async function POST(request: NextRequest) {
         totalValue,
         status,
         description: description || null,
-        location: location || null,
+        location: location || null, // Legacy field
+        locationId: locationId || null,
         supplier: supplier || null,
         lastUpdated: new Date()
+      },
+      include: {
+        locationRef: true
       }
     })
 
@@ -158,6 +213,27 @@ export async function POST(request: NextRequest) {
 // PUT /api/inventory - Update inventory item
 export async function PUT(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check user role
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { role: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Only allow Instructors, Directors, and Owners
+    const allowedRoles = ['instructor', 'director', 'owner']
+    if (!allowedRoles.includes(user.role.toLowerCase())) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { itemId, updates } = await request.json()
 
     if (!itemId) {
@@ -178,6 +254,7 @@ export async function PUT(request: NextRequest) {
       'unitCost',
       'description',
       'location',
+      'locationId',
       'supplier'
     ]
 
@@ -211,7 +288,10 @@ export async function PUT(request: NextRequest) {
 
     const updatedItem = await prisma.inventoryItem.update({
       where: { id: itemId },
-      data: filteredUpdates
+      data: filteredUpdates,
+      include: {
+        locationRef: true
+      }
     })
 
     return NextResponse.json({
@@ -231,6 +311,27 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/inventory - Delete inventory item
 export async function DELETE(request: NextRequest) {
   try {
+    const userEmail = request.headers.get('x-user-email')
+    if (!userEmail) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check user role
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { role: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Only allow Instructors, Directors, and Owners
+    const allowedRoles = ['instructor', 'director', 'owner']
+    if (!allowedRoles.includes(user.role.toLowerCase())) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { itemId } = await request.json()
 
     if (!itemId) {
