@@ -24,6 +24,7 @@ import { useDemoAuth } from '@/hooks/use-demo-auth'
 interface Location {
   id: string
   name: string
+  isActive: boolean
 }
 
 interface Student {
