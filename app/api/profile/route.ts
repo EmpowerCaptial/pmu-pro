@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
         twitter: true,
         youtube: true,
         businessHours: true,
+        locationId: true,
+        hasAllLocationAccess: true,
         createdAt: true,
         updatedAt: true
       }

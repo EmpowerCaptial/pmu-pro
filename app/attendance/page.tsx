@@ -97,17 +97,17 @@ export default function AttendancePage() {
         // Auto-select first location if user doesn't have all-location access
         if (activeLocations.length > 0 && !selectedLocationId) {
           // Check if instructor has all-location access
-          const userResponse = await fetch('/api/user/profile', {
+          const userResponse = await fetch('/api/profile', {
             headers: {
               'x-user-email': currentUser.email
             }
           })
           if (userResponse.ok) {
             const userData = await userResponse.json()
-            if (userData.hasAllLocationAccess) {
+            if (userData.user?.hasAllLocationAccess) {
               // User can see all locations, don't auto-select
-            } else if (userData.locationId) {
-              setSelectedLocationId(userData.locationId)
+            } else if (userData.user?.locationId) {
+              setSelectedLocationId(userData.user.locationId)
             } else {
               setSelectedLocationId(activeLocations[0].id)
             }
