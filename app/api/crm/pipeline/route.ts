@@ -108,7 +108,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: CRM_MISSING_TABLE_MESSAGE }, { status: 500 })
     }
     console.error('CRM pipeline GET error:', error)
-    return NextResponse.json({ error: 'Failed to load pipeline' }, { status: 500 })
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to load pipeline'
+    if (error instanceof Error) {
+      errorMessage = error.message
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        errorMessage = 'Database constraint violation'
+      } else if (error.code === 'P2025') {
+        errorMessage = 'Record not found'
+      } else {
+        errorMessage = `Database error: ${error.code}`
+      }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
 
