@@ -132,13 +132,15 @@ export default function CrmPipelinePage() {
         }
       })
       if (!response.ok) {
-        throw new Error('Failed to load pipeline')
+        const errorData = await response.json().catch(() => ({ error: 'Failed to load pipeline' }))
+        throw new Error(errorData.error || 'Failed to load pipeline')
       }
       const data: PipelineResponse = await response.json()
       setPipeline(data)
     } catch (err) {
-      console.error(err)
-      setError('Unable to load pipeline. Please try again.')
+      console.error('Pipeline fetch error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Unable to load pipeline. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
