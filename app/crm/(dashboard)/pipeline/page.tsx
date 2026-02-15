@@ -74,12 +74,12 @@ interface PipelineResponse {
   columns: PipelineColumn[]
 }
 
-const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
+const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director', 'instructor']
 
 type StageValue = (typeof STAGES)[number]['value']
 
 export default function CrmPipelinePage() {
-  const { currentUser } = useDemoAuth()
+  const { currentUser, isLoading: authLoading } = useDemoAuth()
   const role = currentUser?.role?.toLowerCase() ?? ''
   const canAccess = AUTHORIZED_ROLES.includes(role)
 
@@ -131,12 +131,18 @@ export default function CrmPipelinePage() {
           'x-user-email': currentUser.email
         }
       })
+      const data = await response.json().catch(() => ({}))
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to load pipeline' }))
-        throw new Error(errorData.error || 'Failed to load pipeline')
+        const msg = (data && typeof data === 'object' && 'error' in data ? data.error : null) || 'Failed to load pipeline'
+        if (response.status === 401) {
+          throw new Error('Session expired or access denied. Please log out and log in again to view the CRM.')
+        }
+        if (response.status === 403) {
+          throw new Error('You don’t have permission to view the CRM. Contact your administrator.')
+        }
+        throw new Error(msg)
       }
-      const data: PipelineResponse = await response.json()
-      setPipeline(data)
+      setPipeline(data as PipelineResponse)
     } catch (err) {
       console.error('Pipeline fetch error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Unable to load pipeline. Please try again.'
@@ -408,13 +414,22 @@ export default function CrmPipelinePage() {
     }
   }
 
+  if (authLoading && !currentUser) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        <span className="ml-2 text-sm text-slate-500">Loading…</span>
+      </div>
+    )
+  }
+
   if (!canAccess) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>CRM Access Required</CardTitle>
           <CardDescription>
-            Only staff, directors, managers, or owners can view the Studio CRM. Contact your administrator for access.
+            Only staff, directors, managers, instructors, or owners can view the Studio CRM. Contact your administrator for access.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -539,7 +554,12 @@ export default function CrmPipelinePage() {
           )}
 
           <div className="grid gap-4 overflow-x-auto xl:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1">
-            {pipeline
+            {isLoading && !pipeline ? (
+              <div className="col-span-full flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                <span className="ml-2 text-sm text-slate-500">Loading pipeline…</span>
+              </div>
+            ) : pipeline
               ? pipeline.columns.map(column => (
                   <div
                     key={column.stage}
@@ -616,7 +636,9 @@ export default function CrmPipelinePage() {
                   </div>
                 ))
               : (
-                <div className="text-center text-sm text-slate-500">No pipeline data yet. Add a contact to get started.</div>
+                <div className="col-span-full text-center py-8 text-sm text-slate-500">
+                  No pipeline data yet. Add a contact to get started.
+                </div>
               )}
           </div>
         </CardContent>

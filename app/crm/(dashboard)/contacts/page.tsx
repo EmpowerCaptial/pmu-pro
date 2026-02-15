@@ -55,7 +55,7 @@ interface ContactRow {
   }[]
 }
 
-const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
+const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director', 'instructor']
 
 type StageFilter = (typeof STAGES)[number]['value']
 
@@ -117,14 +117,21 @@ export default function CrmContactsPage() {
           'x-user-email': currentUser.email
         }
       })
+      const data = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error('Failed to load contacts')
+        const msg = (data && typeof data === 'object' && 'error' in data ? data.error : null) || 'Failed to load contacts'
+        if (response.status === 401) {
+          throw new Error('Session expired or access denied. Please log out and log in again to view the CRM.')
+        }
+        if (response.status === 403) {
+          throw new Error('You don’t have permission to view the CRM. Contact your administrator.')
+        }
+        throw new Error(msg)
       }
-      const data = await response.json()
-      setContacts(data.contacts || [])
+      setContacts(Array.isArray(data?.contacts) ? data.contacts : [])
     } catch (err) {
       console.error(err)
-      setError('Unable to load contacts. Please retry.')
+      setError(err instanceof Error ? err.message : 'Unable to load contacts. Please retry.')
     } finally {
       setIsLoading(false)
     }

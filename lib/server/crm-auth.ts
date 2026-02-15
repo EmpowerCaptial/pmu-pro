@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
-const DEFAULT_ALLOWED_ROLES = ['owner', 'staff', 'manager', 'director'] as const
+const DEFAULT_ALLOWED_ROLES = ['owner', 'staff', 'manager', 'director', 'instructor'] as const
 
 type AllowedRole = typeof DEFAULT_ALLOWED_ROLES[number]
 

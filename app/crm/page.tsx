@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, CalendarDays, CheckSquare, Users, BarChart3 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 
-const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director']
+const AUTHORIZED_ROLES = ['owner', 'staff', 'manager', 'director', 'instructor']
 
 interface SummaryResponse {
   contactsByStage: Record<string, number>
@@ -90,8 +90,17 @@ export default function CrmDashboardPage() {
         })
       ])
 
-      if (!summaryRes.ok || !toursRes.ok || !tasksRes.ok) {
-        throw new Error('Failed to load dashboard data')
+      const failed = !summaryRes.ok ? summaryRes : !toursRes.ok ? toursRes : !tasksRes.ok ? tasksRes : null
+      if (failed) {
+        const errData = await failed.json().catch(() => ({}))
+        const msg = (errData && typeof errData === 'object' && 'error' in errData ? errData.error : null) || 'Failed to load dashboard data'
+        if (failed.status === 401) {
+          throw new Error('Session expired or access denied. Please log out and log in again to view the CRM.')
+        }
+        if (failed.status === 403) {
+          throw new Error('You don’t have permission to view the CRM. Contact your administrator.')
+        }
+        throw new Error(msg)
       }
 
       const [summaryJson, toursJson, tasksJson] = await Promise.all([
@@ -105,7 +114,7 @@ export default function CrmDashboardPage() {
       setTasks(tasksJson.tasks?.slice(0, 5) || [])
     } catch (err) {
       console.error(err)
-      setError('Unable to load dashboard data. Please try again.')
+      setError(err instanceof Error ? err.message : 'Unable to load dashboard data. Please try again.')
     } finally {
       setIsLoading(false)
     }
