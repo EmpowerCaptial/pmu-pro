@@ -189,8 +189,13 @@ export default function StudioSupervisionPage() {
         
         console.log('🔍 Loading team members from DATABASE')
         
-        // PRODUCTION FIX: Fetch from database, not localStorage
-        const response = await fetch('/api/studio/team-members', {
+        // PRODUCTION FIX: Fetch from database; students get only instructors at their location
+        const role = (currentUser?.role || '').toLowerCase()
+        const isStudent = role === 'student' || role === 'apprentice'
+        const url = isStudent && currentUser?.locationId
+          ? '/api/studio/team-members?forStudentLocation=true'
+          : '/api/studio/team-members'
+        const response = await fetch(url, {
           headers: {
             'x-user-email': currentUser?.email || ''
           }
@@ -490,15 +495,49 @@ export default function StudioSupervisionPage() {
     }
   }, [userRole])
 
-  // Load existing bookings from localStorage
+  // Load bookings: for instructors, fetch from API (so they see student bookings) and merge with localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedBookings = localStorage.getItem('supervision-bookings')
-      if (storedBookings) {
-        setBookings(JSON.parse(storedBookings))
+    if (!currentUser?.email) return
+
+    const loadBookings = async () => {
+      const localOnly: any[] = []
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('supervision-bookings')
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored)
+            localOnly.push(...(Array.isArray(parsed) ? parsed : []))
+          } catch (_) {}
+        }
       }
+
+      const role = (currentUser?.role || '').toLowerCase()
+      const isInstructor = ['instructor', 'licensed', 'owner'].includes(role)
+      if (isInstructor) {
+        try {
+          const res = await fetch('/api/supervision-sessions?view=instructor', {
+            headers: { 'Content-Type': 'application/json', 'x-user-email': currentUser.email }
+          })
+          if (res.ok) {
+            const data = await res.json()
+            const fromApi = data.sessions || []
+            const apiIds = new Set(fromApi.map((b: any) => b.id))
+            const localNotInApi = localOnly.filter((b: any) => !apiIds.has(b.id))
+            setBookings([...fromApi, ...localNotInApi])
+            if (typeof window !== 'undefined' && fromApi.length > 0) {
+              localStorage.setItem('supervision-bookings', JSON.stringify([...fromApi, ...localNotInApi]))
+            }
+            return
+          }
+        } catch (e) {
+          console.warn('Could not load supervision sessions from API', e)
+        }
+      }
+      setBookings(localOnly)
     }
-  }, [])
+
+    loadBookings()
+  }, [currentUser?.email, currentUser?.role])
 
   // Fetch student hours for instructors/owners
   useEffect(() => {
@@ -677,16 +716,18 @@ export default function StudioSupervisionPage() {
     // Find the instructor details
     const instructor = instructors.find(i => i.id === booking.instructorId)
     
+    const serviceName = typeof booking.service === 'object' ? (booking.service as any)?.name : String(booking.service ?? '')
+    const clientName = booking.clientInfo?.name ?? booking.clientName ?? ''
     // Create procedure entry from booking data
     const autoProcedure = {
       id: `auto-${booking.id}`,
-      clientName: booking.clientInfo.name,
-      clientDOB: booking.clientInfo.dob || new Date().toISOString().split('T')[0], // Use booking date as fallback
+      clientName,
+      clientDOB: booking.clientInfo?.dob || new Date().toISOString().split('T')[0], // Use booking date as fallback
       procedureDate: booking.date,
-      procedureType: booking.service.toLowerCase().replace(/\s+/g, '-'),
+      procedureType: serviceName.toLowerCase().replace(/\s+/g, '-'),
       supervisorName: booking.instructorName || instructor?.name || 'Unknown Instructor',
       supervisorLicense: instructor?.licenseNumber || 'PENDING',
-      procedureNotes: `Auto-logged from supervision booking. Client: ${booking.clientInfo.name}, Service: ${booking.service}, Time: ${booking.time}`,
+      procedureNotes: `Auto-logged from supervision booking. Client: ${clientName}, Service: ${serviceName}, Time: ${booking.time}`,
       loggedAt: new Date().toISOString(),
       loggedBy: currentUser?.name || 'System',
       source: 'supervision-booking' // Mark as auto-generated
@@ -705,32 +746,40 @@ export default function StudioSupervisionPage() {
   }
 
   // Handle booking status change (including completion)
-  const handleBookingStatusChange = (bookingId: string, newStatus: string) => {
-    const updatedBookings = bookings.map(booking => {
-      if (booking.id === bookingId) {
-        const updatedBooking = { ...booking, status: newStatus }
-        
-        // Auto-log procedure when booking is marked as completed
-        if (newStatus === 'completed') {
-          autoLogProcedureFromBooking(updatedBooking)
-        }
-        
-        return updatedBooking
+  const handleBookingStatusChange = async (bookingId: string, newStatus: string) => {
+    const booking = bookings.find(b => b.id === bookingId)
+    const isCuid = bookingId.length >= 20 && /^[a-z0-9]+$/i.test(bookingId)
+    if (isCuid && currentUser?.email) {
+      try {
+        const res = await fetch(`/api/supervision-sessions/${bookingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-user-email': currentUser.email },
+          body: JSON.stringify({ status: newStatus })
+        })
+        if (!res.ok) console.warn('Could not update session status in API')
+      } catch (e) {
+        console.warn('Could not update session status', e)
       }
-      return booking
-    })
+    }
+
+    const updatedBookings = newStatus === 'cancelled'
+      ? bookings.filter(b => b.id !== bookingId)
+      : bookings.map(b => {
+          if (b.id === bookingId) {
+            const updated = { ...b, status: newStatus }
+            if (newStatus === 'completed') autoLogProcedureFromBooking(updated)
+            return updated
+          }
+          return b
+        })
 
     setBookings(updatedBookings)
-    
-    // Save to localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
     }
 
-    // Show success message
-    const booking = bookings.find(b => b.id === bookingId)
     if (newStatus === 'completed' && booking) {
-      alert(`✅ Supervision session completed and automatically logged in procedure history!\n\nClient: ${booking.clientInfo.name}\nService: ${booking.service}\nDate: ${booking.date}`)
+      alert(`✅ Supervision session completed and automatically logged in procedure history!\n\nClient: ${booking.clientInfo?.name || booking.clientName}\nService: ${booking.service?.name || booking.service}\nDate: ${booking.date}`)
     }
   }
 
@@ -1068,9 +1117,38 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       const instructor = instructors.find(i => i.id === instructorId)
       const service = availableServices.find((s: any) => s.id === clientInfo.service) as any
       
-      // Create booking with pending status
+      // Persist to API so the instructor can see this booking
+      let apiSessionId: string | null = null
+      try {
+        const sessionRes = await fetch('/api/supervision-sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-email': currentUser?.email || ''
+          },
+          body: JSON.stringify({
+            instructorId,
+            date: selectedDate,
+            time: selectedTime,
+            clientName: clientInfo.name,
+            clientEmail: clientInfo.email || '',
+            clientPhone: clientInfo.phone || '',
+            serviceName: (service as any)?.name || clientInfo.service,
+            serviceId: (service as any)?.id,
+            locationId: currentUser?.locationId || undefined
+          })
+        })
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json()
+          apiSessionId = sessionData?.session?.id || null
+        }
+      } catch (e) {
+        console.warn('Could not save supervision session to API', e)
+      }
+
+      // Create booking with pending status (use API id if available so instructor sees it)
       const newBooking: any = {
-        id: Date.now().toString(),
+        id: apiSessionId || Date.now().toString(),
         instructorId: instructorId,
         instructorName: instructor?.name,
         date: selectedDate,
@@ -2816,7 +2894,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                   <span className="font-medium">Time:</span> {booking.time}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Service:</span> {booking.service}
+                                  <span className="font-medium">Service:</span> {typeof booking.service === 'object' ? (booking.service as any)?.name : booking.service}
                                 </div>
                                 <div>
                                   <span className="font-medium">Status:</span> 
@@ -2851,11 +2929,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                   className="border-red-300 text-red-700 hover:bg-red-50"
                                   onClick={() => {
                                     if (confirm('Are you sure you want to cancel this supervision session?')) {
-                                      const updatedBookings = bookings.filter(b => b.id !== booking.id)
-                                      setBookings(updatedBookings)
-                                      if (typeof window !== 'undefined') {
-                                        localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
-                                      }
+                                      handleBookingStatusChange(booking.id, 'cancelled')
                                     }
                                   }}
                                 >

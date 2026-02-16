@@ -12,17 +12,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get the current user
+    // Get the current user (include location for student filtering)
     const currentUser = await prisma.user.findUnique({
-      where: { email: userEmail }
+      where: { email: userEmail },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        studioName: true,
+        locationId: true,
+        hasAllLocationAccess: true
+      }
     })
 
     if (!currentUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get all team members in the same studio
-    const dbTeamMembers = await prisma.user.findMany({
+    // Get all team members in the same studio (include location for supervision filtering)
+    let dbTeamMembers = await prisma.user.findMany({
       where: {
         studioName: currentUser.studioName,
         id: { not: currentUser.id } // Exclude the current user
@@ -35,9 +44,31 @@ export async function GET(request: NextRequest) {
         avatar: true,
         businessName: true,
         studioName: true,
-        createdAt: true
+        createdAt: true,
+        locationId: true,
+        hasAllLocationAccess: true,
+        specialties: true,
+        certifications: true,
+        bio: true,
+        phone: true,
+        licenseNumber: true
       }
     })
+
+    // If requester is a student/apprentice and has a school location, only show instructors at that location (or with all-access)
+    const forStudentLocation = request.nextUrl.searchParams.get('forStudentLocation') === 'true'
+    const studentLocationId = currentUser.locationId
+    if (forStudentLocation && studentLocationId) {
+      const role = (currentUser.role || '').toLowerCase()
+      const isStudent = ['student', 'apprentice'].includes(role)
+      if (isStudent) {
+        dbTeamMembers = dbTeamMembers.filter(
+          (m) =>
+            m.hasAllLocationAccess === true ||
+            m.locationId === studentLocationId
+        )
+      }
+    }
 
     // Format team members with required fields for frontend
     const teamMembers = dbTeamMembers.map(member => ({

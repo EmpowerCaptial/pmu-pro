@@ -41,7 +41,8 @@ export async function POST(req: Request) {
             isLicenseVerified: true,
             role: true,
             createdAt: true,
-            // Don't select emailNotifications to avoid schema issues
+            locationId: true,
+            hasAllLocationAccess: true
           }
         });
 
@@ -84,6 +85,8 @@ export async function POST(req: Request) {
         isLicenseVerified: userWithoutPassword.isLicenseVerified,
         role: userWithoutPassword.role,
         createdAt: userWithoutPassword.createdAt,
+        locationId: (userWithoutPassword as any).locationId ?? null,
+        hasAllLocationAccess: (userWithoutPassword as any).hasAllLocationAccess ?? false,
         studios: [{
           id: 'default-studio',
           name: userWithoutPassword.businessName || userWithoutPassword.name || 'Default Studio',

@@ -26,12 +26,12 @@ export async function PATCH(request: NextRequest) {
       }
     })
 
-    if (!owner || !['owner', 'manager', 'director', 'admin'].includes(owner.role?.toLowerCase() || '')) {
+    if (!owner || !['owner', 'manager', 'director', 'admin', 'hr'].includes(owner.role?.toLowerCase() || '')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { memberId, role, status, permissions } = body
+    const { memberId, role, status, permissions, locationId, hasAllLocationAccess } = body
 
     if (!memberId) {
       return NextResponse.json({ error: 'Member ID required' }, { status: 400 })
@@ -89,8 +89,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (permissions && Array.isArray(permissions)) {
-      // Store permissions as JSON
       updateData.permissions = permissions
+    }
+
+    // School location (for students: which location they're assigned to; for instructors: which location or all)
+    if (locationId !== undefined) {
+      updateData.locationId = locationId === '' || locationId == null ? null : locationId
+    }
+    if (typeof hasAllLocationAccess === 'boolean') {
+      updateData.hasAllLocationAccess = hasAllLocationAccess
     }
 
     // Update the member
@@ -103,7 +110,9 @@ export async function PATCH(request: NextRequest) {
         email: true,
         role: true,
         permissions: true,
-        studioName: true
+        studioName: true,
+        locationId: true,
+        hasAllLocationAccess: true
       }
     })
 

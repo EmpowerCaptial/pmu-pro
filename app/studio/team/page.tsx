@@ -26,7 +26,8 @@ import {
   Settings,
   DollarSign,
   X,
-  Shield
+  Shield,
+  MapPin
 } from 'lucide-react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
@@ -62,6 +63,9 @@ interface TeamMember {
   boothRentAmount?: number
   // Permissions
   permissions?: TeamMemberPermission[]
+  // School location (for supervision booking visibility)
+  locationId?: string | null
+  hasAllLocationAccess?: boolean
 }
 
 export default function StudioTeamPage() {
@@ -88,6 +92,10 @@ export default function StudioTeamPage() {
   const [showPermissionsModal, setShowPermissionsModal] = useState(false)
   const [memberPermissions, setMemberPermissions] = useState<Record<string, Record<string, boolean>>>({})
   const [isSavingPermissions, setIsSavingPermissions] = useState(false)
+
+  // School locations (for Directors/Owners/HR to assign students and instructors)
+  const [locations, setLocations] = useState<Array<{ id: string; name: string }>>([])
+  const [savingLocationId, setSavingLocationId] = useState<string | null>(null)
 
   // Permission resources and actions for studio team management
   const PERMISSION_RESOURCES = [
@@ -329,6 +337,21 @@ export default function StudioTeamPage() {
       loadTeamMembersFromDatabase()
     })
   }, [currentUser])
+
+  // Load school locations for Directors/Owners/HR/Managers (assign student/instructor location)
+  useEffect(() => {
+    const role = (currentUser?.role || '').toLowerCase()
+    const canAssignLocation = ['director', 'owner', 'manager', 'hr'].includes(role)
+    if (!currentUser?.email || !canAssignLocation) return
+    fetch('/api/locations', {
+      headers: { 'x-user-email': currentUser.email }
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.data) setLocations(data.data)
+      })
+      .catch(() => {})
+  }, [currentUser?.email, currentUser?.role])
 
   // Sync existing team members who are instructors to supervision list
   const syncExistingInstructors = (teamMembers: TeamMember[]) => {
@@ -920,6 +943,38 @@ export default function StudioTeamPage() {
     } catch (error) {
       console.error('Error changing team member role:', error)
       alert(error instanceof Error ? error.message : 'Failed to change role')
+    }
+  }
+
+  const handleUpdateMemberLocation = async (
+    memberId: string,
+    locationId: string | null,
+    hasAllLocationAccess?: boolean
+  ) => {
+    setSavingLocationId(memberId)
+    try {
+      const res = await fetch('/api/studio/update-team-member', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({
+          memberId,
+          locationId: locationId || '',
+          ...(typeof hasAllLocationAccess === 'boolean' && { hasAllLocationAccess })
+        })
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to update location')
+      }
+      await loadTeamMembersFromDatabase()
+    } catch (e) {
+      console.error(e)
+      alert(e instanceof Error ? e.message : 'Failed to update location')
+    } finally {
+      setSavingLocationId(null)
     }
   }
 
@@ -1527,6 +1582,39 @@ export default function StudioTeamPage() {
                             </div>
                           )}
                         </div>
+
+                        {/* School location (Directors, Owners, HR, Managers only) */}
+                        {['director', 'owner', 'manager', 'hr'].includes((currentUser?.role || '').toLowerCase()) &&
+                         locations.length > 0 &&
+                         member.role !== 'owner' && (
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <MapPin className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+                            <span className="text-gray-600">School location:</span>
+                            <select
+                              value={member.locationId || ''}
+                              onChange={(e) => handleUpdateMemberLocation(member.id, e.target.value || null)}
+                              disabled={savingLocationId === member.id}
+                              className="border border-gray-300 rounded px-2 py-1 bg-white text-gray-800 min-w-[140px]"
+                            >
+                              <option value="">— None —</option>
+                              {locations.map((loc) => (
+                                <option key={loc.id} value={loc.id}>{loc.name}</option>
+                              ))}
+                            </select>
+                            {(member.role === 'instructor' || member.role === 'licensed') && (
+                              <label className="flex items-center gap-1.5 text-gray-600 whitespace-nowrap">
+                                <input
+                                  type="checkbox"
+                                  checked={!!member.hasAllLocationAccess}
+                                  onChange={(e) => handleUpdateMemberLocation(member.id, member.locationId || null, e.target.checked)}
+                                  disabled={savingLocationId === member.id}
+                                  className="rounded border-gray-300"
+                                />
+                                All locations
+                              </label>
+                            )}
+                          </div>
+                        )}
 
                         {/* Actions Dropdown */}
                         {member.role !== 'owner' && (

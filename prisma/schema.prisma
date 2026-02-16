@@ -55,6 +55,8 @@ model User {
   location               Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
   attendanceRecords      Attendance[] @relation("StudentAttendance")
   markedAttendance       Attendance[] @relation("InstructorAttendance")
+  supervisionSessionsAsStudent    SupervisionSession[] @relation("SupervisionStudent")
+  supervisionSessionsAsInstructor SupervisionSession[] @relation("SupervisionInstructor")
   appointments           Appointment[]
   calendarIntegrations   CalendarIntegration[]
   clients                Client[]
@@ -725,6 +727,7 @@ model Location {
   inventoryItems InventoryItem[]
   users       User[]
   attendanceRecords Attendance[]
+  supervisionSessions SupervisionSession[]
 
   @@map("locations")
 }
@@ -750,6 +753,36 @@ model Attendance {
   @@index([date])
   @@index([locationId, date])
   @@map("attendance")
+}
+
+model SupervisionSession {
+  id            String    @id @default(cuid())
+  studentId     String
+  instructorId  String
+  locationId    String?   // School location where session is booked
+  date          DateTime  @db.Date
+  time          String    // e.g. "9:30 AM"
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  serviceName   String
+  serviceId     String?
+  status        String    @default("pending") // pending-deposit | deposit-sent | confirmed | completed | cancelled
+  depositSent   Boolean   @default(false)
+  depositLink   String?
+  appointmentId String?   // Optional link to Appointment for student's calendar
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  student       User      @relation("SupervisionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  instructor    User      @relation("SupervisionInstructor", fields: [instructorId], references: [id], onDelete: Cascade)
+  location      Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([studentId])
+  @@index([instructorId])
+  @@index([locationId])
+  @@index([date])
+  @@map("supervision_sessions")
 }
 
 model InventoryItem {
