@@ -96,6 +96,7 @@ export default function StudioTeamPage() {
   // School locations (for Directors/Owners/HR to assign students and instructors)
   const [locations, setLocations] = useState<Array<{ id: string; name: string }>>([])
   const [savingLocationId, setSavingLocationId] = useState<string | null>(null)
+  const [addingLocation, setAddingLocation] = useState(false)
 
   // Permission resources and actions for studio team management
   const PERMISSION_RESOURCES = [
@@ -339,7 +340,7 @@ export default function StudioTeamPage() {
   }, [currentUser])
 
   // Load school locations for Directors/Owners/HR/Managers (assign student/instructor location)
-  useEffect(() => {
+  const fetchLocations = () => {
     const role = (currentUser?.role || '').toLowerCase()
     const canAssignLocation = ['director', 'owner', 'manager', 'hr'].includes(role)
     if (!currentUser?.email || !canAssignLocation) return
@@ -351,7 +352,37 @@ export default function StudioTeamPage() {
         if (data?.data) setLocations(data.data)
       })
       .catch(() => {})
+  }
+
+  useEffect(() => {
+    fetchLocations()
   }, [currentUser?.email, currentUser?.role])
+
+  const handleAddLocation = async () => {
+    const name = window.prompt('School location name (e.g. Springfield Missouri, Blue Springs HHBC):')
+    if (!name?.trim()) return
+    setAddingLocation(true)
+    try {
+      const res = await fetch('/api/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': currentUser?.email || ''
+        },
+        body: JSON.stringify({ name: name.trim() })
+      })
+      if (res.ok) {
+        fetchLocations()
+      } else {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Failed to add location')
+      }
+    } catch (e) {
+      alert('Failed to add location')
+    } finally {
+      setAddingLocation(false)
+    }
+  }
 
   // Sync existing team members who are instructors to supervision list
   const syncExistingInstructors = (teamMembers: TeamMember[]) => {
@@ -1583,25 +1614,37 @@ export default function StudioTeamPage() {
                           )}
                         </div>
 
-                        {/* School location (Directors, Owners, HR, Managers only) */}
+                        {/* School location (Directors, Owners, HR, Managers only) — always show row; empty state lets them add first location */}
                         {['director', 'owner', 'manager', 'hr'].includes((currentUser?.role || '').toLowerCase()) &&
-                         locations.length > 0 &&
                          member.role !== 'owner' && (
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <MapPin className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
                             <span className="text-gray-600">School location:</span>
-                            <select
-                              value={member.locationId || ''}
-                              onChange={(e) => handleUpdateMemberLocation(member.id, e.target.value || null)}
-                              disabled={savingLocationId === member.id}
-                              className="border border-gray-300 rounded px-2 py-1 bg-white text-gray-800 min-w-[140px]"
-                            >
-                              <option value="">— None —</option>
-                              {locations.map((loc) => (
-                                <option key={loc.id} value={loc.id}>{loc.name}</option>
-                              ))}
-                            </select>
-                            {(member.role === 'instructor' || member.role === 'licensed') && (
+                            {locations.length === 0 ? (
+                              <span className="text-gray-500 italic">No school locations yet.</span>
+                            ) : (
+                              <select
+                                value={member.locationId || ''}
+                                onChange={(e) => handleUpdateMemberLocation(member.id, e.target.value || null)}
+                                disabled={savingLocationId === member.id}
+                                className="border border-gray-300 rounded px-2 py-1 bg-white text-gray-800 min-w-[140px]"
+                              >
+                                <option value="">— None —</option>
+                                {locations.map((loc) => (
+                                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                ))}
+                              </select>
+                            )}
+                            {locations.length === 0 ? (
+                              <button
+                                type="button"
+                                onClick={handleAddLocation}
+                                disabled={addingLocation}
+                                className="text-primary-600 hover:underline disabled:opacity-50"
+                              >
+                                {addingLocation ? 'Adding…' : 'Add location'}
+                              </button>
+                            ) : (member.role === 'instructor' || member.role === 'licensed') ? (
                               <label className="flex items-center gap-1.5 text-gray-600 whitespace-nowrap">
                                 <input
                                   type="checkbox"
@@ -1612,7 +1655,7 @@ export default function StudioTeamPage() {
                                 />
                                 All locations
                               </label>
-                            )}
+                            ) : null}
                           </div>
                         )}
 

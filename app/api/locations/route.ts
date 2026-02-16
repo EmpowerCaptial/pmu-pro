@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Only allow Instructors, Directors, and Owners
-    const allowedRoles = ['instructor', 'director', 'owner']
+    // Allow Directors, Owners, Managers, HR (and instructors) to create locations (e.g. from Studio Team)
+    const allowedRoles = ['instructor', 'director', 'owner', 'manager', 'hr']
     if (!allowedRoles.includes(user.role.toLowerCase())) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
