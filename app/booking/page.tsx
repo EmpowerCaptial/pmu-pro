@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -973,6 +973,7 @@ function BookingCalendarContent() {
                     
                     const dateString = formatDateString(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
                     const dayAppointments = getAppointmentsForDate(dateString)
+                    const hasBookings = dayAppointments.length > 0
                     const isSelected = selectedDate === dateString
                     const isToday = dateString === formatDateString(new Date())
                     
@@ -981,20 +982,29 @@ function BookingCalendarContent() {
                         key={day}
                         className={`p-1 sm:p-2 min-h-[50px] sm:min-h-[60px] border rounded cursor-pointer transition-colors ${
                           isSelected 
-                            ? 'bg-lavender text-white' 
-                            : isToday 
-                              ? 'bg-lavender/20 border-lavender' 
-                              : 'hover:bg-gray-50'
+                            ? 'bg-lavender text-white ring-2 ring-lavender/50' 
+                            : hasBookings && !isToday
+                              ? 'bg-teal-50 border-teal-200 hover:bg-teal-100'
+                              : isToday 
+                                ? 'bg-lavender/20 border-lavender' 
+                                : 'hover:bg-gray-50'
                         }`}
                         onClick={() => handleDateClick(day)}
+                        title={hasBookings ? `${dayAppointments.length} appointment${dayAppointments.length !== 1 ? 's' : ''} — click to view` : undefined}
                       >
                         <div className="relative">
-                          <div className="text-xs sm:text-sm font-medium mb-1">{day}</div>
-                          {dayAppointments.length > 0 && (
-                            <div className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-teal-400 rounded-full border border-white shadow-sm"></div>
-                          )}
+                          <div className="text-xs sm:text-sm font-medium mb-1 flex items-center justify-between gap-1">
+                            <span>{day}</span>
+                            {hasBookings && (
+                              <span className={`flex h-4 min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
+                                isSelected ? 'bg-white/30 text-white' : 'bg-teal-500 text-white'
+                              }`}>
+                                {dayAppointments.length}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        {dayAppointments.length > 0 && (
+                        {hasBookings && (
                           <div className="space-y-1">
                             {dayAppointments.slice(0, 2).map(apt => {
                               const service = getServiceById(apt.service)
@@ -1042,6 +1052,11 @@ function BookingCalendarContent() {
                     : 'Select a date to view appointments'
                   }
                 </CardTitle>
+                {selectedDate && (
+                  <CardDescription className="text-xs sm:text-sm mt-0.5">
+                    View appointments for this date. Click a date in the calendar to switch days.
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="p-3 sm:p-6 pt-0">
                 {selectedDate ? (
