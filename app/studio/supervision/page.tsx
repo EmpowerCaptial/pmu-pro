@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -495,49 +495,52 @@ export default function StudioSupervisionPage() {
     }
   }, [userRole])
 
-  // Load bookings: for instructors, fetch from API (so they see student bookings) and merge with localStorage
-  useEffect(() => {
+  // Reload supervision sessions (used by instructor refresh button and initial load)
+  const [refreshingBookings, setRefreshingBookings] = useState(false)
+  const loadSupervisionBookings = useCallback(async () => {
     if (!currentUser?.email) return
-
-    const loadBookings = async () => {
-      const localOnly: any[] = []
-      if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('supervision-bookings')
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored)
-            localOnly.push(...(Array.isArray(parsed) ? parsed : []))
-          } catch (_) {}
-        }
-      }
-
-      const role = (currentUser?.role || '').toLowerCase()
-      const isInstructor = ['instructor', 'licensed', 'owner'].includes(role)
-      if (isInstructor) {
+    setRefreshingBookings(true)
+    const localOnly: any[] = []
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('supervision-bookings')
+      if (stored) {
         try {
-          const res = await fetch('/api/supervision-sessions?view=instructor', {
-            headers: { 'Content-Type': 'application/json', 'x-user-email': currentUser.email }
-          })
-          if (res.ok) {
-            const data = await res.json()
-            const fromApi = data.sessions || []
-            const apiIds = new Set(fromApi.map((b: any) => b.id))
-            const localNotInApi = localOnly.filter((b: any) => !apiIds.has(b.id))
-            setBookings([...fromApi, ...localNotInApi])
-            if (typeof window !== 'undefined' && fromApi.length > 0) {
-              localStorage.setItem('supervision-bookings', JSON.stringify([...fromApi, ...localNotInApi]))
-            }
-            return
-          }
-        } catch (e) {
-          console.warn('Could not load supervision sessions from API', e)
-        }
+          const parsed = JSON.parse(stored)
+          localOnly.push(...(Array.isArray(parsed) ? parsed : []))
+        } catch (_) {}
       }
-      setBookings(localOnly)
     }
 
-    loadBookings()
+    const role = (currentUser?.role || '').toLowerCase()
+    const canHaveSessionsAsInstructor = ['instructor', 'licensed', 'owner', 'director', 'manager'].includes(role)
+    if (canHaveSessionsAsInstructor) {
+        try {
+          const res = await fetch('/api/supervision-sessions?view=instructor', {
+          headers: { 'Content-Type': 'application/json', 'x-user-email': currentUser.email }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const fromApi = data.sessions || []
+          const apiIds = new Set(fromApi.map((b: any) => b.id))
+          const localNotInApi = localOnly.filter((b: any) => !apiIds.has(b.id))
+          setBookings([...fromApi, ...localNotInApi])
+          if (typeof window !== 'undefined' && fromApi.length > 0) {
+            localStorage.setItem('supervision-bookings', JSON.stringify([...fromApi, ...localNotInApi]))
+          }
+          setRefreshingBookings(false)
+          return
+        }
+      } catch (e) {
+        console.warn('Could not load supervision sessions from API', e)
+      }
+    }
+    setBookings(localOnly)
+    setRefreshingBookings(false)
   }, [currentUser?.email, currentUser?.role])
+
+  useEffect(() => {
+    loadSupervisionBookings()
+  }, [loadSupervisionBookings])
 
   // Fetch student hours for instructors/owners
   useEffect(() => {
@@ -2860,13 +2863,27 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
               <Card className="relative overflow-hidden border-lavender/50 shadow-2xl bg-gradient-to-br from-white/95 to-lavender/20 backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-lavender/10 to-transparent"></div>
                 <CardHeader className="relative z-10">
-                  <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
-                    <GraduationCap className="h-6 w-6 text-lavender" />
-                    Supervision Sessions
-                  </CardTitle>
-                  <CardDescription className="text-ink/70 font-medium">
-                    Manage your apprentice supervision bookings
-                  </CardDescription>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-2xl font-bold text-ink flex items-center gap-3">
+                        <GraduationCap className="h-6 w-6 text-lavender" />
+                        Supervision Sessions
+                      </CardTitle>
+                      <CardDescription className="text-ink/70 font-medium mt-1">
+                        Student-booked sessions: student, date, time, client, and service. Refresh to see new bookings.
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={refreshingBookings}
+                      onClick={() => loadSupervisionBookings()}
+                      className="border-lavender/50 text-lavender hover:bg-lavender/10 shrink-0"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-1 ${refreshingBookings ? 'animate-spin' : ''}`} />
+                      {refreshingBookings ? 'Refreshing…' : 'Refresh sessions'}
+                    </Button>
+                  </div>
               </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="space-y-4">
@@ -2883,15 +2900,21 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                 </div>
                                 <div>
                                   <p className="font-semibold text-ink">{booking.clientName}</p>
-                                  <p className="text-sm text-ink/70">Apprentice Session</p>
+                                  <p className="text-sm text-ink/70">Supervision session — student booked</p>
                                 </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-4 text-sm text-ink/70">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-ink/70">
+                                <div>
+                                  <span className="font-medium">Student:</span> {booking.apprenticeName || '—'}
+                                </div>
                                 <div>
                                   <span className="font-medium">Date:</span> {new Date(booking.date).toLocaleDateString()}
                                 </div>
                                 <div>
                                   <span className="font-medium">Time:</span> {booking.time}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Client:</span> {booking.clientName}
                                 </div>
                                 <div>
                                   <span className="font-medium">Service:</span> {typeof booking.service === 'object' ? (booking.service as any)?.name : booking.service}
