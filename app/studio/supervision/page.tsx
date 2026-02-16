@@ -1122,6 +1122,7 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       
       // Persist to API so the instructor can see this booking
       let apiSessionId: string | null = null
+      let apiSaveError: string | null = null
       try {
         const sessionRes = await fetch('/api/supervision-sessions', {
           method: 'POST',
@@ -1141,12 +1142,15 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             locationId: currentUser?.locationId || undefined
           })
         })
+        const sessionData = await sessionRes.json().catch(() => ({}))
         if (sessionRes.ok) {
-          const sessionData = await sessionRes.json()
           apiSessionId = sessionData?.session?.id || null
+        } else {
+          apiSaveError = sessionData?.error || `Server returned ${sessionRes.status}. Ensure the database has the supervision_sessions table (run the manual SQL migration if needed).`
         }
       } catch (e) {
         console.warn('Could not save supervision session to API', e)
+        apiSaveError = e instanceof Error ? e.message : 'Could not save to server. The instructor will not see this booking until it is saved.'
       }
 
       // Create booking with pending status (use API id if available so instructor sees it)
@@ -1213,6 +1217,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookings))
+      }
+
+      if (apiSaveError) {
+        alert(`Supervision booking was not saved to the server.\n\n${apiSaveError}\n\nThe instructor will NOT see this booking until it is saved. If you have not run the database migration (supervision_sessions table), run the manual SQL in prisma/migrations/.../apply-user-location-manual.sql and try again.`)
       }
 
       // Create or use existing client in database
@@ -1327,6 +1335,10 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       setClientSelectionType('new')
       setClientSearchTerm('')
       setBookingStatus('pending')
+
+      if (!apiSaveError && apiSessionId) {
+        alert('Saved. The instructor will see this booking when they open Studio → Supervision → Sessions and click "Refresh sessions".')
+      }
 
     } catch (error) {
       console.error('Error creating booking:', error)

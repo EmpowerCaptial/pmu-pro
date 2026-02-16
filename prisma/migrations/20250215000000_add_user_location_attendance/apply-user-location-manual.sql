@@ -29,8 +29,7 @@ BEGIN
 END $$;
 
 -- 3. Create attendance table if missing
--- users.id is UUID in this DB, so studentId/instructorId must be UUID for the FK.
--- If you already ran an older version that created attendance with TEXT, we drop and recreate (empty table).
+-- studentId/instructorId use UUID to match users.id when it is UUID in this DB.
 DROP TABLE IF EXISTS "attendance" CASCADE;
 DO $$
 BEGIN
@@ -75,7 +74,7 @@ BEGIN
 END $$;
 
 -- 5. Supervision sessions (student-instructor bookings visible to both)
--- studentId/instructorId use UUID to match users.id when it is UUID.
+-- studentId/instructorId use UUID to match users.id when it is UUID in this DB.
 DROP TABLE IF EXISTS "supervision_sessions" CASCADE;
 DO $$
 BEGIN
