@@ -13,6 +13,8 @@ interface DemoUser {
   platformRole?: string
   isOwner?: boolean
   avatar?: string
+  locationId?: string | null
+  hasAllLocationAccess?: boolean
 }
 
 // SECURITY: Production users removed - all authentication now goes through database
@@ -80,7 +82,9 @@ export function useDemoAuth() {
           // Include other useful fields
           avatar: data.user.avatar,
           phone: data.user.phone,
-          licenseNumber: data.user.licenseNumber
+          licenseNumber: data.user.licenseNumber,
+          locationId: data.user.locationId ?? null,
+          hasAllLocationAccess: data.user.hasAllLocationAccess ?? false
         }
         
         console.log('✅ Login successful - saved complete user data:', {
