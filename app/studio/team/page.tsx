@@ -1334,6 +1334,44 @@ export default function StudioTeamPage() {
             return null
           })()}
 
+          {/* School locations management (Directors, Owners, HR, Managers) */}
+          {['director', 'owner', 'manager', 'hr'].includes((currentUser?.role || '').toLowerCase()) && (
+            <Card className="mb-6 md:mb-8">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                      <MapPin className="h-4 w-4 md:h-5 md:w-5 text-violet-600" />
+                      <span>School Locations</span>
+                    </CardTitle>
+                    <CardDescription className="text-sm md:text-base mt-1">
+                      Add and manage locations for assigning students and instructors (e.g. Springfield Missouri, Blue Springs HHBC).
+                    </CardDescription>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAddLocation}
+                    disabled={addingLocation}
+                    variant="outline"
+                    className="w-full md:w-auto border-violet-300 text-violet-700 hover:bg-violet-50"
+                    size="sm"
+                  >
+                    {addingLocation ? 'Adding…' : 'Add school location'}
+                  </Button>
+                </div>
+                {locations.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {locations.map((loc) => (
+                      <Badge key={loc.id} variant="secondary" className="text-sm font-normal">
+                        {loc.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardHeader>
+            </Card>
+          )}
+
           {/* Invite New Team Member */}
         <Card className="mb-6 md:mb-8">
           <CardHeader className="pb-4">
