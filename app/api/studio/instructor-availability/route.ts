@@ -30,8 +30,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause for appointments
+    // Show appointments where instructor is the owner (userId) OR assigned instructor (instructorId)
     const whereClause: any = {
-      userId: instructor.id
+      OR: [
+        { userId: instructor.id },
+        { instructorId: instructor.id }
+      ]
     };
 
     // Add date filter if provided
@@ -46,7 +50,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Get instructor's appointments
+    // Get instructor's appointments (created by them OR assigned to them)
     const appointments = await prisma.appointment.findMany({
       where: whereClause,
       include: {

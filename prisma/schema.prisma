@@ -57,7 +57,8 @@ model User {
   markedAttendance       Attendance[] @relation("InstructorAttendance")
   supervisionSessionsAsStudent    SupervisionSession[] @relation("SupervisionStudent")
   supervisionSessionsAsInstructor SupervisionSession[] @relation("SupervisionInstructor")
-  appointments           Appointment[]
+  appointments           Appointment[]                  @relation("UserAppointments")
+  instructorAppointments Appointment[]                  @relation("InstructorAppointments")
   calendarIntegrations   CalendarIntegration[]
   clients                Client[]
   complaints             Complaint[]
@@ -553,6 +554,7 @@ model CommissionTransaction {
 model Appointment {
   id            String      @id @default(cuid())
   userId        String
+  instructorId  String?     // Optional: instructor assigned to this appointment (for supervision bookings)
   clientId      String
   title         String
   serviceType   String
@@ -570,10 +572,12 @@ model Appointment {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User        @relation("UserAppointments", fields: [userId], references: [id], onDelete: Cascade)
+  instructor    User?       @relation("InstructorAppointments", fields: [instructorId], references: [id], onDelete: SetNull)
   procedures    Procedure[]
 
   @@index([userId])
+  @@index([instructorId])
   @@index([clientId])
   @@index([startTime])
   @@index([status])

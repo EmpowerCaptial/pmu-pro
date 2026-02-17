@@ -1212,7 +1212,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             duration: service.duration.includes('h') ? parseInt(service.duration.split('h')[0]) * 60 : 120,
             price: service.total,
             deposit: service.deposit,
-            status: 'pending_deposit'
+            status: 'pending_deposit',
+            instructorId: instructorId // Include instructorId so instructor can see this appointment
           })
         })
 
@@ -3105,11 +3106,47 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-red-300 text-red-700 hover:bg-red-50"
+                                className="border-blue-300 text-blue-700 hover:bg-blue-50"
                                 onClick={() => {
-                                  if (confirm('Are you sure you want to cancel this client appointment?')) {
-                                    // This would typically call an API to cancel the appointment
-                                    alert('Appointment cancellation would be handled via the main booking system')
+                                  window.open(`/booking?date=${appointment.date}`, '_blank')
+                                }}
+                              >
+                                <Calendar className="h-4 w-4 mr-1" />
+                                View in Calendar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 text-red-700 hover:bg-red-50"
+                                onClick={async () => {
+                                  if (!confirm('Are you sure you want to cancel this client appointment?')) return
+                                  
+                                  if (!appointment.id || !currentUser?.email) {
+                                    alert('Cannot cancel: missing appointment ID or user email')
+                                    return
+                                  }
+
+                                  try {
+                                    const response = await fetch(`/api/appointments/${appointment.id}`, {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'x-user-email': currentUser.email
+                                      }
+                                    })
+
+                                    if (response.ok) {
+                                      // Refresh instructor bookings to remove cancelled appointment
+                                      if (currentUser.email) {
+                                        await fetchInstructorBookings(currentUser.email)
+                                      }
+                                      alert('Appointment cancelled successfully')
+                                    } else {
+                                      const errorData = await response.json().catch(() => ({}))
+                                      alert(errorData.error || 'Failed to cancel appointment. It may not belong to your account, or you can cancel it from the Booking Calendar.')
+                                    }
+                                  } catch (error) {
+                                    console.error('Error cancelling appointment:', error)
+                                    alert('Error cancelling appointment. Please try from the Booking Calendar.')
                                   }
                                 }}
                               >
