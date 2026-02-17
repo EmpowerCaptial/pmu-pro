@@ -3122,11 +3122,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                   if (!confirm('Are you sure you want to cancel this client appointment?')) return
                                   
                                   if (!appointment.id || !currentUser?.email) {
+                                    console.error('Cancel failed - missing data:', { appointmentId: appointment.id, userEmail: currentUser?.email })
                                     alert('Cannot cancel: missing appointment ID or user email')
                                     return
                                   }
 
                                   try {
+                                    console.log('Cancelling appointment:', appointment.id, 'for user:', currentUser.email)
                                     const response = await fetch(`/api/appointments/${appointment.id}`, {
                                       method: 'DELETE',
                                       headers: {
@@ -3134,15 +3136,18 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                       }
                                     })
 
+                                    const responseData = await response.json().catch(() => ({}))
+
                                     if (response.ok) {
+                                      console.log('Appointment cancelled successfully, refreshing list...')
                                       // Refresh instructor bookings to remove cancelled appointment
                                       if (currentUser.email) {
                                         await fetchInstructorBookings(currentUser.email)
                                       }
                                       alert('Appointment cancelled successfully')
                                     } else {
-                                      const errorData = await response.json().catch(() => ({}))
-                                      alert(errorData.error || 'Failed to cancel appointment. It may not belong to your account, or you can cancel it from the Booking Calendar.')
+                                      console.error('Cancel failed:', response.status, responseData)
+                                      alert(responseData.error || `Failed to cancel appointment (${response.status}). It may not belong to your account, or you can cancel it from the Booking Calendar.`)
                                     }
                                   } catch (error) {
                                     console.error('Error cancelling appointment:', error)

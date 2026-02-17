@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET /api/appointments/[id] - Get specific appointment
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userEmail = request.headers.get('x-user-email')
@@ -14,6 +14,8 @@ export async function GET(
     if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { id } = await params
 
     // Try to find user and appointment
     try {
@@ -27,8 +29,11 @@ export async function GET(
 
       const appointment = await prisma.appointment.findFirst({
         where: {
-          id: params.id,
-          userId: user.id
+          id,
+          OR: [
+            { userId: user.id },
+            { instructorId: user.id }
+          ]
         },
         include: {
           client: {
@@ -74,7 +79,7 @@ export async function GET(
 // PUT /api/appointments/[id] - Update appointment
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userEmail = request.headers.get('x-user-email')
@@ -83,6 +88,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
 
     // Try to find user and update appointment
@@ -95,21 +101,24 @@ export async function PUT(
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Verify appointment belongs to user
+      // Verify appointment belongs to user (as owner) OR is assigned to user (as instructor)
       const existingAppointment = await prisma.appointment.findFirst({
         where: {
-          id: params.id,
-          userId: user.id
+          id,
+          OR: [
+            { userId: user.id },
+            { instructorId: user.id }
+          ]
         }
       })
 
       if (!existingAppointment) {
-        return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+        return NextResponse.json({ error: 'Appointment not found or you do not have permission to update it' }, { status: 404 })
       }
 
       // Update appointment
       const updatedAppointment = await prisma.appointment.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           ...body,
           updatedAt: new Date()
@@ -169,7 +178,7 @@ export async function PUT(
 // DELETE /api/appointments/[id] - Delete appointment
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userEmail = request.headers.get('x-user-email')
@@ -177,6 +186,8 @@ export async function DELETE(
     if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { id } = await params
 
     // Try to find user and delete appointment
     try {
@@ -188,21 +199,24 @@ export async function DELETE(
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Verify appointment belongs to user
+      // Verify appointment belongs to user (as owner) OR is assigned to user (as instructor)
       const existingAppointment = await prisma.appointment.findFirst({
         where: {
-          id: params.id,
-          userId: user.id
+          id,
+          OR: [
+            { userId: user.id },
+            { instructorId: user.id }
+          ]
         }
       })
 
       if (!existingAppointment) {
-        return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+        return NextResponse.json({ error: 'Appointment not found or you do not have permission to delete it' }, { status: 404 })
       }
 
       // Delete appointment
       await prisma.appointment.delete({
-        where: { id: params.id }
+        where: { id }
       })
 
       return NextResponse.json({ message: 'Appointment deleted successfully' })
