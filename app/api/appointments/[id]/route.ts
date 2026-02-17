@@ -151,7 +151,7 @@ export async function PUT(
       
       // Return mock success response when database fails
       const mockAppointment = {
-        id: params.id,
+        id,
         ...body,
         client: {
           id: 'mock-client-1',
