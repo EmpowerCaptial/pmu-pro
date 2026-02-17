@@ -36,6 +36,7 @@ import { FeatureAccessGate } from '@/components/ui/feature-access-gate'
 import { FEATURES } from '@/lib/feature-access'
 import { NavBar } from '@/components/ui/navbar'
 import { getClients } from '@/lib/client-storage'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 
 // Interface for real instructor data
 interface Instructor {
@@ -97,6 +98,17 @@ export default function StudioSupervisionPage() {
   const [existingClients, setExistingClients] = useState<any[]>([])
   const [clientSearchTerm, setClientSearchTerm] = useState('')
   const [isLoadingClients, setIsLoadingClients] = useState(false)
+  const [showBookingSuccessLightbox, setShowBookingSuccessLightbox] = useState(false)
+  const [bookingSuccessInfo, setBookingSuccessInfo] = useState<{
+    instructorName: string
+    date: string
+    time: string
+    clientName: string
+    depositLink?: string | null
+    emailSent?: boolean
+    collectDepositLater?: boolean
+  } | null>(null)
+  const [collectDepositLater, setCollectDepositLater] = useState(false)
   
   // Procedure logging state
   const [procedureForm, setProcedureForm] = useState({
@@ -1119,7 +1131,13 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       const instructorId = clientInfo.selectedInstructor || selectedInstructor
       const instructor = instructors.find(i => i.id === instructorId)
       const service = availableServices.find((s: any) => s.id === clientInfo.service) as any
-      
+      const bookingDate = selectedDate
+      const bookingTime = selectedTime
+      const bookingClientName = clientInfo.name
+      const bookingInstructorName = instructor?.name || 'Instructor'
+      let successDepositLink: string | null = null
+      let successEmailSent = false
+
       // Persist to API so the instructor can see this booking
       let apiSessionId: string | null = null
       let apiSaveError: string | null = null
@@ -1277,8 +1295,8 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             }
           }
           
-          // Generate deposit payment link (for both new and existing clients)
-          if (dbClientId) {
+          // Generate deposit payment link (for both new and existing clients) unless "collect deposit later"
+          if (dbClientId && !collectDepositLater) {
             const depositResponse = await fetch('/api/deposit-payments', {
               method: 'POST',
               headers: {
@@ -1298,22 +1316,24 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
 
             if (depositResponse.ok) {
               const depositData = await depositResponse.json()
-              
+              successDepositLink = depositData.depositLink || null
+              successEmailSent = depositData.emailSent === true
+
               // Update booking with deposit link
               newBooking.depositLink = depositData.depositLink
               newBooking.depositSent = true
               newBooking.status = 'deposit-sent'
               
-              // Update local storage
-              const updatedBookingsWithDeposit = bookings.map(b => 
-                b.id === newBooking.id ? newBooking : b
-              )
-              setBookings(updatedBookingsWithDeposit)
-              localStorage.setItem('supervision-bookings', JSON.stringify(updatedBookingsWithDeposit))
+              // Update local storage (use functional update so we don't overwrite the new booking)
+              setBookings((prev) => {
+                const updated = prev.some((b) => b.id === newBooking.id)
+                  ? prev.map((b) => (b.id === newBooking.id ? { ...b, ...newBooking } : b))
+                  : [...prev, newBooking]
+                localStorage.setItem('supervision-bookings', JSON.stringify(updated))
+                return updated
+              })
               
               setBookingStatus('deposit-sent')
-              
-              alert(`Booking created! Deposit link has been sent to ${clientInfo.email || 'the client'}. Check the booking details for the deposit link.`)
             } else {
               console.error('Failed to create deposit payment')
               alert('Booking created but failed to generate deposit link. Please contact support.')
@@ -1335,9 +1355,19 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
       setClientSelectionType('new')
       setClientSearchTerm('')
       setBookingStatus('pending')
+      setCollectDepositLater(false)
 
       if (!apiSaveError && apiSessionId) {
-        alert('Saved. The instructor will see this booking when they open Studio → Supervision → Sessions and click "Refresh sessions".')
+        setBookingSuccessInfo({
+          instructorName: bookingInstructorName,
+          date: bookingDate,
+          time: bookingTime,
+          clientName: bookingClientName,
+          depositLink: successDepositLink || undefined,
+          emailSent: successEmailSent,
+          collectDepositLater
+        })
+        setShowBookingSuccessLightbox(true)
       }
 
     } catch (error) {
@@ -2832,6 +2862,18 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                             </div>
                           )}
 
+                          {/* Collect deposit later option */}
+                          <label className="flex items-center gap-3 p-3 rounded-lg border border-lavender/30 bg-white cursor-pointer hover:bg-lavender/5">
+                            <input
+                              type="checkbox"
+                              checked={collectDepositLater}
+                              onChange={(e) => setCollectDepositLater(e.target.checked)}
+                              className="rounded border-lavender/50 text-lavender focus:ring-lavender"
+                            />
+                            <span className="text-sm font-medium text-ink">Collect deposit later</span>
+                            <span className="text-xs text-ink/60">Skip sending the deposit link now; you can collect it from the booking later.</span>
+                          </label>
+
                           {/* Action Buttons */}
                           <div className="flex gap-4 pt-4 border-t border-lavender/30">
                             <Button 
@@ -2856,7 +2898,9 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   <span className="text-sm font-medium">Create Booking</span>
                                 </div>
-                                <span className="text-xs opacity-90">Send Deposit Link</span>
+                                <span className="text-xs opacity-90">
+                                  {collectDepositLater ? 'Collect deposit later' : 'Send deposit link'}
+                                </span>
                               </div>
                             </Button>
                           </div>
@@ -4074,6 +4118,68 @@ ${reportData.readyForLicense ? 'The apprentice meets the minimum requirement for
             </Card>
           </div>
         )}
+
+        {/* Booking success lightbox */}
+        <Dialog open={showBookingSuccessLightbox} onOpenChange={setShowBookingSuccessLightbox}>
+          <DialogContent className="sm:max-w-md bg-white shadow-xl border-lavender/30">
+            <DialogHeader>
+              <div className="flex items-center gap-3 text-lavender">
+                <div className="w-12 h-12 rounded-full bg-lavender/20 flex items-center justify-center">
+                  <CheckCircle className="h-7 w-7 text-lavender" />
+                </div>
+                <DialogTitle className="text-xl font-bold text-ink">
+                  Instructor was booked
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-left pt-2 space-y-2 text-ink/80">
+                {bookingSuccessInfo && (
+                  <>
+                    <p>Your supervision session is confirmed.</p>
+                    <div className="rounded-lg bg-gray-50 p-3 text-sm space-y-1">
+                      <p><span className="font-medium">Instructor:</span> {bookingSuccessInfo.instructorName}</p>
+                      <p><span className="font-medium">Client:</span> {bookingSuccessInfo.clientName}</p>
+                      <p><span className="font-medium">Date:</span> {new Date(bookingSuccessInfo.date).toLocaleDateString()}</p>
+                      <p><span className="font-medium">Time:</span> {bookingSuccessInfo.time}</p>
+                    </div>
+                    <p className="text-xs text-ink/70">The instructor will see this booking under Studio → Supervision → Sessions (they can click &quot;Refresh sessions&quot;).</p>
+                    {bookingSuccessInfo.collectDepositLater && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+                        <p className="font-medium text-amber-800">Collect deposit later</p>
+                        <p className="text-amber-700">No deposit link was sent. You can collect the deposit from the booking details or send a link later.</p>
+                      </div>
+                    )}
+                    {!bookingSuccessInfo.collectDepositLater && bookingSuccessInfo.depositLink && (
+                      <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
+                        <p className="font-medium text-green-800 mb-1">Deposit &amp; booking link</p>
+                        <p className="text-green-700">
+                          {bookingSuccessInfo.emailSent
+                            ? `A deposit link was sent to your client's email.`
+                            : 'Deposit link created (share with client if needed):'}
+                        </p>
+                        <a
+                          href={bookingSuccessInfo.depositLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-lavender font-medium underline break-all"
+                        >
+                          {bookingSuccessInfo.depositLink}
+                        </a>
+                      </div>
+                    )}
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="pt-4">
+              <Button
+                onClick={() => { setShowBookingSuccessLightbox(false); setBookingSuccessInfo(null) }}
+                className="bg-lavender hover:bg-lavender/90 text-white"
+              >
+                Done
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
