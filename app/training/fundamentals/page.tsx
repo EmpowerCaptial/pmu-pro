@@ -1024,6 +1024,8 @@ export default function FundamentalsTrainingPortal() {
     }
   }, [activeTab, canManageVideos, fetchInstructorFolderFiles, fetchProgressPortfolio, fetchStudentPortfolios])
 
+  // Fetches the full lecture library for the current user. No role filter — students
+  // see the same list as instructors; any instructor-uploaded video (file or URL) is viewable by all.
   const fetchTrainingVideos = useCallback(
     async (showSpinner = true) => {
       if (!currentUser?.email) {

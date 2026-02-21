@@ -62,6 +62,9 @@ function parseFileType(fileType: string) {
   return {}
 }
 
+// GET: List all training videos (file and URL). Intentionally no auth — any user
+// (including all students) can view this list so that every instructor-uploaded
+// lecture video in the library is viewable by all students.
 export async function GET() {
   try {
     const uploads = await prisma.fileUpload.findMany({
