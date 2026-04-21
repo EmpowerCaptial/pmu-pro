@@ -33,6 +33,9 @@ export default async function LoginPage() {
               ← {t('backToHome')}
             </Button>
           </Link>
+          <div className="mt-3 rounded-md border border-lavender/40 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
+            <LanguageSwitcher className="flex items-center justify-between gap-3 text-sm text-foreground" />
+          </div>
         </div>
 
         {/* Desktop Back Button */}
@@ -43,7 +46,9 @@ export default async function LoginPage() {
                 ← {t('backToHome')}
               </Button>
             </Link>
-            <LanguageSwitcher className="inline-flex items-center gap-2 text-sm text-foreground" />
+            <div className="rounded-md border border-lavender/40 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
+              <LanguageSwitcher className="inline-flex items-center gap-2 text-sm text-foreground" />
+            </div>
           </div>
         </div>
 
