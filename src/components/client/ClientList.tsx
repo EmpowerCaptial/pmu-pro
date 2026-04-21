@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { 
   Mail, 
   Phone, 
@@ -63,6 +64,7 @@ export default function ClientList({
   onSendMessage,
   onBookAppointment
 }: ClientListProps) {
+  const t = useTranslations('ClientList')
   const router = useRouter();
   const [q, setQ] = React.useState("");
 
@@ -119,16 +121,16 @@ export default function ClientList({
           <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-lavender" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg sm:text-xl font-semibold text-ink tracking-tight truncate">Client Management</h1>
-          <p className="text-xs sm:text-sm text-muted-text">{clients.length} clients</p>
+          <h1 className="text-lg sm:text-xl font-semibold text-ink tracking-tight truncate">{t('title')}</h1>
+          <p className="text-xs sm:text-sm text-muted-text">{t('clientsCount', { count: clients.length })}</p>
         </div>
         <Button
           onClick={onAddClient}
           className="shrink-0 rounded-xl bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg text-xs sm:text-sm px-2 sm:px-4"
         >
           <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Add Client</span>
-          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">{t('addClient')}</span>
+          <span className="sm:hidden">{t('addShort')}</span>
         </Button>
       </div>
 
@@ -138,7 +140,7 @@ export default function ClientList({
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search clients by name, phone, or email"
+            placeholder={t('searchPlaceholder')}
             className="w-full h-10 sm:h-12 rounded-2xl pl-10 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm bg-white/80 border border-lavender/20 placeholder:text-muted-text focus:outline-none focus:ring-2 focus:ring-lavender/60 focus:border-lavender/40 shadow-sm"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-text">
@@ -231,28 +233,28 @@ export default function ClientList({
                           onClientSelect?.(client);
                         }} className="text-xs sm:text-sm">
                           <Eye className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-lavender" />
-                          <span>View Details</span>
+                          <span>{t('viewDetails')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onEditClient?.(client);
                         }} className="text-xs sm:text-sm">
                           <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-teal-500" />
-                          <span>Edit Client</span>
+                          <span>{t('editClient')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onBookAppointment?.(client);
                         }} className="text-xs sm:text-sm">
                           <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                          <span>Book Appointment</span>
+                          <span>{t('bookAppointment')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
                           onSendMessage?.(client);
                         }} className="text-xs sm:text-sm">
                           <MessageSquare className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
-                          <span>Send Message</span>
+                          <span>{t('sendMessage')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={(e) => {
@@ -262,7 +264,7 @@ export default function ClientList({
                           className="text-red-600 focus:text-red-600 text-xs sm:text-sm"
                         >
                           <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          <span>Delete</span>
+                          <span>{t('delete')}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -280,9 +282,9 @@ export default function ClientList({
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-lavender/10 flex items-center justify-center mb-3 sm:mb-4">
             <User className="h-6 w-6 sm:h-8 sm:w-8 text-lavender" />
           </div>
-          <h3 className="text-base sm:text-lg font-medium text-ink mb-2">No clients found</h3>
+          <h3 className="text-base sm:text-lg font-medium text-ink mb-2">{t('noClientsFound')}</h3>
           <p className="text-sm sm:text-base text-muted-text text-center mb-4 max-w-sm">
-            {q ? "Try adjusting your search terms" : "Get started by adding your first client"}
+            {q ? t('adjustSearch') : t('getStarted')}
           </p>
         </div>
       )}
@@ -293,7 +295,7 @@ export default function ClientList({
           <div className="bg-lavender/10 border border-lavender/20 rounded-lg p-3 flex items-center gap-2">
             <Plus className="h-4 w-4 text-lavender flex-shrink-0" />
             <span className="text-sm text-lavender-700">
-              Click the "Add Client" button above to get started
+              {t('firstClientHint')}
             </span>
           </div>
         </div>

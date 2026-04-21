@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -16,6 +17,7 @@ interface MessageFormProps {
 }
 
 export default function MessageForm({ client, onSend, onCancel }: MessageFormProps) {
+  const t = useTranslations('MessageForm')
   const [messageType, setMessageType] = useState('appointment');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,13 +42,13 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
     
     switch (type) {
       case 'appointment':
-        return `Hi ${client.name},\n\nThis is a reminder about your upcoming appointment. Please arrive 10 minutes early.\n\nBest regards,\nYour PMU Artist`;
+        return t('templateAppointment', { name: client.name });
       case 'aftercare':
-        return `Hi ${client.name},\n\nHere are your aftercare instructions:\n\n• Keep the area clean and dry for 24 hours\n• Apply provided ointment as directed\n• Avoid direct sunlight\n• No swimming for 2 weeks\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\nYour PMU Artist`;
+        return t('templateAftercare', { name: client.name });
       case 'followup':
-        return `Hi ${client.name},\n\nWe hope you're healing well! This is a quick check-in to see how your procedure is progressing.\n\nPlease let us know if you have any concerns or questions.\n\nBest regards,\nYour PMU Artist`;
+        return t('templateFollowup', { name: client.name });
       case 'promotion':
-        return `Hi ${client.name},\n\nWe have a special offer just for you! Contact us to learn more about our current promotions.\n\nBest regards,\nYour PMU Artist`;
+        return t('templatePromotion', { name: client.name });
       default:
         return '';
     }
@@ -71,24 +73,24 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label>Message Type</Label>
+        <Label>{t('messageType')}</Label>
         <Select value={messageType} onValueChange={handleMessageTypeChange}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="appointment">Appointment Reminder</SelectItem>
-            <SelectItem value="aftercare">Aftercare Instructions</SelectItem>
-            <SelectItem value="followup">Follow-up Check</SelectItem>
-            <SelectItem value="promotion">Special Offer</SelectItem>
-            <SelectItem value="custom">Custom Message</SelectItem>
+            <SelectItem value="appointment">{t('appointmentReminder')}</SelectItem>
+            <SelectItem value="aftercare">{t('aftercareInstructions')}</SelectItem>
+            <SelectItem value="followup">{t('followUpCheck')}</SelectItem>
+            <SelectItem value="promotion">{t('specialOffer')}</SelectItem>
+            <SelectItem value="custom">{t('customMessage')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Message</Label>
+          <Label>{t('message')}</Label>
           <Button
             type="button"
             variant="outline"
@@ -99,12 +101,12 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
             {showVoiceInput ? (
               <>
                 <MicOff className="h-4 w-4" />
-                <span>Hide Voice Input</span>
+                <span>{t('hideVoiceInput')}</span>
               </>
             ) : (
               <>
                 <Mic className="h-4 w-4" />
-                <span>Voice Input</span>
+                <span>{t('voiceInput')}</span>
               </>
             )}
           </Button>
@@ -114,7 +116,7 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
           <VoiceToText
             onTranscriptionComplete={handleTranscriptionComplete}
             onRewriteComplete={handleRewriteComplete}
-            placeholder="Click the microphone to dictate your message..."
+            placeholder={t('voicePlaceholder')}
             className="mb-4"
           />
         )}
@@ -122,22 +124,22 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
         <Textarea 
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message here..."
+          placeholder={t('messagePlaceholder')}
           rows={6}
           className="resize-none"
         />
         <div className="text-xs text-muted-text">
-          {message.length} characters
+          {t('characters', { count: message.length })}
         </div>
       </div>
 
       {/* Preview */}
       {message && (
         <div className="space-y-2">
-          <Label>Preview</Label>
+          <Label>{t('preview')}</Label>
           <div className="p-3 bg-lavender/5 rounded-lg border border-lavender/20">
             <div className="text-sm font-medium text-lavender mb-2">
-              To: {client?.name} {client?.email && `(${client.email})`}
+              {t('toLabel')} {client?.name} {client?.email && `(${client.email})`}
             </div>
             <div className="text-sm whitespace-pre-wrap text-ink">
               {message}
@@ -153,7 +155,7 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
           onClick={onCancel}
           disabled={isLoading}
         >
-          Cancel
+          {t('cancel')}
         </Button>
         <Button 
           type="submit"
@@ -163,12 +165,12 @@ export default function MessageForm({ client, onSend, onCancel }: MessageFormPro
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Sending...
+              {t('sending')}
             </>
           ) : (
             <>
               <Send className="h-4 w-4 mr-2" />
-              Send Message
+              {t('sendMessage')}
             </>
           )}
         </Button>

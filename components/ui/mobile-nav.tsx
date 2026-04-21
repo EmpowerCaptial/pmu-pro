@@ -44,7 +44,7 @@ const navItems = [
 ]
 
 export default function MobileNav() {
-  const t = useTranslations('Dashboard')
+  const t = useTranslations('Navigation')
   const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -109,7 +109,15 @@ export default function MobileNav() {
                 className={`w-6 h-6 mb-1 ${isActive ? item.color : isComingSoon ? 'text-gray-400' : ''}`} 
               />
               <span className="text-xs font-medium">
-                {item.href === '/dashboard' ? t('dashboard') : item.name}
+                {item.href === '/dashboard'
+                  ? t('dashboard')
+                  : item.href === '/features'
+                    ? t('features')
+                    : item.href === '/booking'
+                      ? t('calendar')
+                      : item.href === '/clients'
+                        ? t('clients')
+                        : item.name}
               </span>
               {isComingSoon && (
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
@@ -124,7 +132,7 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 text-gray-600 hover:text-lavender hover:bg-lavender/5"
         >
           <CreditCard className="w-6 h-6 mb-1 text-lavender" />
-          <span className="text-xs font-medium">Checkout</span>
+          <span className="text-xs font-medium">{t('checkout')}</span>
         </Link>
       </div>
     </div>

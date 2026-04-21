@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useDemoAuth } from '@/hooks/use-demo-auth';
 import { SubscriptionGate } from '@/components/auth/subscription-gate';
 import { NavBar } from '@/components/ui/navbar';
@@ -32,6 +33,7 @@ import {
 } from 'lucide-react';
 
 export default function ClientsPage() {
+  const t = useTranslations('Clients')
   const router = useRouter();
   const { currentUser, isLoading: authLoading, isAuthenticated } = useDemoAuth();
   const [clients, setClients] = useState<Client[]>([]);
@@ -227,7 +229,7 @@ export default function ClientsPage() {
 
   // Handle deleting client
   const handleDeleteClient = async (client: Client) => {
-    if (!confirm(`Are you sure you want to delete ${client.name}?`)) return;
+    if (!confirm(t('deleteConfirm', { name: client.name }))) return;
 
     try {
           const response = await fetch(`/api/clients/${client.id}`, {
@@ -286,7 +288,7 @@ export default function ClientsPage() {
     try {
       // Check if client has a phone number
       if (!client.phone) {
-        alert('No phone number available for this client.');
+        alert(t('noPhoneAvailable'));
         return;
       }
       
@@ -301,7 +303,7 @@ export default function ClientsPage() {
       
     } catch (error) {
       console.error('Error opening SMS app:', error);
-      alert('Unable to open SMS app. Please check if the client has a valid phone number.');
+      alert(t('unableSms'));
     }
   };
 
@@ -327,7 +329,7 @@ export default function ClientsPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ivory via-white to-beige">
         <div className="text-center p-4 sm:p-6">
           <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-lavender mx-auto mb-3 sm:mb-4" />
-          <p className="text-sm sm:text-base text-muted-text">Loading clients...</p>
+          <p className="text-sm sm:text-base text-muted-text">{t('loading')}</p>
         </div>
       </div>
     );
@@ -340,13 +342,13 @@ export default function ClientsPage() {
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-red-600 text-base sm:text-lg">
               <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-              Error
+              {t('errorTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <p className="text-sm sm:text-base text-muted-text mb-4">{error}</p>
             <Button onClick={fetchClients} className="w-full text-sm sm:text-base">
-              Try Again
+              {t('tryAgain')}
             </Button>
           </CardContent>
         </Card>
@@ -375,43 +377,43 @@ export default function ClientsPage() {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="p-4 sm:p-6 pb-4">
-            <DialogTitle className="text-base sm:text-lg">Add New Client</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">{t('addNewClient')}</DialogTitle>
           </DialogHeader>
           <div className="p-4 sm:p-6 pt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm sm:text-base">Full Name *</Label>
+                <Label htmlFor="name" className="text-sm sm:text-base">{t('fullName')}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter client's full name"
+                  placeholder={t('clientNamePlaceholder')}
                   className="text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="client@example.com"
+                  placeholder={t('emailPlaceholder')}
                   className="text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm sm:text-base">Phone</Label>
+                <Label htmlFor="phone" className="text-sm sm:text-base">{t('phone')}</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="(555) 123-4567"
+                  placeholder={t('phonePlaceholder')}
                   className="text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth" className="text-sm sm:text-base">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth" className="text-sm sm:text-base">{t('dateOfBirth')}</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -421,20 +423,20 @@ export default function ClientsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="emergencyContact" className="text-sm sm:text-base">Emergency Contact</Label>
+                <Label htmlFor="emergencyContact" className="text-sm sm:text-base">{t('emergencyContact')}</Label>
                 <Input
                   id="emergencyContact"
                   value={formData.emergencyContact}
                   onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                  placeholder="Emergency contact info"
+                  placeholder={t('emergencyContactPlaceholder')}
                   className="text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="skinType" className="text-sm sm:text-base">Skin Type (Fitzpatrick)</Label>
+                <Label htmlFor="skinType" className="text-sm sm:text-base">{t('skinType')}</Label>
                 <Select value={formData.skinType} onValueChange={(value) => setFormData({ ...formData, skinType: value })}>
                   <SelectTrigger className="text-sm sm:text-base">
-                    <SelectValue placeholder="Select skin type" />
+                    <SelectValue placeholder={t('selectSkinType')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Type 1">Type 1 - Very Fair</SelectItem>
@@ -448,34 +450,34 @@ export default function ClientsPage() {
               </div>
             </div>
             <div className="space-y-2 mt-4">
-              <Label htmlFor="medicalHistory" className="text-sm sm:text-base">Medical History</Label>
+              <Label htmlFor="medicalHistory" className="text-sm sm:text-base">{t('medicalHistory')}</Label>
               <Textarea
                 id="medicalHistory"
                 value={formData.medicalHistory}
                 onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
-                placeholder="Any relevant medical conditions or history"
+                placeholder={t('medicalHistoryPlaceholder')}
                 rows={3}
                 className="text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="allergies" className="text-sm sm:text-base">Allergies</Label>
+              <Label htmlFor="allergies" className="text-sm sm:text-base">{t('allergies')}</Label>
               <Textarea
                 id="allergies"
                 value={formData.allergies}
                 onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-                placeholder="Known allergies or sensitivities"
+                placeholder={t('allergiesPlaceholder')}
                 rows={2}
                 className="text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm sm:text-base">Notes</Label>
+              <Label htmlFor="notes" className="text-sm sm:text-base">{t('notes')}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about the client"
+                placeholder={t('notesPlaceholder')}
                 rows={3}
                 className="text-sm sm:text-base"
               />
@@ -486,7 +488,7 @@ export default function ClientsPage() {
                 onClick={() => setIsAddDialogOpen(false)}
                 className="w-full sm:w-auto text-sm sm:text-base"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button 
                 onClick={handleAddClient}
@@ -494,7 +496,7 @@ export default function ClientsPage() {
                 className="w-full sm:w-auto bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-sm sm:text-base"
               >
                 <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                Add Client
+                {t('addClient')}
               </Button>
             </div>
           </div>
@@ -505,40 +507,40 @@ export default function ClientsPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Client</DialogTitle>
+            <DialogTitle>{t('editClient')}</DialogTitle>
           </DialogHeader>
           {/* Same form as Add Client Dialog */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Full Name *</Label>
+              <Label htmlFor="edit-name">{t('fullNameEdit')}</Label>
               <Input
                 id="edit-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter client's full name"
+                placeholder={t('clientNamePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-email">{t('email')}</Label>
               <Input
                 id="edit-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="client@example.com"
+                placeholder={t('emailPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-phone">Phone</Label>
+              <Label htmlFor="edit-phone">{t('phone')}</Label>
               <Input
                 id="edit-phone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="(555) 123-4567"
+                placeholder={t('phonePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-dateOfBirth">Date of Birth</Label>
+              <Label htmlFor="edit-dateOfBirth">{t('dateOfBirth')}</Label>
               <Input
                 id="edit-dateOfBirth"
                 type="date"
@@ -547,19 +549,19 @@ export default function ClientsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-emergencyContact">Emergency Contact</Label>
+              <Label htmlFor="edit-emergencyContact">{t('emergencyContact')}</Label>
               <Input
                 id="edit-emergencyContact"
                 value={formData.emergencyContact}
                 onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                placeholder="Emergency contact info"
+                placeholder={t('emergencyContactPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-skinType">Skin Type (Fitzpatrick)</Label>
+              <Label htmlFor="edit-skinType">{t('skinType')}</Label>
               <Select value={formData.skinType} onValueChange={(value) => setFormData({ ...formData, skinType: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select skin type" />
+                  <SelectValue placeholder={t('selectSkinType')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Type 1">Type 1 - Very Fair</SelectItem>
@@ -573,38 +575,38 @@ export default function ClientsPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-medicalHistory">Medical History</Label>
+            <Label htmlFor="edit-medicalHistory">{t('medicalHistory')}</Label>
             <Textarea
               id="edit-medicalHistory"
               value={formData.medicalHistory}
               onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
-              placeholder="Any relevant medical conditions or history"
+              placeholder={t('medicalHistoryPlaceholder')}
               rows={3}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-allergies">Allergies</Label>
+            <Label htmlFor="edit-allergies">{t('allergies')}</Label>
             <Textarea
               id="edit-allergies"
               value={formData.allergies}
               onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-              placeholder="Known allergies or sensitivities"
+              placeholder={t('allergiesPlaceholder')}
               rows={2}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes</Label>
+            <Label htmlFor="edit-notes">{t('notes')}</Label>
             <Textarea
               id="edit-notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes about the client"
+              placeholder={t('notesPlaceholder')}
               rows={3}
             />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button 
               onClick={handleEditClient}
@@ -612,7 +614,7 @@ export default function ClientsPage() {
               className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
-              Save Changes
+              {t('saveChanges')}
             </Button>
           </div>
         </DialogContent>
@@ -632,7 +634,7 @@ export default function ClientsPage() {
               {/* Contact Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Email</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('email')}</Label>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-lavender" />
                     {selectedClient.email ? (
@@ -643,12 +645,12 @@ export default function ClientsPage() {
                         {selectedClient.email}
                       </a>
                     ) : (
-                      <span>Not provided</span>
+                      <span>{t('emailNotProvided')}</span>
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Phone</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('phone')}</Label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-lavender" />
                     {selectedClient.phone ? (
@@ -659,7 +661,7 @@ export default function ClientsPage() {
                         {selectedClient.phone}
                       </a>
                     ) : (
-                      <span>Not provided</span>
+                      <span>{t('emailNotProvided')}</span>
                     )}
                   </div>
                 </div>
@@ -668,39 +670,39 @@ export default function ClientsPage() {
               {/* Medical Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Date of Birth</Label>
-                  <span>{selectedClient.dateOfBirth || 'Not provided'}</span>
+                  <Label className="text-sm font-medium text-muted-text">{t('dateOfBirth')}</Label>
+                  <span>{selectedClient.dateOfBirth || t('emailNotProvided')}</span>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Skin Type</Label>
-                  <span>{selectedClient.skinType || 'Not assessed'}</span>
+                  <Label className="text-sm font-medium text-muted-text">{t('skinType')}</Label>
+                  <span>{selectedClient.skinType || t('notAssessed')}</span>
                 </div>
               </div>
 
               {selectedClient.emergencyContact && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Emergency Contact</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('emergencyContact')}</Label>
                   <span>{selectedClient.emergencyContact}</span>
                 </div>
               )}
 
               {selectedClient.medicalHistory && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Medical History</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('medicalHistory')}</Label>
                   <p className="text-sm bg-lavender/5 p-3 rounded-lg">{selectedClient.medicalHistory}</p>
                 </div>
               )}
 
               {selectedClient.allergies && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Allergies</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('allergies')}</Label>
                   <p className="text-sm bg-red-50 p-3 rounded-lg border border-red-200">{selectedClient.allergies}</p>
                 </div>
               )}
 
               {selectedClient.notes && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-text">Notes</Label>
+                  <Label className="text-sm font-medium text-muted-text">{t('notes')}</Label>
                   <p className="text-sm bg-beige/50 p-3 rounded-lg">{selectedClient.notes}</p>
                 </div>
               )}
@@ -716,7 +718,7 @@ export default function ClientsPage() {
                   className="flex-1"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Client
+                  {t('editClient')}
                 </Button>
                 <Button 
                   onClick={() => {
@@ -726,7 +728,7 @@ export default function ClientsPage() {
                   className="flex-1 bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600"
                 >
                   <Calendar className="h-4 w-4 mr-2" />
-                  Book Appointment
+                  {t('bookAppointment')}
                 </Button>
                 <Button 
                   variant="outline"
@@ -737,7 +739,7 @@ export default function ClientsPage() {
                   className="flex-1"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Send Message
+                  {t('sendMessage')}
                 </Button>
               </div>
             </div>
@@ -749,7 +751,7 @@ export default function ClientsPage() {
       <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send Message to {selectedClient?.name}</DialogTitle>
+            <DialogTitle>{t('sendMessageTo', { name: selectedClient?.name || '' })}</DialogTitle>
           </DialogHeader>
           <MessageForm 
             client={selectedClient}

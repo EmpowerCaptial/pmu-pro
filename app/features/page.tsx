@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { 
@@ -450,6 +451,8 @@ const getFilteredFeatures = (userPlan: string, userRole?: string) => {
 }
 
 export default function FeaturesPage() {
+  const t = useTranslations('FeaturesPage')
+  const tf = useTranslations('FeaturesData')
   const router = useRouter()
   const { currentUser } = useDemoAuth()
   const [searchTerm, setSearchTerm] = useState('')
@@ -461,7 +464,11 @@ export default function FeaturesPage() {
   const userRole = currentUser?.role
   
   // Get filtered features based on user's plan and role
-  const filteredFeatures = getFilteredFeatures(userPlan, userRole)
+  const filteredFeatures = getFilteredFeatures(userPlan, userRole).map(feature => ({
+    ...feature,
+    title: tf(`titles.${feature.id}`),
+    description: tf(`descriptions.${feature.id}`)
+  }))
 
   // Load avatar from API first, then fallback to localStorage
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
@@ -589,8 +596,8 @@ export default function FeaturesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Features</h1>
-            <p className="text-muted text-sm sm:text-base">Complete PMU business management suite</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">{t('title')}</h1>
+            <p className="text-muted text-sm sm:text-base">{t('subtitle')}</p>
           </div>
           <Button 
             variant="outline" 
@@ -599,7 +606,7 @@ export default function FeaturesPage() {
             className="flex items-center gap-2 w-full sm:w-auto text-sm sm:text-base"
           >
             <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-            Settings
+            {t('settings')}
           </Button>
         </div>
 
@@ -608,7 +615,7 @@ export default function FeaturesPage() {
         <div className="relative mb-4 sm:mb-6">
           <input
             type="text"
-            placeholder="Search features..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex h-9 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-xs sm:text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -673,7 +680,7 @@ export default function FeaturesPage() {
               <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
                 {filteredFeatures.filter(f => f.status === 'active').length}
               </div>
-              <div className="text-xs sm:text-sm text-gray-700">Active Features</div>
+              <div className="text-xs sm:text-sm text-gray-700">{t('activeFeatures')}</div>
             </CardContent>
           </Card>
           <Card className="border-blue-100 bg-gradient-to-br from-amber-50 to-yellow-50">
@@ -681,7 +688,7 @@ export default function FeaturesPage() {
               <div className="text-xl sm:text-2xl font-bold text-amber-600 mb-1">
                 {filteredFeatures.filter(f => f.status === 'coming-soon').length}
               </div>
-              <div className="text-xs sm:text-sm text-gray-700">Coming Soon</div>
+              <div className="text-xs sm:text-sm text-gray-700">{t('comingSoon')}</div>
             </CardContent>
           </Card>
           <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -689,7 +696,7 @@ export default function FeaturesPage() {
               <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
                 {filteredFeatures.length}
               </div>
-              <div className="text-xs sm:text-sm text-gray-700">Total Features</div>
+              <div className="text-xs sm:text-sm text-gray-700">{t('totalFeatures')}</div>
             </CardContent>
           </Card>
           <Card className="border-blue-100 bg-gradient-to-br from-purple-50 to-violet-50">
@@ -697,7 +704,7 @@ export default function FeaturesPage() {
               <div className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">
                 4
               </div>
-              <div className="text-xs sm:text-sm text-gray-700">Categories</div>
+              <div className="text-xs sm:text-sm text-gray-700">{t('categories')}</div>
             </CardContent>
           </Card>
         </div>
@@ -705,9 +712,9 @@ export default function FeaturesPage() {
         {/* Coming Soon Section */}
         <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50/50 to-teal-50/50 rounded-lg border border-blue-200">
           <div className="text-center">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">More Features Coming Soon</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{t('moreComingSoon')}</h3>
             <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
-              We're constantly adding new features to help you manage your PMU business better.
+              {t('moreComingSoonDescription')}
             </p>
             <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
               <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 text-xs sm:text-sm">Advanced Analytics</Badge>
@@ -732,8 +739,8 @@ export default function FeaturesPage() {
               <div className="w-16 h-16 bg-violet-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users2 className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Team Management</h2>
-              <p className="text-gray-600">Select the type of team management you need</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('teamModalTitle')}</h2>
+              <p className="text-gray-600">{t('teamModalDescription')}</p>
             </div>
 
             <div className="space-y-4">
@@ -747,8 +754,8 @@ export default function FeaturesPage() {
                     <GraduationCap className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Artist Management</h3>
-                    <p className="text-sm text-gray-600">Manage students, licensed artists & instructors</p>
+                    <h3 className="font-semibold text-gray-900">{t('artistManagement')}</h3>
+                    <p className="text-sm text-gray-600">{t('artistManagementDescription')}</p>
                   </div>
                 </div>
               </button>
@@ -763,8 +770,8 @@ export default function FeaturesPage() {
                     <ShieldCheck className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Staff Management</h3>
-                    <p className="text-sm text-gray-600">Manage staff roles & permissions (Enterprise)</p>
+                    <h3 className="font-semibold text-gray-900">{t('staffManagement')}</h3>
+                    <p className="text-sm text-gray-600">{t('staffManagementDescription')}</p>
                   </div>
                 </div>
               </button>
@@ -775,7 +782,7 @@ export default function FeaturesPage() {
                 onClick={() => setShowTeamChoiceModal(false)}
                 className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>

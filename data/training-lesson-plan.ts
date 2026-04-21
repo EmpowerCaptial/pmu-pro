@@ -1,6 +1,12 @@
 export interface LessonSegment {
   time: string
   title: string
+  lessonId?:
+    | 'sanitation-infection-control'
+    | 'bloodborne-pathogens-basics'
+    | 'contraindications'
+    | 'aftercare-instructions'
+    | 'brow-mapping-fundamentals'
   instructorScript?: string
   prompts?: string[]
   activities?: string[]
@@ -11,6 +17,12 @@ export interface LessonSegment {
 export interface LessonDayPlan {
   id: string
   title: string
+  lessonId?:
+    | 'sanitation-infection-control'
+    | 'bloodborne-pathogens-basics'
+    | 'contraindications'
+    | 'aftercare-instructions'
+    | 'brow-mapping-fundamentals'
   focus: string[]
   tone?: string
   segments: LessonSegment[]
@@ -111,6 +123,7 @@ My job is to support your growth, your skill development, and your confidence. Y
           {
             time: '3:20 – 3:30',
             title: 'Spaced Review: Safety Foundations',
+            lessonId: 'bloodborne-pathogens-basics',
             instructorScript: 'Quick review of key safety concepts: BBP disposal, workstation setup, hand positioning.',
             activities: ['5-minute oral quiz: "What are the 3 critical safety checkpoints before starting any procedure?"']
           }
@@ -362,6 +375,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '1:15 – 2:10',
             title: 'Brow Mapping',
+            lessonId: 'brow-mapping-fundamentals',
             instructorScript:
               'A real brow breathes. If the head is too strong, the brow loses softness. If the tail is weak, the brow loses finish. Control both.',
             activities: [
@@ -400,6 +414,7 @@ Understanding this distinction helps you choose the right pigment for each clien
       {
         id: 'day-1',
         title: 'Day 1 • Contraindications, Skin Type & Ink Control',
+        lessonId: 'contraindications',
         focus: [
           'Identify clients to postpone or refer out',
           'Link skin type to technique selection and healing outcomes',
@@ -417,6 +432,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '9:50 – 10:35',
             title: 'Contraindications Overview',
+            lessonId: 'contraindications',
             instructorScript:
               'We are not just artists — we are risk managers. The safest artist keeps their license long-term.',
             activities: ['Categorize absolute vs relative contraindications; students decide to proceed/modify/postpone.']
@@ -498,6 +514,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '10:35 – 11:05',
             title: 'Client History & Medical Screening',
+            lessonId: 'contraindications',
             activities: [
               'Complete 3 pretend client forms, identify risk factors.',
               'Craft luxury explanations for modifications or postponements.'
@@ -557,6 +574,7 @@ Understanding this distinction helps you choose the right pigment for each clien
       {
         id: 'day-1',
         title: 'Day 1 • Machine Technique Refinement & Hybrid Prep',
+        lessonId: 'sanitation-infection-control',
         focus: [
           'Tune mapping accuracy and soft outlining',
           'Strengthen machine fades and gradient control',
@@ -600,6 +618,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '1:00 – 1:20',
             title: 'Live Model Prep Protocol Training',
+            lessonId: 'sanitation-infection-control',
             activities: [
               'Demonstrate tray setup, PPE sequence, sanitation flows.',
               'Emphasize professionalism and calm client presence.'
@@ -675,6 +694,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '3:00 – 3:30',
             title: 'Debrief + Aftercare Teaching',
+            lessonId: 'aftercare-instructions',
             instructorScript:
               '“Your brows will soften 30–40% as they heal. Flaking and lightness in week two are expected—this is part of the process.”'
           }
@@ -813,6 +833,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '3:00 – 3:30',
             title: 'Debrief + Healing Expectation Coaching',
+            lessonId: 'aftercare-instructions',
             activities: ['Students verbally teach aftercare timeline with calm authority.']
           }
         ],
@@ -927,6 +948,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '11:00 – 11:45',
             title: 'Aftercare as Education Moment',
+            lessonId: 'aftercare-instructions',
             activities: ['Rehearse aftercare explanation in soothing cadence, refine wording.']
           },
           { time: '11:45 – 12:45', title: 'Lunch' },
@@ -1050,6 +1072,7 @@ Understanding this distinction helps you choose the right pigment for each clien
           {
             time: '1:45 – 2:15',
             title: 'Aftercare Education Demonstration',
+            lessonId: 'aftercare-instructions',
             activities: [
               'Students walk model through healing timeline, touch-up scheduling, do’s/don’ts using luxury tone.'
             ]

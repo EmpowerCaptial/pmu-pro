@@ -21,9 +21,11 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { useTranslations } from 'next-intl'
 // Removed import - now using API endpoint instead of direct Prisma call
 
 function CheckoutContent() {
+  const t = useTranslations('Checkout')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
@@ -107,7 +109,7 @@ function CheckoutContent() {
     const clientPhone = searchParams.get('clientPhone')
     
     return {
-      name: clientName || 'Guest Client',
+      name: clientName || t('guestClient'),
       email: clientEmail || '',
       phone: clientPhone || ''
     }
@@ -337,7 +339,7 @@ function CheckoutContent() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Payment Successful!</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">{t('paymentSuccessful')}</CardTitle>
             <CardDescription className="text-lg text-gray-600">
               Transaction completed successfully
             </CardDescription>
@@ -376,7 +378,7 @@ function CheckoutContent() {
                 onClick={() => router.push('/dashboard')}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
+                {t('backToDashboard')}
               </Button>
             </div>
           </CardContent>
@@ -457,10 +459,10 @@ function CheckoutContent() {
                   className="border-gray-200 hover:border-gray-300"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  {t('back')}
                 </Button>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
+                  <h1 className="text-xl font-bold text-gray-900">{t('checkout')}</h1>
                   <p className="text-sm text-gray-500">Complete your transaction</p>
                 </div>
               </div>
@@ -541,7 +543,7 @@ function CheckoutContent() {
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span>Discount:</span>
+                      <span>{t('discount')}:</span>
                       <span className="font-semibold">-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
@@ -564,7 +566,7 @@ function CheckoutContent() {
                     <span className="font-semibold text-gray-900">${tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tip:</span>
+                    <span className="text-gray-600">{t('tip')}:</span>
                     <span className="font-semibold text-gray-900">${tipAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-3 border-t border-gray-200">
@@ -581,7 +583,7 @@ function CheckoutContent() {
             {/* Tip Options */}
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-lg font-semibold text-gray-900">Add Tip</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">{t('addTip')}</CardTitle>
                 <CardDescription>Select a tip amount for the service</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -623,7 +625,7 @@ function CheckoutContent() {
             {/* Discount Section */}
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-lg font-semibold text-gray-900">Apply Discount</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">{t('applyDiscount')}</CardTitle>
                 <CardDescription>Add a percentage or dollar amount discount</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -700,7 +702,7 @@ function CheckoutContent() {
             {/* Payment Method */}
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-lg font-semibold text-gray-900">Payment Method</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">{t('paymentMethod')}</CardTitle>
                 <CardDescription>Choose how the client will pay</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -729,14 +731,14 @@ function CheckoutContent() {
             <Card className="border-0 shadow-lg bg-white">
               <CardHeader className="border-b border-gray-100">
                 <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
-                  <span>Split Payment</span>
+                  <span>{t('splitPayment')}</span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSplitPaymentEnabled(!splitPaymentEnabled)}
                     className={splitPaymentEnabled ? 'bg-lavender hover:bg-lavender-600 text-white border-lavender' : 'border-gray-200 hover:border-lavender'}
                   >
-                    {splitPaymentEnabled ? 'Enabled' : 'Enable'}
+                    {splitPaymentEnabled ? t('enabled') : t('enable')}
                   </Button>
                 </CardTitle>
                 <CardDescription>Allow client to split payment between multiple methods</CardDescription>
@@ -807,12 +809,12 @@ function CheckoutContent() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                        Processing Payment...
+                        {t('processingPayment')}
                       </>
                     ) : (
                       <>
                         <CreditCard className="h-6 w-6 mr-3" />
-                        Process Payment - ${total.toFixed(2)}
+                        {t('processPayment')} - ${total.toFixed(2)}
                       </>
                     )}
                   </Button>
@@ -839,12 +841,13 @@ function CheckoutContent() {
 }
 
 export default function CheckoutPage() {
+  const t = useTranslations('Checkout')
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading checkout...</p>
+          <p className="text-gray-600">{t('loadingCheckout')}</p>
         </div>
       </div>
     }>

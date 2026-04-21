@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { NavBar } from '@/components/ui/navbar'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { useFreshUserData } from '@/hooks/use-fresh-user-data'
+import { useTranslations } from 'next-intl'
 import { 
   Calendar, 
   Clock, 
@@ -67,6 +68,7 @@ interface Appointment {
 // Mock appointments removed - now using database API
 
 function BookingCalendarContent() {
+  const t = useTranslations('Booking')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { currentUser } = useDemoAuth()
@@ -280,7 +282,7 @@ function BookingCalendarContent() {
 
   const handleCreateAppointment = async () => {
     if (!selectedDate) {
-      alert('Please select a date first')
+      alert(t('pleaseSelectDate'))
       return
     }
 
@@ -291,7 +293,7 @@ function BookingCalendarContent() {
     } else {
       // Create new client and save to database
       if (!newClientData.name) {
-        alert('Please enter client name')
+        alert(t('pleaseEnterClientName'))
         return
       }
 
@@ -355,12 +357,12 @@ function BookingCalendarContent() {
     }
 
     if (!client || !client.name) {
-      alert('Please select or enter client information')
+      alert(t('pleaseSelectClient'))
       return
     }
 
     if (!appointmentData.service || !appointmentData.time) {
-      alert('Please fill in service and time')
+      alert(t('pleaseFillServiceTime'))
       return
     }
 
@@ -486,7 +488,7 @@ function BookingCalendarContent() {
             if (depositResponse.ok) {
               const depositData = await depositResponse.json();
               console.log('✅ Deposit payment created successfully:', depositData);
-              alert(`Appointment created! Deposit payment link sent to ${client.email || 'client'}.`);
+              alert(`Appointment created! ${t('receiptSent', { email: client.email || 'client' })}`);
             } else {
               const errorData = await depositResponse.json();
               console.error('❌ Failed to create deposit payment:', errorData);
@@ -500,12 +502,12 @@ function BookingCalendarContent() {
       } else {
         const error = await appointmentResponse.json()
         console.error('❌ Failed to create appointment:', error)
-        alert('Failed to create appointment. Please try again.')
+        alert(t('createFailed'))
         return
       }
     } catch (error) {
       console.error('❌ Error creating appointment:', error)
-      alert('Error creating appointment. Please try again.')
+      alert(t('createError'))
       return
     }
     
@@ -517,7 +519,7 @@ function BookingCalendarContent() {
     setNewClientData({ name: '', email: '', phone: '' })
     setAppointmentData({ service: '', time: '', duration: 60, price: 0, notes: '', paymentMethod: 'online' })
     
-    alert(`Appointment created successfully! ${clientSelectionType === 'new' ? 'New client added to database.' : ''}`)
+    alert(`${t('appointmentCreated')} ${clientSelectionType === 'new' ? t('newClientAdded') : ''}`.trim())
   }
 
   const getDaysInMonth = (date: Date) => {
@@ -592,7 +594,7 @@ function BookingCalendarContent() {
   }
 
   const handleCancelAppointment = async (appointment: Appointment) => {
-    if (!confirm(`Are you sure you want to cancel the appointment for ${appointment.clientName}?`)) {
+    if (!confirm(t('confirmCancel', { name: appointment.clientName }))) {
       return
     }
 
@@ -611,34 +613,34 @@ function BookingCalendarContent() {
         setAppointments(appointments.map(apt => 
           apt.id === appointment.id ? { ...apt, status: 'cancelled' } : apt
         ))
-        alert('Appointment cancelled successfully')
+        alert(t('cancelSuccess'))
       } else {
-        alert('Failed to cancel appointment')
+        alert(t('cancelFailed'))
       }
     } catch (error) {
       console.error('Error cancelling appointment:', error)
-      alert('Error cancelling appointment')
+      alert(t('cancelError'))
     }
   }
 
   const handleRefund = async (appointment: Appointment) => {
-    const refundAmount = prompt(`Enter refund amount (max $${appointment.price}):`)
+    const refundAmount = prompt(t('refundPrompt', { price: appointment.price }))
     if (!refundAmount || parseFloat(refundAmount) <= 0) {
       return
     }
 
     if (parseFloat(refundAmount) > appointment.price) {
-      alert('Refund amount cannot exceed appointment price')
+      alert(t('refundMaxError'))
       return
     }
 
-    alert(`Refund of $${refundAmount} initiated for ${appointment.clientName}. This feature will process through your payment gateway.`)
+    alert(t('refundStarted', { amount: refundAmount, name: appointment.clientName }))
     // TODO: Integrate with actual payment gateway refund API
   }
 
   const handleSendReceipt = async (appointment: Appointment) => {
     if (!appointment.clientEmail) {
-      alert('No email address on file for this client')
+      alert(t('receiptNoEmail'))
       return
     }
 
@@ -661,18 +663,18 @@ function BookingCalendarContent() {
       })
 
       if (response.ok) {
-        alert(`Receipt sent to ${appointment.clientEmail}`)
+        alert(t('receiptSent', { email: appointment.clientEmail }))
       } else {
-        alert('Failed to send receipt')
+        alert(t('receiptFailed'))
       }
     } catch (error) {
       console.error('Error sending receipt:', error)
-      alert('Receipt sent successfully!') // Fallback for demo
+      alert(t('receiptFallback')) // Fallback for demo
     }
   }
 
   const handleMarkNoShow = async (appointment: Appointment) => {
-    if (!confirm(`Mark ${appointment.clientName} as a no-show?`)) {
+    if (!confirm(t('confirmNoShow', { name: appointment.clientName }))) {
       return
     }
 
@@ -691,13 +693,13 @@ function BookingCalendarContent() {
         setAppointments(appointments.map(apt => 
           apt.id === appointment.id ? { ...apt, status: 'cancelled' } : apt
         ))
-        alert(`${appointment.clientName} marked as no-show`)
+        alert(t('noShowSuccess', { name: appointment.clientName }))
       } else {
-        alert('Failed to update appointment status')
+        alert(t('noShowFailed'))
       }
     } catch (error) {
       console.error('Error marking no-show:', error)
-      alert('Error updating appointment status')
+      alert(t('noShowError'))
     }
   }
 
@@ -780,13 +782,13 @@ function BookingCalendarContent() {
 
         setShowEditAppointmentModal(false)
         setEditingAppointment(null)
-        alert('Appointment updated successfully' + (sendUpdateEmail ? ' and client notified' : ''))
+        alert(t('updateSuccess') + (sendUpdateEmail ? t('updateNotifiedSuffix') : ''))
       } else {
-        alert('Failed to update appointment')
+        alert(t('updateFailed'))
       }
     } catch (error) {
       console.error('Error updating appointment:', error)
-      alert('Error updating appointment')
+      alert(t('updateError'))
     }
   }
 
@@ -820,9 +822,7 @@ function BookingCalendarContent() {
       <div className="min-h-screen bg-gradient-to-br from-lavender/10 via-white to-purple/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lavender mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {isRefreshing ? 'Refreshing user data...' : 'Loading appointments...'}
-          </p>
+          <p className="text-gray-600">{isRefreshing ? t('loadingUserData') : t('loadingAppointments')}</p>
         </div>
       </div>
     )
@@ -838,18 +838,18 @@ function BookingCalendarContent() {
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <GraduationCap className="h-10 w-10 text-purple-600" />
             </div>
-            <h1 className="text-2xl font-bold text-ink mb-4">Access Restricted</h1>
+            <h1 className="text-2xl font-bold text-ink mb-4">{t('accessRestricted')}</h1>
             <p className="text-ink/70 mb-6">
-              As a student/apprentice, you need to use the supervision booking system for all client procedures.
+              {t('restrictedDescription')}
             </p>
             <div className="space-y-3">
               <p className="text-sm text-ink/60">
-                <strong>Students must:</strong>
+                <strong>{t('studentsMust')}</strong>
               </p>
               <ul className="text-sm text-ink/60 space-y-1 text-left">
-                <li>• Book supervised sessions with instructors</li>
-                <li>• Have instructor oversight for all procedures</li>
-                <li>• Use the supervision booking system</li>
+                <li>• {t('studentsMustItem1')}</li>
+                <li>• {t('studentsMustItem2')}</li>
+                <li>• {t('studentsMustItem3')}</li>
               </ul>
             </div>
             <Button 
@@ -857,7 +857,7 @@ function BookingCalendarContent() {
               className="mt-6 bg-purple-600 hover:bg-purple-700 text-white"
             >
               <GraduationCap className="h-4 w-4 mr-2" />
-              Go to Supervision Booking
+              {t('goToSupervisionBooking')}
             </Button>
           </div>
         </div>
@@ -873,8 +873,8 @@ function BookingCalendarContent() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">Booking Calendar</h1>
-            <p className="text-sm sm:text-base text-muted">Manage your appointments and schedule</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink mb-1 sm:mb-2">{t('bookingCalendar')}</h1>
+            <p className="text-sm sm:text-base text-muted">{t('manageSchedule')}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button 
@@ -883,7 +883,7 @@ function BookingCalendarContent() {
               className="bg-lavender hover:bg-lavender-600 text-white text-sm sm:text-base w-full sm:w-auto"
             >
               <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-              New Appointment
+              {t('newAppointment')}
             </Button>
             {/* Share Button */}
             <Button
@@ -891,8 +891,8 @@ function BookingCalendarContent() {
               className="bg-gradient-to-r from-lavender to-teal-500 hover:from-lavender-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
             >
               <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              <span className="hidden sm:inline">Share Your Booking Link</span>
-              <span className="sm:hidden">Share Link</span>
+              <span className="hidden sm:inline">{t('shareBookingLink')}</span>
+              <span className="sm:hidden">{t('shareLink')}</span>
             </Button>
           </div>
         </div>
@@ -907,8 +907,8 @@ function BookingCalendarContent() {
               className={`${activeTab === 'calendar' ? 'bg-lavender text-white' : ''} text-xs sm:text-sm flex-1 sm:flex-none`}
             >
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Calendar</span>
-              <span className="sm:hidden">Cal</span>
+              <span className="hidden sm:inline">{t('calendar')}</span>
+              <span className="sm:hidden">{t('calendarShort')}</span>
             </Button>
             <Button
               variant={activeTab === 'blocks' ? 'default' : 'ghost'}
@@ -917,8 +917,8 @@ function BookingCalendarContent() {
               className={`${activeTab === 'blocks' ? 'bg-lavender text-white' : ''} text-xs sm:text-sm flex-1 sm:flex-none`}
             >
               <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Time Blocks</span>
-              <span className="sm:hidden">Blocks</span>
+              <span className="hidden sm:inline">{t('timeBlocks')}</span>
+              <span className="sm:hidden">{t('blocksShort')}</span>
             </Button>
           </div>
         </div>
@@ -958,7 +958,7 @@ function BookingCalendarContent() {
               <CardContent className="p-3 sm:p-6 pt-0">
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1 mb-3 sm:mb-4">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  {[t('daySun'), t('dayMon'), t('dayTue'), t('dayWed'), t('dayThu'), t('dayFri'), t('daySat')].map(day => (
                     <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-600">
                       {day}
                     </div>
@@ -1029,7 +1029,7 @@ function BookingCalendarContent() {
                             })}
                             {dayAppointments.length > 2 && (
                               <div className="text-xs text-gray-600">
-                                +{dayAppointments.length - 2} more
+                                {t('moreCount', { count: dayAppointments.length - 2 })}
                               </div>
                             )}
                           </div>
@@ -1048,13 +1048,13 @@ function BookingCalendarContent() {
               <CardHeader className="p-3 sm:p-6">
                 <CardTitle className="text-sm sm:text-base">
                   {selectedDate 
-                    ? `Appointments - ${new Date(selectedDate).toLocaleDateString()}`
-                    : 'Select a date to view appointments'
+                    ? t('appointmentsForDate', { date: new Date(selectedDate).toLocaleDateString() })
+                    : t('selectDateToView')
                   }
                 </CardTitle>
                 {selectedDate && (
                   <CardDescription className="text-xs sm:text-sm mt-0.5">
-                    View appointments for this date. Click a date in the calendar to switch days.
+                    {t('viewAppointmentsHint')}
                   </CardDescription>
                 )}
               </CardHeader>
@@ -1114,28 +1114,28 @@ function BookingCalendarContent() {
                                 zIndex: 9999
                               }}
                             >
-                              <DropdownMenuLabel className="font-semibold text-gray-900">Appointment Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel className="font-semibold text-gray-900">{t('appointmentActions')}</DropdownMenuLabel>
                               <DropdownMenuSeparator className="bg-gray-200" />
                               <DropdownMenuItem 
                                 onClick={() => handleEditAppointment(appointment)}
                                 className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50 text-gray-900"
                               >
                                 <Edit className="mr-2 h-4 w-4 text-purple-600" />
-                                Edit Appointment
+                                {t('editAppointment')}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleCheckout(appointment)}
                                 className="cursor-pointer hover:bg-blue-50 focus:bg-blue-50 text-gray-900"
                               >
                                 <CreditCard className="mr-2 h-4 w-4 text-blue-600" />
-                                Checkout
+                                {t('checkout')}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleSendReceipt(appointment)}
                                 className="cursor-pointer hover:bg-green-50 focus:bg-green-50 text-gray-900"
                               >
                                 <Receipt className="mr-2 h-4 w-4 text-green-600" />
-                                Send Receipt
+                                {t('sendReceipt')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-gray-200" />
                               <DropdownMenuItem 
@@ -1143,14 +1143,14 @@ function BookingCalendarContent() {
                                 className="cursor-pointer hover:bg-yellow-50 focus:bg-yellow-50 text-gray-900"
                               >
                                 <RefreshCw className="mr-2 h-4 w-4 text-yellow-600" />
-                                Process Refund
+                                {t('processRefund')}
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleMarkNoShow(appointment)}
                                 className="cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-gray-900"
                               >
                                 <UserX className="mr-2 h-4 w-4 text-orange-600" />
-                                Mark as No-Show
+                                {t('markNoShow')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-gray-200" />
                               <DropdownMenuItem 
@@ -1158,7 +1158,7 @@ function BookingCalendarContent() {
                                 className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
                               >
                                 <XCircle className="mr-2 h-4 w-4" />
-                                Cancel Appointment
+                                {t('cancelAppointment')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1168,13 +1168,13 @@ function BookingCalendarContent() {
                   ) : (
                     <div className="text-center py-6 sm:py-8 text-gray-500">
                       <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-                      <p className="text-sm sm:text-base">No appointments scheduled</p>
+                      <p className="text-sm sm:text-base">{t('noAppointments')}</p>
                     </div>
                   )
                 ) : (
                   <div className="text-center py-6 sm:py-8 text-gray-500">
                     <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-                    <p className="text-sm sm:text-base">Click on a date to view appointments</p>
+                    <p className="text-sm sm:text-base">{t('clickDateToView')}</p>
                   </div>
                 )}
               </CardContent>
@@ -1203,10 +1203,10 @@ function BookingCalendarContent() {
           <DialogHeader className="bg-gradient-to-r from-lavender/10 to-purple/10 p-4 sm:p-6 -m-4 sm:-m-6 mb-4 sm:mb-6 border-b border-gray-200 rounded-t-lg">
             <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-lg sm:text-xl">
               <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-lavender" />
-              New Appointment
+              {t('newAppointment')}
             </DialogTitle>
             <DialogDescription className="text-gray-700 mt-2 sm:mt-3 text-sm sm:text-base font-medium bg-white/80 p-2 sm:p-3 rounded-lg border border-gray-200">
-              Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
+              {t('appointmentsForDate', { date: selectedDate ? new Date(selectedDate).toLocaleDateString() : t('selectedDateFallback') })}
             </DialogDescription>
           </DialogHeader>
 
@@ -1216,10 +1216,10 @@ function BookingCalendarContent() {
               <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 bg-white rounded-lg border-2 border-gray-300 shadow-lg">
                 <div className="text-center mb-4 sm:mb-6">
                   <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg inline-block">
-                    Choose Client Type
+                    {t('chooseClientType')}
                   </h3>
                   <p className="text-gray-700 mt-3 sm:mt-4 text-sm sm:text-lg font-medium bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
-                    Create a new appointment for {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'selected date'}
+                    {t('createForDate', { date: selectedDate ? new Date(selectedDate).toLocaleDateString() : t('selectedDateFallback') })}
                   </p>
                 </div>
                 
@@ -1230,8 +1230,8 @@ function BookingCalendarContent() {
                   >
                     <div className="flex flex-col items-center gap-2 sm:gap-3">
                       <User className="h-6 w-6 sm:h-8 sm:w-8" />
-                      <span className="font-bold text-sm sm:text-lg">Existing Client</span>
-                      <span className="text-blue-100 text-xs sm:text-sm text-center">Select from your client database</span>
+                      <span className="font-bold text-sm sm:text-lg">{t('existingClient')}</span>
+                      <span className="text-blue-100 text-xs sm:text-sm text-center">{t('existingClientDesc')}</span>
                     </div>
                   </Button>
                   <Button
@@ -1240,8 +1240,8 @@ function BookingCalendarContent() {
                   >
                     <div className="flex flex-col items-center gap-2 sm:gap-3">
                       <UserPlus className="h-6 w-6 sm:h-8 sm:w-8" />
-                      <span className="font-bold text-sm sm:text-lg">New Client</span>
-                      <span className="text-green-100 text-xs sm:text-sm text-center">Add a new client to your database</span>
+                      <span className="font-bold text-sm sm:text-lg">{t('newClient')}</span>
+                      <span className="text-green-100 text-xs sm:text-sm text-center">{t('newClientDesc')}</span>
                     </div>
                   </Button>
                 </div>
@@ -1252,14 +1252,14 @@ function BookingCalendarContent() {
             {clientSelectionType === 'existing' && (
               <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Existing Client</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">{t('selectExistingClient')}</h3>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
                     className="bg-white hover:bg-gray-50 border-gray-300 text-xs sm:text-sm w-full sm:w-auto"
                   >
-                    Back
+                    {t('back')}
                   </Button>
                 </div>
                 
@@ -1268,7 +1268,7 @@ function BookingCalendarContent() {
                   <Input
                     id="clientSearch"
                     name="clientSearch"
-                    placeholder="Search clients..."
+                    placeholder={t('searchClients')}
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
                     className="pl-8 sm:pl-10 bg-white border-gray-300 focus:border-lavender focus:ring-lavender/20 text-sm sm:text-base h-10 sm:h-12"
@@ -1301,8 +1301,8 @@ function BookingCalendarContent() {
                   ) : (
                     <div className="text-center py-6 sm:py-8 text-gray-500 bg-white rounded-lg">
                       <User className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-                      <p className="text-sm sm:text-base">No clients found</p>
-                      <p className="text-xs sm:text-sm">Try adjusting your search or add a new client</p>
+                      <p className="text-sm sm:text-base">{t('noClientsFound')}</p>
+                      <p className="text-xs sm:text-sm">{t('tryAdjustingSearch')}</p>
                     </div>
                   )}
                 </div>
@@ -1313,49 +1313,49 @@ function BookingCalendarContent() {
             {clientSelectionType === 'new' && (
               <div className="space-y-4 sm:space-y-6 p-4 sm:p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">New Client Information</h3>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">{t('newClientInformation')}</h3>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setClientSelectionType(null)}
                     className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 font-medium px-3 sm:px-4 py-2 text-xs sm:text-sm w-full sm:w-auto"
                   >
-                    ← Back
+                    {`← ${t('back')}`}
                   </Button>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="clientName" className="text-gray-800 font-bold text-sm sm:text-lg">Client Name *</Label>
+                    <Label htmlFor="clientName" className="text-gray-800 font-bold text-sm sm:text-lg">{t('clientName')}</Label>
                     <Input
                       id="clientName"
                       name="clientName"
                       value={newClientData.name}
                       onChange={(e) => setNewClientData({...newClientData, name: e.target.value})}
-                      placeholder="Enter client name"
+                      placeholder={t('clientNamePlaceholder')}
                       className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="clientEmail" className="text-gray-800 font-bold text-sm sm:text-lg">Email</Label>
+                    <Label htmlFor="clientEmail" className="text-gray-800 font-bold text-sm sm:text-lg">{t('email')}</Label>
                     <Input
                       id="clientEmail"
                       name="clientEmail"
                       type="email"
                       value={newClientData.email}
                       onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
-                      placeholder="Enter email address"
+                      placeholder={t('emailPlaceholder')}
                       className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
                   <div className="space-y-2 sm:space-y-3 sm:col-span-2">
-                    <Label htmlFor="clientPhone" className="text-gray-800 font-bold text-sm sm:text-lg">Phone</Label>
+                    <Label htmlFor="clientPhone" className="text-gray-800 font-bold text-sm sm:text-lg">{t('phone')}</Label>
                     <Input
                       id="clientPhone"
                       name="clientPhone"
                       value={newClientData.phone}
                       onChange={(e) => setNewClientData({...newClientData, phone: e.target.value})}
-                      placeholder="Enter phone number"
+                      placeholder={t('phonePlaceholder')}
                       className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                     />
                   </div>
@@ -1366,11 +1366,11 @@ function BookingCalendarContent() {
             {/* Appointment Details */}
             {(selectedClient || clientSelectionType === 'new') && (
               <div className="space-y-4 sm:space-y-6 p-4 sm:p-8 bg-white rounded-lg border-2 border-gray-300 shadow-xl">
-                <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">Appointment Details</h3>
+                <h3 className="text-lg sm:text-2xl font-bold text-gray-900 bg-lavender/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">{t('appointmentDetails')}</h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="service" className="text-gray-800 font-bold text-sm sm:text-lg">Service *</Label>
+                    <Label htmlFor="service" className="text-gray-800 font-bold text-sm sm:text-lg">{t('service')}</Label>
                     <Select value={appointmentData.service} onValueChange={(value) => {
                       const service = getServiceById(value)
                       setAppointmentData({
@@ -1381,7 +1381,7 @@ function BookingCalendarContent() {
                       })
                     }}>
                       <SelectTrigger id="service" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
-                        <SelectValue placeholder="Select service" />
+                        <SelectValue placeholder={t('servicePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-200 shadow-lg">
                         {getActiveServices().map((service) => (
@@ -1394,7 +1394,7 @@ function BookingCalendarContent() {
                   </div>
                   
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="time" className="text-gray-800 font-bold text-sm sm:text-lg">Time *</Label>
+                    <Label htmlFor="time" className="text-gray-800 font-bold text-sm sm:text-lg">{t('time')}</Label>
                     <Input
                       id="time"
                       name="time"
@@ -1406,7 +1406,7 @@ function BookingCalendarContent() {
                   </div>
                   
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="duration" className="text-gray-800 font-bold text-sm sm:text-lg">Duration (minutes)</Label>
+                    <Label htmlFor="duration" className="text-gray-800 font-bold text-sm sm:text-lg">{t('durationMinutes')}</Label>
                     <Input
                       id="duration"
                       name="duration"
@@ -1418,7 +1418,7 @@ function BookingCalendarContent() {
                   </div>
                   
                   <div className="space-y-2 sm:space-y-3">
-                    <Label htmlFor="price" className="text-gray-800 font-bold text-sm sm:text-lg">Price ($)</Label>
+                    <Label htmlFor="price" className="text-gray-800 font-bold text-sm sm:text-lg">{t('price')}</Label>
                     <Input
                       id="price"
                       name="price"
@@ -1431,29 +1431,29 @@ function BookingCalendarContent() {
                 </div>
                 
                 <div className="space-y-2 sm:space-y-3">
-                  <Label htmlFor="paymentMethod" className="text-gray-800 font-bold text-sm sm:text-lg">Payment Method</Label>
+                  <Label htmlFor="paymentMethod" className="text-gray-800 font-bold text-sm sm:text-lg">{t('paymentMethod')}</Label>
                   <Select
                     value={appointmentData.paymentMethod}
                     onValueChange={(value) => setAppointmentData({...appointmentData, paymentMethod: value})}
                   >
                     <SelectTrigger id="paymentMethod" className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
-                      <SelectValue placeholder="Select payment method" />
+                      <SelectValue placeholder={t('paymentMethodPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="online">Online Deposit (Link sent to client)</SelectItem>
-                      <SelectItem value="in-person">Pay in Person (No deposit required)</SelectItem>
+                      <SelectItem value="online">{t('onlineDeposit')}</SelectItem>
+                      <SelectItem value="in-person">{t('payInPerson')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2 sm:space-y-3">
-                  <Label htmlFor="notes" className="text-gray-800 font-bold text-sm sm:text-lg">Notes</Label>
+                  <Label htmlFor="notes" className="text-gray-800 font-bold text-sm sm:text-lg">{t('notes')}</Label>
                   <Input
                     id="notes"
                     name="notes"
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
-                    placeholder="Any additional notes..."
+                    placeholder={t('notesPlaceholder')}
                     className="bg-white border-2 border-gray-300 focus:border-lavender focus:ring-lavender/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
                   />
                 </div>
@@ -1467,14 +1467,14 @@ function BookingCalendarContent() {
                 onClick={() => setShowNewAppointmentModal(false)}
                 className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 text-sm sm:text-base w-full sm:w-auto"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleCreateAppointment}
                 className="bg-lavender hover:bg-lavender-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
                 disabled={!selectedClient && clientSelectionType !== 'new'}
               >
-                Create Appointment
+                {t('createAppointment')}
               </Button>
             </div>
           </div>
@@ -1487,17 +1487,17 @@ function BookingCalendarContent() {
           <DialogHeader className="bg-gradient-to-r from-purple-100 to-lavender/20 p-4 sm:p-6 -m-4 sm:-m-6 mb-4 sm:mb-6 border-b border-gray-200 rounded-t-lg">
             <DialogTitle className="flex items-center gap-2 text-gray-900 font-bold text-lg sm:text-xl">
               <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-              Edit Appointment
+              {t('editAppointment')}
             </DialogTitle>
             <DialogDescription className="text-gray-700 mt-2 sm:mt-3 text-sm sm:text-base font-medium bg-white/80 p-2 sm:p-3 rounded-lg border border-gray-200">
-              Update appointment details for {editingAppointment?.clientName}
+              {t('updateDetailsFor', { name: editingAppointment?.clientName || '' })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2 sm:space-y-3">
-                <Label htmlFor="edit-service" className="text-gray-800 font-bold text-sm sm:text-lg">Service *</Label>
+                <Label htmlFor="edit-service" className="text-gray-800 font-bold text-sm sm:text-lg">{t('service')}</Label>
                 <Select 
                   value={editFormData.service} 
                   onValueChange={(value) => {
@@ -1511,7 +1511,7 @@ function BookingCalendarContent() {
                   }}
                 >
                   <SelectTrigger id="edit-service" className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900">
-                    <SelectValue placeholder="Select service" />
+                    <SelectValue placeholder={t('servicePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
                     {getActiveServices().map((service) => (
@@ -1524,7 +1524,7 @@ function BookingCalendarContent() {
               </div>
               
               <div className="space-y-2 sm:space-y-3">
-                <Label htmlFor="edit-date" className="text-gray-800 font-bold text-sm sm:text-lg">Date *</Label>
+                <Label htmlFor="edit-date" className="text-gray-800 font-bold text-sm sm:text-lg">{t('date')}</Label>
                 <Input
                   id="edit-date"
                   name="edit-date"
@@ -1536,7 +1536,7 @@ function BookingCalendarContent() {
               </div>
 
               <div className="space-y-2 sm:space-y-3">
-                <Label htmlFor="edit-time" className="text-gray-800 font-bold text-sm sm:text-lg">Time *</Label>
+                <Label htmlFor="edit-time" className="text-gray-800 font-bold text-sm sm:text-lg">{t('time')}</Label>
                 <Input
                   id="edit-time"
                   name="edit-time"
@@ -1573,13 +1573,13 @@ function BookingCalendarContent() {
             </div>
             
             <div className="space-y-2 sm:space-y-3">
-              <Label htmlFor="edit-notes" className="text-gray-800 font-bold text-sm sm:text-lg">Notes</Label>
+                <Label htmlFor="edit-notes" className="text-gray-800 font-bold text-sm sm:text-lg">{t('notes')}</Label>
               <Input
                 id="edit-notes"
                 name="edit-notes"
                 value={editFormData.notes}
                 onChange={(e) => setEditFormData({...editFormData, notes: e.target.value})}
-                placeholder="Any additional notes..."
+                placeholder={t('notesPlaceholder')}
                 className="bg-white border-2 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 h-12 sm:h-14 text-sm sm:text-lg px-3 sm:px-4 font-medium text-gray-900 placeholder-gray-500"
               />
             </div>
@@ -1595,7 +1595,7 @@ function BookingCalendarContent() {
               />
               <Label htmlFor="send-update-email" className="text-gray-900 font-medium cursor-pointer flex items-center gap-2">
                 <Mail className="h-4 w-4 text-blue-600" />
-                Send update email to client
+                {t('sendUpdateEmail')}
               </Label>
             </div>
           </div>
@@ -1607,13 +1607,13 @@ function BookingCalendarContent() {
               onClick={() => setShowEditAppointmentModal(false)}
               className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 text-sm sm:text-base w-full sm:w-auto"
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               onClick={handleSaveAppointmentChanges}
               className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
             >
-              Save Changes
+              {t('saveChanges')}
             </Button>
           </div>
         </DialogContent>
@@ -1623,12 +1623,13 @@ function BookingCalendarContent() {
 }
 
 export default function BookingCalendar() {
+  const t = useTranslations('Booking')
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-lavender/10 via-white to-purple/5">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lavender mx-auto mb-4"></div>
-          <p className="text-muted-text">Loading booking page...</p>
+          <p className="text-muted-text">{t('loadingPage')}</p>
         </div>
       </div>
     }>

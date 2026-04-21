@@ -666,32 +666,20 @@ export default function FundamentalsTrainingPortal() {
   )
   const activeHighPriorityLessonIds = useMemo(() => {
     if (!selectedLessonDay) return []
-    const searchable = [
-      selectedLessonDay.title,
-      ...(selectedLessonDay.focus || []),
-      ...(selectedLessonDay.homework || []),
-      ...selectedLessonDay.segments.flatMap(segment => [segment.title, segment.instructorScript || ''])
-    ]
-      .join(' ')
-      .toLowerCase()
 
-    const ids: Array<keyof typeof HIGH_PRIORITY_TRAINING_LESSONS> = []
-    if (searchable.includes('sanitation') || searchable.includes('infection control') || searchable.includes('bbp disposal') || searchable.includes('workstation setup')) {
-      ids.push('sanitation-infection-control')
+    const ids = new Set<keyof typeof HIGH_PRIORITY_TRAINING_LESSONS>()
+
+    if (selectedLessonDay.lessonId && HIGH_PRIORITY_TRAINING_LESSONS[selectedLessonDay.lessonId]) {
+      ids.add(selectedLessonDay.lessonId)
     }
-    if (searchable.includes('bloodborne') || searchable.includes('bbp')) {
-      ids.push('bloodborne-pathogens-basics')
-    }
-    if (searchable.includes('contraindication')) {
-      ids.push('contraindications')
-    }
-    if (searchable.includes('aftercare') || searchable.includes('healing process')) {
-      ids.push('aftercare-instructions')
-    }
-    if (searchable.includes('brow map') || searchable.includes('brow mapping')) {
-      ids.push('brow-mapping-fundamentals')
-    }
-    return ids
+
+    selectedLessonDay.segments.forEach(segment => {
+      if (segment.lessonId && HIGH_PRIORITY_TRAINING_LESSONS[segment.lessonId]) {
+        ids.add(segment.lessonId)
+      }
+    })
+
+    return Array.from(ids)
   }, [selectedLessonDay])
   const activeHighPriorityLessons = useMemo(
     () => activeHighPriorityLessonIds.map(id => ({ id, lesson: HIGH_PRIORITY_TRAINING_LESSONS[id] })),
