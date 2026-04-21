@@ -25,8 +25,10 @@ import { useDemoAuth } from "@/hooks/use-demo-auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ClockIndicator } from "@/components/dashboard/clock-indicator"
+import { useTranslations } from "next-intl"
 
 export default function DashboardPage() {
+  const t = useTranslations('Dashboard')
   const { currentUser, isLoading, isProductionUser, isDemoUser } = useDemoAuth()
   const router = useRouter()
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -216,7 +218,7 @@ export default function DashboardPage() {
             {showNotifications && (
               <Card className="mb-6">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Recent Notifications</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('recentNotifications')}</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -227,7 +229,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   {notifications.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No notifications yet</p>
+                    <p className="text-sm text-muted-foreground">{t('noNotifications')}</p>
                   ) : (
                     <div className="space-y-3">
                       {notifications.slice(0, 5).map((notification) => (
@@ -252,7 +254,7 @@ export default function DashboardPage() {
                                 onClick={() => markAsRead(notification.id)}
                                 className="ml-2"
                               >
-                                Mark as read
+                                {t('markAsRead')}
                               </Button>
                             )}
                           </div>
@@ -270,7 +272,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
                   <div className="flex items-center gap-2">
-                    <h1 className="text-xl sm:text-2xl font-bold text-foreground font-serif">Dashboard</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground font-serif">{t('dashboard')}</h1>
                     <ClockIndicator />
                   </div>
                   {notifications.filter(n => !n.isRead).length > 0 && (
@@ -287,7 +289,7 @@ export default function DashboardPage() {
                     </Button>
                   )}
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground px-4">Manage your PMU consultations and analysis</p>
+                <p className="text-xs sm:text-sm text-muted-foreground px-4">{t('subtitle')}</p>
               </div>
               <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 px-4">
                 <Button
@@ -298,7 +300,7 @@ export default function DashboardPage() {
                 >
                   <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                   <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />
-                  Install App
+                  {t('installApp')}
                 </Button>
                 <Link href="/products" className="w-full sm:w-auto">
                   <Button
@@ -307,7 +309,7 @@ export default function DashboardPage() {
                     className="w-full sm:w-auto gap-2 hover:bg-teal-50 hover:border-teal-300 bg-white/90 backdrop-blur-sm border-teal-200 text-teal-700 font-semibold text-xs sm:text-sm"
                   >
                     <Package className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Products
+                    {t('products')}
                   </Button>
                 </Link>
               </div>
@@ -319,8 +321,8 @@ export default function DashboardPage() {
                 <img src="/images/pmu-guide-logo.png" alt="PMU Guide Logo" className="w-8 h-8 lg:w-10 lg:h-10 object-contain" />
                 <div className="flex items-center gap-3">
                   <div>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-serif mb-1 lg:mb-2">Dashboard</h1>
-                    <p className="text-sm lg:text-base text-muted-foreground">Manage your PMU consultations and analysis</p>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-serif mb-1 lg:mb-2">{t('dashboard')}</h1>
+                    <p className="text-sm lg:text-base text-muted-foreground">{t('subtitle')}</p>
                   </div>
                   <ClockIndicator />
                 </div>
@@ -356,7 +358,7 @@ export default function DashboardPage() {
                     className="gap-2 hover:bg-lavender/10 hover:border-lavender bg-white/90 backdrop-blur-sm border-lavender/30 text-lavender-700 font-semibold text-sm lg:text-base"
                   >
                     <Home className="h-4 w-4" />
-                    Dashboard
+                    {t('dashboard')}
                   </Button>
                 </Link>
               </div>

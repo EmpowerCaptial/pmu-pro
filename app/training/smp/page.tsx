@@ -51,6 +51,10 @@ import {
 import { upload } from '@vercel/blob/client'
 import { DiscussionBoard } from '@/components/training/discussion-board'
 import { VideoPlayer } from '@/components/training/video-player'
+import { SpanishFallbackNotice } from '@/components/training/spanish-fallback-notice'
+import { shouldShowSpanishFallback } from '@/lib/training-localization'
+import { normalizeLocale } from '@/lib/i18n'
+import { useLocale } from 'next-intl'
 
 type SMPCategory = 
   | 'hairline-design'
@@ -623,6 +627,7 @@ interface SMPVideo {
 }
 
 export default function SMPTrainingPortal() {
+  const locale = normalizeLocale(useLocale())
   const { currentUser } = useDemoAuth()
   const [activeTab, setActiveTab] = useState<'student' | 'instructor'>('student')
   const [selectedModule, setSelectedModule] = useState<string>('welcome')
@@ -737,6 +742,10 @@ export default function SMPTrainingPortal() {
   }
 
   const currentModule = SMP_MODULES.find(m => m.id === selectedModule) || SMP_MODULES[0]
+  const showSpanishModuleFallback = useMemo(
+    () => shouldShowSpanishFallback(locale, [currentModule?.title, currentModule?.description, ...(currentModule?.content || [])]),
+    [locale, currentModule]
+  )
 
   // Fetch SMP videos
   const fetchSMPVideos = useCallback(async () => {
@@ -1582,6 +1591,7 @@ export default function SMPTrainingPortal() {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
+                            {showSpanishModuleFallback && <SpanishFallbackNotice />}
                             {currentModule.content.map((paragraph, idx) => (
                               <p key={idx} className="text-gray-700 leading-relaxed">
                                 {paragraph}

@@ -1,0 +1,38 @@
+{
+  "Common": {
+    "language": "Language",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "Login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to your professional account",
+    "email": "Email address",
+    "emailPlaceholder": "Enter your email address",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "button": "Sign In",
+    "loading": "Signing In...",
+    "success": "Login successful! Redirecting to dashboard...",
+    "error": "Invalid email or password. Please try again.",
+    "forgotPassword": "Forgot your password?",
+    "requestAccess": "Don't have an account? Request access",
+    "backToHome": "Back to Home"
+  },
+  "Dashboard": {
+    "dashboard": "Dashboard",
+    "training": "Training",
+    "progress": "Progress",
+    "logout": "Sign out",
+    "subtitle": "Manage your PMU consultations and analysis",
+    "installApp": "Install App",
+    "products": "Products",
+    "recentNotifications": "Recent Notifications",
+    "noNotifications": "No notifications yet",
+    "markAsRead": "Mark as read"
+  },
+  "Training": {
+    "continue": "Continue",
+    "modules": "Modules"
+  }
+}

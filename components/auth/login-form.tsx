@@ -12,8 +12,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { useTranslations } from "next-intl"
 
 export function LoginForm() {
+  const t = useTranslations('Login')
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -31,7 +33,7 @@ export function LoginForm() {
     try {
       const result = await login(email, password)
       setIsSuccess(true)
-      setMessage("Login successful! Redirecting to dashboard...")
+      setMessage(t('success'))
       setTimeout(() => {
         router.push("/dashboard")
       }, 1500)
@@ -45,7 +47,7 @@ export function LoginForm() {
         router.push('/auth/setup-password')
         return
       }
-      setMessage("Invalid email or password. Please try again.")
+      setMessage(t('error'))
     } finally {
       setIsLoading(false)
     }
@@ -58,17 +60,17 @@ export function LoginForm() {
   return (
     <Card className="border-border shadow-lg bg-white/95 backdrop-blur-sm">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">Sign in to your PMU Pro account</CardDescription>
+        <CardTitle className="text-2xl font-semibold text-center">{t('title')}</CardTitle>
+        <CardDescription className="text-center">{t('subtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email address"
+              placeholder={t('emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -78,12 +80,12 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder={t('passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -121,10 +123,10 @@ export function LoginForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing In...
+                {t('loading')}
               </>
             ) : (
-              "Sign In"
+              t('button')
             )}
           </Button>
 
@@ -133,7 +135,7 @@ export function LoginForm() {
               href="/auth/forgot-password"
               className="text-sm text-muted-foreground hover:text-primary underline"
             >
-              Forgot your password?
+              {t('forgotPassword')}
             </Link>
             <div>
               <Button
@@ -142,7 +144,7 @@ export function LoginForm() {
                 onClick={handleRequestAccess}
                 className="text-sm text-muted-foreground hover:text-primary"
               >
-                Don't have an account? Request access
+                {t('requestAccess')}
               </Button>
             </div>
           </div>

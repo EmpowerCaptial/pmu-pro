@@ -1,0 +1,38 @@
+{
+  "Common": {
+    "language": "Idioma",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "Login": {
+    "title": "Bienvenido de nuevo",
+    "subtitle": "Inicia sesion en tu cuenta profesional",
+    "email": "Correo electronico",
+    "emailPlaceholder": "Ingresa tu correo electronico",
+    "password": "Contrasena",
+    "passwordPlaceholder": "Ingresa tu contrasena",
+    "button": "Iniciar sesion",
+    "loading": "Iniciando sesion...",
+    "success": "Inicio de sesion exitoso. Redirigiendo al panel...",
+    "error": "Correo o contrasena invalidos. Intentalo de nuevo.",
+    "forgotPassword": "Olvidaste tu contrasena?",
+    "requestAccess": "No tienes cuenta? Solicitar acceso",
+    "backToHome": "Volver al inicio"
+  },
+  "Dashboard": {
+    "dashboard": "Panel",
+    "training": "Capacitacion",
+    "progress": "Progreso",
+    "logout": "Cerrar sesion",
+    "subtitle": "Administra tus consultas y analisis PMU",
+    "installApp": "Instalar app",
+    "products": "Productos",
+    "recentNotifications": "Notificaciones recientes",
+    "noNotifications": "Aun no hay notificaciones",
+    "markAsRead": "Marcar como leida"
+  },
+  "Training": {
+    "continue": "Continuar",
+    "modules": "Modulos"
+  }
+}

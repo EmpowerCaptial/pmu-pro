@@ -53,6 +53,11 @@ import {
 import { TRAINING_LESSON_PLANS } from '@/data/training-lesson-plan'
 import { LiveStreamViewer } from '@/components/live-streaming/live-stream-viewer'
 import { DiscussionBoard } from '@/components/training/discussion-board'
+import { SpanishFallbackNotice } from '@/components/training/spanish-fallback-notice'
+import { getLocalized, hasSpanishTranslation, shouldShowSpanishFallback } from '@/lib/training-localization'
+import { normalizeLocale } from '@/lib/i18n'
+import { useLocale } from 'next-intl'
+import { HIGH_PRIORITY_TRAINING_LESSONS } from '@/data/high-priority-training-lessons'
 
 interface Assignment {
   id: string
@@ -609,6 +614,7 @@ export default function FundamentalsTrainingPortal() {
   const MAX_VIDEO_MB = 500
   const VIDEO_UPLOAD_PREFIX = 'training-video'
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
+  const locale = normalizeLocale(useLocale())
   const isStudent = ['student', 'apprentice'].includes(userRole)
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
   const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
@@ -658,6 +664,63 @@ export default function FundamentalsTrainingPortal() {
     () => selectedLessonWeek?.days.find(day => day.id === selectedLessonDayId),
     [selectedLessonWeek, selectedLessonDayId]
   )
+  const activeHighPriorityLessonIds = useMemo(() => {
+    if (!selectedLessonDay) return []
+    const searchable = [
+      selectedLessonDay.title,
+      ...(selectedLessonDay.focus || []),
+      ...(selectedLessonDay.homework || []),
+      ...selectedLessonDay.segments.flatMap(segment => [segment.title, segment.instructorScript || ''])
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    const ids: Array<keyof typeof HIGH_PRIORITY_TRAINING_LESSONS> = []
+    if (searchable.includes('sanitation') || searchable.includes('infection control') || searchable.includes('bbp disposal') || searchable.includes('workstation setup')) {
+      ids.push('sanitation-infection-control')
+    }
+    if (searchable.includes('bloodborne') || searchable.includes('bbp')) {
+      ids.push('bloodborne-pathogens-basics')
+    }
+    if (searchable.includes('contraindication')) {
+      ids.push('contraindications')
+    }
+    if (searchable.includes('aftercare') || searchable.includes('healing process')) {
+      ids.push('aftercare-instructions')
+    }
+    if (searchable.includes('brow map') || searchable.includes('brow mapping')) {
+      ids.push('brow-mapping-fundamentals')
+    }
+    return ids
+  }, [selectedLessonDay])
+  const activeHighPriorityLessons = useMemo(
+    () => activeHighPriorityLessonIds.map(id => ({ id, lesson: HIGH_PRIORITY_TRAINING_LESSONS[id] })),
+    [activeHighPriorityLessonIds]
+  )
+  const showLocalizedLessonFallbackNotice = useMemo(() => {
+    if (locale !== 'es' || activeHighPriorityLessons.length === 0) return false
+    return activeHighPriorityLessons.some(({ lesson }) => {
+      if (!hasSpanishTranslation(lesson.title) || !hasSpanishTranslation(lesson.description)) return true
+      return lesson.sections.some(section => !hasSpanishTranslation(section.heading) || !hasSpanishTranslation(section.body))
+    })
+  }, [locale, activeHighPriorityLessons])
+  const showSpanishLessonFallback = useMemo(() => {
+    if (!selectedLessonDay) return false
+    return shouldShowSpanishFallback(locale, [
+      selectedLessonDay.title,
+      selectedLessonDay.tone,
+      ...selectedLessonDay.focus,
+      ...selectedLessonDay.homework,
+      ...selectedLessonDay.segments.flatMap(segment => [
+        segment.title,
+        segment.instructorScript,
+        ...(segment.prompts || []),
+        ...(segment.activities || []),
+        ...(segment.cues || []),
+        ...(segment.notes || [])
+      ])
+    ])
+  }, [locale, selectedLessonDay])
 
   const lessonHomeworkByWeek = useMemo(() => {
     const map: Record<string, { dayTitle: string; items: string[] }[]> = {}
@@ -5290,6 +5353,36 @@ export default function FundamentalsTrainingPortal() {
                       )}
                       {selectedLessonDay && (
                         <div className="space-y-6">
+                          {showLocalizedLessonFallbackNotice && <SpanishFallbackNotice />}
+                          {activeHighPriorityLessons.length > 0 && (
+                            <div className="space-y-4">
+                              {activeHighPriorityLessons.map(({ id, lesson }) => (
+                                <Card key={id} className="border border-sky-200 bg-sky-50/70 shadow-sm">
+                                  <CardHeader>
+                                    <CardTitle className="text-base font-semibold text-sky-900">
+                                      {getLocalized(lesson.title, locale)}
+                                    </CardTitle>
+                                    <CardDescription className="text-sky-800">
+                                      {getLocalized(lesson.description, locale)}
+                                    </CardDescription>
+                                  </CardHeader>
+                                  <CardContent className="space-y-3">
+                                    {lesson.sections.map(section => (
+                                      <div key={`${id}-${section.heading.en}`} className="space-y-1">
+                                        <p className="text-sm font-semibold text-sky-900">
+                                          {getLocalized(section.heading, locale)}
+                                        </p>
+                                        <p className="text-sm text-sky-800 leading-relaxed">
+                                          {getLocalized(section.body, locale)}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                          {showSpanishLessonFallback && !showLocalizedLessonFallbackNotice && <SpanishFallbackNotice />}
                           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                             <h3 className="text-lg font-semibold text-gray-900">{selectedLessonDay.title}</h3>
                             <div className="mt-3 space-y-1 text-sm text-gray-600">

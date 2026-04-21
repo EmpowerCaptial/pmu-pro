@@ -4,6 +4,10 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
 import { NavBar } from '@/components/ui/navbar'
+import { useLocale } from 'next-intl'
+import { normalizeLocale } from '@/lib/i18n'
+import { SpanishFallbackNotice } from '@/components/training/spanish-fallback-notice'
+import { shouldShowSpanishFallback } from '@/lib/training-localization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -249,6 +253,7 @@ const TRAINING_METRICS = {
 }
 
 export default function TrainingPage() {
+  const locale = normalizeLocale(useLocale())
   const { currentUser } = useDemoAuth()
   const role = currentUser?.role?.toLowerCase() || 'guest'
   const isOwner = role === 'owner'
@@ -268,6 +273,14 @@ export default function TrainingPage() {
   const instructorPrograms = useMemo(
     () => TRAINING_TRACKS.filter(track => track.audience.some(audience => audience === 'staff' || audience === 'management')),
     []
+  )
+  const showSpanishTrainingFallback = useMemo(
+    () =>
+      shouldShowSpanishFallback(locale, [
+        ...TRAINING_TRACKS.flatMap(track => [track.title, track.description, ...track.competencies]),
+        ...RESOURCE_LIBRARY.flatMap(resource => [resource.title, resource.description])
+      ]),
+    [locale]
   )
 
   const heroVariant: 'student' | 'instructor' | 'owner' = isOwner
@@ -422,6 +435,7 @@ export default function TrainingPage() {
 
         {showStudentPortal && (
           <section id="student-portal" className="mb-14 space-y-6">
+            {showSpanishTrainingFallback && <SpanishFallbackNotice />}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Student Portal</h2>

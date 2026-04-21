@@ -32,6 +32,8 @@ import {
   Mic,
 } from "lucide-react"
 import { useDemoAuth } from "@/hooks/use-demo-auth"
+import { useTranslations } from "next-intl"
+import LanguageSwitcher from "@/components/LanguageSwitcher"
 
 
 interface NavBarProps {
@@ -45,6 +47,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ currentPath, user }: NavBarProps) {
+  const t = useTranslations('Dashboard')
   const router = useRouter()
   const { logout, currentUser } = useDemoAuth()
   const [pendingFormsCount, setPendingFormsCount] = useState(0)
@@ -169,9 +172,10 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                 className="text-white hover:bg-white/20 bg-transparent"
               >
                 <Package className="mr-2 h-4 w-4" />
-                Products
+                {t('products')}
               </Button>
             </Link>
+            <LanguageSwitcher className="inline-flex items-center gap-2 text-sm text-white" />
           </div>
 
           {/* User Menu */}
@@ -306,7 +310,7 @@ export function NavBar({ currentPath, user }: NavBarProps) {
                   <DropdownMenuSeparator className="bg-white/20" />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-white hover:bg-white/20">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign out</span>
+                    <span>{t('logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useState } from "react"
+import LanguageSwitcher from "@/components/LanguageSwitcher"
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -52,6 +53,7 @@ export default function HomePage() {
               </nav>
 
               <div className="flex items-center gap-3">
+                <LanguageSwitcher className="hidden sm:inline-flex items-center gap-2 text-sm text-ink" redirectToLogin />
                 <Link href="/auth/login">
                   <Button
                     variant="outline"
@@ -76,6 +78,10 @@ export default function HomePage() {
                   </svg>
                 </button>
               </div>
+            </div>
+
+            <div className="mt-3 sm:hidden">
+              <LanguageSwitcher className="inline-flex items-center gap-2 text-sm text-ink" redirectToLogin />
             </div>
 
             {/* Mobile Menu */}

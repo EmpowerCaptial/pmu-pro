@@ -2,13 +2,17 @@ import type { Metadata } from "next"
 import { LoginForm } from "@/components/auth/login-form"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { getTranslations } from "next-intl/server"
+import LanguageSwitcher from "@/components/LanguageSwitcher"
 
 export const metadata: Metadata = {
   title: "Sign In - PMU Pro",
   description: "Sign in to your PMU Pro account",
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const t = await getTranslations('Login')
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative">
       {/* Background Image with White Filter Overlay */}
@@ -26,23 +30,26 @@ export default function LoginPage() {
         <div className="md:hidden mb-4">
           <Link href="/">
             <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 bg-white/90 backdrop-blur-sm w-full">
-              ← Back to Home
+              ← {t('backToHome')}
             </Button>
           </Link>
         </div>
 
         {/* Desktop Back Button */}
         <div className="hidden md:block mb-6">
-          <Link href="/">
-            <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 bg-white/90 backdrop-blur-sm">
-              ← Back to Home
-            </Button>
-          </Link>
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/">
+              <Button variant="outline" className="border-lavender text-lavender hover:bg-lavender/5 bg-white/90 backdrop-blur-sm">
+                ← {t('backToHome')}
+              </Button>
+            </Link>
+            <LanguageSwitcher className="inline-flex items-center gap-2 text-sm text-foreground" />
+          </div>
         </div>
 
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-serif mb-2">PMU Pro</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Sign in to your professional account</p>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('subtitle')}</p>
         </div>
         <LoginForm />
       </div>

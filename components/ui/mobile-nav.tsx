@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { 
   Home, 
   CreditCard, 
@@ -43,6 +44,7 @@ const navItems = [
 ]
 
 export default function MobileNav() {
+  const t = useTranslations('Dashboard')
   const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -106,7 +108,9 @@ export default function MobileNav() {
               <Icon 
                 className={`w-6 h-6 mb-1 ${isActive ? item.color : isComingSoon ? 'text-gray-400' : ''}`} 
               />
-              <span className="text-xs font-medium">{item.name}</span>
+              <span className="text-xs font-medium">
+                {item.href === '/dashboard' ? t('dashboard') : item.name}
+              </span>
               {isComingSoon && (
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
               )}

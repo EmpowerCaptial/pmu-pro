@@ -1,9 +1,12 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
+import { cookies } from "next/headers"
+import { NextIntlClientProvider } from "next-intl"
 import "./globals.css"
 import { LeahChat } from "@/components/chat/leah-chat"
 import dynamic from 'next/dynamic'
+import { DEFAULT_LOCALE, normalizeLocale } from "@/lib/i18n"
 
 // Use dynamic imports with ssr: false for all components that access window
 const PWARegistration = dynamic(() => import('@/components/pwa/pwa-registration'), {
@@ -82,21 +85,27 @@ export const viewport = {
   themeColor: "#8b5cf6",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const localeCookie = cookies().get('NEXT_LOCALE')?.value
+  const locale = normalizeLocale(localeCookie || DEFAULT_LOCALE)
+  const messages = (await import(`../messages/${locale}.json`)).default
+
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} antialiased`}>
+    <html lang={locale} className={`${inter.variable} ${playfair.variable} antialiased`}>
       <head>
         <PWARegistration />
       </head>
       <body>
-        {children}
-        <LeahChat />
-        <PWAUpdateManager />
-        <MobileNav />
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+          <LeahChat />
+          <PWAUpdateManager />
+          <MobileNav />
+        </NextIntlClientProvider>
       </body>
     </html>
   )
