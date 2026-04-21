@@ -62,7 +62,9 @@ import { HIGH_PRIORITY_TRAINING_LESSONS } from '@/data/high-priority-training-le
 interface Assignment {
   id: string
   title: string
+  titleEs?: string
   description: string
+  descriptionEs?: string
   dueDate: string
   status: 'pending' | 'submitted' | 'graded'
   rubric?: string
@@ -78,6 +80,7 @@ interface Assignment {
 interface LectureVideo {
   id: string
   title: string
+  titleEs?: string
   duration: string
   description: string
   url: string
@@ -116,9 +119,13 @@ interface CourseWeek {
   id: string
   order: number
   title: string
+  titleEs?: string
   summary: string
+  summaryEs?: string
   targetHours: number
   learningObjectives: string[] // Measurable learning objectives for the week
+  learningObjectivesEs?: string[]
+  coursePaceEs?: string
   assignments: Assignment[]
 }
 
@@ -127,7 +134,10 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-1',
     order: 1,
     title: 'Week 1 • Orientation & Safety Foundations',
+    titleEs: 'Semana 1 • Orientacion y fundamentos de seguridad',
     summary: 'Orientation, OSHA/BBP review, sanitation rituals, workstation setup, and client intake basics.',
+    summaryEs: 'Orientacion, repaso de OSHA/BBP, rutinas de saneamiento, preparacion de estacion y fundamentos de admision del cliente.',
+    coursePaceEs: 'Completa {hours} horas en 6.5 semanas. Selecciona una semana para revisar tareas y carga estimada.',
     targetHours: 10,
     learningObjectives: [
       'Demonstrate OSHA/BBP compliance with 100% accuracy on safety quiz',
@@ -135,12 +145,20 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Identify and properly dispose of all BBP materials according to regulations',
       'Demonstrate proper hand positioning and pressure control on practice skin'
     ],
+    learningObjectivesEs: [
+      'Demostrar cumplimiento de OSHA/BBP con 100% de precision en el examen de seguridad',
+      'Ejecutar preparacion completa de estacion y reinicio de saneamiento en 15 minutos',
+      'Identificar y desechar correctamente materiales BBP segun regulaciones',
+      'Demostrar posicion correcta de manos y control de presion en piel de practica'
+    ],
     assignments: [
       {
         id: 'week1-safety-quiz',
         weekId: 'week-1',
         title: 'Sanitation & Safety Quiz',
+        titleEs: 'Examen de saneamiento y seguridad',
         description: 'Demonstrate knowledge of BBP standards, workstation setup, and sterilization requirements.',
+        descriptionEs: 'Demuestra conocimiento de normas BBP, preparacion de estacion y requisitos de esterilizacion.',
         dueDate: 'Due Week 1 Friday',
         status: 'pending',
         rubric: 'Score each section (Sanitation, PPE, Workstation Prep) out of 10. Passing requires 24/30 with no section below 6.',
@@ -150,7 +168,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week1-workstation-drill',
         weekId: 'week-1',
         title: 'Workstation Setup & BBP Drill',
+        titleEs: 'Practica de preparacion de estacion y BBP',
         description: 'Record your full workstation setup, sanitation reset, and tool breakdown following the studio checklist.',
+        descriptionEs: 'Graba tu preparacion completa de estacion, reinicio de saneamiento y desglose de herramientas siguiendo la lista del estudio.',
         dueDate: 'Due Week 1 Sunday',
         status: 'pending',
         rubric: 'Workstation layout (10 pts), sanitation protocol adherence (10 pts), BBP disposal compliance (10 pts). Passing ≥ 25/30.',
@@ -432,6 +452,10 @@ const buildBaseWeeks = (): CourseWeek[] =>
   }))
 
 const LECTURE_VIDEOS: LectureVideo[] = []
+const LECTURE_TITLE_ES_MAP: Record<string, string> = {
+  'PMU vs Traditional Tattooing': 'PMU vs tatuaje tradicional',
+  'Foundations + Needle Theory': 'Fundamentos + teoria de agujas'
+}
 
 const STUDENT_PROGRESS = {
   overallCompletion: 62,
@@ -611,10 +635,33 @@ export default function FundamentalsTrainingPortal() {
     () => courseWeeks.reduce((sum, week) => sum + week.targetHours, 0),
     [courseWeeks]
   )
+  const activeWeek = useMemo(
+    () => courseWeeks.find(week => week.id === selectedWeekId),
+    [courseWeeks, selectedWeekId]
+  )
   const MAX_VIDEO_MB = 500
   const VIDEO_UPLOAD_PREFIX = 'training-video'
   const userRole = currentUser?.role?.toLowerCase() || 'guest'
   const locale = normalizeLocale(useLocale())
+  const getWeekTitle = (week: CourseWeek) => (locale === 'es' ? week.titleEs || week.title : week.title)
+  const getWeekSummary = (week: CourseWeek) => (locale === 'es' ? week.summaryEs || week.summary : week.summary)
+  const getWeekLearningObjectives = (week: CourseWeek) =>
+    locale === 'es' && week.learningObjectivesEs && week.learningObjectivesEs.length === week.learningObjectives.length
+      ? week.learningObjectivesEs
+      : week.learningObjectives
+  const getAssignmentTitle = (assignment: Assignment) =>
+    locale === 'es' ? assignment.titleEs || assignment.title : assignment.title
+  const getAssignmentDescription = (assignment: Assignment) =>
+    locale === 'es' ? assignment.descriptionEs || assignment.description : assignment.description
+  const getLectureTitle = (video: LectureVideo) =>
+    locale === 'es' ? video.titleEs || LECTURE_TITLE_ES_MAP[video.title] || video.title : video.title
+  const getCoursePaceText = (week?: CourseWeek) => {
+    if (locale === 'es') {
+      const template = week?.coursePaceEs || 'Completa {hours} horas en 6.5 semanas. Selecciona una semana para revisar tareas y carga estimada.'
+      return template.replace('{hours}', String(totalCourseHours))
+    }
+    return `Complete ${totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.`
+  }
   const isStudent = ['student', 'apprentice'].includes(userRole)
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
   const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
@@ -2817,8 +2864,8 @@ export default function FundamentalsTrainingPortal() {
                       </div>
                     )}
                     <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 break-words">
-                      <span className="font-semibold">Course Pace:</span>{' '}
-                      Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
+                      <span className="font-semibold">{locale === 'es' ? 'Ritmo del curso:' : 'Course Pace:'}</span>{' '}
+                      {getCoursePaceText(activeWeek)}
                     </div>
                     <Tabs
                       value={selectedWeekId}
@@ -2845,16 +2892,16 @@ export default function FundamentalsTrainingPortal() {
                         return (
                           <TabsContent key={week.id} value={week.id} className="space-y-4">
                             <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
-                              <p className="text-sm font-semibold text-purple-900">{week.title}</p>
-                              <p className="text-sm text-purple-800">{week.summary}</p>
+                              <p className="text-sm font-semibold text-purple-900">{getWeekTitle(week)}</p>
+                              <p className="text-sm text-purple-800">{getWeekSummary(week)}</p>
                               {week.learningObjectives && week.learningObjectives.length > 0 && (
                                 <div className="mt-3 p-3 bg-white rounded border border-purple-200">
                                   <h4 className="text-xs font-semibold text-purple-900 mb-2 flex items-center gap-2">
                                     <CheckCircle2 className="h-3 w-3" />
-                                    Learning Objectives
+                                    {locale === 'es' ? 'Objetivos de aprendizaje' : 'Learning Objectives'}
                                   </h4>
                                   <ul className="space-y-1.5">
-                                    {week.learningObjectives.map((objective, idx) => (
+                                    {getWeekLearningObjectives(week).map((objective, idx) => (
                                       <li key={idx} className="text-xs text-purple-800 flex items-start gap-2">
                                         <span className="text-purple-600 mt-0.5">•</span>
                                         <span>{objective}</span>
@@ -2899,9 +2946,9 @@ export default function FundamentalsTrainingPortal() {
                                       <div>
                                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                           <FileText className="h-5 w-5 text-purple-600" />
-                                          {assignment.title}
+                                          {getAssignmentTitle(assignment)}
                                         </h3>
-                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{getAssignmentDescription(assignment)}</p>
                                       </div>
                                       <Badge
                                         className={
@@ -2981,10 +3028,12 @@ export default function FundamentalsTrainingPortal() {
                                       <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
                                         <div className="flex items-center gap-2">
                                           <Video className="h-5 w-5 text-purple-600" />
-                                          <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                          <h4 className="font-semibold text-purple-900">
+                                            {locale === 'es' ? 'Ver clase requerida' : 'Watch Required Lecture'}
+                                          </h4>
                                         </div>
                                         <div className="space-y-2">
-                                          <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                          <p className="text-sm font-medium text-purple-800">{getLectureTitle(assignment.video)}</p>
                                           {assignment.video.description && (
                                             <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                           )}
@@ -3018,9 +3067,9 @@ export default function FundamentalsTrainingPortal() {
                                       <div>
                                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                           <FileText className="h-5 w-5 text-purple-600" />
-                                          {assignment.title}
+                                          {getAssignmentTitle(assignment)}
                                         </h3>
-                                        <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{getAssignmentDescription(assignment)}</p>
                                       </div>
                                       <Badge
                                         className={
@@ -3100,10 +3149,12 @@ export default function FundamentalsTrainingPortal() {
                                       <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
                                         <div className="flex items-center gap-2">
                                           <Video className="h-5 w-5 text-purple-600" />
-                                          <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                          <h4 className="font-semibold text-purple-900">
+                                            {locale === 'es' ? 'Ver clase requerida' : 'Watch Required Lecture'}
+                                          </h4>
                                         </div>
                                         <div className="space-y-2">
-                                          <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                          <p className="text-sm font-medium text-purple-800">{getLectureTitle(assignment.video)}</p>
                                           {assignment.video.description && (
                                             <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                           )}
@@ -5112,8 +5163,8 @@ export default function FundamentalsTrainingPortal() {
                     </CardHeader>
                     <CardContent className="space-y-4 break-words">
                       <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 break-words">
-                        <span className="font-semibold">Course Pace:</span>{' '}
-                        Complete {totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.
+                        <span className="font-semibold">{locale === 'es' ? 'Ritmo del curso:' : 'Course Pace:'}</span>{' '}
+                        {getCoursePaceText(activeWeek)}
                       </div>
                       <Tabs
                         value={selectedWeekId}
@@ -5140,16 +5191,16 @@ export default function FundamentalsTrainingPortal() {
                           return (
                             <TabsContent key={week.id} value={week.id} className="space-y-4">
                               <div className="rounded-md border-l-4 border-purple-300 bg-purple-50 p-4 space-y-2">
-                                <p className="text-sm font-semibold text-purple-900">{week.title}</p>
-                                <p className="text-sm text-purple-800">{week.summary}</p>
+                                <p className="text-sm font-semibold text-purple-900">{getWeekTitle(week)}</p>
+                                <p className="text-sm text-purple-800">{getWeekSummary(week)}</p>
                                 {week.learningObjectives && week.learningObjectives.length > 0 && (
                                   <div className="mt-3 p-3 bg-white rounded border border-purple-200">
                                     <h4 className="text-xs font-semibold text-purple-900 mb-2 flex items-center gap-2">
                                       <CheckCircle2 className="h-3 w-3" />
-                                      Learning Objectives
+                                      {locale === 'es' ? 'Objetivos de aprendizaje' : 'Learning Objectives'}
                                     </h4>
                                     <ul className="space-y-1.5">
-                                      {week.learningObjectives.map((objective, idx) => (
+                                      {getWeekLearningObjectives(week).map((objective, idx) => (
                                         <li key={idx} className="text-xs text-purple-800 flex items-start gap-2">
                                           <span className="text-purple-600 mt-0.5">•</span>
                                           <span>{objective}</span>
@@ -5175,9 +5226,9 @@ export default function FundamentalsTrainingPortal() {
                                         <div>
                                           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                             <FileText className="h-5 w-5 text-purple-600" />
-                                            {assignment.title}
+                                            {getAssignmentTitle(assignment)}
                                           </h3>
-                                          <p className="text-sm text-gray-600 leading-relaxed">{assignment.description}</p>
+                                          <p className="text-sm text-gray-600 leading-relaxed">{getAssignmentDescription(assignment)}</p>
                                         </div>
                                         <Badge
                                           className={
@@ -5243,10 +5294,12 @@ export default function FundamentalsTrainingPortal() {
                                           <div className="rounded-md border border-purple-200 bg-purple-50 p-4 space-y-3">
                                             <div className="flex items-center gap-2">
                                               <Video className="h-5 w-5 text-purple-600" />
-                                              <h4 className="font-semibold text-purple-900">Watch Required Lecture</h4>
+                                              <h4 className="font-semibold text-purple-900">
+                                                {locale === 'es' ? 'Ver clase requerida' : 'Watch Required Lecture'}
+                                              </h4>
                                             </div>
                                             <div className="space-y-2">
-                                              <p className="text-sm font-medium text-purple-800">{assignment.video.title}</p>
+                                              <p className="text-sm font-medium text-purple-800">{getLectureTitle(assignment.video)}</p>
                                               {assignment.video.description && (
                                                 <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                               )}
@@ -6532,7 +6585,7 @@ export default function FundamentalsTrainingPortal() {
                   return (
                     <Card key={week.id} className="border-purple-200">
                       <CardContent className="p-4">
-                        <h4 className="font-semibold text-purple-900 mb-3">{week.title}</h4>
+                        <h4 className="font-semibold text-purple-900 mb-3">{getWeekTitle(week)}</h4>
                         <div className="space-y-3">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
@@ -6581,7 +6634,7 @@ export default function FundamentalsTrainingPortal() {
                               <div className="mt-2 p-2 bg-purple-50 rounded">
                                 <img
                                   src={portfolioItem.photoUrl}
-                                  alt={`${week.title} portfolio`}
+                                  alt={`${getWeekTitle(week)} portfolio`}
                                   className="w-full h-40 object-cover rounded"
                                 />
                               </div>
@@ -6671,7 +6724,7 @@ export default function FundamentalsTrainingPortal() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-purple-900 text-sm">{week.title}</h4>
+                          <h4 className="font-semibold text-purple-900 text-sm">{getWeekTitle(week)}</h4>
                           {portfolio?.feedback && (
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                           )}
