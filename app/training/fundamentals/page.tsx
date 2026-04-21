@@ -710,6 +710,22 @@ export default function FundamentalsTrainingPortal() {
     ])
   }, [locale, selectedLessonDay])
 
+  const lessonDayTitle = selectedLessonDay
+    ? locale === 'es' && selectedLessonDay.titleEs
+      ? selectedLessonDay.titleEs
+      : selectedLessonDay.title
+    : ''
+  const lessonDayFocus = selectedLessonDay
+    ? locale === 'es' && selectedLessonDay.focusEs && selectedLessonDay.focusEs.length === selectedLessonDay.focus.length
+      ? selectedLessonDay.focusEs
+      : selectedLessonDay.focus
+    : []
+  const lessonDayHomework = selectedLessonDay
+    ? locale === 'es' && selectedLessonDay.homeworkEs && selectedLessonDay.homeworkEs.length === selectedLessonDay.homework.length
+      ? selectedLessonDay.homeworkEs
+      : selectedLessonDay.homework
+    : []
+
   const lessonHomeworkByWeek = useMemo(() => {
     const map: Record<string, { dayTitle: string; items: string[] }[]> = {}
     TRAINING_LESSON_PLANS.forEach(week => {
@@ -5372,11 +5388,11 @@ export default function FundamentalsTrainingPortal() {
                           )}
                           {showSpanishLessonFallback && !showLocalizedLessonFallbackNotice && <SpanishFallbackNotice />}
                           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                            <h3 className="text-lg font-semibold text-gray-900">{selectedLessonDay.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{lessonDayTitle}</h3>
                             <div className="mt-3 space-y-1 text-sm text-gray-600">
-                              <p className="font-medium text-gray-700">Focus for the day:</p>
+                              <p className="font-medium text-gray-700">{locale === 'es' ? 'Enfoque del dia:' : 'Focus for the day:'}</p>
                               <ul className="list-disc space-y-1 pl-5">
-                                {selectedLessonDay.focus.map(item => (
+                                {lessonDayFocus.map(item => (
                                   <li key={item}>{item}</li>
                                 ))}
                               </ul>
@@ -5394,15 +5410,17 @@ export default function FundamentalsTrainingPortal() {
                                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                       <p className="text-xs uppercase tracking-wide text-gray-500">{segment.time}</p>
-                                      <h4 className="text-base font-semibold text-gray-900">{segment.title}</h4>
+                                      <h4 className="text-base font-semibold text-gray-900">
+                                        {locale === 'es' && segment.titleEs ? segment.titleEs : segment.title}
+                                      </h4>
                                     </div>
                                     <Badge className="bg-slate-100 text-slate-700 border border-slate-200 self-start">
                                       {segment.time}
                                     </Badge>
                                   </div>
-                                  {segment.instructorScript && (
+                                  {(segment.instructorScript || segment.instructorScriptEs) && (
                                     <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 whitespace-pre-line">
-                                      {segment.instructorScript}
+                                      {locale === 'es' && segment.instructorScriptEs ? segment.instructorScriptEs : segment.instructorScript}
                                     </div>
                                   )}
                                   {segment.prompts && segment.prompts.length > 0 && (
@@ -5449,11 +5467,13 @@ export default function FundamentalsTrainingPortal() {
                               </Card>
                             ))}
                           </div>
-                          {selectedLessonDay.homework.length > 0 && (
+                          {lessonDayHomework.length > 0 && (
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
-                              <p className="text-sm font-semibold text-amber-800">Homework / Follow-up</p>
+                              <p className="text-sm font-semibold text-amber-800">
+                                {locale === 'es' ? 'Tarea / Seguimiento' : 'Homework / Follow-up'}
+                              </p>
                               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-900">
-                                {selectedLessonDay.homework.map(item => (
+                                {lessonDayHomework.map(item => (
                                   <li key={item}>{item}</li>
                                 ))}
                               </ul>
