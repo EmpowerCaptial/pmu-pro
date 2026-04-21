@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useDemoAuth } from '@/hooks/use-demo-auth'
+import { useLocale } from 'next-intl'
+import { normalizeLocale } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,6 +54,7 @@ interface DiscussionBoardProps {
 
 export function DiscussionBoard({ programId }: DiscussionBoardProps) {
   const { currentUser } = useDemoAuth()
+  const locale = normalizeLocale(useLocale())
   const [discussions, setDiscussions] = useState<Discussion[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -77,14 +80,14 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to load discussions')
+        throw new Error(locale === 'es' ? 'No se pudieron cargar las discusiones' : 'Failed to load discussions')
       }
 
       const data = await response.json()
       setDiscussions(data.discussions || [])
     } catch (error) {
       console.error('Failed to fetch discussions:', error)
-      setError('Failed to load discussions. Please try again.')
+      setError(locale === 'es' ? 'No se pudieron cargar las discusiones. Intentalo de nuevo.' : 'Failed to load discussions. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -115,7 +118,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create post')
+        throw new Error(locale === 'es' ? 'No se pudo crear la publicacion' : 'Failed to create post')
       }
 
       setNewPostTitle('')
@@ -124,7 +127,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       await fetchDiscussions()
     } catch (error) {
       console.error('Failed to create post:', error)
-      setError('Failed to create post. Please try again.')
+      setError(locale === 'es' ? 'No se pudo crear la publicacion. Intentalo de nuevo.' : 'Failed to create post. Please try again.')
     } finally {
       setIsSubmittingPost(false)
     }
@@ -150,7 +153,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to post reply')
+        throw new Error(locale === 'es' ? 'No se pudo publicar la respuesta' : 'Failed to post reply')
       }
 
       setReplyContent(prev => ({ ...prev, [discussionId]: '' }))
@@ -158,7 +161,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       await fetchDiscussions()
     } catch (error) {
       console.error('Failed to post reply:', error)
-      setError('Failed to post reply. Please try again.')
+      setError(locale === 'es' ? 'No se pudo publicar la respuesta. Intentalo de nuevo.' : 'Failed to post reply. Please try again.')
     } finally {
       setIsSubmittingReply(prev => ({ ...prev, [discussionId]: false }))
     }
@@ -173,11 +176,11 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
       const diffHours = Math.floor(diffMs / 3600000)
       const diffDays = Math.floor(diffMs / 86400000)
 
-      if (diffMins < 1) return 'Just now'
-      if (diffMins < 60) return `${diffMins}m ago`
-      if (diffHours < 24) return `${diffHours}h ago`
-      if (diffDays < 7) return `${diffDays}d ago`
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      if (diffMins < 1) return locale === 'es' ? 'Ahora mismo' : 'Just now'
+      if (diffMins < 60) return locale === 'es' ? `hace ${diffMins} min` : `${diffMins}m ago`
+      if (diffHours < 24) return locale === 'es' ? `hace ${diffHours} h` : `${diffHours}h ago`
+      if (diffDays < 7) return locale === 'es' ? `hace ${diffDays} d` : `${diffDays}d ago`
+      return date.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     } catch {
       return dateString
     }
@@ -196,7 +199,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-slate-600" />
-            Discussion Board
+            {locale === 'es' ? 'Tablero de discusion' : 'Discussion Board'}
           </CardTitle>
           {!showNewPostForm && (
             <Button
@@ -205,7 +208,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
               className="bg-slate-600 hover:bg-slate-700"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              New Post
+              {locale === 'es' ? 'Nueva publicacion' : 'New Post'}
             </Button>
           )}
         </div>
@@ -222,13 +225,13 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
             <CardContent className="p-4 space-y-3">
               <div>
                 <Input
-                  placeholder="Post title..."
+                  placeholder={locale === 'es' ? 'Titulo de la publicacion...' : 'Post title...'}
                   value={newPostTitle}
                   onChange={(e) => setNewPostTitle(e.target.value)}
                   className="mb-2"
                 />
                 <Textarea
-                  placeholder="What would you like to discuss?"
+                  placeholder={locale === 'es' ? 'Que te gustaria discutir?' : 'What would you like to discuss?'}
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   rows={4}
@@ -242,7 +245,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                   disabled={isSubmittingPost || !newPostTitle.trim() || !newPostContent.trim()}
                   className="bg-slate-600 hover:bg-slate-700"
                 >
-                  {isSubmittingPost ? 'Posting...' : 'Post'}
+                  {isSubmittingPost ? (locale === 'es' ? 'Publicando...' : 'Posting...') : (locale === 'es' ? 'Publicar' : 'Post')}
                 </Button>
                 <Button
                   size="sm"
@@ -253,7 +256,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                     setNewPostContent('')
                   }}
                 >
-                  Cancel
+                  {locale === 'es' ? 'Cancelar' : 'Cancel'}
                 </Button>
               </div>
             </CardContent>
@@ -261,11 +264,11 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
         )}
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading discussions...</div>
+          <div className="text-center py-8 text-gray-500">{locale === 'es' ? 'Cargando discusiones...' : 'Loading discussions...'}</div>
         ) : discussions.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p>No discussions yet. Be the first to start a conversation!</p>
+            <p>{locale === 'es' ? 'Aun no hay discusiones. Se la primera persona en iniciar una conversacion.' : 'No discussions yet. Be the first to start a conversation!'}</p>
           </div>
         ) : (
           <ScrollArea className="h-[600px] pr-4">
@@ -335,7 +338,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                         {replyingToId === discussion.id ? (
                           <div className="mt-3 space-y-2">
                             <Textarea
-                              placeholder="Write a reply..."
+                              placeholder={locale === 'es' ? 'Escribe una respuesta...' : 'Write a reply...'}
                               value={replyContent[discussion.id] || ''}
                               onChange={(e) =>
                                 setReplyContent(prev => ({ ...prev, [discussion.id]: e.target.value }))
@@ -351,7 +354,9 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                                 className="bg-slate-600 hover:bg-slate-700"
                               >
                                 <Send className="h-3 w-3 mr-1" />
-                                {isSubmittingReply[discussion.id] ? 'Posting...' : 'Reply'}
+                                {isSubmittingReply[discussion.id]
+                                  ? (locale === 'es' ? 'Publicando...' : 'Posting...')
+                                  : (locale === 'es' ? 'Responder' : 'Reply')}
                               </Button>
                               <Button
                                 size="sm"
@@ -361,7 +366,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                                   setReplyContent(prev => ({ ...prev, [discussion.id]: '' }))
                                 }}
                               >
-                                Cancel
+                                {locale === 'es' ? 'Cancelar' : 'Cancel'}
                               </Button>
                             </div>
                           </div>
@@ -373,7 +378,7 @@ export function DiscussionBoard({ programId }: DiscussionBoardProps) {
                             className="mt-2 text-slate-600 hover:text-slate-900"
                           >
                             <MessageSquare className="h-3 w-3 mr-1" />
-                            Reply
+                            {locale === 'es' ? 'Responder' : 'Reply'}
                           </Button>
                         )}
                       </div>

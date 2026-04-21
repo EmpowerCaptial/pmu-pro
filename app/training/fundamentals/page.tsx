@@ -653,6 +653,18 @@ export default function FundamentalsTrainingPortal() {
     locale === 'es' ? assignment.titleEs || assignment.title : assignment.title
   const getAssignmentDescription = (assignment: Assignment) =>
     locale === 'es' ? assignment.descriptionEs || assignment.description : assignment.description
+  const getAssignmentDueDateLabel = (assignment: Assignment) => {
+    if (locale !== 'es') return assignment.dueDate
+    return assignment.dueDate
+      .replace(/^Due Week\s+(\d+)\s+Friday$/i, 'Entrega semana $1 viernes')
+      .replace(/^Due Week\s+(\d+)\s+Saturday$/i, 'Entrega semana $1 sabado')
+      .replace(/^Due Week\s+(\d+)\s+Sunday$/i, 'Entrega semana $1 domingo')
+      .replace(/^Due Week\s+(\d+)\s+Wednesday$/i, 'Entrega semana $1 miercoles')
+      .replace(/^Due Week\s+(\d+)\s+Monday$/i, 'Entrega semana $1 lunes')
+      .replace(/^Due Week\s+(\d+)\s+Tuesday$/i, 'Entrega semana $1 martes')
+      .replace(/^Due Week\s+(\d+)\s+Thursday$/i, 'Entrega semana $1 jueves')
+      .replace(/^Due date shared in class$/i, 'Fecha de entrega compartida en clase')
+  }
   const getLectureTitle = (video: LectureVideo) =>
     locale === 'es' ? video.titleEs || LECTURE_TITLE_ES_MAP[video.title] || video.title : video.title
   const getCoursePaceText = (week?: CourseWeek) => {
@@ -662,6 +674,30 @@ export default function FundamentalsTrainingPortal() {
     }
     return `Complete ${totalCourseHours} hours across 6.5 weeks. Select a week below to review the assignments and estimated workload.`
   }
+  const getWeekTabLabel = (week: CourseWeek) =>
+    locale === 'es' ? `Semana ${week.order}` : `Week ${week.order}`
+  const getStatusLabel = (status: Assignment['status']) => {
+    if (locale === 'es') {
+      if (status === 'graded') return 'Calificado'
+      if (status === 'submitted') return 'Enviado'
+      return 'Pendiente'
+    }
+    if (status === 'graded') return 'Graded'
+    if (status === 'submitted') return 'Submitted'
+    return 'Pending'
+  }
+  const getWeeklyWorkloadText = (displayHours: number, targetHours: number) =>
+    locale === 'es'
+      ? `Carga semanal: ~${displayHours} horas (objetivo ${targetHours} h) • Total del curso ${totalCourseHours} h`
+      : `Weekly workload: ~${displayHours} hours (target ${targetHours} hrs) • Course total ${totalCourseHours} hrs`
+  const getRubricToggleText = (isOpen: boolean) =>
+    locale === 'es' ? (isOpen ? 'Ocultar rubrica' : 'Ver rubrica') : (isOpen ? 'Hide Rubric' : 'View Rubric')
+  const getLectureDurationLabel = (duration: string) =>
+    locale === 'es' ? `Duracion: ${duration}` : `Duration: ${duration}`
+  const getLectureInstructorLabel = (name: string) =>
+    locale === 'es' ? `Instructor: ${name}` : `Instructor: ${name}`
+  const getDayAssignmentFallback = (day: 'day-1' | 'day-2') =>
+    locale === 'es' ? (day === 'day-1' ? 'Asignaciones del dia 1' : 'Asignaciones del dia 2') : (day === 'day-1' ? 'Day 1 Assignments' : 'Day 2 Assignments')
   const isStudent = ['student', 'apprentice'].includes(userRole)
   const canManageVideos = ['owner', 'director', 'manager', 'hr', 'staff', 'admin', 'instructor'].includes(userRole)
   const canManageAssignments = ['owner', 'director', 'manager', 'instructor'].includes(userRole)
@@ -2807,7 +2843,7 @@ export default function FundamentalsTrainingPortal() {
         }} className="space-y-6 break-words">
           <TabsList className="bg-purple-100/70 p-1 rounded-lg flex flex-wrap gap-2 w-full">
             <TabsTrigger value="student" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" /> Student Portal
+              <BookOpen className="h-4 w-4" /> {locale === 'es' ? 'Portal del estudiante' : 'Student Portal'}
             </TabsTrigger>
             {canAccessInstructorConsole && (
               <TabsTrigger value="instructor" className="flex items-center gap-2">
@@ -2824,10 +2860,12 @@ export default function FundamentalsTrainingPortal() {
                   <CardHeader className="break-words">
                     <CardTitle className="text-xl font-semibold text-purple-900 flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5" />
-                      Progress Portfolio
+                      {locale === 'es' ? 'Portafolio de progreso' : 'Progress Portfolio'}
                     </CardTitle>
                     <CardDescription className="text-purple-700">
-                      Track your skill development with weekly photo comparisons and reflections. Document your journey from Week 1 to graduation.
+                      {locale === 'es'
+                        ? 'Sigue tu desarrollo con comparaciones semanales de fotos y reflexiones. Documenta tu progreso desde la semana 1 hasta graduarte.'
+                        : 'Track your skill development with weekly photo comparisons and reflections. Document your journey from Week 1 to graduation.'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -2837,19 +2875,23 @@ export default function FundamentalsTrainingPortal() {
                       size="lg"
                     >
                       <Eye className="h-5 w-5 mr-2" />
-                      View & Manage Portfolio
+                      {locale === 'es' ? 'Ver y gestionar portafolio' : 'View & Manage Portfolio'}
                     </Button>
                     <p className="text-xs text-purple-600 mt-2 text-center">
-                      Click to upload photos and add reflection notes for each week
+                      {locale === 'es'
+                        ? 'Haz clic para subir fotos y agregar notas de reflexion por semana'
+                        : 'Click to upload photos and add reflection notes for each week'}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="border-gray-200 break-words">
                   <CardHeader className="break-words">
-                    <CardTitle className="text-xl font-semibold text-gray-900">Assignments</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-gray-900">{locale === 'es' ? 'Asignaciones' : 'Assignments'}</CardTitle>
                     <CardDescription className="text-gray-600">
-                      Submit required coursework and track your weekly progress. This is a 6.5-week, {totalCourseHours}-hour certification.
+                      {locale === 'es'
+                        ? `Entrega tareas requeridas y sigue tu progreso semanal. Esta es una certificacion de 6.5 semanas y ${totalCourseHours} horas.`
+                        : `Submit required coursework and track your weekly progress. This is a 6.5-week, ${totalCourseHours}-hour certification.`}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 break-words">
@@ -2860,7 +2902,7 @@ export default function FundamentalsTrainingPortal() {
                     )}
                     {isLoadingAssignments && (
                       <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                        Loading assignments…
+                        {locale === 'es' ? 'Cargando asignaciones…' : 'Loading assignments…'}
                       </div>
                     )}
                     <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900 break-words">
@@ -2879,7 +2921,7 @@ export default function FundamentalsTrainingPortal() {
                             value={week.id}
                             className="whitespace-nowrap"
                           >
-                            Week {week.order}
+                            {getWeekTabLabel(week)}
                           </TabsTrigger>
                         ))}
                       </TabsList>
@@ -2911,13 +2953,13 @@ export default function FundamentalsTrainingPortal() {
                                 </div>
                               )}
                               <p className="text-xs text-purple-700">
-                                Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
+                                {getWeeklyWorkloadText(displayHours, week.targetHours)}
                               </p>
                             </div>
 
                             {week.assignments.length === 0 ? (
                               <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
-                                No assignments published for this week yet.
+                                {locale === 'es' ? 'Aun no hay asignaciones publicadas para esta semana.' : 'No assignments published for this week yet.'}
                               </div>
                             ) : (
                               (() => {
@@ -2928,8 +2970,10 @@ export default function FundamentalsTrainingPortal() {
                                 
                                 // Get day titles from lesson plan
                                 const lessonWeek = TRAINING_LESSON_PLANS.find(plan => plan.id === week.id)
-                                const day1Title = lessonWeek?.days.find(d => d.id === 'day-1')?.title || 'Day 1 Assignments'
-                                const day2Title = lessonWeek?.days.find(d => d.id === 'day-2')?.title || 'Day 2 Assignments'
+                                const day1 = lessonWeek?.days.find(d => d.id === 'day-1')
+                                const day2 = lessonWeek?.days.find(d => d.id === 'day-2')
+                                const day1Title = day1 ? (locale === 'es' ? day1.titleEs || day1.title : day1.title) : getDayAssignmentFallback('day-1')
+                                const day2Title = day2 ? (locale === 'es' ? day2.titleEs || day2.title : day2.title) : getDayAssignmentFallback('day-2')
                                 
                                 return (
                                   <div className="space-y-6">
@@ -2959,17 +3003,15 @@ export default function FundamentalsTrainingPortal() {
                                             : 'bg-amber-100 text-amber-700 border border-amber-200'
                                         }
                                       >
-                                        {assignment.status === 'graded' && 'Graded'}
-                                        {assignment.status === 'submitted' && 'Submitted'}
-                                        {assignment.status === 'pending' && 'Pending'}
+                                        {getStatusLabel(assignment.status)}
                                       </Badge>
                                     </div>
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
                                       <div className="flex flex-wrap items-center gap-2">
-                                        <span>{assignment.dueDate}</span>
+                                        <span>{getAssignmentDueDateLabel(assignment)}</span>
                                         {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
                                           <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
-                                            ~{assignment.estimatedHours} hrs
+                                            {locale === 'es' ? `~${assignment.estimatedHours} h` : `~${assignment.estimatedHours} hrs`}
                                           </Badge>
                                         )}
                                       </div>
@@ -2982,7 +3024,7 @@ export default function FundamentalsTrainingPortal() {
                                                 onClick={() => openEditAssignmentDialog(assignment, week.id)}
                                               >
                                                 <PenSquare className="h-4 w-4 mr-1" />
-                                                Edit
+                                                {locale === 'es' ? 'Editar' : 'Edit'}
                                               </Button>
                                               <Button
                                                 size="sm"
@@ -2991,7 +3033,7 @@ export default function FundamentalsTrainingPortal() {
                                                 disabled={!assignment.isPersisted}
                                               >
                                                 <Trash2 className="h-4 w-4 mr-1" />
-                                                Delete
+                                                {locale === 'es' ? 'Eliminar' : 'Delete'}
                                               </Button>
                                             </>
                                           )}
@@ -3003,7 +3045,7 @@ export default function FundamentalsTrainingPortal() {
                                             setUploadDialogOpen(true)
                                           }}
                                         >
-                                          <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                          <Upload className="h-4 w-4 mr-1" /> {locale === 'es' ? 'Subir trabajo' : 'Upload Work'}
                                         </Button>
                                         <Button
                                           size="sm"
@@ -3015,7 +3057,7 @@ export default function FundamentalsTrainingPortal() {
                                           disabled={!assignment.rubric}
                                         >
                                           <Eye className="h-4 w-4 mr-1" />
-                                          {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                          {getRubricToggleText(openRubricId === assignment.id)}
                                         </Button>
                                       </div>
                                     </div>
@@ -3038,12 +3080,12 @@ export default function FundamentalsTrainingPortal() {
                                             <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                           )}
                                           <div className="flex items-center gap-4 text-xs text-purple-600">
-                                            <span>Duration: {assignment.video.duration}</span>
-                                            {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                            <span>{getLectureDurationLabel(assignment.video.duration)}</span>
+                                            {assignment.video.uploadedBy && <span>{getLectureInstructorLabel(assignment.video.uploadedBy)}</span>}
                                           </div>
                                           <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                                             <Video className="h-4 w-4 mr-2" />
-                                            Watch Lecture
+                                            {locale === 'es' ? 'Ver clase' : 'Watch Lecture'}
                                           </Button>
                                         </div>
                                       </div>
@@ -3080,17 +3122,15 @@ export default function FundamentalsTrainingPortal() {
                                             : 'bg-amber-100 text-amber-700 border border-amber-200'
                                         }
                                       >
-                                        {assignment.status === 'graded' && 'Graded'}
-                                        {assignment.status === 'submitted' && 'Submitted'}
-                                        {assignment.status === 'pending' && 'Pending'}
+                                        {getStatusLabel(assignment.status)}
                                       </Badge>
                                     </div>
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
                                       <div className="flex flex-wrap items-center gap-2">
-                                        <span>{assignment.dueDate}</span>
+                                        <span>{getAssignmentDueDateLabel(assignment)}</span>
                                         {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
                                           <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
-                                            ~{assignment.estimatedHours} hrs
+                                            {locale === 'es' ? `~${assignment.estimatedHours} h` : `~${assignment.estimatedHours} hrs`}
                                           </Badge>
                                         )}
                                       </div>
@@ -3103,7 +3143,7 @@ export default function FundamentalsTrainingPortal() {
                                                 onClick={() => openEditAssignmentDialog(assignment, week.id)}
                                               >
                                                 <PenSquare className="h-4 w-4 mr-1" />
-                                                Edit
+                                                {locale === 'es' ? 'Editar' : 'Edit'}
                                               </Button>
                                               <Button
                                                 size="sm"
@@ -3112,7 +3152,7 @@ export default function FundamentalsTrainingPortal() {
                                                 disabled={!assignment.isPersisted}
                                               >
                                                 <Trash2 className="h-4 w-4 mr-1" />
-                                                Delete
+                                                {locale === 'es' ? 'Eliminar' : 'Delete'}
                                               </Button>
                                             </>
                                           )}
@@ -3124,7 +3164,7 @@ export default function FundamentalsTrainingPortal() {
                                             setUploadDialogOpen(true)
                                           }}
                                         >
-                                          <Upload className="h-4 w-4 mr-1" /> Upload Work
+                                          <Upload className="h-4 w-4 mr-1" /> {locale === 'es' ? 'Subir trabajo' : 'Upload Work'}
                                         </Button>
                                         <Button
                                           size="sm"
@@ -3136,7 +3176,7 @@ export default function FundamentalsTrainingPortal() {
                                           disabled={!assignment.rubric}
                                         >
                                           <Eye className="h-4 w-4 mr-1" />
-                                          {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                          {getRubricToggleText(openRubricId === assignment.id)}
                                         </Button>
                                       </div>
                                     </div>
@@ -3159,12 +3199,12 @@ export default function FundamentalsTrainingPortal() {
                                             <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                           )}
                                           <div className="flex items-center gap-4 text-xs text-purple-600">
-                                            <span>Duration: {assignment.video.duration}</span>
-                                            {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                            <span>{getLectureDurationLabel(assignment.video.duration)}</span>
+                                            {assignment.video.uploadedBy && <span>{getLectureInstructorLabel(assignment.video.uploadedBy)}</span>}
                                           </div>
                                           <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                                             <Video className="h-4 w-4 mr-2" />
-                                            Watch Lecture
+                                            {locale === 'es' ? 'Ver clase' : 'Watch Lecture'}
                                           </Button>
                                         </div>
                                       </div>
@@ -3181,7 +3221,7 @@ export default function FundamentalsTrainingPortal() {
 
                           {lessonHomeworkByWeek[week.id]?.length ? (
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-4 space-y-3">
-                              <p className="text-sm font-semibold text-amber-900">Homework & Follow-Up</p>
+                              <p className="text-sm font-semibold text-amber-900">{locale === 'es' ? 'Tarea y seguimiento' : 'Homework & Follow-Up'}</p>
                               <div className="space-y-3">
                                 {lessonHomeworkByWeek[week.id]?.map(homework => (
                                   <div key={homework.dayTitle} className="space-y-1">
@@ -3202,7 +3242,7 @@ export default function FundamentalsTrainingPortal() {
                           {/* Week Video Lectures Section */}
                           {isLoadingWeekVideos[week.id] ? (
                             <div className="rounded-md border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800">
-                              Loading assigned lectures...
+                              {locale === 'es' ? 'Cargando clases asignadas...' : 'Loading assigned lectures...'}
                             </div>
                           ) : weekVideos[week.id] && weekVideos[week.id].length > 0 ? (
                             <Card className="border-purple-200 bg-purple-50">
@@ -3230,11 +3270,11 @@ export default function FundamentalsTrainingPortal() {
                                         <p className="text-sm text-gray-600">{video.description}</p>
                                       )}
                                       <div className="flex items-center gap-4 text-xs text-gray-500">
-                                        <span>Duration: {video.duration}</span>
-                                        {video.uploadedBy && <span>Instructor: {video.uploadedBy}</span>}
+                                        <span>{getLectureDurationLabel(video.duration)}</span>
+                                        {video.uploadedBy && <span>{getLectureInstructorLabel(video.uploadedBy)}</span>}
                                       </div>
                                       <Button size="sm" onClick={() => openVideoPlayer(video)} className="w-full">
-                                        Watch Lecture
+                                        {locale === 'es' ? 'Ver clase' : 'Watch Lecture'}
                                       </Button>
                                     </CardContent>
                                   </Card>
@@ -3260,7 +3300,9 @@ export default function FundamentalsTrainingPortal() {
                                     className="border-purple-300 text-purple-700 hover:bg-purple-100"
                                   >
                                     <Video className="h-4 w-4 mr-2" />
-                                    {weekVideoAssignments[week.id]?.length ? 'Edit Lectures' : 'Assign Lectures'}
+                                    {weekVideoAssignments[week.id]?.length
+                                      ? (locale === 'es' ? 'Editar clases' : 'Edit Lectures')
+                                      : (locale === 'es' ? 'Asignar clases' : 'Assign Lectures')}
                                   </Button>
                                 </div>
                               </CardContent>
@@ -5178,7 +5220,7 @@ export default function FundamentalsTrainingPortal() {
                               value={week.id}
                               className="whitespace-nowrap data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-purple-400 transition-all duration-200 hover:bg-purple-200/50"
                             >
-                              Week {week.order}
+                              {getWeekTabLabel(week)}
                             </TabsTrigger>
                           ))}
                         </TabsList>
@@ -5210,13 +5252,13 @@ export default function FundamentalsTrainingPortal() {
                                   </div>
                                 )}
                                 <p className="text-xs text-purple-700">
-                                  Weekly workload: ~{displayHours} hours (target {week.targetHours} hrs) • Course total {totalCourseHours} hrs
+                                  {getWeeklyWorkloadText(displayHours, week.targetHours)}
                                 </p>
                               </div>
 
                               {week.assignments.length === 0 ? (
                                 <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
-                                  No assignments published for this week yet.
+                                  {locale === 'es' ? 'Aun no hay asignaciones publicadas para esta semana.' : 'No assignments published for this week yet.'}
                                 </div>
                               ) : (
                                 week.assignments.map(assignment => (
@@ -5239,14 +5281,12 @@ export default function FundamentalsTrainingPortal() {
                                               : 'bg-amber-100 text-amber-700 border border-amber-200'
                                           }
                                         >
-                                          {assignment.status === 'graded' && 'Graded'}
-                                          {assignment.status === 'submitted' && 'Submitted'}
-                                          {assignment.status === 'pending' && 'Pending'}
+                                          {getStatusLabel(assignment.status)}
                                         </Badge>
                                       </div>
                                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
                                         <div className="flex flex-wrap items-center gap-2">
-                                          <span>{assignment.dueDate}</span>
+                                          <span>{getAssignmentDueDateLabel(assignment)}</span>
                                           {assignment.estimatedHours !== undefined && assignment.estimatedHours > 0 && (
                                             <Badge className="bg-purple-100 text-purple-700 border border-purple-200">
                                               ~{assignment.estimatedHours} hrs
@@ -5260,7 +5300,7 @@ export default function FundamentalsTrainingPortal() {
                                             onClick={() => openEditAssignmentDialog(assignment, week.id)}
                                           >
                                             <PenSquare className="h-4 w-4 mr-1" />
-                                            Edit
+                                            {locale === 'es' ? 'Editar' : 'Edit'}
                                           </Button>
                                           <Button
                                             size="sm"
@@ -5269,7 +5309,7 @@ export default function FundamentalsTrainingPortal() {
                                             disabled={!assignment.isPersisted}
                                           >
                                             <Trash2 className="h-4 w-4 mr-1" />
-                                            Delete
+                                            {locale === 'es' ? 'Eliminar' : 'Delete'}
                                           </Button>
                                           <Button
                                             size="sm"
@@ -5281,7 +5321,7 @@ export default function FundamentalsTrainingPortal() {
                                             disabled={!assignment.rubric}
                                           >
                                             <Eye className="h-4 w-4 mr-1" />
-                                            {openRubricId === assignment.id ? 'Hide Rubric' : 'View Rubric'}
+                                            {getRubricToggleText(openRubricId === assignment.id)}
                                           </Button>
                                         </div>
                                       </div>
@@ -5304,12 +5344,12 @@ export default function FundamentalsTrainingPortal() {
                                                 <p className="text-sm text-purple-700">{assignment.video.description}</p>
                                               )}
                                               <div className="flex items-center gap-4 text-xs text-purple-600">
-                                                <span>Duration: {assignment.video.duration}</span>
-                                                {assignment.video.uploadedBy && <span>Instructor: {assignment.video.uploadedBy}</span>}
+                                                <span>{getLectureDurationLabel(assignment.video.duration)}</span>
+                                                {assignment.video.uploadedBy && <span>{getLectureInstructorLabel(assignment.video.uploadedBy)}</span>}
                                               </div>
                                               <Button size="sm" onClick={() => openVideoPlayer(assignment.video!)} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                                                 <Video className="h-4 w-4 mr-2" />
-                                                Watch Lecture
+                                                {locale === 'es' ? 'Ver clase' : 'Watch Lecture'}
                                               </Button>
                                             </div>
                                           </div>
@@ -5321,7 +5361,7 @@ export default function FundamentalsTrainingPortal() {
 
                               {lessonHomeworkByWeek[week.id]?.length ? (
                                 <div className="rounded-md border border-amber-200 bg-amber-50 p-4 space-y-3">
-                                  <p className="text-sm font-semibold text-amber-900">Homework & Follow-Up</p>
+                                  <p className="text-sm font-semibold text-amber-900">{locale === 'es' ? 'Tarea y seguimiento' : 'Homework & Follow-Up'}</p>
                                   <div className="space-y-3">
                                     {lessonHomeworkByWeek[week.id]?.map(homework => (
                                       <div key={homework.dayTitle} className="space-y-1">
@@ -5349,14 +5389,18 @@ export default function FundamentalsTrainingPortal() {
                     <CardHeader className="break-words">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                          <CardTitle className="text-xl font-semibold text-gray-900">Lesson Planner</CardTitle>
+                          <CardTitle className="text-xl font-semibold text-gray-900">
+                            {locale === 'es' ? 'Planificador de lecciones' : 'Lesson Planner'}
+                          </CardTitle>
                           <CardDescription className="text-gray-600">
-                            Access the word-for-word instructor script, cues, and homework for each day.
+                            {locale === 'es'
+                              ? 'Accede al guion del instructor, indicaciones y tarea de cada dia.'
+                              : 'Access the word-for-word instructor script, cues, and homework for each day.'}
                           </CardDescription>
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                           <div className="w-full sm:w-48">
-                            <Label htmlFor="lesson-week">Week</Label>
+                            <Label htmlFor="lesson-week">{locale === 'es' ? 'Semana' : 'Week'}</Label>
                             <Select
                               value={selectedLessonWeekId}
                               onValueChange={value => setSelectedLessonWeekId(value)}
@@ -5367,14 +5411,14 @@ export default function FundamentalsTrainingPortal() {
                               <SelectContent>
                                 {TRAINING_LESSON_PLANS.map(week => (
                                   <SelectItem key={week.id} value={week.id}>
-                                    {week.title}
+                                    {locale === 'es' ? week.titleEs || week.title : week.title}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="w-full sm:w-48">
-                            <Label htmlFor="lesson-day">Day</Label>
+                            <Label htmlFor="lesson-day">{locale === 'es' ? 'Dia' : 'Day'}</Label>
                             <Select
                               value={selectedLessonDayId}
                               onValueChange={value => setSelectedLessonDayId(value)}
@@ -5385,7 +5429,7 @@ export default function FundamentalsTrainingPortal() {
                               <SelectContent>
                                 {selectedLessonWeek?.days.map(day => (
                                   <SelectItem key={day.id} value={day.id}>
-                                    {day.title}
+                                    {locale === 'es' ? day.titleEs || day.title : day.title}
                                   </SelectItem>
                                 )) ?? null}
                               </SelectContent>
@@ -5397,15 +5441,17 @@ export default function FundamentalsTrainingPortal() {
                     <CardContent className="space-y-5 break-words">
                       {selectedLessonWeek && (
                         <div className="rounded-md border border-purple-200 bg-purple-50 p-4 text-sm text-purple-900">
-                          <p className="font-semibold">{selectedLessonWeek.title}</p>
+                          <p className="font-semibold">{locale === 'es' ? selectedLessonWeek.titleEs || selectedLessonWeek.title : selectedLessonWeek.title}</p>
                           {selectedLessonWeek.summary && (
-                            <p className="mt-1 text-purple-800">{selectedLessonWeek.summary}</p>
+                            <p className="mt-1 text-purple-800">{locale === 'es' ? selectedLessonWeek.summaryEs || selectedLessonWeek.summary : selectedLessonWeek.summary}</p>
                           )}
                         </div>
                       )}
                       {!selectedLessonDay && (
                         <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 text-center">
-                          Select a week and day to view the detailed lesson plan.
+                          {locale === 'es'
+                            ? 'Selecciona una semana y un dia para ver el plan de leccion detallado.'
+                            : 'Select a week and day to view the detailed lesson plan.'}
                         </div>
                       )}
                       {selectedLessonDay && (

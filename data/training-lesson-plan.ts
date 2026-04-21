@@ -37,7 +37,9 @@ export interface LessonDayPlan {
 export interface LessonWeekPlan {
   id: string
   title: string
+  titleEs?: string
   summary?: string
+  summaryEs?: string
   days: LessonDayPlan[]
 }
 
