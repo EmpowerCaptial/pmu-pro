@@ -182,7 +182,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-2',
     order: 2,
     title: 'Week 2 • Brow Mapping & Color Theory',
+    titleEs: 'Semana 2 • Mapeo de cejas y teoria del color',
     summary: 'Mapping ratios, facial symmetry, pigment undertones, and Fitzpatrick/skin depth considerations.',
+    summaryEs: 'Proporciones de mapeo, simetria facial, subtonos de pigmento y consideraciones Fitzpatrick/profundidad de piel.',
     targetHours: 12,
     learningObjectives: [
       'Map brows with symmetry within 1mm accuracy on practice skin',
@@ -190,12 +192,20 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Select appropriate pigment based on undertone analysis for 3 different skin profiles',
       'Demonstrate understanding of color theory through pigment plan creation'
     ],
+    learningObjectivesEs: [
+      'Mapear cejas con simetria dentro de 1 mm en piel de practica',
+      'Identificar correctamente tipos de piel Fitzpatrick con 90% de precision',
+      'Seleccionar pigmento adecuado segun analisis de subtono para 3 perfiles de piel',
+      'Demostrar comprension de teoria del color mediante plan de pigmentos'
+    ],
     assignments: [
       {
         id: 'week2-brow-map',
         weekId: 'week-2',
         title: 'Brow Mapping Practice Upload',
+        titleEs: 'Entrega de practica de mapeo de cejas',
         description: 'Submit before/after photos of brow mapping on practice skin with measurement notes.',
+        descriptionEs: 'Envia fotos de antes/despues del mapeo de cejas en piel de practica con notas de medicion.',
         dueDate: 'Due Week 2 Saturday',
         status: 'pending',
         rubric: 'Landmarks identified (5 pts), symmetry within 1 mm (10 pts), photo clarity (5 pts), notes cite mapping tools (5 pts).',
@@ -205,7 +215,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week2-pigment-plan',
         weekId: 'week-2',
         title: 'Color Theory Pigment Plan',
+        titleEs: 'Plan de pigmentos de teoria del color',
         description: 'Build a pigment plan for three skin profiles, including undertone analysis and neutralizer selections.',
+        descriptionEs: 'Crea un plan de pigmentos para tres perfiles de piel, incluyendo analisis de subtonos y seleccion de neutralizadores.',
         dueDate: 'Due Week 2 Sunday',
         status: 'pending',
         rubric: 'Undertone accuracy (10 pts), pigment justification (10 pts), modifier/neutralizer plan (10 pts).',
@@ -217,7 +229,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-3',
     order: 3,
     title: 'Week 3 • Client Intake & Contraindication Screening',
+    titleEs: 'Semana 3 • Admision de cliente y evaluacion de contraindicaciones',
     summary: 'Consent forms, medical red flags, communication scripts, and risk mitigation planning.',
+    summaryEs: 'Formularios de consentimiento, alertas medicas, guiones de comunicacion y planificacion de mitigacion de riesgos.',
     targetHours: 11,
     learningObjectives: [
       'Identify absolute and relative contraindications with 100% accuracy',
@@ -226,12 +240,21 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Demonstrate basic pricing structure understanding (service tiers, touch-up policies)',
       'Create initial business plan outline with pricing ladder'
     ],
+    learningObjectivesEs: [
+      'Identificar contraindicaciones absolutas y relativas con 100% de precision',
+      'Completar formularios de admision con todas las preguntas medicas requeridas',
+      'Tomar decisiones de proceder/no proceder en 3 escenarios simulados con justificacion',
+      'Demostrar comprension basica de estructura de precios y politicas de retoque',
+      'Crear esquema inicial de plan de negocio con escalera de precios'
+    ],
     assignments: [
       {
         id: 'week3-contraindication-journal',
         weekId: 'week-3',
         title: 'Contraindication Case Journal',
+        titleEs: 'Diario de casos de contraindicaciones',
         description: 'Log three mock consultation scenarios and note go/no-go decisions with supporting evidence.',
+        descriptionEs: 'Registra tres escenarios simulados de consulta y anota decisiones de proceder/no proceder con evidencia de soporte.',
         dueDate: 'Due Week 3 Friday',
         status: 'pending',
         rubric: 'Case completeness (10 pts), risk analysis accuracy (10 pts), recommendation clarity (10 pts). Passing ≥ 24/30.',
@@ -241,7 +264,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week3-intake-roleplay',
         weekId: 'week-3',
         title: 'Intake Form Roleplay Reflection',
+        titleEs: 'Reflexion de roleplay de formulario de admision',
         description: 'Complete an intake roleplay with a peer or director and submit your annotated intake form with reflection notes.',
+        descriptionEs: 'Completa un roleplay de admision con una companera o directora y envia tu formulario anotado con notas de reflexion.',
         dueDate: 'Due Week 3 Sunday',
         status: 'pending',
         rubric: 'Form accuracy (10 pts), contraindication follow-up questions (10 pts), reflection depth (10 pts).',
@@ -251,7 +276,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week3-business-basics',
         weekId: 'week-3',
         title: 'Business Basics: Pricing & Service Structure',
+        titleEs: 'Bases de negocio: precios y estructura de servicios',
         description: 'Create your initial pricing structure with 3 service tiers (training, standard, luxury) and outline touch-up policies. Include basic client communication templates.',
+        descriptionEs: 'Crea tu estructura inicial de precios con 3 niveles de servicio (entrenamiento, estandar, lujo) y define politicas de retoque. Incluye plantillas basicas de comunicacion.',
         dueDate: 'Due Week 3 Sunday',
         status: 'pending',
         rubric: 'Pricing ladder completeness (10 pts), touch-up policy clarity (5 pts), communication template quality (5 pts).',
@@ -261,7 +288,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week3-peer-review',
         weekId: 'week-3',
         title: 'Peer Review: Contraindication Case Analysis',
+        titleEs: 'Revision entre pares: analisis de casos de contraindicacion',
         description: 'Review a peer\'s contraindication case journal and provide constructive feedback on risk analysis and decision-making clarity.',
+        descriptionEs: 'Revisa el diario de casos de contraindicaciones de una companera y brinda retroalimentacion constructiva sobre analisis de riesgo y claridad de decisiones.',
         dueDate: 'Due Week 3 Saturday',
         status: 'pending',
         rubric: 'Feedback specificity (5 pts), constructive tone (5 pts), accuracy of assessment (5 pts).',
@@ -273,7 +302,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-4',
     order: 4,
     title: 'Week 4 • Machine Technique & Needle Control',
+    titleEs: 'Semana 4 • Tecnica de maquina y control de aguja',
     summary: 'Machine calibration, stroke practice, depth control, and anesthetic protocols.',
+    summaryEs: 'Calibracion de maquina, practica de trazos, control de profundidad y protocolos anestesicos.',
     targetHours: 12,
     learningObjectives: [
       'Calibrate machine settings for 3 different procedure types with documented results',
@@ -282,12 +313,21 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Create client consultation script incorporating pricing and service explanation',
       'Develop basic social media content strategy (3 post ideas with captions)'
     ],
+    learningObjectivesEs: [
+      'Calibrar configuraciones de maquina para 3 tipos de procedimiento con resultados documentados',
+      'Ejecutar patrones de trazos consistentes en piel de practica con control de profundidad',
+      'Demostrar angulo de aguja y control de velocidad en todos los tipos de trazo',
+      'Crear guion de consulta que incluya precios y explicacion de servicio',
+      'Desarrollar estrategia basica de contenido en redes (3 ideas con textos)'
+    ],
     assignments: [
       {
         id: 'week4-machine-calibration',
         weekId: 'week-4',
         title: 'Machine Calibration Lab Report',
+        titleEs: 'Informe de laboratorio de calibracion de maquina',
         description: 'Document voltage tests, stroke patterns, and cartridge selections for three procedure types.',
+        descriptionEs: 'Documenta pruebas de voltaje, patrones de trazo y seleccion de cartuchos para tres tipos de procedimiento.',
         dueDate: 'Due Week 4 Friday',
         status: 'pending',
         rubric: 'Calibration benchmarks (10 pts), stroke analysis (10 pts), safety notes (10 pts).',
@@ -297,7 +337,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week4-stroke-practice',
         weekId: 'week-4',
         title: 'Stroke Practice on Latex',
+        titleEs: 'Practica de trazos en latex',
         description: 'Upload photos of stroke patterns on latex skin with notes on needle angle, speed, and depth control.',
+        descriptionEs: 'Sube fotos de patrones de trazos en piel de latex con notas sobre angulo, velocidad y control de profundidad.',
         dueDate: 'Due Week 4 Sunday',
         status: 'pending',
         rubric: 'Consistency (10 pts), depth control (10 pts), documentation quality (10 pts).',
@@ -307,7 +349,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week4-business-consultation',
         weekId: 'week-4',
         title: 'Business: Consultation Script & Social Media Strategy',
+        titleEs: 'Negocio: guion de consulta y estrategia de redes sociales',
         description: 'Create a luxury consultation script that incorporates pricing explanation and service benefits. Develop 3 social media post ideas with captions that align with your brand.',
+        descriptionEs: 'Crea un guion de consulta de nivel lujo que incluya explicacion de precios y beneficios del servicio. Desarrolla 3 ideas de publicaciones con captions alineados a tu marca.',
         dueDate: 'Due Week 4 Sunday',
         status: 'pending',
         rubric: 'Script professionalism (10 pts), pricing integration (5 pts), social media alignment (5 pts).',
@@ -317,7 +361,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week4-peer-review-strokes',
         weekId: 'week-4',
         title: 'Peer Review: Stroke Pattern Analysis',
+        titleEs: 'Revision entre pares: analisis de patrones de trazo',
         description: 'Review a peer\'s stroke practice photos and provide feedback on consistency, depth control, and technique. Submit your review with specific observations.',
+        descriptionEs: 'Revisa fotos de practica de trazos de una companera y aporta retroalimentacion sobre consistencia, control de profundidad y tecnica. Entrega tu revision con observaciones especificas.',
         dueDate: 'Due Week 4 Saturday',
         status: 'pending',
         rubric: 'Observation detail (5 pts), constructive feedback (5 pts), technique accuracy (5 pts).',
@@ -329,7 +375,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-5',
     order: 5,
     title: 'Week 5 • Service Delivery & Client Communication',
+    titleEs: 'Semana 5 • Ejecucion del servicio y comunicacion con clientes',
     summary: 'Pre/post care, anesthetic strategy, client communication, and emergency protocols.',
+    summaryEs: 'Cuidados pre/post, estrategia anestesica, comunicacion con cliente y protocolos de emergencia.',
     targetHours: 12,
     learningObjectives: [
       'Create comprehensive anesthetic protocol covering timing and contraindications',
@@ -337,12 +385,20 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Handle client concerns about pain, healing, and pricing with confidence',
       'Document complete service delivery workflow from consultation to aftercare'
     ],
+    learningObjectivesEs: [
+      'Crear protocolo anestesico integral con tiempos y contraindicaciones',
+      'Demostrar comunicacion de nivel lujo con clientes en roleplay',
+      'Manejar inquietudes de cliente sobre dolor, cicatrizacion y precio con seguridad',
+      'Documentar flujo completo del servicio desde consulta hasta aftercare'
+    ],
     assignments: [
       {
         id: 'week5-anesthetic-checklist',
         weekId: 'week-5',
         title: 'Anesthetic Protocol Checklist',
+        titleEs: 'Checklist de protocolo anestesico',
         description: 'Create a protocol covering topical vs. secondary anesthetics, including timing and contraindications.',
+        descriptionEs: 'Crea un protocolo que cubra anestesicos topicos vs secundarios, incluyendo tiempos y contraindicaciones.',
         dueDate: 'Due Week 5 Friday',
         status: 'pending',
         rubric: 'Protocol completeness (10 pts), timing accuracy (10 pts), contraindication safeguards (10 pts).',
@@ -352,7 +408,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week5-client-communication',
         weekId: 'week-5',
         title: 'Client Communication Roleplay',
+        titleEs: 'Roleplay de comunicacion con cliente',
         description: 'Record a mock consultation handling client concerns about pain, healing, and pricing.',
+        descriptionEs: 'Graba una consulta simulada manejando inquietudes del cliente sobre dolor, cicatrizacion y precios.',
         dueDate: 'Due Week 5 Sunday',
         status: 'pending',
         rubric: 'Empathy & clarity (10 pts), policy alignment (10 pts), follow-up plan (10 pts).',
@@ -364,7 +422,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-6',
     order: 6,
     title: 'Week 6 • Live Model Preparation & Supervision',
+    titleEs: 'Semana 6 • Preparacion y supervision de modelo en vivo',
     summary: 'Mock procedures, station efficiency, photography standards, and supervised practice readiness.',
+    summaryEs: 'Procedimientos simulados, eficiencia de estacion, estandares fotograficos y preparacion para practica supervisada.',
     targetHours: 11,
     learningObjectives: [
       'Execute complete mock procedure within time constraints with all sanitation resets',
@@ -372,12 +432,20 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Analyze healing timeline and create corrective touch-up plan',
       'Demonstrate readiness for live model work through supervised practice'
     ],
+    learningObjectivesEs: [
+      'Ejecutar procedimiento simulado completo dentro del tiempo con reinicios de saneamiento',
+      'Documentar flujo del procedimiento con fotografia segun estandares del estudio',
+      'Analizar cronologia de cicatrizacion y crear plan correctivo de retoque',
+      'Demostrar preparacion para trabajo con modelo en vivo en practica supervisada'
+    ],
     assignments: [
       {
         id: 'week6-mock-procedure',
         weekId: 'week-6',
         title: 'Mock Procedure Dry Run',
+        titleEs: 'Ensayo de procedimiento simulado',
         description: 'Simulate a full procedure on latex or mannequin, including timing, sanitation resets, and documentation.',
+        descriptionEs: 'Simula un procedimiento completo en latex o maniqui, incluyendo tiempos, reinicios de saneamiento y documentacion.',
         dueDate: 'Due Week 6 Friday',
         status: 'pending',
         rubric: 'Timeline accuracy (10 pts), sanitation resets (10 pts), documentation completeness (10 pts).',
@@ -387,7 +455,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week6-healing-analysis',
         weekId: 'week-6',
         title: 'Healing Timeline Analysis',
+        titleEs: 'Analisis de cronologia de cicatrizacion',
         description: 'Analyze a past model\'s healing photos and produce a touch-up plan with pigment adjustments.',
+        descriptionEs: 'Analiza fotos de cicatrizacion de un modelo previo y crea un plan de retoque con ajustes de pigmento.',
         dueDate: 'Due Week 6 Sunday',
         status: 'pending',
         rubric: 'Observation detail (10 pts), corrective plan (10 pts), client communication (10 pts).',
@@ -399,7 +469,9 @@ const COURSE_WEEKS: CourseWeek[] = [
     id: 'week-7',
     order: 7,
     title: 'Week 7 • Capstone & Portfolio (Half Week)',
+    titleEs: 'Semana 7 • Capstone y portafolio (media semana)',
     summary: 'Capstone evaluation, portfolio submission, and exit interview preparation.',
+    summaryEs: 'Evaluacion capstone, entrega de portafolio y preparacion de entrevista de salida.',
     targetHours: 7,
     learningObjectives: [
       'Execute complete PMU service on live model meeting all safety and quality standards',
@@ -407,12 +479,20 @@ const COURSE_WEEKS: CourseWeek[] = [
       'Compile professional portfolio demonstrating skill progression',
       'Complete exit interview demonstrating readiness for professional practice'
     ],
+    learningObjectivesEs: [
+      'Ejecutar servicio PMU completo en modelo en vivo cumpliendo seguridad y calidad',
+      'Brindar educacion de aftercare de nivel lujo con confianza y claridad',
+      'Compilar portafolio profesional que demuestre progresion de habilidades',
+      'Completar entrevista de salida demostrando preparacion profesional'
+    ],
     assignments: [
       {
         id: 'week7-capstone-eval',
         weekId: 'week-7',
         title: 'Capstone Live Model Evaluation',
+        titleEs: 'Evaluacion capstone en modelo en vivo',
         description: 'Complete your supervised live model or detailed case study for capstone review.',
+        descriptionEs: 'Completa tu modelo en vivo supervisado o estudio de caso detallado para revision capstone.',
         dueDate: 'Due Week 7 Wednesday',
         status: 'pending',
         rubric: 'Technique execution (15 pts), sanitation compliance (10 pts), client comfort documentation (10 pts).',
@@ -422,7 +502,9 @@ const COURSE_WEEKS: CourseWeek[] = [
         id: 'week7-portfolio-exit',
         weekId: 'week-7',
         title: 'Portfolio & Exit Interview Prep',
+        titleEs: 'Preparacion de portafolio y entrevista de salida',
         description: 'Compile before/after images, reflective journal entries, and submit the exit interview readiness checklist.',
+        descriptionEs: 'Compila imagenes de antes/despues, entradas de reflexion y entrega el checklist de preparacion para entrevista de salida.',
         dueDate: 'Due Week 7 Friday',
         status: 'pending',
         rubric: 'Portfolio completeness (10 pts), reflection insight (10 pts), readiness checklist (10 pts).',
