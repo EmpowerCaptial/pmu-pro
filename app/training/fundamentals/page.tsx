@@ -115,6 +115,24 @@ interface LiveStreamRoom {
   createdBy: string | null
 }
 
+interface AttendanceLogEntry {
+  id: string
+  date: string
+  status: string
+  notes?: string | null
+  createdAt?: string
+  updatedAt?: string
+  student?: {
+    name?: string | null
+  } | null
+  instructor?: {
+    name?: string | null
+  } | null
+  location?: {
+    name?: string | null
+  } | null
+}
+
 interface CourseWeek {
   id: string
   order: number
@@ -615,9 +633,13 @@ export default function FundamentalsTrainingPortal() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [isUploadingPdf, setIsUploadingPdf] = useState(false)
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false)
+  const [attendanceLogDialogOpen, setAttendanceLogDialogOpen] = useState(false)
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
   const [attendanceForm, setAttendanceForm] = useState({ session: '', date: '', notes: '' })
+  const [attendanceLogEntries, setAttendanceLogEntries] = useState<AttendanceLogEntry[]>([])
+  const [isLoadingAttendanceLog, setIsLoadingAttendanceLog] = useState(false)
+  const [attendanceLogError, setAttendanceLogError] = useState<string | null>(null)
   const [gradeForm, setGradeForm] = useState({ student: '', assignment: '', score: '', feedback: '' })
   const [scheduleForm, setScheduleForm] = useState({ student: '', instructor: '', date: '', time: '', notes: '' })
   const [instructorActivityLog, setInstructorActivityLog] = useState<
@@ -2825,6 +2847,41 @@ export default function FundamentalsTrainingPortal() {
     setAttendanceForm({ session: '', date: '', notes: '' })
   }
 
+  const fetchAttendanceLog = useCallback(async () => {
+    if (!currentUser?.email) {
+      setAttendanceLogError('You must be signed in to view attendance logs.')
+      setAttendanceLogEntries([])
+      return
+    }
+
+    setIsLoadingAttendanceLog(true)
+    setAttendanceLogError(null)
+    try {
+      const response = await fetch('/api/attendance', {
+        headers: {
+          'x-user-email': currentUser.email
+        }
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || 'Failed to fetch attendance log.')
+      }
+      const data = Array.isArray(payload?.data) ? payload.data : []
+      setAttendanceLogEntries(data as AttendanceLogEntry[])
+    } catch (error) {
+      console.error('Failed to fetch attendance log:', error)
+      setAttendanceLogError(error instanceof Error ? error.message : 'Failed to fetch attendance log.')
+      setAttendanceLogEntries([])
+    } finally {
+      setIsLoadingAttendanceLog(false)
+    }
+  }, [currentUser?.email])
+
+  useEffect(() => {
+    if (!attendanceLogDialogOpen) return
+    fetchAttendanceLog()
+  }, [attendanceLogDialogOpen, fetchAttendanceLog])
+
   const handleGradeSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!gradeForm.student || !gradeForm.assignment || !gradeForm.score) {
@@ -3975,67 +4032,123 @@ export default function FundamentalsTrainingPortal() {
                         <p className="text-sm text-gray-600">
                           Log which apprentices attended live practicums or virtual lectures. Export attendance history for compliance audits.
                         </p>
-                        <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="outline">
-                              Record Attendance
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-lg">
-                            <DialogHeader>
-                              <DialogTitle>Record Attendance</DialogTitle>
-                              <DialogDescription>
-                                Track which apprentices were present. Attendance logs remain visible in this console for quick review.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleAttendanceSubmit} className="space-y-4">
-                              <div className="space-y-1">
-                                <Label htmlFor="attendance-session">Session / Module</Label>
-                                <Input
-                                  id="attendance-session"
-                                  value={attendanceForm.session}
-                                  onChange={(event) =>
-                                    setAttendanceForm(prev => ({ ...prev, session: event.target.value }))
-                                  }
-                                  placeholder="e.g., Module 3: Needle Depth Practicum"
-                                />
-                              </div>
-                              <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Dialog open={attendanceDialogOpen} onOpenChange={setAttendanceDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                Record Attendance
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-lg">
+                              <DialogHeader>
+                                <DialogTitle>Record Attendance</DialogTitle>
+                                <DialogDescription>
+                                  Track which apprentices were present. Attendance logs remain visible in this console for quick review.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <form onSubmit={handleAttendanceSubmit} className="space-y-4">
                                 <div className="space-y-1">
-                                  <Label htmlFor="attendance-date">Date</Label>
+                                  <Label htmlFor="attendance-session">Session / Module</Label>
                                   <Input
-                                    id="attendance-date"
-                                    type="date"
-                                    value={attendanceForm.date}
+                                    id="attendance-session"
+                                    value={attendanceForm.session}
                                     onChange={(event) =>
-                                      setAttendanceForm(prev => ({ ...prev, date: event.target.value }))
+                                      setAttendanceForm(prev => ({ ...prev, session: event.target.value }))
                                     }
+                                    placeholder="e.g., Module 3: Needle Depth Practicum"
                                   />
                                 </div>
-                                <div className="space-y-1">
-                                  <Label htmlFor="attendance-notes">Notes (optional)</Label>
-                                  <Textarea
-                                    id="attendance-notes"
-                                    rows={3}
-                                    placeholder="List attendees or special observations."
-                                    value={attendanceForm.notes}
-                                    onChange={(event) =>
-                                      setAttendanceForm(prev => ({ ...prev, notes: event.target.value }))
-                                    }
-                                  />
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  <div className="space-y-1">
+                                    <Label htmlFor="attendance-date">Date</Label>
+                                    <Input
+                                      id="attendance-date"
+                                      type="date"
+                                      value={attendanceForm.date}
+                                      onChange={(event) =>
+                                        setAttendanceForm(prev => ({ ...prev, date: event.target.value }))
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label htmlFor="attendance-notes">Notes (optional)</Label>
+                                    <Textarea
+                                      id="attendance-notes"
+                                      rows={3}
+                                      placeholder="List attendees or special observations."
+                                      value={attendanceForm.notes}
+                                      onChange={(event) =>
+                                        setAttendanceForm(prev => ({ ...prev, notes: event.target.value }))
+                                      }
+                                    />
+                                  </div>
                                 </div>
+                                <div className="flex items-center justify-between">
+                                  <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                                    Save Attendance
+                                  </Button>
+                                  <Button variant="ghost" type="button" asChild>
+                                    <Link href="/studio/supervision">View Supervision Roster</Link>
+                                  </Button>
+                                </div>
+                              </form>
+                            </DialogContent>
+                          </Dialog>
+                          <Dialog open={attendanceLogDialogOpen} onOpenChange={setAttendanceLogDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                View Attendance Log
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-3xl">
+                              <DialogHeader>
+                                <DialogTitle>Attendance Log</DialogTitle>
+                                <DialogDescription>
+                                  Review previously recorded attendance entries. This view is read-only.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="max-h-[60vh] overflow-y-auto rounded-md border border-gray-200">
+                                {isLoadingAttendanceLog ? (
+                                  <div className="p-4 text-sm text-gray-600">Loading attendance log...</div>
+                                ) : attendanceLogError ? (
+                                  <div className="p-4 text-sm text-red-600">{attendanceLogError}</div>
+                                ) : attendanceLogEntries.length === 0 ? (
+                                  <div className="p-4 text-sm text-gray-600">No attendance entries found.</div>
+                                ) : (
+                                  <div className="divide-y divide-gray-200">
+                                    {attendanceLogEntries.map(entry => (
+                                      <div key={entry.id} className="p-4 space-y-2">
+                                        <div className="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                                          <p><span className="font-medium text-gray-900">Student/Apprentice:</span> {entry.student?.name || 'N/A'}</p>
+                                          <p><span className="font-medium text-gray-900">Status:</span> {entry.status || 'N/A'}</p>
+                                          <p><span className="font-medium text-gray-900">Session Date:</span> {entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}</p>
+                                          <p><span className="font-medium text-gray-900">Class/Module:</span> {entry.location?.name || 'N/A'}</p>
+                                          <p><span className="font-medium text-gray-900">Recorded by:</span> {entry.instructor?.name || 'N/A'}</p>
+                                          <p>
+                                            <span className="font-medium text-gray-900">Timestamp:</span>{' '}
+                                            {entry.updatedAt
+                                              ? new Date(entry.updatedAt).toLocaleString()
+                                              : entry.createdAt
+                                                ? new Date(entry.createdAt).toLocaleString()
+                                                : 'N/A'}
+                                          </p>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          <span className="font-medium text-gray-900">Notes:</span> {entry.notes || 'N/A'}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex items-center justify-between">
-                                <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
-                                  Save Attendance
-                                </Button>
-                                <Button variant="ghost" type="button" asChild>
-                                  <Link href="/studio/supervision">View Supervision Roster</Link>
+                              <div className="flex justify-end">
+                                <Button type="button" variant="ghost" onClick={() => setAttendanceLogDialogOpen(false)}>
+                                  Close
                                 </Button>
                               </div>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </CardContent>
                     </Card>
                     <Card className="border border-gray-200 shadow-sm break-words">
